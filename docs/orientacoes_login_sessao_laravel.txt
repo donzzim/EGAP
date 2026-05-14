@@ -1,0 +1,346 @@
+ORIENTAÇÕES - INVENTÁRIO MOBILE | APLICAÇÃO LARAVEL
+API DE LOGIN, SESSÃO E INTEGRAÇÃO COM EXPO
+
+1. CONTEXTO GERAL
+
+Este arquivo define as orientações para construção da parte de login da API Laravel que será consumida pela aplicação mobile do Inventário Mobile, desenvolvida em Expo/React Native.
+
+A API Laravel será responsável por receber as credenciais do usuário, validar essas credenciais com base nas regras do sistema EGap/legado e retornar os dados necessários para a sessão mobile.
+
+A rota base da API mobile será:
+
+http://127.0.0.1:8000/mobile-api/
+
+Para comunicação com a aplicação Expo durante o desenvolvimento, essa API será exposta via ngrok através do endereço:
+
+https://stalling-saunch-wrecking.ngrok-free.dev/mobile-api/
+
+Neste primeiro momento, o foco será exclusivamente no login e no retorno dos dados de sessão.
+
+
+2. OBJETIVO DO BACKEND NESTA ETAPA
+
+O Laravel deverá criar um endpoint de login para a aplicação mobile.
+
+Esse endpoint deverá:
+
+- receber username e senha;
+- validar os campos obrigatórios;
+- consultar o usuário conforme a lógica do sistema antigo;
+- validar a senha conforme a regra já existente;
+- identificar a lotação/setor vinculado ao usuário;
+- retornar os dados necessários para a sessão mobile;
+- retornar erros padronizados em caso de falha.
+
+Os dados que precisam ser retornados para a sessão são:
+
+- id;
+- name;
+- username;
+- email;
+- lotacao.
+
+
+3. REFERÊNCIA DO SISTEMA ANTIGO
+
+Nos dois projetos existe um arquivo do sistema antigo utilizado para login.
+
+Esse arquivo deve ser usado como referência principal para esta etapa.
+
+Analisar principalmente:
+
+- qual tabela armazena os usuários;
+- qual campo representa o login/username;
+- qual campo representa a senha;
+- como a senha era validada;
+- se existe hash, criptografia antiga ou comparação direta;
+- quais campos eram salvos na sessão antiga;
+- como a lotação/setor do usuário era recuperada;
+- quais regras impediam ou permitiam o login;
+- quais mensagens ou comportamentos precisam ser preservados.
+
+A nova API não deve simplesmente copiar código procedural antigo, mas sim reimplementar a regra de negócio de forma organizada no Laravel.
+
+
+4. RESPONSABILIDADES DO LARAVEL
+
+O Laravel será responsável por:
+
+- definir as rotas mobile dentro de um grupo /mobile-api;
+- criar o endpoint POST /mobile-api/login;
+- validar os dados recebidos;
+- consultar o usuário no banco do EGap;
+- aplicar a mesma regra de autenticação do sistema antigo;
+- buscar a lotação/setor do usuário;
+- montar uma resposta JSON padronizada;
+- retornar status HTTP adequado;
+- impedir que senha ou dados sensíveis sejam retornados para o app.
+
+O Laravel deve ser a única camada responsável pela regra real de autenticação.
+
+O Expo apenas envia as credenciais e armazena a sessão retornada.
+
+
+5. ROTA DE LOGIN
+
+Criar a rota:
+
+POST /mobile-api/login
+
+Exemplo conceitual em routes/api.php ou arquivo específico de rotas mobile:
+
+Route::prefix('mobile-api')->group(function () {
+    Route::post('/login', [MobileAuthController::class, 'login']);
+});
+
+Caso o projeto já possua separação própria de rotas, seguir o padrão existente.
+
+Recomendação de organização:
+
+app/
+  Http/
+    Controllers/
+      Mobile/
+        MobileAuthController.php
+  Services/
+    Mobile/
+      MobileAuthService.php
+  Http/
+    Requests/
+      Mobile/
+        MobileLoginRequest.php
+
+Se o projeto ainda estiver simples, o controller pode iniciar com a lógica básica, mas o ideal é separar a regra em service para facilitar manutenção.
+
+
+6. CONTRATO DE ENTRADA
+
+O endpoint deverá receber JSON no seguinte formato:
+
+{
+    "username": "usuario",
+    "password": "senha"
+}
+
+Validações obrigatórias:
+
+- username: obrigatório, string;
+- password: obrigatório, string.
+
+Caso o sistema antigo utilize o termo login em vez de username, o backend pode mapear username para o campo real da tabela.
+
+Importante: manter o contrato externo da API simples e estável para o Expo.
+
+
+7. CONTRATO DE SAÍDA - SUCESSO
+
+Em caso de sucesso, retornar:
+
+HTTP 200
+
+{
+    "success": true,
+    "message": "Login realizado com sucesso.",
+    "user": {
+        "id": 1,
+        "name": "Nome do Usuário",
+        "username": "usuario",
+        "email": "usuario@email.com",
+        "lotacao": {
+            "id": 10,
+            "nome": "Setor/Lotação do Usuário"
+        }
+    }
+}
+
+Se for decidido usar token desde o início, a resposta poderá incluir:
+
+{
+    "token": "token_gerado_pelo_backend"
+}
+
+Porém, se a autenticação mobile inicial for apenas baseada em sessão local no app, o token pode ficar para uma etapa futura.
+
+
+8. CONTRATO DE SAÍDA - ERROS
+
+Erro de validação:
+
+HTTP 422
+
+{
+    "success": false,
+    "message": "Informe usuário e senha para continuar.",
+    "errors": {
+        "username": ["O campo usuário é obrigatório."],
+        "password": ["O campo senha é obrigatório."]
+    }
+}
+
+Credenciais inválidas:
+
+HTTP 401
+
+{
+    "success": false,
+    "message": "Usuário ou senha inválidos."
+}
+
+Usuário encontrado, mas sem lotação:
+
+HTTP 403
+
+{
+    "success": false,
+    "message": "Usuário não possui lotação vinculada."
+}
+
+Erro inesperado:
+
+HTTP 500
+
+{
+    "success": false,
+    "message": "Não foi possível realizar o login no momento."
+}
+
+Não retornar detalhes internos de exceções para o app mobile.
+
+
+9. DADOS DA LOTAÇÃO
+
+A lotação é uma informação obrigatória para o funcionamento do Inventário Mobile.
+
+Ela será usada posteriormente para buscar os bens vinculados ao setor/local de trabalho do usuário.
+
+O backend deve analisar no sistema antigo:
+
+- de onde vinha a lotação salva na sessão;
+- se a lotação representa setor, unidade judiciária, complemento ou outro vínculo;
+- qual tabela deve ser consultada;
+- qual chave deve ser usada para filtrar os bens patrimoniais.
+
+Para esta etapa, a resposta deve retornar a lotação de forma clara:
+
+"lotacao": {
+    "id": 10,
+    "nome": "Nome da Lotação"
+}
+
+Caso existam campos adicionais importantes, como unidade, setor e complemento, o backend pode estruturar assim:
+
+"lotacao": {
+    "id": 10,
+    "nome": "Nome da Lotação",
+    "unidade_id": 1,
+    "setor_id": 2,
+    "complemento_id": 3
+}
+
+Mas o mínimo obrigatório é id e nome.
+
+
+10. FLUXO ESPERADO NO BACKEND
+
+O fluxo do endpoint de login deverá ser:
+
+1. Receber username e password.
+2. Validar se os campos foram enviados.
+3. Localizar o usuário no banco conforme regra antiga.
+4. Se o usuário não existir, retornar 401.
+5. Validar a senha conforme regra antiga.
+6. Se a senha estiver incorreta, retornar 401.
+7. Recuperar os dados básicos do usuário.
+8. Recuperar a lotação vinculada ao usuário.
+9. Se não houver lotação válida, retornar 403.
+10. Montar o objeto user.
+11. Retornar JSON padronizado com success true.
+
+
+11. SEGURANÇA
+
+Cuidados obrigatórios:
+
+- nunca retornar senha para o Expo;
+- nunca retornar hash de senha;
+- não expor dados internos desnecessários do usuário;
+- não confiar em dados enviados pelo front;
+- validar todos os campos recebidos;
+- usar HTTPS via ngrok no consumo pelo app;
+- deixar claro no código onde a autenticação antiga está sendo adaptada;
+- tratar exceções de forma segura;
+- retornar mensagens amigáveis e genéricas em falhas sensíveis.
+
+Caso a senha antiga esteja armazenada de forma insegura, não alterar a regra agora sem planejamento, pois isso pode quebrar o login legado.
+
+Nesta etapa, preservar o comportamento do sistema antigo e documentar pontos que precisarão de melhoria futura.
+
+
+12. CORS E COMUNICAÇÃO COM EXPO
+
+Garantir que o Laravel aceite requisições vindas da aplicação mobile durante o desenvolvimento.
+
+Como o Expo consumirá a API via ngrok, verificar:
+
+- configuração de CORS do Laravel;
+- se o endpoint responde corretamente via HTTPS pelo ngrok;
+- se a rota /mobile-api/login está acessível;
+- se o retorno está em JSON;
+- se erros também retornam JSON.
+
+A URL usada pelo Expo será:
+
+https://stalling-saunch-wrecking.ngrok-free.dev/mobile-api/login
+
+A URL local equivalente será:
+
+http://127.0.0.1:8000/mobile-api/login
+
+
+13. TESTES MANUAIS RECOMENDADOS
+
+Antes de integrar totalmente com o Expo, testar o endpoint no Postman, Insomnia, Thunder Client ou ferramenta similar.
+
+Cenários mínimos:
+
+1. Login com usuário e senha corretos.
+2. Login com usuário inexistente.
+3. Login com senha incorreta.
+4. Login sem username.
+5. Login sem password.
+6. Login com usuário sem lotação.
+7. Teste usando URL local.
+8. Teste usando URL do ngrok.
+
+Confirmar que todos os retornos seguem o contrato definido.
+
+
+14. OBSERVAÇÃO SOBRE TOKEN
+
+Para esta etapa, o objetivo principal é permitir que a aplicação Expo realize login e salve localmente os dados da sessão.
+
+O uso de token pode ser implementado agora ou deixado preparado para uma etapa futura.
+
+Possíveis opções futuras:
+
+- Laravel Sanctum;
+- JWT;
+- token simples específico para a API mobile.
+
+Mesmo que o token não seja implementado agora, a estrutura da resposta pode ser pensada para permitir sua inclusão sem quebrar o front.
+
+
+15. RESULTADO ESPERADO DESTA ETAPA
+
+Ao final desta etapa, o Laravel deverá possuir:
+
+- rota POST /mobile-api/login;
+- controller mobile de autenticação;
+- validação dos campos username e password;
+- autenticação baseada na regra do sistema antigo;
+- busca da lotação do usuário;
+- resposta JSON padronizada;
+- tratamento de erros;
+- compatibilidade com consumo via ngrok;
+- retorno dos dados id, name, username, email e lotacao.
+

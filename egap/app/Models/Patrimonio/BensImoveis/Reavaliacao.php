@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models\Egap\Patrimonio\BensImoveis;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Reavaliacao extends Model
+{
+    protected $connection = 'egap';
+    protected $table = 'imo_reavaliacao';
+    protected $primaryKey = 'Id';
+    protected $guarded = [];
+    public $timestamps = false;
+
+    public function imovelRelacaoref()
+    {
+        return $this->belongsTo(\App\Models\Egap\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
+    }
+
+    public function estadoConservacaoRelacaoref()
+    {
+        return $this->belongsTo(\App\Models\Egap\Patrimonio\BensImoveis\EstadoConservacao::class, 'Id_estadoconservacao', 'Id');
+    }
+
+    public function atualizadoPorRelacaoref()
+    {
+        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+    }
+}

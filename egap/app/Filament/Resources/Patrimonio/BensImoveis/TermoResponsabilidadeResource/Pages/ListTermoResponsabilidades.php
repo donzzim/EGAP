@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
+
+use App\Filament\Egap\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListTermoResponsabilidades extends ListRecords
+{
+    protected static string $resource = TermoResponsabilidadeResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->label('Adicionar')
+                ->icon('heroicon-o-plus-circle')
+                ->modalHeading('Adicionar Termos de Responsabilidade')
+                ->modalWidth('4xl')
+                ->createAnother(false),
+        ];
+    }
+}

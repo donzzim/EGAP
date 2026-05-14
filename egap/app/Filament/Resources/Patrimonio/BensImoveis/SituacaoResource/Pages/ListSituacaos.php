@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\SituacaoResource\Pages;
+
+use App\Filament\Egap\Resources\Patrimonio\BensImoveis\SituacaoResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListSituacaos extends ListRecords
+{
+    protected static string $resource = SituacaoResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make()
+                ->label('Adicionar')
+                ->icon('heroicon-o-plus-circle')
+                ->modalHeading('Adicionar Situação')
+                ->modalWidth('md')
+                ->createAnother(false),
+        ];
+    }
+}

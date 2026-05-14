@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models\Egap\Processo;
+
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Egap\Patrimonio\BensImoveis\Processo;
+
+class MatTipoProcesso extends Model
+{
+    protected $connection = 'egap';
+    protected $table = 'mat_tipo_processo';
+    protected $primaryKey = 'id';
+    public $timestamps = false;
+    protected $guarded = [];
+
+    public function processosRelacaoRef()
+    {
+        return $this->hasMany(Processo::class, 'id_tipo_processo', 'id');
+    }
+}
