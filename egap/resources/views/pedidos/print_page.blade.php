@@ -1,5 +1,5 @@
 ﻿<x-filament-panels::page>
-    @include('egap.pedidos.pedidos_impressao', ['pedido' => $pedido])
+    @include('pedidos.pedidos_impressao', ['pedido' => $pedido])
 
     <script>
         document.addEventListener('livewire:load', () => {
