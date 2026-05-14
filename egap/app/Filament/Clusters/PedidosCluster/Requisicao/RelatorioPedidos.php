@@ -47,7 +47,7 @@ class RelatorioPedidos extends Page implements HasTable
 
     protected static ?string $navigationLabel = 'Relatório de Pedidos';
 
-    protected static string $view = 'egap.filament.pages.pedidos.requisicao.relatorio-pedidos';
+    protected static string $view = 'filament.pages.pedidos.requisicao.relatorio-pedidos';
 
     public function getMaxContentWidth(): MaxWidth
     {

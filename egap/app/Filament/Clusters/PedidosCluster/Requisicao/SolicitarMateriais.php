@@ -55,7 +55,7 @@ class SolicitarMateriais extends Page implements HasForms
     protected static ?string $title = 'Pedidos - Materiais Permanentes';
     protected static ?string $slug = 'solicitar-materiais';
     protected static ?string $navigationLabel = 'Solicitar Materiais';
-    protected static string $view = 'egap.filament.pages.pedidos.requisicao.solicitar-materiais';
+    protected static string $view = 'filament.pages.pedidos.requisicao.solicitar-materiais';
 
     public ?array $data = [];
 

@@ -24,7 +24,7 @@ class Situacao extends Page implements HasTable
     protected static ?string $title = 'Pedidos - Situação';
     protected static ?string $slug = 'situacao-pedidos';
     protected static ?string $navigationLabel = 'Situação';
-    protected static string $view = 'egap.filament.pages.pedidos.requisicao.situacao';
+    protected static string $view = 'filament.pages.pedidos.requisicao.situacao';
 
     public function table(Table $table): Table
     {

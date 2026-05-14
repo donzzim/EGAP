@@ -10,7 +10,7 @@ class AccountWidget extends Widget
 
     protected static bool $isLazy = false;
 
-    protected static string $view = 'filament.egap.widgets.account-widget';
+    protected static string $view = 'filament.widgets.account-widget';
 
     protected int | string | array $columnSpan = 'full';
 }

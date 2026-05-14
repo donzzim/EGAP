@@ -24,7 +24,7 @@ class Pedidos extends Page implements HasTable
     protected static ?string $title = 'Pedido - Materiais Permanentes';
     protected static ?string $slug = 'pedidos-materiais-permanentes';
     protected static ?string $navigationLabel = 'Pedidos';
-    protected static string $view = 'egap.filament.pages.pedidos.requisicao.pedidos';
+    protected static string $view = 'filament.pages.pedidos.requisicao.pedidos';
 
     public function table(Table $table): Table
     {
