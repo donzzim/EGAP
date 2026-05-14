@@ -10,7 +10,7 @@ class AcessosPermissoesPage extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static string $view = 'filament.egap.clusters.admin-egap-cluster.pages.acessos-permissoes-page';
+    protected static string $view = 'filament.clusters.admin-egap-cluster.pages.acessos-permissoes-page';
 
     protected static ?string $title = 'Acessos e Permissões';
 

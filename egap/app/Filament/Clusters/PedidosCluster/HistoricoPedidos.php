@@ -30,7 +30,7 @@ class HistoricoPedidos extends Page implements HasTable
 
     protected static ?string $slug = 'historico-pedidos';
 
-    protected static string $view = 'egap.filament.pages.pedidos.historico-pedidos';
+    protected static string $view = 'filament.pages.pedidos.historico-pedidos';
 
     public function table(Table $table): Table
     {

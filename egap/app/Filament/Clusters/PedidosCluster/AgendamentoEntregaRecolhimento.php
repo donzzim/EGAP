@@ -45,7 +45,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static string $view = 'egap.filament.pages.pedidos.agendamento-entrega-recolhimento';
+    protected static string $view = 'filament.pages.pedidos.agendamento-entrega-recolhimento';
 
     protected static ?string $navigationLabel = 'Agendamento da Entrega/Recolhimento';
 
@@ -208,7 +208,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Fechar')
                     ->modalContent(fn (Termo $record) => view(
-                        'egap.filament.pages.partials.agendamento-entrega-recolhimento-materiais',
+                        'filament.pages.partials.agendamento-entrega-recolhimento-materiais',
                         [
                             'record' => $record,
                             'materiais' => $this->getMateriaisDoTermo($record),

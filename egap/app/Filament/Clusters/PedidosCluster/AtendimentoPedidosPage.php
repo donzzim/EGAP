@@ -37,7 +37,7 @@ class AtendimentoPedidosPage extends Page
 
     protected static ?string $slug = 'atendimento-pedidos';
 
-    protected static string $view = 'egap.filament.pages.pedidos.atendimento-pedidos';
+    protected static string $view = 'filament.pages.pedidos.atendimento-pedidos';
 
     public ?int $selectedPedidoId = null;
     public ?int $selectedItemPedidoId = null;
