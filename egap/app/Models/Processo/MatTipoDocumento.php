@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Processo;
+namespace App\Models\Processo;
 
 use Illuminate\Database\Eloquent\Model;
 

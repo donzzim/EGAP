@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Models\Egap\Patrimonio\BensMoveis\Inventario;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Models\Patrimonio\BensMoveis\Inventario;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

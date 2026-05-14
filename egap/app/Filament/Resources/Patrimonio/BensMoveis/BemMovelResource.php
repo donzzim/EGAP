@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
-use App\Models\Egap\Cadastro\Modelos;
-use App\Models\Egap\Cadastro\Setores;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
-use App\Models\Egap\Patrimonio\BensMoveis\SituacaoBemMovel;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
+use App\Models\Cadastro\Modelos;
+use App\Models\Cadastro\Setores;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensMoveis\SituacaoBemMovel;
 use Filament\Forms;
 use Filament\Forms\Components\{DatePicker, Grid, Select, Tabs, Textarea, TextInput};
 use Filament\Forms\Form;

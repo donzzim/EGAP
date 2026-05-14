@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Processo;
+namespace App\Filament\Resources\Processo;
 
-use App\Filament\Egap\Resources\Processo\TipoProcessoResource\Pages;
-use App\Models\Egap\Processo\MatTipoProcesso;
+use App\Filament\Resources\Processo\TipoProcessoResource\Pages;
+use App\Models\Processo\MatTipoProcesso;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -49,7 +49,7 @@ class TipoProcessoResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('id')
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\DepreciacaoResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\ValidarTermoResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
-use App\Models\Egap\Patrimonio\BensMoveis\Termo;
-use App\Filament\Egap\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
+use App\Models\Patrimonio\BensMoveis\Termo;
+use App\Filament\Clusters\PatrimonioCluster;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -56,7 +56,7 @@ class ValidarTermoResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
                 Tables\Columns\TextColumn::make('termo_completo')->label('Termo')->searchable(['num_termo', 'ano_termo'])->weight('bold'),
-                
+
                 Tables\Columns\TextColumn::make('status_virtual')
                     ->label('Link do Arquivo')
                     ->getStateUsing(fn ($record) => $record->situacao_entrega === 'Validado' ? "Abrir Documento" : "Pendente")

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\DescricaoResumidaResource\Pages;
-use App\Models\Egap\Cadastro\DescricaoResumida;
+use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages;
+use App\Models\Cadastro\DescricaoResumida;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -144,9 +144,9 @@ class DescricaoResumidaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\DescricaoResumidaResource\Pages\ListDescricaoResumidas::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\DescricaoResumidaResource\Pages\CreateDescricaoResumida::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\DescricaoResumidaResource\Pages\EditDescricaoResumida::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\ListDescricaoResumidas::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\CreateDescricaoResumida::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\EditDescricaoResumida::route('/{record}/edit'),
         ];
     }
 

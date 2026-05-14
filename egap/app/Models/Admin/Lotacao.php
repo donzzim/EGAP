@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Egap\Admin;
+namespace App\Models\Admin;
 
-use App\Models\Egap\Cadastro\Setores;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;

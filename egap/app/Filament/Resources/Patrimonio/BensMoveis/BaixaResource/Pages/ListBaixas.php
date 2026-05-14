@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\BaixaResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Egap\Pages;
+namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 

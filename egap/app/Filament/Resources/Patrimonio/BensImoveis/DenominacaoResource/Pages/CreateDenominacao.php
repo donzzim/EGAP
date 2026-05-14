@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\DenominacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\DenominacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\DenominacaoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\DenominacaoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateDenominacao extends CreateRecord

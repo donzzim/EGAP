@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento;
+namespace App\Filament\Resources\Agendamento;
 
-use App\Filament\Egap\Resources\Agendamento\FrotaResource\Pages;
-use App\Models\Egap\Agendamento\Frota;
+use App\Filament\Resources\Agendamento\FrotaResource\Pages;
+use App\Models\Agendamento\Frota;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

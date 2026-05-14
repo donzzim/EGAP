@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Livewire\AtendimentoPedidos;
+namespace App\Filament\Livewire\AtendimentoPedidos;
 
-use App\Models\Egap\Views\MaterialDepositoView;
+use App\Models\Views\MaterialDepositoView;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables;

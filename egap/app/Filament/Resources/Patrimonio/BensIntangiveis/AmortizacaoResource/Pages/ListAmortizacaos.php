@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

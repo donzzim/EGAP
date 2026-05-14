@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Admin;
+namespace App\Models\Admin;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;

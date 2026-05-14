@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\EntradaSaidaResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\EntradaSaidaResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\EntradaSaidaResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\EntradaSaidaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

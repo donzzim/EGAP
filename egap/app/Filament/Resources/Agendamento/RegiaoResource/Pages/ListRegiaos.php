@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento\RegiaoResource\Pages;
+namespace App\Filament\Resources\Agendamento\RegiaoResource\Pages;
 
-use App\Filament\Egap\Resources\Agendamento\RegiaoResource;
+use App\Filament\Resources\Agendamento\RegiaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

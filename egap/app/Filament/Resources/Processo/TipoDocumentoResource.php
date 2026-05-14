@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Processo;
+namespace App\Filament\Resources\Processo;
 
-use App\Filament\Egap\Resources\Processo\TipoDocumentoResource\Pages;
-use App\Models\Egap\Processo\MatTipoDocumento;
+use App\Filament\Resources\Processo\TipoDocumentoResource\Pages;
+use App\Models\Processo\MatTipoDocumento;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -43,7 +43,7 @@ class TipoDocumentoResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('Id')
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()
@@ -57,7 +57,7 @@ class TipoDocumentoResource extends Resource
                     ->label('Editar')
                     ->color('warning')
                     ->icon('heroicon-o-pencil-square'),
-                    
+
                 Tables\Actions\DeleteAction::make()
                     ->label('Excluir')
                     ->color('danger')

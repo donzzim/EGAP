@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado;
+namespace App\Filament\Resources\Almoxarifado;
 
-use App\Filament\Egap\Resources\Almoxarifado\PedidosResource\Pages;
-use App\Models\Egap\Almoxarifado\Pedidos;
-use App\Models\Egap\Almoxarifado\SituacaoPedido;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
+use App\Models\Almoxarifado\Pedidos;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms;
 use Filament\Forms\Components\Tabs;

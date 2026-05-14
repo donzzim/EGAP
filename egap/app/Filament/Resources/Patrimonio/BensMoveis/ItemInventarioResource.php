@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
-use App\Filament\Egap\Clusters\PatrimonioCluster; 
-use App\Models\Egap\Patrimonio\BensMoveis\ItemInventario;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Models\Patrimonio\BensMoveis\ItemInventario;
+use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,7 +35,7 @@ class ItemInventarioResource extends Resource
                             /** ✅ TextInput conforme o original */
                             TextInput::make('id_inventario')
                                 ->label('Inventário'),
-                            
+
                             TextInput::make('id_bem')
                                 ->label('Material'),
 
@@ -49,10 +49,10 @@ class ItemInventarioResource extends Resource
                                 ->options(fn() => Setores::pluck('Setor', 'id'))
                                 ->searchable()
                                 ->preload(), // Carrega os primeiros itens para facilitar a vista
-                            
+
                             TextInput::make('setor')
                                 ->label('Setor'),
-                            
+
                             TextInput::make('setor_localizado')
                                 ->label('Setor Localizado'),
 
@@ -105,7 +105,7 @@ class ItemInventarioResource extends Resource
                                     TextInput::make('atualizado_por')->label('Atualizado por'),
                                     TextInput::make('num_serie_egap')->label('Num Serie eGAP'),
                                     TextInput::make('descricao_detalhada_egap')->label('Descricao Detalhada eGAP'),
-                                    
+
                                     TextInput::make('marca_egap')->label('Marca eGAP'),
                                     TextInput::make('modelo_egap')->label('Modelo eGAP'),
                                     TextInput::make('termo')->label('Termo'),

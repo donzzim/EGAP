@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Egap\Almoxarifado;
+namespace App\Models\Almoxarifado;
 
-use App\Models\Egap\Cadastro\Fornecedores;
-use App\Models\Egap\Cadastro\Setores;
+use App\Models\Cadastro\Fornecedores;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
+namespace App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
 
-use App\Filament\Egap\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource;
+use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 

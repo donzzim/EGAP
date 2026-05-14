@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Models\Egap\Patrimonio\BensMoveis\Depreciacao;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Models\Patrimonio\BensMoveis\Depreciacao;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -92,7 +92,7 @@ class DepreciacaoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages\ListDepreciacaos::route('/'),
+            'index' => \App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages\ListDepreciacaos::route('/'),
         ];
     }
 }

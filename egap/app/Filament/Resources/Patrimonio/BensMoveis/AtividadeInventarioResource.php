@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
-use App\Filament\Egap\Clusters\PatrimonioCluster; 
-use App\Models\Egap\Patrimonio\BensMoveis\AtividadeInventario;
-use App\Models\Egap\Cadastro\Setores; 
+use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Models\Patrimonio\BensMoveis\AtividadeInventario;
+use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,27 +19,27 @@ class AtividadeInventarioResource extends Resource
     protected static ?string $model = AtividadeInventario::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
-    
+
     /** ✅ Vincula ao Cluster para aparecer nas abas superiores */
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'atividades-do-inventario';
 
-    /** ✅ CORREÇÃO CRÍTICA: 
+    /** ✅ CORREÇÃO CRÍTICA:
      * Alterado de 'Patrimônio - Bens Móveis' para apenas 'Bens Móveis'.
      * Isso faz com que ele entre na mesma aba do BemMovelResource, sumindo com aquela aba extra.
      */
     protected static ?string $navigationGroup = 'Bens Móveis';
-    
+
     protected static ?string $navigationLabel = 'Atividades do Inventário';
-    
+
     protected static ?string $pluralModelLabel = 'Atividades do Inventário';
 
     protected static ?string $modelLabel = 'Atividade';
 
     /** ✅ ORDEM: Aparece logo após a Administração e Incorporação */
     protected static ?int $navigationSort = 3;
-    
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
@@ -64,7 +64,7 @@ class AtividadeInventarioResource extends Resource
 
                             Select::make('setor')
                                 ->label('Setor')
-                                ->options(fn (Forms\Get $get) => 
+                                ->options(fn (Forms\Get $get) =>
                                     Setores::where('CodigoPai', $get('id_unidade'))->pluck('Setor', 'id')
                                 )
                                 ->searchable(),
@@ -114,11 +114,11 @@ class AtividadeInventarioResource extends Resource
 
                 Tables\Columns\TextColumn::make('complemento')
                     ->label('Complemento'),
-                
+
                 Tables\Columns\TextColumn::make('inicio')
                     ->label('Início')
                     ->date('d/m/Y'),
-                
+
                 Tables\Columns\TextColumn::make('dupla')
                     ->label('Dupla')
                     ->wrap(),

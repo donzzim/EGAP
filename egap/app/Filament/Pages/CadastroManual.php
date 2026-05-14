@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Pages;
+namespace App\Filament\Pages;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\BemMovelResource;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource;
 use Filament\Pages\Page;
 
 class CadastroManual extends Page

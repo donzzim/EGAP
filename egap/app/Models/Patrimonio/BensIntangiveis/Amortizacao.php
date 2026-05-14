@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensIntangiveis;
+namespace App\Models\Patrimonio\BensIntangiveis;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

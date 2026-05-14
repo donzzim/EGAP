@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Filament\Egap\Livewire\PortalTransparencia;
+namespace App\Filament\Livewire\PortalTransparencia;
 
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\BensPatrimoniaisBaixados;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\BensPatrimoniaisMovimentados;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\BensPermanentesMoveis;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\BensPermanentesMoveisPatrimonio;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\BensSolicitados;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\ExecucaoOrcamentaria;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\ExecucaoOrcamentariaPatrimonio;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\InventarioOnlineSituacaoContabil;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\InventarioOnlineSituacaoInventario;
-use App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio\SituacaoBensPatrimoniaisEgap;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\BensPatrimoniaisBaixados;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\BensPatrimoniaisMovimentados;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\BensPermanentesMoveis;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\BensPermanentesMoveisPatrimonio;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\BensSolicitados;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\ExecucaoOrcamentaria;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\ExecucaoOrcamentariaPatrimonio;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\InventarioOnlineSituacaoContabil;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\InventarioOnlineSituacaoInventario;
+use App\Filament\Widgets\PortalTransparencia\Patrimonio\SituacaoBensPatrimoniaisEgap;
 use Illuminate\View\View;
 use Livewire\Component;
 

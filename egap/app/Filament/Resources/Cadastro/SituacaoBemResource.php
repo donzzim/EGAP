@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\RelationManagers;
-use App\Models\Egap\Cadastro\SituacaoBem;
+use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
+use App\Filament\Resources\Cadastro\SituacaoBemResource\RelationManagers;
+use App\Models\Cadastro\SituacaoBem;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -87,9 +87,9 @@ class SituacaoBemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\Pages\ListSituacaoBems::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\Pages\CreateSituacaoBem::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\Pages\EditSituacaoBem::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\ListSituacaoBems::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\CreateSituacaoBem::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\EditSituacaoBem::route('/{record}/edit'),
         ];
     }
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
-use App\Models\Egap\Cadastro\Setores;
+use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\Marcas;
 use App\Models\Patrimonio\Modelos;
 use App\Models\UserEgap;
@@ -29,17 +29,17 @@ class ItemInventario extends Model
     /** ✅ RELAÇÕES PARA OS SELECTS */
     public function bem(): BelongsTo { return $this->belongsTo(BemMovel::class, 'id_bem', 'id'); }
     public function inventario(): BelongsTo { return $this->belongsTo(Inventario::class, 'id_inventario', 'id'); }
-    
+
     // Relação com Marcas
     public function marcaRel(): BelongsTo { return $this->belongsTo(Marcas::class, 'marca', 'id'); }
-    
+
     // Relação com Modelos
     public function modeloRel(): BelongsTo { return $this->belongsTo(Modelos::class, 'modelo', 'id'); }
-    
+
     // Relação com Setores (Original e Localizado)
     public function setorRef(): BelongsTo { return $this->belongsTo(Setores::class, 'setor', 'id'); }
     public function setorLocalizadoRef(): BelongsTo { return $this->belongsTo(Setores::class, 'setor_localizado', 'id'); }
-    
+
     public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id'); }
 
     protected static function booted()

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Processo\ProcessosAdmResource\Pages;
+namespace App\Filament\Resources\Processo\ProcessosAdmResource\Pages;
 
-use App\Filament\Egap\Resources\Processo\ProcessosAdmResource;
+use App\Filament\Resources\Processo\ProcessosAdmResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

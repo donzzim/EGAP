@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Clusters\AdminEgapCluster\Pages;
+namespace App\Filament\Clusters\AdminEgapCluster\Pages;
 
-use App\Filament\Egap\Clusters\AdminEgapCluster;
+use App\Filament\Clusters\AdminEgapCluster;
 use Filament\Pages\Page;
 use Filament\Pages\SubNavigationPosition;
 

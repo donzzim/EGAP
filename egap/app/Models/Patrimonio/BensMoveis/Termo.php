@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
-use App\Models\Egap\Agendamento\Materiais;
-use App\Models\Egap\Almoxarifado\Pedidos;
+use App\Models\Agendamento\Materiais;
+use App\Models\Almoxarifado\Pedidos;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

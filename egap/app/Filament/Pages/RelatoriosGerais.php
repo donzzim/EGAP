@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Egap\Pages;
+namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
 use Filament\Forms\Contracts\HasForms;
@@ -12,7 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
-use App\Models\Egap\Cadastro\ContaContabil;
+use App\Models\Cadastro\ContaContabil;
 
 class RelatoriosGerais extends Page implements HasForms
 {

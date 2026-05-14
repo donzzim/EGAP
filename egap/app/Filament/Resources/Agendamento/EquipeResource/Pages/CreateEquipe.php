@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento\EquipeResource\Pages;
+namespace App\Filament\Resources\Agendamento\EquipeResource\Pages;
 
-use App\Filament\Egap\Resources\Agendamento\EquipeResource;
+use App\Filament\Resources\Agendamento\EquipeResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 

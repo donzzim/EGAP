@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Livewire\AtendimentoPedidos;
+namespace App\Filament\Livewire\AtendimentoPedidos;
 
-use App\Models\Egap\Almoxarifado\ItemPedido;
+use App\Models\Almoxarifado\ItemPedido;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables;

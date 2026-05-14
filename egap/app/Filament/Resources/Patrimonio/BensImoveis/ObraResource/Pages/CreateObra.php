@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\ObraResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateObra extends CreateRecord

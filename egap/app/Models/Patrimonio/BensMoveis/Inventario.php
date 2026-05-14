@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
@@ -23,19 +23,19 @@ class Inventario extends Model
         'termino_inventario', 'atualizado_em', 'atualizado_por', 'situacao', 'dias'
     ];
 
-    public function itens(): HasMany 
-    { 
-        return $this->hasMany(ItemInventario::class, 'id_inventario', 'id'); 
+    public function itens(): HasMany
+    {
+        return $this->hasMany(ItemInventario::class, 'id_inventario', 'id');
     }
 
-    public function comissoes(): HasMany 
-    { 
-        return $this->hasMany(InventarioComissao::class, 'id_inventario', 'id'); 
+    public function comissoes(): HasMany
+    {
+        return $this->hasMany(InventarioComissao::class, 'id_inventario', 'id');
     }
 
-    public function responsavel(): BelongsTo 
-    { 
-        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id'); 
+    public function responsavel(): BelongsTo
+    {
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted()

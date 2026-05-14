@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource\RelationManagers;
-use App\Models\Egap\Cadastro\UnidadesDeMedida;
+use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
+use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\RelationManagers;
+use App\Models\Cadastro\UnidadesDeMedida;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -89,9 +89,9 @@ class UnidadesDeMedidaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource\Pages\ListUnidadesDeMedida::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource\Pages\CreateUnidadesDeMedida::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource\Pages\EditUnidadesDeMedida::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\ListUnidadesDeMedida::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\CreateUnidadesDeMedida::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\EditUnidadesDeMedida::route('/{record}/edit'),
         ];
     }
 }

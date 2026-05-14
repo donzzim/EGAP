@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\TipoTributoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\TipoTributoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

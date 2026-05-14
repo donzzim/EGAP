@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio;
+namespace App\Filament\Widgets\PortalTransparencia\Patrimonio;
 
-use App\Filament\Egap\Widgets\PortalTransparencia\BaseChart;
-use App\Models\Egap\Almoxarifado\Pedidos;
+use App\Filament\Widgets\PortalTransparencia\BaseChart;
+use App\Models\Almoxarifado\Pedidos;
 
 class BensSolicitados extends BaseChart
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Clusters\PedidosCluster\Requisicao;
+namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
-use App\Filament\Egap\Clusters\PedidosCluster;
-use App\Models\Egap\Almoxarifado\SituacaoPedido;
+use App\Filament\Clusters\PedidosCluster;
+use App\Models\Almoxarifado\SituacaoPedido;
 use Filament\Pages\Page;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Tables\Actions\Action;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Egap\Widgets\PortalTransparencia;
+namespace App\Filament\Widgets\PortalTransparencia;
 
 use Filament\Widgets\ChartWidget;
 

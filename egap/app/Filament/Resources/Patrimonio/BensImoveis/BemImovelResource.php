@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis;
+namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
-use App\Models\Egap\Patrimonio\BensImoveis\BemImovel;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
+use App\Models\Patrimonio\BensImoveis\BemImovel;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Tabs;
@@ -412,7 +412,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                         ->label('Ocupações de Terceiros')
                         ->color('info')
                         ->icon('heroicon-o-map-pin')
-                        ->url(fn () => \App\Filament\Egap\Resources\Patrimonio\BensImoveis\CedidoResource::getUrl('index'))
+                        ->url(fn () => \App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource::getUrl('index'))
                         ->openUrlInNewTab(),
 
                 Tables\Actions\EditAction::make('gerenciar_reavaliacoes')

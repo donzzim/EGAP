@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\ComplementoSetorResource\Pages;
+namespace App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\ComplementoSetorResource;
+use App\Filament\Resources\Cadastro\ComplementoSetorResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateComplementoSetor extends CreateRecord

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\MarcasResource\Pages;
+namespace App\Filament\Resources\Cadastro\MarcasResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\MarcasResource;
+use App\Filament\Resources\Cadastro\MarcasResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

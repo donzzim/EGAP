@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Egap\Almoxarifado;
+namespace App\Models\Almoxarifado;
 
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoDetalhada;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
-use App\Models\Egap\Almoxarifado\NotaFiscal;
-use App\Models\Egap\Cadastro\ComplementoSetor;
-use App\Models\Egap\Cadastro\ContaContabil;
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
-use App\Models\Egap\Cadastro\DescricaoResumida;
-use App\Models\Egap\Cadastro\ElementoDespesa;
-use App\Models\Egap\Cadastro\Fornecedores;
-use App\Models\Egap\Cadastro\Marcas;
-use App\Models\Egap\Cadastro\Modelos;
-use App\Models\Egap\Cadastro\Setores;
-use App\Models\Egap\Cadastro\SituacaoBem;
-use App\Models\Egap\Cadastro\UnidadesDeMedida;
+use App\Models\Almoxarifado\NotaFiscal;
+use App\Models\Cadastro\ComplementoSetor;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Cadastro\ElementoDespesa;
+use App\Models\Cadastro\Fornecedores;
+use App\Models\Cadastro\Marcas;
+use App\Models\Cadastro\Modelos;
+use App\Models\Cadastro\Setores;
+use App\Models\Cadastro\SituacaoBem;
+use App\Models\Cadastro\UnidadesDeMedida;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

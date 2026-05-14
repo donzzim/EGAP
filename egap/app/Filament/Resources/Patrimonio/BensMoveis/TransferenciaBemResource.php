@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis;
-use App\Models\Egap\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis;
+use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;

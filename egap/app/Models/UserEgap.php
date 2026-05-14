@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Egap\Admin\InfoUser;
-use App\Models\Egap\Admin\Lotacao;
+use App\Models\Admin\InfoUser;
+use App\Models\Admin\Lotacao;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensImoveis;
+namespace App\Models\Patrimonio\BensImoveis;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,12 +18,12 @@ class Tributo extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Egap\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
+        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
     }
 
     public function tipoTributoRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Egap\Patrimonio\BensImoveis\TipoTributo::class, 'tipo_tributo', 'id');
+        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\TipoTributo::class, 'tipo_tributo', 'id');
     }
 
     public function atualizadoPorRelacaoref()

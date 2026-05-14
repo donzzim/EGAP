@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Egap\Clusters\PedidosCluster;
+namespace App\Filament\Clusters\PedidosCluster;
 
-use App\Filament\Egap\Clusters\PedidosCluster;
-use App\Models\Egap\Agendamento\Materiais;
-use App\Models\Egap\Agendamento\Regiao;
-use App\Models\Egap\Agendamento\Solicitacao;
-use App\Models\Egap\Almoxarifado\Pedidos;
-use App\Models\Egap\Almoxarifado\SituacaoPedido;
-use App\Models\Egap\Cadastro\Setores;
-use App\Models\Egap\Patrimonio\BensMoveis\Termo;
-use App\Models\Egap\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use App\Filament\Clusters\PedidosCluster;
+use App\Models\Agendamento\Materiais;
+use App\Models\Agendamento\Regiao;
+use App\Models\Agendamento\Solicitacao;
+use App\Models\Almoxarifado\Pedidos;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\Setores;
+use App\Models\Patrimonio\BensMoveis\Termo;
+use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Models\UserEgap;
 use Filament\Forms;
 use Filament\Forms\Get;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Views;
+namespace App\Models\Views;
 
 use Illuminate\Database\Eloquent\Model;
 

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Egap\Patrimonio\BensImoveis\BemImovel;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensImoveis\BemImovel;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 

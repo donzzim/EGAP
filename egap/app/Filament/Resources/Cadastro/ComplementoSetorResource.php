@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\ComplementoSetorResource\Pages;
-use App\Models\Egap\Cadastro\ComplementoSetor;
+use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages;
+use App\Models\Cadastro\ComplementoSetor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -80,9 +80,9 @@ class ComplementoSetorResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\ComplementoSetorResource\Pages\ListComplementoSetors::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\ComplementoSetorResource\Pages\CreateComplementoSetor::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\ComplementoSetorResource\Pages\EditComplementoSetor::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\ListComplementoSetors::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\CreateComplementoSetor::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\EditComplementoSetor::route('/{record}/edit'),
         ];
     }
 }

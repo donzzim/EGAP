@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\DepreciacaoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
-use App\Models\Egap\Patrimonio\BensMoveis\Termo;
-use App\Filament\Egap\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
+use App\Models\Patrimonio\BensMoveis\Termo;
+use App\Filament\Clusters\PatrimonioCluster;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -40,7 +40,7 @@ class TermoResource extends Resource
                         TextInput::make('num_termo')
                             ->label('Num. Termo')
                             ->required(),
-                        
+
                         TextInput::make('ano_termo')
                             ->label('Ano Termo')
                             ->numeric()
@@ -50,7 +50,7 @@ class TermoResource extends Resource
                             Placeholder::make('atualizado_em_display')
                                 ->label('Atualizado em')
                                 ->content(fn ($record) => $record?->updated_at?->format('d/m/Y H:i') ?? '-'),
-                            
+
                             Placeholder::make('atualizado_por_display')
                                 ->label('Atualizado por')
                                 ->content(fn ($record) => $record?->atualizado_por ?? 'Sistema'),
@@ -71,7 +71,7 @@ class TermoResource extends Resource
                                         return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
                                     });
                             })
-                            ->getSearchResultsUsing(fn (string $search): array => 
+                            ->getSearchResultsUsing(fn (string $search): array =>
                                 DB::connection('egap')->table('age_solicitacao')
                                     ->where('id', 'like', "%{$search}%")
                                     ->limit(50)
@@ -103,7 +103,7 @@ class TermoResource extends Resource
                                 ->directory('termos-patrimonio')
                                 ->columnSpan(2),
 
-                            Select::make('situacao') 
+                            Select::make('situacao')
                                 ->label('Situação')
                                 ->options([
                                     'Validado' => 'Validado',
@@ -171,7 +171,7 @@ class TermoResource extends Resource
                         ->color('info')
                         ->url(fn ($record) => route('termo.imprimir.dinamico', ['id' => $record->id]))
                         ->openUrlInNewTab(),
-                    
+
                     Action::make('encaminhar')
                         ->label('Encaminhar para Logística')
                         ->icon('heroicon-o-arrow-uturn-right')

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\ContaContabilResource\Pages;
+namespace App\Filament\Resources\Cadastro\ContaContabilResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\ContaContabilResource;
+use App\Filament\Resources\Cadastro\ContaContabilResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateContaContabil extends CreateRecord

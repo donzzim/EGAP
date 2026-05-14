@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\CedidoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\CedidoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCedido extends CreateRecord

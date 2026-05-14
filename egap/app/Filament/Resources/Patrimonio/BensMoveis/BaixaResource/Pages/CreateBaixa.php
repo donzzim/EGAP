@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\BaixaResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateBaixa extends CreateRecord

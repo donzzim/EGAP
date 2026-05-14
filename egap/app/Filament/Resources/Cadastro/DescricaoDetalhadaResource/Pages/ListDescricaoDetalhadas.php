@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
+namespace App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

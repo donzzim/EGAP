@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensImoveis;
+namespace App\Models\Patrimonio\BensImoveis;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,12 +14,12 @@ class Reavaliacao extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Egap\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
+        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
     }
 
     public function estadoConservacaoRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Egap\Patrimonio\BensImoveis\EstadoConservacao::class, 'Id_estadoconservacao', 'Id');
+        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\EstadoConservacao::class, 'Id_estadoconservacao', 'Id');
     }
 
     public function atualizadoPorRelacaoref()

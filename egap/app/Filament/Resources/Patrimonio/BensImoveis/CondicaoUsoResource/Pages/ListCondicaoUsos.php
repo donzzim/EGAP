@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\CondicaoUsoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\CondicaoUsoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

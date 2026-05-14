@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Clusters\PedidosCluster;
+namespace App\Filament\Clusters\PedidosCluster;
 
-use App\Filament\Egap\Clusters\PedidosCluster;
-use App\Models\Egap\Almoxarifado\FasePedido;
+use App\Filament\Clusters\PedidosCluster;
+use App\Models\Almoxarifado\FasePedido;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Page;
 use Filament\Pages\SubNavigationPosition;

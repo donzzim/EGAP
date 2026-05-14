@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensIntangiveis;
+namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages;
-use App\Models\Egap\Patrimonio\BensIntangiveis\BemIntangivel;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages;
+use App\Models\Patrimonio\BensIntangiveis\BemIntangivel;
 use Filament\Forms;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;

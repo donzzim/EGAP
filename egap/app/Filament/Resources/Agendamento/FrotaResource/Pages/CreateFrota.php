@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento\FrotaResource\Pages;
+namespace App\Filament\Resources\Agendamento\FrotaResource\Pages;
 
-use App\Filament\Egap\Resources\Agendamento\FrotaResource;
+use App\Filament\Resources\Agendamento\FrotaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 

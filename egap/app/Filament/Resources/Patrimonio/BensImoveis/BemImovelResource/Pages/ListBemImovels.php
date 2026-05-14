@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\BemImovelResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

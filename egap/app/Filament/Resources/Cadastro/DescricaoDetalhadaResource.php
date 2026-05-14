@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource\RelationManagers;
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\RelationManagers;
+use App\Models\Cadastro\DescricaoDetalhada;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -152,9 +152,9 @@ class DescricaoDetalhadaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource\Pages\ListDescricaoDetalhadas::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource\Pages\CreateDescricaoDetalhada::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescricaoDetalhada::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\ListDescricaoDetalhadas::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\CreateDescricaoDetalhada::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescricaoDetalhada::route('/{record}/edit'),
         ];
     }
 }

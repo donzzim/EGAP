@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Processo;
+namespace App\Filament\Resources\Processo;
 
-use App\Filament\Egap\Resources\Processo\MateriaisResource\Pages;
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
-use App\Models\Egap\Patrimonio\BensImoveis\Processo;
-use App\Models\Egap\Processo\ProMaterial;
+use App\Filament\Resources\Processo\MateriaisResource\Pages;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Patrimonio\BensImoveis\Processo;
+use App\Models\Processo\ProMaterial;
 use App\Models\UserEgap;
 use Filament\Forms;
 use Filament\Forms\Form;

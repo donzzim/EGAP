@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Egap\Agendamento;
+namespace App\Models\Agendamento;
 
-use App\Models\Egap\Cadastro\Setores;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

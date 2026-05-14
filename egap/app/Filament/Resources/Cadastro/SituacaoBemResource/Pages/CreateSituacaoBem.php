@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\Pages;
+namespace App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\SituacaoBemResource;
+use App\Filament\Resources\Cadastro\SituacaoBemResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateSituacaoBem extends CreateRecord

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\MarcasResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\MarcasResource\RelationManagers;
-use App\Models\Egap\Cadastro\Marcas;
+use App\Filament\Resources\Cadastro\MarcasResource\Pages;
+use App\Filament\Resources\Cadastro\MarcasResource\RelationManagers;
+use App\Models\Cadastro\Marcas;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -100,9 +100,9 @@ class MarcasResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\MarcasResource\Pages\ListMarcas::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\MarcasResource\Pages\CreateMarcas::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\MarcasResource\Pages\EditMarcas::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\MarcasResource\Pages\ListMarcas::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\MarcasResource\Pages\CreateMarcas::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\MarcasResource\Pages\EditMarcas::route('/{record}/edit'),
         ];
     }
 }

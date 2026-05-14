@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Widgets\PortalTransparencia\Patrimonio;
+namespace App\Filament\Widgets\PortalTransparencia\Patrimonio;
 
-use App\Filament\Egap\Widgets\PortalTransparencia\BaseChart;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Filament\Widgets\PortalTransparencia\BaseChart;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 
 class BensPermanentesMoveis extends BaseChart
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

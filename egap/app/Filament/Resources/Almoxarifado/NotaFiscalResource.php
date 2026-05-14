@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado;
+namespace App\Filament\Resources\Almoxarifado;
 
-use App\Filament\Egap\Resources\Almoxarifado\NotaFiscalResource\Pages;
-use App\Models\Egap\Almoxarifado\NotaFiscal;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages;
+use App\Models\Almoxarifado\NotaFiscal;
+use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;

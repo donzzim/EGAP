@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Admin\UsersEgapResource\Pages;
+namespace App\Filament\Resources\Admin\UsersEgapResource\Pages;
 
-use App\Filament\Egap\Resources\Admin\UsersEgapResource;
+use App\Filament\Resources\Admin\UsersEgapResource;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Arr;

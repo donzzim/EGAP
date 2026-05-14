@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\DescricaoResumidaResource\Pages;
+namespace App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\DescricaoResumidaResource;
+use App\Filament\Resources\Cadastro\DescricaoResumidaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

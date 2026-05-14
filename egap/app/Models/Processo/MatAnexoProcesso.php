@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Egap\Processo;
+namespace App\Models\Processo;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Egap\Patrimonio\BensImoveis\Processo;
-use App\Models\Egap\Cadastro\DescricaoResumida;
+use App\Models\Patrimonio\BensImoveis\Processo;
+use App\Models\Cadastro\DescricaoResumida;
 
 class MatAnexoProcesso extends Model
 {

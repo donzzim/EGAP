@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\FornecedoresResource\Pages;
+namespace App\Filament\Resources\Cadastro\FornecedoresResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\FornecedoresResource;
+use App\Filament\Resources\Cadastro\FornecedoresResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateFornecedores extends CreateRecord

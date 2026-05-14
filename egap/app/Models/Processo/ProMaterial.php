@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Egap\Processo;
+namespace App\Models\Processo;
 
-use App\Models\Egap\Patrimonio\BensImoveis\Processo;
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
+use App\Models\Patrimonio\BensImoveis\Processo;
+use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

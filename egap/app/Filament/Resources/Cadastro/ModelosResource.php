@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\ModelosResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\ModelosResource\RelationManagers;
-use App\Models\Egap\Cadastro\Modelos;
+use App\Filament\Resources\Cadastro\ModelosResource\Pages;
+use App\Filament\Resources\Cadastro\ModelosResource\RelationManagers;
+use App\Models\Cadastro\Modelos;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -87,9 +87,9 @@ class ModelosResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\ModelosResource\Pages\ListModelos::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\ModelosResource\Pages\CreateModelos::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\ModelosResource\Pages\EditModelos::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\ListModelos::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\CreateModelos::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\EditModelos::route('/{record}/edit'),
         ];
     }
 

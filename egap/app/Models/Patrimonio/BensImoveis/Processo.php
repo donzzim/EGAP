@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensImoveis;
+namespace App\Models\Patrimonio\BensImoveis;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,12 +21,12 @@ class Processo extends Model
 
     public function tipoProcessoRelacaoRef() : BelongsTo
     {
-        return $this->belongsTo(\App\Models\Egap\Processo\MatTipoProcesso::class, 'id_tipo_processo', 'id');
+        return $this->belongsTo(\App\Models\Processo\MatTipoProcesso::class, 'id_tipo_processo', 'id');
     }
 
     public function unidadeRequisitanteRelacaoRef() : BelongsTo
     {
-        return $this->belongsTo(\App\Models\Egap\Cadastro\Setores::class, 'unidade_demandante', 'id');
+        return $this->belongsTo(\App\Models\Cadastro\Setores::class, 'unidade_demandante', 'id');
     }
 
     public function processoPaiRelacaoRef() : BelongsTo
@@ -36,7 +36,7 @@ class Processo extends Model
 
     public function fornecedorRelacaoRef() : BelongsTo
     {
-        return $this->belongsTo(\App\Models\Egap\Cadastro\Fornecedores::class, 'id_fornecedor', 'id');
+        return $this->belongsTo(\App\Models\Cadastro\Fornecedores::class, 'id_fornecedor', 'id');
     }
 
     public function gestorTitularRelacaoRef() : BelongsTo
@@ -51,11 +51,11 @@ class Processo extends Model
 
     public function documentacoesRelacaoRef() : HasMany
     {
-        return $this->hasMany(\App\Models\Egap\Processo\MatAnexoProcesso::class, 'num_processo', 'id');
+        return $this->hasMany(\App\Models\Processo\MatAnexoProcesso::class, 'num_processo', 'id');
     }
 
     public function materiaisRelacaoRef() : HasMany
     {
-        return $this->hasMany(\App\Models\Egap\Processo\ProMaterial::class, 'processo', 'id');
+        return $this->hasMany(\App\Models\Processo\ProMaterial::class, 'processo', 'id');
     }
 }

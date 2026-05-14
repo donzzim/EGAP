@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado\PedidosResource\Pages;
+namespace App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
 
-use App\Filament\Egap\Resources\Almoxarifado\PedidosResource;
+use App\Filament\Resources\Almoxarifado\PedidosResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePedidos extends CreateRecord

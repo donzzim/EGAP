@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\TributoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\TributoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\TributoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\TributoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateTributo extends CreateRecord

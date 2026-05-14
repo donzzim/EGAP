@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado;
+namespace App\Filament\Resources\Almoxarifado;
 
-use App\Filament\Egap\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
-use App\Models\Egap\Almoxarifado\TipoMovimentacaoNotaFiscal;
+use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
+use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

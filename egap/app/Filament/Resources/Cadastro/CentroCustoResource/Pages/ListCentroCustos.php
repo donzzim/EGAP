@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\CentroCustoResource\Pages;
+namespace App\Filament\Resources\Cadastro\CentroCustoResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\CentroCustoResource;
+use App\Filament\Resources\Cadastro\CentroCustoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

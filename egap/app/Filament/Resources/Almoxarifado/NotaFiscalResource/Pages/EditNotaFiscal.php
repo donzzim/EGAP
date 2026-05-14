@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado\NotaFiscalResource\Pages;
+namespace App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages;
 
-use App\Filament\Egap\Resources\Almoxarifado\NotaFiscalResource;
+use App\Filament\Resources\Almoxarifado\NotaFiscalResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

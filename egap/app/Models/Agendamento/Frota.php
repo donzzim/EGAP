@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Egap\Agendamento;
+namespace App\Models\Agendamento;
 
-use App\Models\Egap\Cadastro\Marcas;
-use App\Models\Egap\Cadastro\Modelos;
+use App\Models\Cadastro\Marcas;
+use App\Models\Cadastro\Modelos;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento;
+namespace App\Filament\Resources\Agendamento;
 
-use App\Filament\Egap\Resources\Agendamento\TransporteResource\Pages;
-use App\Models\Egap\Agendamento\Solicitacao;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Agendamento\TransporteResource\Pages;
+use App\Models\Agendamento\Solicitacao;
+use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;

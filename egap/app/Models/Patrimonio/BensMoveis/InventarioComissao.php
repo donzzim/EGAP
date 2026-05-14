@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
@@ -16,14 +16,14 @@ class InventarioComissao extends Model
         'date_time', 'id_inventario', 'comissao', 'nome', 'funcao'
     ];
 
-    public function inventario(): BelongsTo 
-    { 
-        return $this->belongsTo(Inventario::class, 'id_inventario', 'id'); 
+    public function inventario(): BelongsTo
+    {
+        return $this->belongsTo(Inventario::class, 'id_inventario', 'id');
     }
 
     /** ✅ RELAÇÃO COM O USUÁRIO: A coluna 'nome' guarda o ID da jos_users */
-    public function membroRef(): BelongsTo 
-    { 
-        return $this->belongsTo(UserEgap::class, 'nome', 'id'); 
+    public function membroRef(): BelongsTo
+    {
+        return $this->belongsTo(UserEgap::class, 'nome', 'id');
     }
 }

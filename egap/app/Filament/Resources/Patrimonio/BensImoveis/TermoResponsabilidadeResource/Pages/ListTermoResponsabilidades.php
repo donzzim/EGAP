@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

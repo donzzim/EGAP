@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\ElementoDespesaResource\Pages;
+namespace App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\ElementoDespesaResource;
+use App\Filament\Resources\Cadastro\ElementoDespesaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

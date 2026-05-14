@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Egap\Clusters;
+namespace App\Filament\Clusters;
 
 use Filament\Clusters\Cluster;
 use Filament\Pages\SubNavigationPosition;

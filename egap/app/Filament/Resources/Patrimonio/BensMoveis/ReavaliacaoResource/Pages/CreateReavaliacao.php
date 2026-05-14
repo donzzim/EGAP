@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\ReavaliacaoResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateReavaliacao extends CreateRecord

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Pedidos;
+namespace App\Filament\Resources\Pedidos;
 
-use App\Filament\Egap\Clusters\PedidosCluster;
-use App\Filament\Egap\Resources\Pedidos\ValidarPedidoResource\Pages;
-use App\Models\Egap\Almoxarifado\ItemPedido;
-use App\Models\Egap\Almoxarifado\SituacaoPedido;
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
-use App\Models\Egap\Cadastro\DescricaoResumida;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Filament\Clusters\PedidosCluster;
+use App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages;
+use App\Models\Almoxarifado\ItemPedido;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -1035,9 +1035,9 @@ class ValidarPedidoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Pedidos\ValidarPedidoResource\Pages\ListValidarPedidos::route('/'),
-            'create' => \App\Filament\Egap\Resources\Pedidos\ValidarPedidoResource\Pages\CreateValidarPedido::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Pedidos\ValidarPedidoResource\Pages\EditValidarPedido::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\ListValidarPedidos::route('/'),
+            'create' => \App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\CreateValidarPedido::route('/create'),
+            'edit' => \App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\EditValidarPedido::route('/{record}/edit'),
         ];
     }
 

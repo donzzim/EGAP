@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Egap\Clusters\PedidosCluster\Requisicao;
+namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
-use App\Filament\Egap\Clusters\PedidosCluster;
-use App\Models\Egap\Almoxarifado\FasePedido;
-use App\Models\Egap\Almoxarifado\ItemPedido;
-use App\Models\Egap\Almoxarifado\Pedidos;
-use App\Models\Egap\Almoxarifado\SituacaoPedido;
-use App\Models\Egap\Cadastro\ComplementoSetor;
-use App\Models\Egap\Cadastro\DescricaoResumida;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Clusters\PedidosCluster;
+use App\Models\Almoxarifado\FasePedido;
+use App\Models\Almoxarifado\ItemPedido;
+use App\Models\Almoxarifado\Pedidos;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\ComplementoSetor;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -351,7 +351,7 @@ class SolicitarMateriais extends Page implements HasForms
         try {
             $this->validateBusinessRules($data);
 
-            /** @var \App\Filament\Egap\Clusters\PedidosCluster\Requisicao\Pedidos $pedido */
+            /** @var \App\Filament\Clusters\PedidosCluster\Requisicao\Pedidos $pedido */
             $pedido = DB::connection('egap')->transaction(function () use ($data, $userId) {
                 $statusPedido = (int) ($data['idSituacao'] ?? self::STATUS_EM_ANALISE);
 

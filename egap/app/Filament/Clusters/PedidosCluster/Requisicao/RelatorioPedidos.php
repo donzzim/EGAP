@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Egap\Clusters\PedidosCluster\Requisicao;
+namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
-use App\Filament\Egap\Clusters\PedidosCluster;
-use App\Models\Egap\Almoxarifado\Pedidos as PedidoModel;
-use App\Models\Egap\Almoxarifado\SituacaoPedido;
-use App\Models\Egap\Cadastro\DescricaoResumida;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Clusters\PedidosCluster;
+use App\Models\Almoxarifado\Pedidos as PedidoModel;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Egap\Almoxarifado;
+namespace App\Models\Almoxarifado;
 
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
-use App\Models\Egap\Cadastro\DescricaoResumida;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoResumida;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

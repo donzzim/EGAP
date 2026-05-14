@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento\SolicitacaoResource\Pages;
+namespace App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Agendamento\AgendamentoResource;
+use App\Filament\Resources\Agendamento\AgendamentoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

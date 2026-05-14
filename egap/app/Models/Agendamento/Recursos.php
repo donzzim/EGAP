@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Agendamento;
+namespace App\Models\Agendamento;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;

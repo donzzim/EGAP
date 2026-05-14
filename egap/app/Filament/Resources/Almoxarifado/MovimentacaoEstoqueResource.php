@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Almoxarifado;
+namespace App\Filament\Resources\Almoxarifado;
 
-use App\Filament\Egap\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
-use App\Models\Egap\Almoxarifado\Pedidos;
-use App\Models\Egap\Almoxarifado\MovimentacaoEstoque;
-use App\Models\Egap\Almoxarifado\NotaFiscal;
-use App\Models\Egap\Almoxarifado\TipoMovimentacaoNotaFiscal;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
+use App\Models\Almoxarifado\Pedidos;
+use App\Models\Almoxarifado\MovimentacaoEstoque;
+use App\Models\Almoxarifado\NotaFiscal;
+use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Grid;

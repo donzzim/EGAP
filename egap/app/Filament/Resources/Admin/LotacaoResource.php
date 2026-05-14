@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Admin;
+namespace App\Filament\Resources\Admin;
 
-use App\Filament\Egap\Clusters\AdminEgapCluster;
-use App\Filament\Egap\Resources\Admin\LotacaoResource\Pages;
-use App\Models\Egap\Admin\Lotacao;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Clusters\AdminEgapCluster;
+use App\Filament\Resources\Admin\LotacaoResource\Pages;
+use App\Models\Admin\Lotacao;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\ReavaliacaoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\CidUfResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\CidUfResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento;
+namespace App\Filament\Resources\Agendamento;
 
-use App\Filament\Egap\Resources\Agendamento\RegiaoResource\Pages;
-use App\Models\Egap\Agendamento\Regiao;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Agendamento\RegiaoResource\Pages;
+use App\Models\Agendamento\Regiao;
+use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

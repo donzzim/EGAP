@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +21,7 @@ class SituacaoBemMovel extends Model
     ];
 
     /**
-     * ✅ ACCESSOR: Formata a exibição como "Descrição/Situação" 
+     * ✅ ACCESSOR: Formata a exibição como "Descrição/Situação"
      * Ex: "Ativo/Ativo" ou "Doação/Baixado"
      */
     public function getDescricaoCompletaAttribute(): string

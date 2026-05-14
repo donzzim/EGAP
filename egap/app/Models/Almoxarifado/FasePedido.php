@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Egap\Almoxarifado;
+namespace App\Models\Almoxarifado;
 
-use App\Models\Egap\Cadastro\DescricaoDetalhada;
-use App\Models\Egap\Cadastro\DescricaoResumida;
-use App\Models\Egap\Patrimonio\BensMoveis\Termo;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

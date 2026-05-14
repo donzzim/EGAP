@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\SetoresResource\Pages;
-use App\Models\Egap\Cadastro\Setores;
+use App\Filament\Resources\Cadastro\SetoresResource\Pages;
+use App\Models\Cadastro\Setores;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -162,9 +162,9 @@ class SetoresResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\SetoresResource\Pages\ListSetores::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\SetoresResource\Pages\CreateSetores::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\SetoresResource\Pages\EditSetores::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\SetoresResource\Pages\ListSetores::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\SetoresResource\Pages\CreateSetores::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\SetoresResource\Pages\EditSetores::route('/{record}/edit'),
         ];
     }
 }

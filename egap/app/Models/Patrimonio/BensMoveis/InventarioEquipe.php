@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
@@ -17,14 +17,14 @@ class InventarioEquipe extends Model
     ];
 
     /** ✅ RELAÇÃO COM A ATIVIDADE/UNIDADE */
-    public function unidadeAtividade(): BelongsTo 
-    { 
-        return $this->belongsTo(InventarioUnidade::class, 'unidade', 'id'); 
+    public function unidadeAtividade(): BelongsTo
+    {
+        return $this->belongsTo(InventarioUnidade::class, 'unidade', 'id');
     }
 
     /** ✅ RELAÇÃO COM O USUÁRIO (integrante) */
-    public function membroRef(): BelongsTo 
-    { 
-        return $this->belongsTo(UserEgap::class, 'integrante', 'id'); 
+    public function membroRef(): BelongsTo
+    {
+        return $this->belongsTo(UserEgap::class, 'integrante', 'id');
     }
 }

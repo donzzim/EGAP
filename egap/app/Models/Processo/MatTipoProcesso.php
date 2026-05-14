@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Egap\Processo;
+namespace App\Models\Processo;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Egap\Patrimonio\BensImoveis\Processo;
+use App\Models\Patrimonio\BensImoveis\Processo;
 
 class MatTipoProcesso extends Model
 {

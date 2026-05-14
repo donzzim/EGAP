@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis;
-use App\Models\Egap\Cadastro\ContaContabil;
-use App\Models\Egap\Cadastro\ElementoDespesa;
-use App\Models\Egap\Cadastro\Fornecedores;
-use App\Models\Egap\Cadastro\Marcas;
-use App\Models\Egap\Cadastro\Modelos;
-use App\Models\Egap\Cadastro\Setores;
-use App\Models\Egap\Cadastro\SituacaoBem;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Cadastro\ElementoDespesa;
+use App\Models\Cadastro\Fornecedores;
+use App\Models\Cadastro\Marcas;
+use App\Models\Cadastro\Modelos;
+use App\Models\Cadastro\Setores;
+use App\Models\Cadastro\SituacaoBem;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;

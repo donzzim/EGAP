@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Egap\Livewire\PortalTransparencia;
+namespace App\Filament\Livewire\PortalTransparencia;
 
-use App\Filament\Egap\Widgets\PortalTransparencia\Almoxarifado\ExecucaoOrcamentaria;
-use App\Filament\Egap\Widgets\PortalTransparencia\Almoxarifado\ExecucaoOrcamentariaAlmoxarifado;
-use App\Filament\Egap\Widgets\PortalTransparencia\Almoxarifado\MateriaisConsumo;
-use App\Filament\Egap\Widgets\PortalTransparencia\Almoxarifado\MateriaisConsumoAlmoxarifado;
-use App\Filament\Egap\Widgets\PortalTransparencia\Almoxarifado\RequisicoesBensConsumoAtendidas;
+use App\Filament\Widgets\PortalTransparencia\Almoxarifado\ExecucaoOrcamentaria;
+use App\Filament\Widgets\PortalTransparencia\Almoxarifado\ExecucaoOrcamentariaAlmoxarifado;
+use App\Filament\Widgets\PortalTransparencia\Almoxarifado\MateriaisConsumo;
+use App\Filament\Widgets\PortalTransparencia\Almoxarifado\MateriaisConsumoAlmoxarifado;
+use App\Filament\Widgets\PortalTransparencia\Almoxarifado\RequisicoesBensConsumoAtendidas;
 use Illuminate\View\View;
 use Livewire\Component;
 

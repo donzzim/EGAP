@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\SituacaoBemResource\Pages;
+namespace App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\SituacaoBemResource;
+use App\Filament\Resources\Cadastro\SituacaoBemResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

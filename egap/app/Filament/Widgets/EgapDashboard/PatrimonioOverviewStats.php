@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Egap\Widgets\EgapDashboard;
+namespace App\Filament\Widgets\EgapDashboard;
 
 use App\Services\PatrimonioDashboardService;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;

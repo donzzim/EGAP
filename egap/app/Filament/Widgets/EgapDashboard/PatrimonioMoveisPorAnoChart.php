@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Widgets\EgapDashboard;
+namespace App\Filament\Widgets\EgapDashboard;
 
-use App\Filament\Egap\Pages\EgapDashboard;
+use App\Filament\Pages\EgapDashboard;
 use App\Services\PatrimonioDashboardService;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\ChartWidget;

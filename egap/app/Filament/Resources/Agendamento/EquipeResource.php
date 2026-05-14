@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Agendamento;
+namespace App\Filament\Resources\Agendamento;
 
-use App\Filament\Egap\Resources\Agendamento\EquipeResource\Pages;
-use App\Models\Egap\Agendamento\Equipe;
+use App\Filament\Resources\Agendamento\EquipeResource\Pages;
+use App\Models\Agendamento\Equipe;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\DepreciacaoResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateDepreciacao extends CreateRecord

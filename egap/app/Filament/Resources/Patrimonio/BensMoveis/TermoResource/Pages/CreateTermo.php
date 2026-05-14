@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\TermoResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateTermo extends CreateRecord

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Widgets\PortalTransparencia\Almoxarifado;
+namespace App\Filament\Widgets\PortalTransparencia\Almoxarifado;
 
-use App\Filament\Egap\Widgets\PortalTransparencia\BaseChart;
-use App\Models\Egap\Almoxarifado\MovimentacaoEstoque;
+use App\Filament\Widgets\PortalTransparencia\BaseChart;
+use App\Models\Almoxarifado\MovimentacaoEstoque;
 
 class MateriaisConsumo extends BaseChart
 {

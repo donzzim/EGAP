@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\ModelosResource\Pages;
+namespace App\Filament\Resources\Cadastro\ModelosResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\ModelosResource;
+use App\Filament\Resources\Cadastro\ModelosResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateModelos extends CreateRecord

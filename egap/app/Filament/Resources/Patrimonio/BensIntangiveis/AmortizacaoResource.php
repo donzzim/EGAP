@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensIntangiveis;
+namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
-use App\Models\Egap\Patrimonio\BensIntangiveis\Amortizacao;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
+use App\Models\Patrimonio\BensIntangiveis\Amortizacao;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\ElementoDespesaResource\Pages;
-use App\Models\Egap\Cadastro\ElementoDespesa;
+use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages;
+use App\Models\Cadastro\ElementoDespesa;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -106,9 +106,9 @@ class ElementoDespesaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\ElementoDespesaResource\Pages\ListElementoDespesas::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\ElementoDespesaResource\Pages\CreateElementoDespesa::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\ElementoDespesaResource\Pages\EditElementoDespesa::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\ListElementoDespesas::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\CreateElementoDespesa::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\EditElementoDespesa::route('/{record}/edit'),
         ];
     }
 }

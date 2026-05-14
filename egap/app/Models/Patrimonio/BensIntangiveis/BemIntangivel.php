@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensIntangiveis;
+namespace App\Models\Patrimonio\BensIntangiveis;
 
-use App\Models\Egap\Cadastro\ContaContabil;
-use App\Models\Egap\Cadastro\ElementoDespesa;
-use App\Models\Egap\Patrimonio\BensIntangiveis\Fabricante;
-use App\Models\Egap\Patrimonio\BensIntangiveis\TipoBemIntagivel;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Cadastro\ElementoDespesa;
+use App\Models\Patrimonio\BensIntangiveis\Fabricante;
+use App\Models\Patrimonio\BensIntangiveis\TipoBemIntagivel;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

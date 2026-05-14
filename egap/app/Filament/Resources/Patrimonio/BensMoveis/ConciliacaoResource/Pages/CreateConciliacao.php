@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\ConciliacaoResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateConciliacao extends CreateRecord

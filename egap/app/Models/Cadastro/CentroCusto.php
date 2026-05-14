@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Cadastro;
+namespace App\Models\Cadastro;
 
 use Illuminate\Database\Eloquent\Model;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Clusters\PatrimonioCluster;
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
-use App\Models\Egap\Patrimonio\BensMoveis\Baixa;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
+use App\Models\Patrimonio\BensMoveis\Baixa;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;

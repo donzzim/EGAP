@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensImoveis\SituacaoResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensImoveis\SituacaoResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensImoveis\SituacaoResource;
+use App\Filament\Resources\Patrimonio\BensImoveis\SituacaoResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateSituacao extends CreateRecord

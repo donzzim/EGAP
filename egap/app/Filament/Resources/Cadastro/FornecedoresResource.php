@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\FornecedoresResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\FornecedoresResource\RelationManagers;
-use App\Models\Egap\Cadastro\Fornecedores;
+use App\Filament\Resources\Cadastro\FornecedoresResource\Pages;
+use App\Filament\Resources\Cadastro\FornecedoresResource\RelationManagers;
+use App\Models\Cadastro\Fornecedores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -93,9 +93,9 @@ class FornecedoresResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\FornecedoresResource\Pages\ListFornecedores::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\FornecedoresResource\Pages\CreateFornecedores::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\FornecedoresResource\Pages\EditFornecedores::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\FornecedoresResource\Pages\ListFornecedores::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\FornecedoresResource\Pages\CreateFornecedores::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\FornecedoresResource\Pages\EditFornecedores::route('/{record}/edit'),
         ];
     }
 }

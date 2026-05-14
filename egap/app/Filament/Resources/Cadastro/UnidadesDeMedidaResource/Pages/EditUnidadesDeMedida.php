@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
+namespace App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
 
-use App\Filament\Egap\Resources\Cadastro\UnidadesDeMedidaResource;
+use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
+namespace App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\InventarioResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateInventario extends CreateRecord

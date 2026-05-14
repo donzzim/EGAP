@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensIntangiveis;
+namespace App\Models\Patrimonio\BensIntangiveis;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;

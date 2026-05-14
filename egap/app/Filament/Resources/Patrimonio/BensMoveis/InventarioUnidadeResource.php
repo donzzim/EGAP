@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
-use App\Filament\Egap\Clusters\PatrimonioCluster; 
-use App\Models\Egap\Patrimonio\BensMoveis\InventarioUnidade;
-use App\Models\Egap\Cadastro\Setores; 
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
+use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,19 +20,19 @@ class InventarioUnidadeResource extends Resource
     protected static ?string $model = InventarioUnidade::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
-    
+
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'inventario-unidades';
 
     protected static ?string $navigationGroup = 'Bens Móveis';
-    
+
     protected static ?string $navigationLabel = 'Unidades Inventariadas';
-    
+
     protected static ?string $pluralModelLabel = 'Unidades Inventariadas';
 
     protected static ?int $navigationSort = 11;
-    
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
@@ -58,17 +58,17 @@ class InventarioUnidadeResource extends Resource
                                         ->searchable()
                                         ->required()
                                         ->columnSpanFull(),
-                                    
+
                                     DatePicker::make('inicio')
                                         ->label('Data Início')
                                         ->live()
                                         ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDias($get, $set)),
-                                        
+
                                     DatePicker::make('termino')
                                         ->label('Data Término')
                                         ->live()
                                         ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDias($get, $set)),
-                                    
+
                                     TextInput::make('dias')
                                         ->label('Dias')
                                         ->numeric()
@@ -104,7 +104,7 @@ class InventarioUnidadeResource extends Resource
                                                 ->label('Função')
                                                 ->options(['Líder' => 'Líder', 'Membro' => 'Membro'])
                                                 ->required(),
-                                            
+
                                             Select::make('integrante')
                                                 ->label('Integrante')
                                                 ->relationship('membroRef', 'name')
@@ -138,11 +138,11 @@ class InventarioUnidadeResource extends Resource
                     ->label('Unidade')
                     ->sortable()
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('inicio')
                     ->label('Data Início')
                     ->date('d/m/Y'),
-                
+
                 Tables\Columns\TextColumn::make('termino')
                     ->label('Data Término')
                     ->date('d/m/Y'),
@@ -158,7 +158,7 @@ class InventarioUnidadeResource extends Resource
                         'Em andamento' => 'info',
                         default => 'warning',
                     }),
-                
+
                 Tables\Columns\TextColumn::make('equipes.membroRef.name')
                     ->label('Integrantes')
                     ->listWithLineBreaks()

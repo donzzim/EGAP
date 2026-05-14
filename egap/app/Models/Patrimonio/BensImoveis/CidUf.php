@@ -1,5 +1,5 @@
 <?php
-namespace App\Models\Egap\Patrimonio\BensImoveis;
+namespace App\Models\Patrimonio\BensImoveis;
 use Illuminate\Database\Eloquent\Model;
 
 class CidUf extends Model {

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
-use App\Models\Egap\Almoxarifado\Pedidos;
-use App\Models\Egap\Cadastro\ComplementoSetor;
-use App\Models\Egap\Cadastro\Setores;
+use App\Models\Almoxarifado\Pedidos;
+use App\Models\Cadastro\ComplementoSetor;
+use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

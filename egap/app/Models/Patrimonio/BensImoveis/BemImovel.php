@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensImoveis;
+namespace App\Models\Patrimonio\BensImoveis;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,13 +9,13 @@ class BemImovel extends Model
 {
     protected $connection = 'egap';
     protected $table = 'imo_imovel';
-    protected $primaryKey = 'Id'; 
+    protected $primaryKey = 'Id';
     public $timestamps = false;
     protected $guarded = [];
-    
+
     public function setoresRelacaoRef()
     {
-        return $this->belongsTo(\App\Models\Egap\Cadastro\Setores::class, 'Id_setores', 'id');
+        return $this->belongsTo(\App\Models\Cadastro\Setores::class, 'Id_setores', 'id');
     }
 
     public function responsavelRelacaoRef()
@@ -45,17 +45,17 @@ class BemImovel extends Model
 
     public function planoContasRelacaoRef()
     {
-        return $this->belongsTo(\App\Models\Egap\Cadastro\ContaContabil::class, 'id_planocontas', 'id');
+        return $this->belongsTo(\App\Models\Cadastro\ContaContabil::class, 'id_planocontas', 'id');
     }
 
     public function elementoDespesaRelacaoRef()
     {
-        return $this->belongsTo(\App\Models\Egap\Cadastro\ElementoDespesa::class, 'id_elementodespesa', 'id');
+        return $this->belongsTo(\App\Models\Cadastro\ElementoDespesa::class, 'id_elementodespesa', 'id');
     }
-    
+
     public function cidadeRelacaoRef()
     {
-        return $this->belongsTo(Cidades::class, 'id_cidade', 'Id'); 
+        return $this->belongsTo(Cidades::class, 'id_cidade', 'Id');
     }
 
     public function cidufRelacaoRef()
@@ -90,16 +90,16 @@ class BemImovel extends Model
 
     public function cedidosRelacaoRef()
     {
-        return $this->hasMany(\App\Models\Egap\Patrimonio\BensImoveis\Cedido::class, 'id_imovel', 'Id');
+        return $this->hasMany(\App\Models\Patrimonio\BensImoveis\Cedido::class, 'id_imovel', 'Id');
     }
 
     public function reavaliacoesRelacaoRef()
     {
-        return $this->hasMany(\App\Models\Egap\Patrimonio\BensImoveis\Reavaliacao::class, 'Id_imovel', 'Id');
+        return $this->hasMany(\App\Models\Patrimonio\BensImoveis\Reavaliacao::class, 'Id_imovel', 'Id');
     }
 
     public function obrasRelacaoRef()
     {
-        return $this->hasMany(\App\Models\Egap\Patrimonio\BensImoveis\Obra::class, 'id_imovel', 'Id');
+        return $this->hasMany(\App\Models\Patrimonio\BensImoveis\Obra::class, 'id_imovel', 'Id');
     }
 }

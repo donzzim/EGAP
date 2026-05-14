@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Egap\Almoxarifado;
+namespace App\Models\Almoxarifado;
 
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;

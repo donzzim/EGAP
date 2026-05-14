@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\CentroCustoResource\Pages;
-use App\Models\Egap\Cadastro\CentroCusto;
+use App\Filament\Resources\Cadastro\CentroCustoResource\Pages;
+use App\Models\Cadastro\CentroCusto;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -93,9 +93,9 @@ class CentroCustoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\CentroCustoResource\Pages\ListCentroCustos::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\CentroCustoResource\Pages\CreateCentroCusto::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\CentroCustoResource\Pages\EditCentroCusto::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\CentroCustoResource\Pages\ListCentroCustos::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\CentroCustoResource\Pages\CreateCentroCusto::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\CentroCustoResource\Pages\EditCentroCusto::route('/{record}/edit'),
         ];
     }
 }

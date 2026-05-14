@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Egap\Pages;
+namespace App\Filament\Pages;
 
-use App\Filament\Egap\Widgets\EgapDashboard\PatrimonioImoveisPorContaChart;
-use App\Filament\Egap\Widgets\EgapDashboard\PatrimonioMoveisPorAnoChart;
-use App\Filament\Egap\Widgets\EgapDashboard\PatrimonioMoveisPorSituacaoChart;
-use App\Filament\Egap\Widgets\EgapDashboard\PatrimonioOverviewStats;
-use App\Filament\Egap\Widgets\EgapDashboard\PatrimonioTopMateriaisValorTable;
+use App\Filament\Widgets\EgapDashboard\PatrimonioImoveisPorContaChart;
+use App\Filament\Widgets\EgapDashboard\PatrimonioMoveisPorAnoChart;
+use App\Filament\Widgets\EgapDashboard\PatrimonioMoveisPorSituacaoChart;
+use App\Filament\Widgets\EgapDashboard\PatrimonioOverviewStats;
+use App\Filament\Widgets\EgapDashboard\PatrimonioTopMateriaisValorTable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;

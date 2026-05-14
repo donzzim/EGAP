@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Egap\Auth;
+namespace App\Filament\Auth;
 
 use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContract;
 use Livewire\Component;

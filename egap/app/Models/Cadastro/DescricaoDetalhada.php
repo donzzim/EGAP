@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Egap\Cadastro;
+namespace App\Models\Cadastro;
 
-use App\Models\Egap\Almoxarifado\NotaFiscal;
+use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

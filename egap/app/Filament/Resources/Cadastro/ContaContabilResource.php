@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Cadastro;
+namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Egap\Resources\Cadastro\ContaContabilResource\Pages;
-use App\Filament\Egap\Resources\Cadastro\ContaContabilResource\RelationManagers;
-use App\Models\Egap\Cadastro\ContaContabil;
+use App\Filament\Resources\Cadastro\ContaContabilResource\Pages;
+use App\Filament\Resources\Cadastro\ContaContabilResource\RelationManagers;
+use App\Models\Cadastro\ContaContabil;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -112,9 +112,9 @@ class ContaContabilResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Egap\Resources\Cadastro\ContaContabilResource\Pages\ListContaContabils::route('/'),
-            'create' => \App\Filament\Egap\Resources\Cadastro\ContaContabilResource\Pages\CreateContaContabil::route('/create'),
-            'edit' => \App\Filament\Egap\Resources\Cadastro\ContaContabilResource\Pages\EditContaContabil::route('/{record}/edit'),
+            'index' => \App\Filament\Resources\Cadastro\ContaContabilResource\Pages\ListContaContabils::route('/'),
+            'create' => \App\Filament\Resources\Cadastro\ContaContabilResource\Pages\CreateContaContabil::route('/create'),
+            'edit' => \App\Filament\Resources\Cadastro\ContaContabilResource\Pages\EditContaContabil::route('/{record}/edit'),
         ];
     }
 }

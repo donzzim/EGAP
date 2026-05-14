@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Egap\Patrimonio\BensMoveis;
+namespace App\Models\Patrimonio\BensMoveis;
 
-use App\Models\Egap\Cadastro\Setores;
+use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\Fornecedores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;

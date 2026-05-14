@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Egap\Resources\Patrimonio\BensMoveis;
+namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Egap\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
-use App\Filament\Egap\Clusters\PatrimonioCluster; 
-use App\Models\Egap\Patrimonio\BensMoveis\Conciliacao;
-use App\Models\Egap\Patrimonio\BensMoveis\BemMovel;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
+use App\Filament\Clusters\PatrimonioCluster;
+use App\Models\Patrimonio\BensMoveis\Conciliacao;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,13 +20,13 @@ class ConciliacaoResource extends Resource
     protected static ?string $model = Conciliacao::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-    
+
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $navigationGroup = 'Bens Móveis';
-    
+
     protected static ?string $navigationLabel = 'Conciliação (Inventário)';
-    
+
     protected static ?string $pluralModelLabel = 'Conciliações';
 
     protected static ?string $modelLabel = 'Conciliação';
@@ -50,7 +50,7 @@ class ConciliacaoResource extends Resource
                                         ->label('Número Patrimônio')
                                         ->searchable()
                                         ->live()
-                                        ->getSearchResultsUsing(fn (string $search) => 
+                                        ->getSearchResultsUsing(fn (string $search) =>
                                             BemMovel::where('NumPatrimonio', 'like', "%{$search}%")->limit(20)->pluck('NumPatrimonio', 'NumPatrimonio')
                                         )
                                         ->afterStateUpdated(function ($state, Forms\Set $set) {
@@ -62,9 +62,9 @@ class ConciliacaoResource extends Resource
                                         }),
 
                                     TextInput::make('patrimonio_desmembrado')->label('Desmembrado'),
-                                    
+
                                     Textarea::make('descricao')->label('Descrição')->rows(3)->columnSpanFull(),
-                                    
+
                                     DatePicker::make('data_conciliacao')->label('Data Conciliação')->default(now())->required(),
 
                                     Select::make('comarca')
@@ -87,7 +87,7 @@ class ConciliacaoResource extends Resource
                                             ->label('Dados para Conciliar')
                                             ->placeholder('Ex: 10020, 10021, 10022...')
                                             ->rows(12),
-                                        
+
                                         Forms\Components\Actions::make([
                                             Forms\Components\Actions\Action::make('processar')
                                                 ->label('Executar Conciliação')
