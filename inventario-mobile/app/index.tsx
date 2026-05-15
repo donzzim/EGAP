@@ -52,7 +52,7 @@ export default function LoginScreen() {
     const trimmedLogin = login.trim();
 
     if (!trimmedLogin || !password) {
-      setErrorMessage('Informe usuario e senha para continuar.');
+      setErrorMessage('Informe usuário e senha para continuar.');
       return;
     }
 
@@ -66,7 +66,7 @@ export default function LoginScreen() {
       if (error instanceof ApiError || error instanceof NetworkError) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage('Nao foi possivel realizar o login.');
+        setErrorMessage('Nao foi possível realizar o login.');
       }
     } finally {
       setIsSubmitting(false);

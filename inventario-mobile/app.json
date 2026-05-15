@@ -39,7 +39,13 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita que o E-Gap Mobile use a camera para ler codigos de barras patrimoniais."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

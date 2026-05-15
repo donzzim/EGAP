@@ -368,94 +368,7 @@ Crie uma base visual consistente, mas não perca tempo com excesso de estilizaç
 
 ---
 
-## 8. API esperada futuramente
-
-A aplicação deve ser preparada para consumir endpoints semelhantes aos abaixo.
-
-Ainda não implemente chamadas reais se a API não existir. Crie services preparados e, se necessário, mocks temporários.
-
-### Autenticação
-
-#### `POST /mobile-api/auth/login`
-
-Autentica o usuário.
-
-Recebe:
-
-- login;
-- senha.
-
-Retorna:
-
-- token;
-- usuário;
-- setor.
-
-#### `GET /mobile-api/auth/me`
-
-Retorna dados do usuário autenticado.
-
----
-
-### Patrimônio
-
-#### `GET /mobile-api/setores/{setorId}/bens`
-
-Retorna bens vinculados ao setor do usuário.
-
----
-
-### Conferências
-
-#### `POST /mobile-api/conferencias`
-
-Cria uma nova conferência para o setor.
-
-#### `GET /mobile-api/conferencias/atual`
-
-Retorna a conferência em andamento do usuário/setor.
-
-#### `POST /mobile-api/conferencias/{conferenciaId}/scan`
-
-Recebe o código patrimonial lido.
-
-Valida o bem.
-
-Retorna status da leitura.
-
-#### `POST /mobile-api/conferencias/{conferenciaId}/itens/{itemId}/confirmar`
-
-Confirma localização do bem.
-
-#### `POST /mobile-api/conferencias/{conferenciaId}/itens/{itemId}/nao-localizado`
-
-Marca bem como não localizado.
-
-#### `POST /mobile-api/conferencias/{conferenciaId}/itens/{itemId}/observacao`
-
-Registra observação.
-
-#### `POST /mobile-api/conferencias/{conferenciaId}/finalizar`
-
-Finaliza a conferência.
-
----
-
-### Solicitações patrimoniais
-
-#### `POST /mobile-api/bens/{bemId}/solicitar-transferencia`
-
-Solicita transferência de bem localizado em outro setor.
-
-#### `POST /mobile-api/bens/solicitar-inclusao`
-
-Solicita inclusão de bem não esperado no setor.
-
-A estrutura do app deve facilitar a substituição dos mocks por chamadas reais via Axios futuramente.
-
----
-
-## 9. Primeira tarefa de código
+## 8. Primeira tarefa de código
 
 Comece implementando a base inicial do projeto mobile.
 
@@ -507,7 +420,7 @@ Ao gerar código:
 
 ---
 
-## 10. Critérios de aceite da primeira etapa
+## 9. Critérios de aceite da primeira etapa
 
 A primeira etapa será considerada concluída quando:
 
@@ -533,7 +446,7 @@ A primeira etapa será considerada concluída quando:
 
 ---
 
-## 11. Orientação de comportamento para o Codex
+## 10. Orientação de comportamento para o Codex
 
 Durante o desenvolvimento, siga estas regras:
 
@@ -554,7 +467,7 @@ Durante o desenvolvimento, siga estas regras:
 
 ---
 
-## 12. Prompt complementar — depois que a base estiver criada
+## 11. Prompt complementar — depois que a base estiver criada
 
 Use este segundo prompt depois que o Codex montar a estrutura inicial.
 
@@ -606,74 +519,3 @@ Mantenha os dados mockados por enquanto, mas organize tudo como se futuramente f
 ```
 
 ---
-
-## 13. Ordem recomendada de execução
-
-A ordem recomendada para iniciar o projeto é:
-
-1. Criar o projeto Expo com TypeScript.
-2. Configurar a estrutura de pastas.
-3. Criar os types do domínio.
-4. Criar mocks de usuário, setor, bens e conferência.
-5. Criar services mockados.
-6. Criar navegação.
-7. Criar Login mockado.
-8. Criar Home/Dashboard.
-9. Criar listagem de bens.
-10. Criar tela de scanner.
-11. Criar validação mockada do código lido.
-12. Depois integrar com API real do EGap.
-
----
-
-## 14. Comandos iniciais sugeridos
-
-### Criar projeto Expo com TypeScript
-
-```bash
-npx create-expo-app egap-mobile -t expo-template-blank-typescript
-```
-
-### Entrar na pasta do projeto
-
-```bash
-cd egap-mobile
-```
-
-### Instalar dependências iniciais
-
-```bash
-npm install axios zod react-hook-form zustand
-```
-
-### Instalar navegação com React Navigation
-
-```bash
-npm install @react-navigation/native
-npm install @react-navigation/native-stack
-npx expo install react-native-screens react-native-safe-area-context
-```
-
-### Instalar suporte à câmera/scanner
-
-```bash
-npx expo install expo-camera
-```
-
----
-
-## 15. Recomendação técnica inicial
-
-A stack recomendada para a primeira versão é:
-
-- Expo;
-- React Native;
-- TypeScript;
-- React Navigation;
-- Axios;
-- Zustand;
-- Expo Camera.
-
-Essa combinação é simples, produtiva e suficiente para a primeira versão do app de conferência patrimonial do EGap.
-
-A prioridade inicial deve ser criar uma base funcional e bem organizada, não uma solução final completa.
