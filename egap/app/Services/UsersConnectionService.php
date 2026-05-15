@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\Admin\InfoUser;
+use App\Models\Admin\Lotacao;
 use App\Models\User;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
 
 class UsersConnectionService
 {
@@ -19,12 +21,16 @@ class UsersConnectionService
         }
 
         $user = $this->findLocalUserByCpf($normalizedCpf);
-        $infoUser = $this->findInfoUserByCpf($normalizedCpf);
-        $userEgap = $infoUser?->usuario_id
-            ? $this->findEgapUserById((int) $infoUser->usuario_id)
-            : null;
+        if (! $user) {
+            return null;
+        }
 
-        return $this->buildConnectedUser($user, $infoUser, $userEgap);
+        $infoUser = $this->findInfoUserByCpf($normalizedCpf);
+        if (! $infoUser) {
+            return null;
+        }
+
+        return $this->buildMobileSessionUser($user, $infoUser);
     }
 
     public function findByUser(int|User $user): ?Fluent
@@ -34,6 +40,10 @@ class UsersConnectionService
             : User::query()->find($user);
 
         if (! $localUser) {
+            return null;
+        }
+
+        if (! $localUser->cpf) {
             return null;
         }
 
@@ -53,12 +63,16 @@ class UsersConnectionService
         $infoUser = $egapUser->infoUser;
 
         if (! $infoUser?->cpf) {
-            return $this->buildConnectedUser(null, null, $egapUser);
+            return null;
         }
 
         $localUser = $this->findLocalUserByCpf($this->normalizeCpf((string) $infoUser->cpf));
 
-        return $this->buildConnectedUser($localUser, $infoUser, $egapUser);
+        if (! $localUser) {
+            return null;
+        }
+
+        return $this->buildMobileSessionUser($localUser, $infoUser);
     }
 
     public function findByLogin(string $login): ?Fluent
@@ -69,11 +83,19 @@ class UsersConnectionService
             return null;
         }
 
+        $normalizedLoginCpf = $this->normalizeCpf($trimmedLogin);
+
         $localUser = User::query()
-            ->where(function (Builder $query) use ($trimmedLogin): void {
+            ->where(function (Builder $query) use ($trimmedLogin, $normalizedLoginCpf): void {
                 $query
                     ->where('login', $trimmedLogin)
                     ->orWhere('email', $trimmedLogin);
+
+                if ($normalizedLoginCpf !== '') {
+                    $query
+                        ->orWhere('cpf', $normalizedLoginCpf)
+                        ->orWhereRaw($this->normalizeSqlColumn('cpf').' = ?', [$normalizedLoginCpf]);
+                }
             })
             ->first();
 
@@ -96,41 +118,18 @@ class UsersConnectionService
         return $this->findByEgapUser($egapUser);
     }
 
-    private function buildConnectedUser(?User $user, ?InfoUser $infoUser, ?UserEgap $userEgap): ?Fluent
+    private function buildMobileSessionUser(User $user, InfoUser $infoUser): Fluent
     {
-        if (! $user && ! $infoUser && ! $userEgap) {
-            return null;
-        }
-
-        $userEgap = $userEgap ? $this->loadEgapUserRelations($userEgap) : null;
-        $infoUser ??= $userEgap?->infoUser;
-        $lotacao = $userEgap?->lotacoes->first();
-        $cpf = $this->firstFilledValue(
-            $user?->cpf,
-            $infoUser?->cpf,
-        );
+        $lotacao = $this->findLatestLotacaoByInfoUser($infoUser);
 
         return new Fluent([
-            'id' => $userEgap?->id ?? $user?->id,
-            'user_id' => $user?->id,
-            'egap_user_id' => $userEgap?->id,
-            'cpf' => $cpf,
-            'cpf_normalized' => $cpf ? $this->normalizeCpf($cpf) : null,
-            'name' => $this->firstFilledValue($userEgap?->name, $user?->name),
-            'login' => $this->firstFilledValue($userEgap?->username, $user?->login),
-            'username' => $userEgap?->username,
-            'email' => $this->firstFilledValue($userEgap?->email, $user?->email),
-            'matricula' => $infoUser?->matricula ?? $user?->matricula,
-            'cargo' => $infoUser?->cargo,
-            'setor' => $lotacao?->setor,
-            'setor_nome' => $lotacao?->setorRef?->Setor,
+            'id' => $user->id,
+            'login' => $user->login,
+            'name' => $user->name,
+            'email' => $user->email,
             'unidade_judiciaria' => $lotacao?->unidade_judiciaria,
-            'unidade_judiciaria_nome' => $lotacao?->unidadeJudiciaria?->Setor,
-            'lotacao_atualizada_em' => $lotacao?->date_time,
-            'user' => $user,
-            'info_user' => $infoUser,
-            'user_egap' => $userEgap,
-            'lotacao' => $lotacao,
+            'setor' => $lotacao?->setor,
+            'token' => Str::random(60),
         ]);
     }
 
@@ -150,12 +149,26 @@ class UsersConnectionService
     {
         return InfoUser::query()
             ->whereNotNull('cpf')
+            ->whereNotNull('usuario_id')
             ->where(function (Builder $query) use ($normalizedCpf): void {
                 $query
                     ->where('cpf', $normalizedCpf)
                     ->orWhereRaw($this->normalizeSqlColumn('cpf').' = ?', [$normalizedCpf]);
             })
             ->orderByDesc('date_time')
+            ->first();
+    }
+
+    private function findLatestLotacaoByInfoUser(InfoUser $infoUser): ?Lotacao
+    {
+        if (! $infoUser->usuario_id) {
+            return null;
+        }
+
+        return Lotacao::query()
+            ->where('id_user', (int) $infoUser->usuario_id)
+            ->orderByDesc('date_time')
+            ->orderByDesc('id')
             ->first();
     }
 
@@ -170,8 +183,6 @@ class UsersConnectionService
     {
         $userEgap->loadMissing([
             'infoUser',
-            'lotacoes.unidadeJudiciaria',
-            'lotacoes.setorRef',
         ]);
 
         return $userEgap;
@@ -185,16 +196,5 @@ class UsersConnectionService
     private function normalizeSqlColumn(string $column): string
     {
         return "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE({$column}, '.', ''), '-', ''), '/', ''), ' ', ''), ',', '')";
-    }
-
-    private function firstFilledValue(mixed ...$values): mixed
-    {
-        foreach ($values as $value) {
-            if ($value !== null && $value !== '') {
-                return $value;
-            }
-        }
-
-        return null;
     }
 }
