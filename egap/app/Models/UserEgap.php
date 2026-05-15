@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserEgap extends Model
 {
+    protected $connection = 'egap';
     protected $table = 'jos_users';
     protected $primaryKey = 'id';
     public $timestamps = false;

@@ -6,7 +6,7 @@ Gerado em 2026-05-12 a partir do projeto local `C:\dev\emes` e do banco MySQL `e
 
 Este relatorio cobre o fluxo de Pedidos de materiais permanentes que desemboca em Patrimonio, principalmente bens moveis. A implementacao atual combina:
 
-- Painel Filament EGAP em `/emes/egap`.
+- Painel Filament EGAP em `/egap`.
 - Cluster `Pedidos`, onde ficam solicitacao, validacao, atendimento, historico, relatorio e agendamento de entrega/recolhimento.
 - Cluster/Resources de `Patrimonio`, principalmente bens moveis, termos, transferencias e validacao de termos.
 - Banco legado `egap`, com tabelas `ped_*`, `mat_*` e `age_*`.
@@ -138,7 +138,7 @@ No codigo novo, as constantes principais ficam em `SolicitarMateriais`:
 
 ### 6.1 Pedidos
 
-Model: `App\Models\Egap\Almoxarifado\Pedidos`
+Model: `App\Models\Almoxarifado\Pedidos`
 
 Tabela: `ped_pedidos`
 
@@ -174,7 +174,7 @@ Relacionamentos:
 
 ### 6.2 Itens do pedido
 
-Model: `App\Models\Egap\Almoxarifado\ItemPedido`
+Model: `App\Models\Almoxarifado\ItemPedido`
 
 Tabela: `ped_itempedido`
 
@@ -212,7 +212,7 @@ Observacao tecnica: no banco, `quantidade_validada` e `ped_fases.quantidade` sao
 
 ### 6.3 Historico/fases
 
-Model: `App\Models\Egap\Almoxarifado\FasePedido`
+Model: `App\Models\Almoxarifado\FasePedido`
 
 Tabela: `ped_fases`
 
@@ -233,7 +233,7 @@ O model preenche `date_time` e `Usuario` automaticamente quando ha usuario auten
 
 ### 6.4 Patrimonio movel
 
-Model: `App\Models\Egap\Patrimonio\BensMoveis\BemMovel`
+Model: `App\Models\Patrimonio\BensMoveis\BemMovel`
 
 Tabela: `mat_patrimonio`
 
