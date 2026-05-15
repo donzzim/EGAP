@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserEgap;
+use App\Services\UsersConnectionService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+class MobileLoginController extends Controller
+{
+    public function store(Request $request, UsersConnectionService $usersConnectionService): JsonResponse
+    {
+        $credentials = $request->validate([
+            'login' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $mobileUser = $this->attemptLocalAuthentication(
+            $credentials['login'],
+            $credentials['password'],
+            $usersConnectionService,
+        );
+
+        if ($mobileUser instanceof JsonResponse) {
+            return $mobileUser;
+        }
+
+        if ($mobileUser !== null) {
+            return $this->successResponse($mobileUser->toArray());
+        }
+
+        $mobileUser = $this->attemptEgapAuthentication(
+            $credentials['login'],
+            $credentials['password'],
+            $usersConnectionService,
+        );
+
+        if ($mobileUser instanceof JsonResponse) {
+            return $mobileUser;
+        }
+
+        if ($mobileUser !== null) {
+            return $this->successResponse($mobileUser->toArray());
+        }
+
+        return response()->json([
+            'message' => 'Credenciais inválidas.',
+        ], 401);
+    }
+
+    private function attemptLocalAuthentication(
+        string $login,
+        string $password,
+        UsersConnectionService $usersConnectionService,
+    ): \Illuminate\Support\Fluent|JsonResponse|null {
+        $user = $this->findLocalUserByLogin($login);
+
+        if (! $user || ! Hash::check($password, $user->password)) {
+            return null;
+        }
+
+        $mobileUser = $usersConnectionService->findByUser($user);
+
+        if ($mobileUser === null) {
+            return $this->mobileAccessDeniedResponse();
+        }
+
+        return $mobileUser;
+    }
+
+    private function attemptEgapAuthentication(
+        string $login,
+        string $password,
+        UsersConnectionService $usersConnectionService,
+    ): \Illuminate\Support\Fluent|JsonResponse|null {
+        $user = $this->findEgapUserByLogin($login);
+
+        if (! $user || $user->block || ! Hash::check($password, $user->password)) {
+            return null;
+        }
+
+        $mobileUser = $usersConnectionService->findByEgapUser($user);
+
+        if ($mobileUser === null) {
+            return $this->mobileAccessDeniedResponse();
+        }
+
+        return $mobileUser;
+    }
+
+    private function findLocalUserByLogin(string $login): ?User
+    {
+        $trimmedLogin = trim($login);
+
+        if ($trimmedLogin === '') {
+            return null;
+        }
+
+        $normalizedCpf = $this->normalizeCpf($trimmedLogin);
+
+        return User::query()
+            ->where(function (Builder $query) use ($trimmedLogin, $normalizedCpf): void {
+                $query
+                    ->where('login', $trimmedLogin)
+                    ->orWhere('email', $trimmedLogin);
+
+                if ($normalizedCpf !== '') {
+                    $query
+                        ->orWhere('cpf', $normalizedCpf)
+                        ->orWhereRaw($this->normalizeSqlColumn('cpf').' = ?', [$normalizedCpf]);
+                }
+            })
+            ->first();
+    }
+
+    private function findEgapUserByLogin(string $login): ?UserEgap
+    {
+        $trimmedLogin = trim($login);
+
+        if ($trimmedLogin === '') {
+            return null;
+        }
+
+        return UserEgap::query()
+            ->where(function (Builder $query) use ($trimmedLogin): void {
+                $query
+                    ->where('username', $trimmedLogin)
+                    ->orWhere('email', $trimmedLogin);
+            })
+            ->first();
+    }
+
+    private function normalizeCpf(string $cpf): string
+    {
+        return preg_replace('/\D+/', '', trim($cpf)) ?? '';
+    }
+
+    private function normalizeSqlColumn(string $column): string
+    {
+        return "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE({$column}, '.', ''), '-', ''), '/', ''), ' ', ''), ',', '')";
+    }
+
+    private function successResponse(array $user): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Login realizado com sucesso.',
+            'user' => $user,
+        ]);
+    }
+
+    private function mobileAccessDeniedResponse(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Usuário sem vínculo válido para acesso mobile.',
+        ], 403);
+    }
+}
