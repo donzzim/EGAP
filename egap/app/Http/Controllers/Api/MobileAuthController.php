@@ -5,15 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserEgap;
+use App\Models\UserMobile;
 use App\Services\UsersConnectionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-class MobileLoginController extends Controller
+class MobileAuthController extends Controller
 {
-    public function store(Request $request, UsersConnectionService $usersConnectionService): JsonResponse
+    public function login(Request $request, UsersConnectionService $usersConnectionService): JsonResponse
     {
         $credentials = $request->validate([
             'login' => ['required', 'string'],
@@ -31,7 +32,7 @@ class MobileLoginController extends Controller
         }
 
         if ($mobileUser !== null) {
-            return $this->successResponse($mobileUser->toArray());
+            return $this->successResponse($mobileUser);
         }
 
         $mobileUser = $this->attemptEgapAuthentication(
@@ -45,7 +46,7 @@ class MobileLoginController extends Controller
         }
 
         if ($mobileUser !== null) {
-            return $this->successResponse($mobileUser->toArray());
+            return $this->successResponse($mobileUser);
         }
 
         return response()->json([
@@ -53,11 +54,25 @@ class MobileLoginController extends Controller
         ], 401);
     }
 
+    public function me(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function logout(Request $request){
+        $request->user()->currentAccessToken()?->delete();
+
+        return response()->json([
+            'message' => 'Logout realizado com sucesso.',
+        ]);
+    }
     private function attemptLocalAuthentication(
         string $login,
         string $password,
         UsersConnectionService $usersConnectionService,
-    ): \Illuminate\Support\Fluent|JsonResponse|null {
+    ): UserMobile|JsonResponse|null {
         $user = $this->findLocalUserByLogin($login);
 
         if (! $user || ! Hash::check($password, $user->password)) {
@@ -77,7 +92,7 @@ class MobileLoginController extends Controller
         string $login,
         string $password,
         UsersConnectionService $usersConnectionService,
-    ): \Illuminate\Support\Fluent|JsonResponse|null {
+    ): UserMobile|JsonResponse|null {
         $user = $this->findEgapUserByLogin($login);
 
         if (! $user || $user->block || ! Hash::check($password, $user->password)) {
@@ -145,11 +160,23 @@ class MobileLoginController extends Controller
         return "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE({$column}, '.', ''), '-', ''), '/', ''), ' ', ''), ',', '')";
     }
 
-    private function successResponse(array $user): JsonResponse
+    private function successResponse(UserMobile $user): JsonResponse
     {
+        $baseUser = $user->baseUser();
+
+        if (! $baseUser) {
+            return response()->json([
+                'message' => 'Não foi possível gerar o token de acesso para o usuário mobile.',
+            ], 500);
+        }
+
+        $token = $baseUser->createToken('mobile-app')->plainTextToken;
+
+        $user->setMobileToken($token);
+
         return response()->json([
             'message' => 'Login realizado com sucesso.',
-            'user' => $user,
+            'user' => $user->toArray(),
         ]);
     }
 

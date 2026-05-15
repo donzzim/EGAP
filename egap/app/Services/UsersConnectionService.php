@@ -6,13 +6,12 @@ use App\Models\Admin\InfoUser;
 use App\Models\Admin\Lotacao;
 use App\Models\User;
 use App\Models\UserEgap;
+use App\Models\UserMobile;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Fluent;
-use Illuminate\Support\Str;
 
 class UsersConnectionService
 {
-    public function findByCpf(string $cpf): ?Fluent
+    public function findByCpf(string $cpf): ?UserMobile
     {
         $normalizedCpf = $this->normalizeCpf($cpf);
 
@@ -33,7 +32,7 @@ class UsersConnectionService
         return $this->buildMobileSessionUser($user, $infoUser);
     }
 
-    public function findByUser(int|User $user): ?Fluent
+    public function findByUser(int|User $user): ?UserMobile
     {
         $localUser = $user instanceof User
             ? $user
@@ -50,7 +49,7 @@ class UsersConnectionService
         return $this->findByCpf((string) $localUser->cpf);
     }
 
-    public function findByEgapUser(int|UserEgap $userEgap): ?Fluent
+    public function findByEgapUser(int|UserEgap $userEgap): ?UserMobile
     {
         $egapUser = $userEgap instanceof UserEgap
             ? $this->loadEgapUserRelations($userEgap)
@@ -75,7 +74,7 @@ class UsersConnectionService
         return $this->buildMobileSessionUser($localUser, $infoUser);
     }
 
-    public function findByLogin(string $login): ?Fluent
+    public function findByLogin(string $login): ?UserMobile
     {
         $trimmedLogin = trim($login);
 
@@ -118,19 +117,11 @@ class UsersConnectionService
         return $this->findByEgapUser($egapUser);
     }
 
-    private function buildMobileSessionUser(User $user, InfoUser $infoUser): Fluent
+    private function buildMobileSessionUser(User $user, InfoUser $infoUser): UserMobile
     {
         $lotacao = $this->findLatestLotacaoByInfoUser($infoUser);
 
-        return new Fluent([
-            'id' => $user->id,
-            'login' => $user->login,
-            'name' => $user->name,
-            'email' => $user->email,
-            'unidade_judiciaria' => $lotacao?->unidade_judiciaria,
-            'setor' => $lotacao?->setor,
-            'token' => Str::random(60),
-        ]);
+        return UserMobile::fromLinkedUsers($user, $infoUser, $lotacao);
     }
 
     private function findLocalUserByCpf(string $normalizedCpf): ?User

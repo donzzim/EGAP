@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -23,13 +24,36 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $cpf = fake()->unique()->numerify('###########');
+
         return [
+            'login' => fake()->unique()->userName(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'cpf' => $cpf,
+            'telefone' => fake()->numerify('(##) #####-####'),
+            'matricula' => fake()->unique()->numerify('######'),
+            'numero_funcional' => fake()->unique()->numerify('######'),
+            'ativo' => 1,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    public function mobileTester(array $attributes = []): static
+    {
+        return $this->state(fn () => array_merge([
+            'login' => 'mobile.local',
+            'name' => 'Mobile Local Teste',
+            'email' => 'mobile.local@egap.test',
+            'cpf' => '90000000001',
+            'telefone' => '(11) 99999-0001',
+            'matricula' => 'MOB001',
+            'numero_funcional' => 'MOB001',
+            'ativo' => 1,
+            'password' => Hash::make('mobile123'),
+        ], $attributes));
     }
 
     /**

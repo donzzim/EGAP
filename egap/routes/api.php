@@ -1,9 +1,15 @@
 <?php
 
-use App\Http\Controllers\Api\MobileLoginController;
+use App\Http\Controllers\Api\MobileAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('mobile-api')->group(function (): void {
-    Route::post('/auth/login', [MobileLoginController::class, 'store'])
-        ->name('mobile-api.login');
+    Route::post('/login', [MobileAuthController::class, 'login'])
+        ->name('mobile-login');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [MobileAuthController::class, 'me'])->name('mobile.me');
+
+        Route::post('/logout', [MobileAuthController::class, 'logout'])->name('mobile.logout');
+    });
 });
