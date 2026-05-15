@@ -25,9 +25,9 @@ class MobileApiTestUsersSeeder extends Seeder
 
         $this->command?->info('Usuários de teste da API mobile criados/atualizados.');
         $this->command?->line('Senha padrão: '.self::PASSWORD);
-        $this->command?->line('Login local com vinculo: mobile.local');
-        $this->command?->line('Login EGAP com vinculo: mobile.egap');
-        $this->command?->line('Login local sem vinculo mobile: mobile.sem-vinculo');
+        $this->command?->line('Login local com vínculo: mobile.local');
+        $this->command?->line('Login EGAP com vínculo: mobile.egap');
+        $this->command?->line('Login local sem vínculo mobile: mobile.sem-vínculo');
     }
 
     private function createLocalLinkedUser(): void

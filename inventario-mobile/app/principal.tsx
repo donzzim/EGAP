@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { ApiError, NetworkError } from '@/src/api/errors';
+import { recentBensStorage, type RecentBem } from '@/src/storage/recentBens';
 
 const BARCODE_TYPES: BarcodeType[] = [
   'ean13',
@@ -103,26 +104,26 @@ const summaryItems = [
   { label: 'Divergentes', value: '10', color: '#C53030', icon: 'report-problem' },
 ] as const;
 
-const assetPreview = [
-  {
-    code: '00012489',
-    description: 'Monitor LED 24 polegadas',
-    status: 'Localizado',
-    statusColor: '#2F855A',
-  },
-  {
-    code: '00013072',
-    description: 'Cadeira giratória operacional',
-    status: 'Pendente',
-    statusColor: '#B7791F',
-  },
-  {
-    code: '00011803',
-    description: 'Notebook administrativo',
-    status: 'Outro setor',
-    statusColor: '#1E4E79',
-  },
-] as const;
+function getRecentBemStatusColor(situacao: string): string {
+  const normalizedSituacao = situacao
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+  if (normalizedSituacao.includes('pendente')) {
+    return '#B7791F';
+  }
+
+  if (normalizedSituacao.includes('divergente') || normalizedSituacao.includes('outro')) {
+    return '#1E4E79';
+  }
+
+  if (normalizedSituacao.includes('baixa') || normalizedSituacao.includes('erro')) {
+    return '#C53030';
+  }
+
+  return '#2F855A';
+}
 
 export default function PrincipalScreen() {
   const [user, setUser] = useState<MobileUser | null>(null);
@@ -136,6 +137,7 @@ export default function PrincipalScreen() {
   const [isConsultingPatrimonio, setIsConsultingPatrimonio] = useState(false);
   const [consultedBem, setConsultedBem] = useState<BemPatrimonial | null>(null);
   const [isPatrimonioModalVisible, setIsPatrimonioModalVisible] = useState(false);
+  const [recentBens, setRecentBens] = useState<RecentBem[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -157,6 +159,16 @@ export default function PrincipalScreen() {
       if (!isValid) {
         router.replace('/');
         return;
+      }
+
+      try {
+        const storedRecentBens = await recentBensStorage.list(session.user.id);
+
+        if (isMounted) {
+          setRecentBens(storedRecentBens);
+        }
+      } catch (error) {
+        console.warn('Nao foi possivel carregar o historico de bens recentes.', error);
       }
 
       if (isMounted) {
@@ -192,6 +204,20 @@ export default function PrincipalScreen() {
       await authApi.logout();
     } finally {
       router.replace('/');
+    }
+  }
+
+  async function addBemToRecent(bem: BemPatrimonial) {
+    if (!user) {
+      return;
+    }
+
+    try {
+      const nextRecentBens = await recentBensStorage.add(user.id, bem);
+
+      setRecentBens(nextRecentBens);
+    } catch (error) {
+      console.warn('Nao foi possivel atualizar o historico de bens recentes.', error);
     }
   }
 
@@ -269,6 +295,7 @@ export default function PrincipalScreen() {
       }
 
       setConsultedBem(bem);
+      await addBemToRecent(bem);
       setIsPatrimonioModalVisible(true);
       setNotification({
         message: 'Patrimônio consultado com sucesso.',
@@ -444,9 +471,8 @@ export default function PrincipalScreen() {
           <View style={styles.scanHeader}>
             <View>
               <Text style={styles.sectionTitle}>Leitura patrimonial</Text>
-              <Text style={styles.sectionDescription}>Camera configurada apenas para código de barras.</Text>
+              <Text style={styles.sectionDescription}>Câmera configurada apenas para código de barras.</Text>
             </View>
-            <MaterialIcons name="qr-code-scanner" size={28} color="#1E4E79" />
           </View>
 
           <View style={styles.scannerMock}>
@@ -558,22 +584,38 @@ export default function PrincipalScreen() {
             <Text style={styles.panelHeaderMeta}>Hoje</Text>
           </View>
 
-          {assetPreview.map((asset) => (
-            <View key={asset.code} style={styles.assetRow}>
-              <View style={styles.assetIcon}>
-                <MaterialIcons name="inventory-2" size={20} color="#1E4E79" />
-              </View>
-              <View style={styles.assetInfo}>
-                <Text style={styles.assetCode}>{asset.code}</Text>
-                <Text style={styles.assetDescription}>{asset.description}</Text>
-              </View>
-              <View style={[styles.statusBadge, { backgroundColor: `${asset.statusColor}18` }]}>
-                <Text style={[styles.statusBadgeText, { color: asset.statusColor }]}>
-                  {asset.status}
-                </Text>
-              </View>
+          {recentBens.length > 0 ? (
+            recentBens.map((asset) => {
+              const statusColor = getRecentBemStatusColor(asset.situacao);
+
+              return (
+                <View key={`${asset.id}-${asset.consultedAt}`} style={styles.assetRow}>
+                  <View style={styles.assetIcon}>
+                    <MaterialIcons name="inventory-2" size={20} color="#1E4E79" />
+                  </View>
+                  <View style={styles.assetInfo}>
+                    <Text style={styles.assetCode}>{asset.codigo}</Text>
+                    <Text style={styles.assetDescription} numberOfLines={2}>
+                      {asset.descricao}
+                    </Text>
+                  </View>
+                  <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
+                    <Text style={[styles.statusBadgeText, { color: statusColor }]} numberOfLines={1}>
+                      {asset.situacao}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <View style={styles.emptyRecentPanel}>
+              <MaterialIcons name="history" size={26} color="#627D98" />
+              <Text style={styles.emptyRecentTitle}>Nenhuma consulta recente</Text>
+              <Text style={styles.emptyRecentText}>
+                Os últimos 5 patrimônios consultados aparecerão aqui.
+              </Text>
             </View>
-          ))}
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -1084,6 +1126,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   statusBadge: {
+    maxWidth: 116,
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 5,
@@ -1091,5 +1134,26 @@ const styles = StyleSheet.create({
   statusBadgeText: {
     fontSize: 11,
     fontWeight: '800',
+  },
+  emptyRecentPanel: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    padding: 16,
+  },
+  emptyRecentTitle: {
+    color: '#102A43',
+    fontSize: 15,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  emptyRecentText: {
+    color: '#52616B',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
