@@ -17,7 +17,7 @@ class BensController extends Controller
 
         if ($mobileUser === null) {
             return response()->json([
-                'message' => 'Usuário sem vinculo valido para consulta de bens.',
+                'message' => 'Usuário sem vínculo válido para consulta de bens.',
             ], 403);
         }
 
@@ -26,7 +26,7 @@ class BensController extends Controller
 
         if ($setor === null || $unidadeJudiciaria === null) {
             return response()->json([
-                'message' => 'Usuário sem lotação valida para consulta de bens.',
+                'message' => 'Usuário sem lotação válida para consulta de bens.',
                 'scope' => [
                     'user_id' => $mobileUser->id(),
                     'id_egap' => $mobileUser->idEgap(),
@@ -71,7 +71,7 @@ class BensController extends Controller
 
         if ($bem === null) {
             return response()->json([
-                'message' => 'Bem nao encontrado.',
+                'message' => 'Bem não encontrado.',
                 'patrimonio' => $numPatrimonio,
             ], 404);
         }

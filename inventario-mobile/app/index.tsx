@@ -66,7 +66,7 @@ export default function LoginScreen() {
       if (error instanceof ApiError || error instanceof NetworkError) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage('Nao foi possível realizar o login.');
+        setErrorMessage('Não foi possível realizar o login.');
       }
     } finally {
       setIsSubmitting(false);

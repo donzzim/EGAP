@@ -49,7 +49,7 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return 'Nao foi possível carregar os bens do setor.';
+  return 'Não foi possível carregar os bens do setor.';
 }
 
 export default function BensScreen() {
@@ -182,7 +182,7 @@ export default function BensScreen() {
               <MaterialIcons name="inventory" size={32} color="#627D98" />
               <Text style={styles.emptyTitle}>Nenhum bem encontrado</Text>
               <Text style={styles.emptyText}>
-                A API nao retornou bens para o setor vinculado ao seu usuario.
+                A API não retornou bens para o setor vinculado ao seu usuário.
               </Text>
             </View>
           }

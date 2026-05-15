@@ -93,7 +93,7 @@ function getRequestErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return 'Nao foi possivel consultar o patrimonio.';
+  return 'Não foi possível consultar o patrimônio.';
 }
 
 const summaryItems = [
@@ -223,7 +223,7 @@ export default function PrincipalScreen() {
     setIsScannerActive(false);
     setHasScannedBarcode(false);
     setNotification({
-      message: 'Camera fechada.',
+      message: 'Câmera fechada.',
       tone: 'info',
     });
   }
@@ -248,7 +248,7 @@ export default function PrincipalScreen() {
 
     if (!trimmedCode) {
       setNotification({
-        message: 'Informe ou leia um código de património antes de consultar.',
+        message: 'Informe ou leia um código de patrimônio antes de consultar.',
         tone: 'error',
       });
       return;
@@ -262,7 +262,7 @@ export default function PrincipalScreen() {
 
       if (!bem) {
         setNotification({
-          message: 'Patrimonio nao localizado para o setor do usuário.',
+          message: 'Patrimônio não localizado para o setor do usuário.',
           tone: 'error',
         });
         return;
@@ -271,7 +271,7 @@ export default function PrincipalScreen() {
       setConsultedBem(bem);
       setIsPatrimonioModalVisible(true);
       setNotification({
-        message: 'Patrimonio consultado com sucesso.',
+        message: 'Patrimônio consultado com sucesso.',
         tone: 'success',
       });
     } catch (error) {
@@ -289,7 +289,7 @@ export default function PrincipalScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator color="#1E4E79" />
-          <Text style={styles.loadingText}>Carregando sessao</Text>
+          <Text style={styles.loadingText}>Carregando sessão</Text>
         </View>
       </SafeAreaView>
     );
@@ -353,14 +353,14 @@ export default function PrincipalScreen() {
                   {renderDetailRow('Situacao', consultedBem.situacao ?? consultedBem.estado)}
                   {renderDetailRow('Tipo do bem', consultedBem.tipo_bem)}
                   {renderDetailRow('Estado de conservacao', consultedBem.estado_conservacao)}
-                  {renderDetailRow('Patrimonio anterior', consultedBem.patrimonio_anterior)}
+                  {renderDetailRow('Patrimônio anterior', consultedBem.patrimonio_anterior)}
                 </View>
 
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>Caracteristicas</Text>
                   {renderDetailRow('Marca', consultedBem.marca)}
                   {renderDetailRow('Modelo', consultedBem.modelo)}
-                  {renderDetailRow('Numero de serie', consultedBem.numero_serie ?? consultedBem.serie)}
+                  {renderDetailRow('Número de série', consultedBem.numero_serie ?? consultedBem.serie)}
                   {renderDetailRow('Voltagem', consultedBem.voltagem)}
                   {renderDetailRow('Tombo SMARAPD', consultedBem.tombo_smarapd)}
                   {renderDetailRow('Num. tombo SMARAPD', consultedBem.num_tombo_smarapd)}
@@ -368,7 +368,7 @@ export default function PrincipalScreen() {
 
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>Localizacao</Text>
-                  {renderDetailRow('Unidade judiciaria', getReferenciaNome(consultedBem.unidade_judiciaria))}
+                  {renderDetailRow('Unidade Judiciária', getReferenciaNome(consultedBem.unidade_judiciaria))}
                   {renderDetailRow('Setor', getReferenciaNome(consultedBem.setor))}
                   {renderDetailRow('Complemento', getReferenciaNome(consultedBem.complemento_setor))}
                   {renderDetailRow('Andar', consultedBem.andar_setor)}
@@ -378,12 +378,12 @@ export default function PrincipalScreen() {
                   <Text style={styles.modalSectionTitle}>Valores e documentos</Text>
                   {renderDetailRow('Valor de aquisicao', formatMoney(consultedBem.valor_aquisicao))}
                   {renderDetailRow('Valor atual', formatMoney(consultedBem.valor))}
-                  {renderDetailRow('Data de incorporacao', consultedBem.data_incorporacao)}
+                  {renderDetailRow('Data de incorporação', consultedBem.data_incorporacao)}
                   {renderDetailRow('Data de cadastro', consultedBem.data_cadastro)}
                   {renderDetailRow('Numero do processo', consultedBem.numero_processo)}
                   {renderDetailRow('Nota de empenho', consultedBem.nota_empenho)}
-                  {renderDetailRow('Nota de liquidacao', consultedBem.nota_liquidacao)}
-                  {renderDetailRow('Data de liquidacao', consultedBem.data_liquidacao)}
+                  {renderDetailRow('Nota de liquidação', consultedBem.nota_liquidacao)}
+                  {renderDetailRow('Data de liquidação', consultedBem.data_liquidacao)}
                 </View>
 
                 {consultedBem.data_baixa || consultedBem.processo_baixa ? (
@@ -396,7 +396,7 @@ export default function PrincipalScreen() {
 
                 {consultedBem.observacao ? (
                   <View style={styles.modalSection}>
-                    <Text style={styles.modalSectionTitle}>Observacao</Text>
+                    <Text style={styles.modalSectionTitle}>Observação</Text>
                     <Text style={styles.modalObservation}>{consultedBem.observacao}</Text>
                   </View>
                 ) : null}
@@ -472,7 +472,7 @@ export default function PrincipalScreen() {
             {isScannerActive ? (
               <Pressable onPress={handleCloseScanner} style={styles.closeCameraButton}>
                 <MaterialIcons name="close" size={20} color="#FFFFFF" />
-                <Text style={styles.closeCameraButtonText}>Fechar camera</Text>
+                <Text style={styles.closeCameraButtonText}>Fechar câmera</Text>
               </Pressable>
             ) : null}
             <View style={styles.scanLine} />
@@ -510,7 +510,7 @@ export default function PrincipalScreen() {
               <MaterialIcons name="search" size={21} color="#FFFFFF" />
             )}
             <Text style={styles.consultButtonText}>
-              {isConsultingPatrimonio ? 'Consultando' : 'Consultar patrimonio'}
+              {isConsultingPatrimonio ? 'Consultando' : 'Consultar patrimônio'}
             </Text>
           </Pressable>
 
@@ -537,7 +537,7 @@ export default function PrincipalScreen() {
               ]}>
               <MaterialIcons name={isScannerActive ? 'videocam-off' : 'qr-code-scanner'} size={22} color="#FFFFFF" />
               <Text style={styles.actionButtonPrimaryText}>
-                {isScannerActive ? 'Fechar camera' : 'Iniciar leitura'}
+                {isScannerActive ? 'Fechar câmera' : 'Iniciar leitura'}
               </Text>
             </Pressable>
             <Pressable
