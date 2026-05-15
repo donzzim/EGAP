@@ -1,6 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Link, type Href } from 'expo-router';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,8 +13,66 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ApiError, NetworkError } from '@/src/api/errors';
+import { authApi } from '@/src/api/auth';
 
 export default function LoginScreen() {
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function restoreSession() {
+      const session = await authApi.getStoredSession();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (session) {
+        router.replace('/principal');
+        return;
+      }
+
+      setIsCheckingSession(false);
+    }
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  async function handleLogin() {
+    const trimmedLogin = login.trim();
+
+    if (!trimmedLogin || !password) {
+      setErrorMessage('Informe usuario e senha para continuar.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await authApi.login(trimmedLogin, password);
+      router.replace('/principal');
+    } catch (error) {
+      if (error instanceof ApiError || error instanceof NetworkError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage('Nao foi possivel realizar o login.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -49,6 +109,10 @@ export default function LoginScreen() {
                   placeholderTextColor="#829AB1"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  editable={!isSubmitting && !isCheckingSession}
+                  returnKeyType="next"
+                  value={login}
+                  onChangeText={setLogin}
                   style={styles.input}
                 />
               </View>
@@ -62,17 +126,39 @@ export default function LoginScreen() {
                   placeholder="Digite sua senha"
                   placeholderTextColor="#829AB1"
                   secureTextEntry
+                  editable={!isSubmitting && !isCheckingSession}
+                  returnKeyType="done"
+                  value={password}
+                  onChangeText={setPassword}
+                  onSubmitEditing={handleLogin}
                   style={styles.input}
                 />
               </View>
             </View>
 
-            <Link href={'/principal' as Href} asChild>
-              <Pressable style={styles.primaryButton}>
+            {errorMessage ? (
+              <View style={styles.errorPanel}>
+                <MaterialIcons name="error-outline" size={20} color="#C53030" />
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              </View>
+            ) : null}
+
+            <Pressable
+              disabled={isSubmitting || isCheckingSession}
+              onPress={handleLogin}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                (pressed || isSubmitting || isCheckingSession) && styles.primaryButtonPressed,
+              ]}>
+              {isSubmitting || isCheckingSession ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
                 <MaterialIcons name="login" size={21} color="#FFFFFF" />
-                <Text style={styles.primaryButtonText}>Entrar</Text>
-              </Pressable>
-            </Link>
+              )}
+              <Text style={styles.primaryButtonText}>
+                {isCheckingSession ? 'Verificando acesso' : isSubmitting ? 'Entrando' : 'Entrar'}
+              </Text>
+            </Pressable>
           </View>
 
           <View style={styles.footerPanel}>
@@ -185,9 +271,31 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#1E4E79',
   },
+  primaryButtonPressed: {
+    opacity: 0.78,
+  },
   primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '800',
+  },
+  errorPanel: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F5C2C7',
+    backgroundColor: '#FFF5F5',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  errorText: {
+    flex: 1,
+    color: '#9B2C2C',
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: '800',
   },
   footerPanel: {

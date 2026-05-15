@@ -1,6 +1,9 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { authApi, type MobileUser } from '@/src/api/auth';
 
 const summaryItems = [
   { label: 'Esperados', value: '128', color: '#1E4E79', icon: 'inventory' },
@@ -31,17 +34,86 @@ const assetPreview = [
 ] as const;
 
 export default function PrincipalScreen() {
+  const [user, setUser] = useState<MobileUser | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSession() {
+      const session = await authApi.getStoredSession();
+
+      if (!session) {
+        router.replace('/');
+        return;
+      }
+
+      if (isMounted) {
+        setUser(session.user);
+      }
+
+      const isValid = await authApi.validateSession();
+
+      if (!isValid) {
+        router.replace('/');
+        return;
+      }
+
+      if (isMounted) {
+        setIsLoadingSession(false);
+      }
+    }
+
+    loadSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+
+    try {
+      await authApi.logout();
+    } finally {
+      router.replace('/');
+    }
+  }
+
+  if (isLoadingSession) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color="#1E4E79" />
+          <Text style={styles.loadingText}>Carregando sessao</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.headerTextGroup}>
             <Text style={styles.eyebrow}>EGap Mobile</Text>
-            <Text style={styles.title}>Conferência patrimonial</Text>
+            <Text style={styles.title}>Conferência Patrimonial</Text>
           </View>
-          <View style={styles.modeBadge}>
-            <Text style={styles.modeBadgeText}>Visual</Text>
-          </View>
+          <Pressable
+            disabled={isLoggingOut}
+            onPress={handleLogout}
+            style={({ pressed }) => [
+              styles.logoutButton,
+              (pressed || isLoggingOut) && styles.logoutButtonPressed,
+            ]}>
+            {isLoggingOut ? (
+              <ActivityIndicator color="#1E4E79" />
+            ) : (
+              <MaterialIcons name="logout" size={21} color="#1E4E79" />
+            )}
+          </Pressable>
         </View>
 
         <View style={styles.sectorPanel}>
@@ -49,9 +121,11 @@ export default function PrincipalScreen() {
             <MaterialIcons name="apartment" size={24} color="#1E4E79" />
           </View>
           <View style={styles.sectorInfo}>
-            <Text style={styles.panelLabel}>Setor em operação</Text>
-            <Text style={styles.sectorName}>Coordenadoria Administrativa</Text>
-            <Text style={styles.sectorMeta}>Unidade Central - Sala 204</Text>
+            <Text style={styles.panelLabel}>Sessão ativa</Text>
+            <Text style={styles.sectorName}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
+            <Text style={styles.sectorMeta}>
+              Setor {user?.setor ?? '-'} | Unidade {user?.unidade_judiciaria ?? '-'}
+            </Text>
           </View>
         </View>
 
@@ -143,6 +217,18 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 28,
   },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 24,
+  },
+  loadingText: {
+    color: '#334E68',
+    fontSize: 14,
+    fontWeight: '800',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -163,6 +249,19 @@ const styles = StyleSheet.create({
     color: '#102A43',
     fontSize: 28,
     fontWeight: '800',
+  },
+  logoutButton: {
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#B6D4EA',
+    backgroundColor: '#EAF4FB',
+  },
+  logoutButtonPressed: {
+    opacity: 0.72,
   },
   modeBadge: {
     borderRadius: 8,

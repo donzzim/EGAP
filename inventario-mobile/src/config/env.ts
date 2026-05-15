@@ -1,4 +1,4 @@
-﻿const apiUrl =
+const apiUrl =
     process.env.EXPO_PUBLIC_API_URL ??
     process.env.EXPO_PUBLIC_EGAP_API_URL ?? // fallback legado
     '';

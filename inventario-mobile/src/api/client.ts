@@ -1,4 +1,4 @@
-﻿import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from 'expo-secure-store';
 import { ENV } from '../config/env';
 import { ApiError, NetworkError } from './errors';
 
@@ -47,6 +47,18 @@ interface ApiResponse<T = unknown> {
     data: T;
 }
 
+function getErrorMessage(data: unknown): string {
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+        const message = data.message;
+
+        if (typeof message === 'string' && message.trim() !== '') {
+            return message;
+        }
+    }
+
+    return 'Erro na requisição.';
+}
+
 // ---------------------------------------------------------------------------
 // Função central de requisição
 // ---------------------------------------------------------------------------
@@ -90,7 +102,7 @@ export async function request<T = unknown>(
         }
 
         if (!response.ok) {
-            throw new ApiError(response.status, (data as any)?.message ?? 'Erro na requisição.', data);
+            throw new ApiError(response.status, getErrorMessage(data), data);
         }
 
         return { status: response.status, data };
