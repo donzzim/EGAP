@@ -6,8 +6,19 @@ import {
   type BarcodeType,
 } from 'expo-camera';
 import { router, type Href } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  Easing,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { authApi, type MobileUser } from '@/src/api/auth';
@@ -97,13 +108,6 @@ function getRequestErrorMessage(error: unknown): string {
   return 'Não foi possível consultar o patrimônio.';
 }
 
-const summaryItems = [
-  { label: 'Esperados', value: '128', color: '#1E4E79', icon: 'inventory' },
-  { label: 'Conferidos', value: '76', color: '#2F855A', icon: 'check-circle' },
-  { label: 'Pendentes', value: '42', color: '#B7791F', icon: 'schedule' },
-  { label: 'Divergentes', value: '10', color: '#C53030', icon: 'report-problem' },
-] as const;
-
 function getRecentBemStatusColor(situacao: string): string {
   const normalizedSituacao = situacao
     .normalize('NFD')
@@ -138,6 +142,7 @@ export default function PrincipalScreen() {
   const [consultedBem, setConsultedBem] = useState<BemPatrimonial | null>(null);
   const [isPatrimonioModalVisible, setIsPatrimonioModalVisible] = useState(false);
   const [recentBens, setRecentBens] = useState<RecentBem[]>([]);
+  const notificationProgress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     let isMounted = true;
@@ -188,14 +193,33 @@ export default function PrincipalScreen() {
       return;
     }
 
+    notificationProgress.setValue(0);
+
+    Animated.timing(notificationProgress, {
+      toValue: 1,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+
     const timeoutId = setTimeout(() => {
-      setNotification(null);
-    }, 3200);
+      Animated.timing(notificationProgress, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) {
+          setNotification(null);
+        }
+      });
+    }, 3000);
 
     return () => {
       clearTimeout(timeoutId);
+      notificationProgress.stopAnimation();
     };
-  }, [notification]);
+  }, [notification, notificationProgress]);
 
   async function handleLogout() {
     setIsLoggingOut(true);
@@ -329,12 +353,25 @@ export default function PrincipalScreen() {
     </View>
   );
 
+  const notificationAnimatedStyle = {
+    opacity: notificationProgress,
+    transform: [
+      {
+        translateY: notificationProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [28, 0],
+        }),
+      },
+    ],
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {notification ? (
-        <View
+        <Animated.View
           style={[
             styles.notificationPopup,
+            notificationAnimatedStyle,
             notification.tone === 'success'
               ? styles.notificationSuccess
               : notification.tone === 'error'
@@ -347,7 +384,7 @@ export default function PrincipalScreen() {
             color="#FFFFFF"
           />
           <Text style={styles.notificationText}>{notification.message}</Text>
-        </View>
+        </Animated.View>
       ) : null}
 
       <Modal
@@ -437,7 +474,7 @@ export default function PrincipalScreen() {
         <View style={styles.header}>
           <View style={styles.headerTextGroup}>
             <Text style={styles.eyebrow}>EGap Mobile</Text>
-            <Text style={styles.title}>Conferência Patrimonial</Text>
+            <Text style={styles.title}>Seção Patrimonial</Text>
           </View>
           <Pressable
             disabled={isLoggingOut}
@@ -475,7 +512,13 @@ export default function PrincipalScreen() {
             </View>
           </View>
 
-          <View style={styles.scannerMock}>
+          <Pressable
+            disabled={isScannerActive}
+            onPress={handleStartScanner}
+            style={({ pressed }) => [
+              styles.scannerMock,
+              pressed && styles.scannerMockPressed,
+            ]}>
             {isScannerActive && cameraPermission?.granted ? (
               <CameraView
                 style={styles.cameraPreview}
@@ -489,7 +532,7 @@ export default function PrincipalScreen() {
             {!isScannerActive ? (
               <>
                 <MaterialIcons name="center-focus-strong" size={56} color="#1E4E79" />
-                <Text style={styles.scannerText}>Toque em iniciar leitura</Text>
+                <Text style={styles.scannerText}>Toque para abrir a câmera</Text>
               </>
             ) : null}
             {isScannerActive ? (
@@ -504,7 +547,7 @@ export default function PrincipalScreen() {
             <View style={styles.scanLine} />
             <View style={styles.scanCornerBottomLeft} />
             <View style={styles.scanCornerBottomRight} />
-          </View>
+          </Pressable>
 
           <View style={styles.manualEntry}>
             <MaterialIcons name="pin" size={20} color="#627D98" />
@@ -542,28 +585,18 @@ export default function PrincipalScreen() {
 
         </View>
 
-        <View style={styles.summaryGrid}>
-          {summaryItems.map((item) => (
-            <View key={item.label} style={styles.summaryCard}>
-              <MaterialIcons name={item.icon} size={22} color={item.color} />
-              <Text style={[styles.summaryValue, { color: item.color }]}>{item.value}</Text>
-              <Text style={styles.summaryLabel}>{item.label}</Text>
-            </View>
-          ))}
-        </View>
-
         <View style={styles.actionsPanel}>
           <Text style={styles.sectionTitle}>Ações do serviço</Text>
           <View style={styles.actionsGrid}>
             <Pressable
-              onPress={handleStartScanner}
+              onPress={() => router.push('/conferencia' as Href)}
               style={({ pressed }) => [
                 styles.actionButtonPrimary,
                 pressed && styles.actionButtonPressed,
               ]}>
-              <MaterialIcons name={isScannerActive ? 'videocam-off' : 'qr-code-scanner'} size={22} color="#FFFFFF" />
+              <MaterialIcons name="fact-check" size={22} color="#FFFFFF" />
               <Text style={styles.actionButtonPrimaryText}>
-                {isScannerActive ? 'Fechar câmera' : 'Iniciar leitura'}
+                Conferência de bens
               </Text>
             </Pressable>
             <Pressable
@@ -629,10 +662,10 @@ const styles = StyleSheet.create({
   },
   notificationPopup: {
     position: 'absolute',
-    top: 12,
+    bottom: 18,
     right: 20,
     left: 20,
-    zIndex: 10,
+    zIndex: 20,
     elevation: 6,
     minHeight: 48,
     flexDirection: 'row',
@@ -891,6 +924,10 @@ const styles = StyleSheet.create({
     borderColor: '#BCCCDC',
     backgroundColor: '#F8FAFC',
   },
+  scannerMockPressed: {
+    borderColor: '#1E4E79',
+    backgroundColor: '#EAF4FB',
+  },
   cameraPreview: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -1007,29 +1044,6 @@ const styles = StyleSheet.create({
   consultButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '800',
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  summaryCard: {
-    width: '48.5%',
-    gap: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#D9E2EC',
-    backgroundColor: '#FFFFFF',
-    padding: 14,
-  },
-  summaryValue: {
-    fontSize: 25,
-    fontWeight: '800',
-  },
-  summaryLabel: {
-    color: '#52616B',
-    fontSize: 13,
     fontWeight: '800',
   },
   actionsPanel: {
