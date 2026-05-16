@@ -45,8 +45,8 @@ class ItemInventario extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->atualizado_por = auth()->id();
-            $model->date_time = now();
+            $model->atualizado_por ??= auth()->id();
+            $model->date_time ??= now();
         });
     }
 }

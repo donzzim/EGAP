@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BensController;
+use App\Http\Controllers\Api\ConferenciaBensController;
 use App\Http\Controllers\Api\MobileAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,5 +16,15 @@ Route::prefix('mobile-api')->group(function (): void {
 
         Route::get('/bens', [BensController::class, 'index'])->name('mobile.bens');
         Route::get('/bens/{numPatrimonio}', [BensController::class, 'show'])->name('mobile.bens.show');
+
+        Route::prefix('conferencia')->name('mobile.conferencia.')->group(function () {
+            Route::get('/atual', [ConferenciaBensController::class, 'atual'])->name('atual');
+            Route::get('/bens', [ConferenciaBensController::class, 'bens'])->name('bens');
+            Route::post('/validar-leitura', [ConferenciaBensController::class, 'validarLeitura'])->name('validar-leitura');
+            Route::post('/localizar', [ConferenciaBensController::class, 'localizar'])->name('localizar');
+            Route::post('/nao-localizados', [ConferenciaBensController::class, 'naoLocalizados'])->name('nao-localizados');
+            Route::post('/divergencias', [ConferenciaBensController::class, 'divergencias'])->name('divergencias');
+            Route::post('/finalizar', [ConferenciaBensController::class, 'finalizar'])->name('finalizar');
+        });
     });
 });
