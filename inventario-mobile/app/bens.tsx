@@ -8,12 +8,15 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { ApiError, NetworkError } from '@/src/api/errors';
+
+const BENS_PER_PAGE = 30;
 
 function displayValue(value: unknown, fallback = '-'): string {
   if (value === null || value === undefined || value === '') {
@@ -56,18 +59,37 @@ export default function BensScreen() {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [bens, setBens] = useState<BemPatrimonial[]>([]);
   const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [search, setSearch] = useState('');
+  const [submittedSearch, setSubmittedSearch] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadBens = useCallback(async (refreshing = false) => {
-    if (refreshing) {
+  const loadBens = useCallback(async ({
+    pageToLoad = 1,
+    append = false,
+    refreshing = false,
+    searchTerm = '',
+  }: {
+    pageToLoad?: number;
+    append?: boolean;
+    refreshing?: boolean;
+    searchTerm?: string;
+  } = {}) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else if (refreshing) {
       setIsRefreshing(true);
     } else {
       setIsLoading(true);
     }
 
-    setErrorMessage(null);
+    if (!append) {
+      setErrorMessage(null);
+    }
 
     try {
       const session = await authApi.getStoredSession();
@@ -79,20 +101,78 @@ export default function BensScreen() {
 
       setUser(session.user);
 
-      const result = await bensApi.listByUserSector();
+      const result = await bensApi.listByUserSector({
+        page: pageToLoad,
+        perPage: BENS_PER_PAGE,
+        search: searchTerm,
+      });
 
-      setBens(result.bens);
+      setBens((currentBens) => append ? [...currentBens, ...result.bens] : result.bens);
       setTotal(result.total);
+      setCurrentPage(result.meta.current_page);
+      setHasMore(result.meta.has_more);
     } catch (error) {
-      setErrorMessage(getErrorMessage(error));
+      if (append) {
+        setHasMore(false);
+      } else {
+        setErrorMessage(getErrorMessage(error));
+      }
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
+      setIsLoadingMore(false);
     }
   }, []);
 
   useEffect(() => {
     loadBens();
+  }, [loadBens]);
+
+  const handleRefresh = useCallback(() => {
+    loadBens({
+      pageToLoad: 1,
+      refreshing: true,
+      searchTerm: submittedSearch,
+    });
+  }, [loadBens, submittedSearch]);
+
+  const handleLoadMore = useCallback(() => {
+    if (isLoading || isRefreshing || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    loadBens({
+      pageToLoad: currentPage + 1,
+      append: true,
+      searchTerm: submittedSearch,
+    });
+  }, [
+    currentPage,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    isRefreshing,
+    loadBens,
+    submittedSearch,
+  ]);
+
+  const handleSearch = useCallback(() => {
+    const nextSearch = search.trim();
+
+    setSubmittedSearch(nextSearch);
+    loadBens({
+      pageToLoad: 1,
+      searchTerm: nextSearch,
+    });
+  }, [loadBens, search]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearch('');
+    setSubmittedSearch('');
+    loadBens({
+      pageToLoad: 1,
+      searchTerm: '',
+    });
   }, [loadBens]);
 
   function renderBem({ item }: { item: BemPatrimonial }) {
@@ -148,6 +228,36 @@ export default function BensScreen() {
         </View>
       </View>
 
+      <View style={styles.searchPanel}>
+        <View style={styles.searchInputWrapper}>
+          <MaterialIcons name="search" size={21} color="#627D98" />
+          <TextInput
+            placeholder="Buscar por patrimônio, descrição, marca ou série"
+            placeholderTextColor="#829AB1"
+            autoCorrect={false}
+            returnKeyType="search"
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={handleSearch}
+            style={styles.searchInput}
+          />
+          {search ? (
+            <Pressable onPress={handleClearSearch} style={styles.clearSearchButton}>
+              <MaterialIcons name="close" size={18} color="#1E4E79" />
+            </Pressable>
+          ) : null}
+        </View>
+        <Pressable
+          disabled={isLoading}
+          onPress={handleSearch}
+          style={({ pressed }) => [
+            styles.searchButton,
+            (pressed || isLoading) && styles.searchButtonPressed,
+          ]}>
+          <Text style={styles.searchButtonText}>Buscar</Text>
+        </Pressable>
+      </View>
+
       {isLoading ? (
         <View style={styles.centerState}>
           <ActivityIndicator color="#1E4E79" />
@@ -158,7 +268,7 @@ export default function BensScreen() {
           <MaterialIcons name="error-outline" size={30} color="#C53030" />
           <Text style={styles.errorTitle}>Falha ao carregar</Text>
           <Text style={styles.centerStateText}>{errorMessage}</Text>
-          <Pressable onPress={() => loadBens()} style={styles.retryButton}>
+          <Pressable onPress={() => loadBens({ pageToLoad: 1 })} style={styles.retryButton}>
             <MaterialIcons name="refresh" size={20} color="#FFFFFF" />
             <Text style={styles.retryButtonText}>Tentar novamente</Text>
           </Pressable>
@@ -169,13 +279,31 @@ export default function BensScreen() {
           keyExtractor={(item, index) => `${getBemCodigo(item)}-${item.id}-${index}`}
           renderItem={renderBem}
           contentContainerStyle={bens.length > 0 ? styles.listContent : styles.emptyContent}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.35}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
-              onRefresh={() => loadBens(true)}
+              onRefresh={handleRefresh}
               tintColor="#1E4E79"
               colors={['#1E4E79']}
             />
+          }
+          ListFooterComponent={
+            bens.length > 0 ? (
+              <View style={styles.listFooter}>
+                {isLoadingMore ? (
+                  <>
+                    <ActivityIndicator color="#1E4E79" />
+                    <Text style={styles.listFooterText}>Carregando mais bens</Text>
+                  </>
+                ) : hasMore ? (
+                  <Text style={styles.listFooterText}>Role para carregar mais</Text>
+                ) : (
+                  <Text style={styles.listFooterText}>Todos os bens foram carregados</Text>
+                )}
+              </View>
+            ) : null
           }
           ListEmptyComponent={
             <View style={styles.emptyPanel}>
@@ -243,6 +371,55 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 14,
   },
+  searchPanel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  searchInputWrapper: {
+    minHeight: 48,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D9E2EC',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#102A43',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  clearSearchButton: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: '#EAF4FB',
+  },
+  searchButton: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: '#1E4E79',
+    paddingHorizontal: 14,
+  },
+  searchButtonPressed: {
+    opacity: 0.72,
+  },
+  searchButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
   contextIcon: {
     width: 42,
     height: 42,
@@ -289,6 +466,19 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 20,
     paddingBottom: 24,
+  },
+  listFooter: {
+    minHeight: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingTop: 6,
+  },
+  listFooterText: {
+    color: '#627D98',
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   bemRow: {
     minHeight: 92,

@@ -49,6 +49,23 @@ export interface BemPatrimonial {
 export interface BensSetorResult {
     bens: BemPatrimonial[];
     total: number;
+    meta: BensPaginationMeta;
+}
+
+export interface BensPaginationMeta {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    has_more: boolean;
+}
+
+export interface BensListParams {
+    page?: number;
+    perPage?: number;
+    search?: string;
 }
 
 type BensApiResponse =
@@ -57,7 +74,13 @@ type BensApiResponse =
         data?: BemPatrimonial[];
         total?: number;
         meta?: {
+            current_page?: number;
+            per_page?: number;
             total?: number;
+            last_page?: number;
+            from?: number | null;
+            to?: number | null;
+            has_more?: boolean;
         };
     }
     | BemPatrimonial[];
@@ -114,15 +137,52 @@ function normalizeBensResponse(response: BensApiResponse): BensSetorResult {
         return {
             bens: response,
             total: response.length,
+            meta: {
+                current_page: 1,
+                per_page: response.length,
+                total: response.length,
+                last_page: 1,
+                from: response.length > 0 ? 1 : null,
+                to: response.length > 0 ? response.length : null,
+                has_more: false,
+            },
         };
     }
 
     const bens = response.bens ?? response.data ?? [];
+    const total = response.total ?? response.meta?.total ?? bens.length;
+    const currentPage = response.meta?.current_page ?? 1;
+    const perPage = response.meta?.per_page ?? bens.length;
+    const lastPage = response.meta?.last_page ?? currentPage;
 
     return {
         bens,
-        total: response.total ?? response.meta?.total ?? bens.length,
+        total,
+        meta: {
+            current_page: currentPage,
+            per_page: perPage,
+            total,
+            last_page: lastPage,
+            from: response.meta?.from ?? (bens.length > 0 ? 1 : null),
+            to: response.meta?.to ?? (bens.length > 0 ? bens.length : null),
+            has_more: response.meta?.has_more ?? currentPage < lastPage,
+        },
     };
+}
+
+function buildBensEndpoint(params: BensListParams = {}): string {
+    const query = new URLSearchParams();
+
+    query.set('page', String(params.page ?? 1));
+    query.set('per_page', String(params.perPage ?? 30));
+
+    const search = params.search?.trim();
+
+    if (search) {
+        query.set('search', search);
+    }
+
+    return `/bens?${query.toString()}`;
 }
 
 function normalizeBemConsultaResponse(
@@ -155,8 +215,8 @@ function normalizeBemConsultaResponse(
 }
 
 export const bensApi = {
-    async listByUserSector(): Promise<BensSetorResult> {
-        const { data } = await apiClient.get<BensApiResponse>('/bens');
+    async listByUserSector(params: BensListParams = {}): Promise<BensSetorResult> {
+        const { data } = await apiClient.get<BensApiResponse>(buildBensEndpoint(params));
 
         return normalizeBensResponse(data);
     },

@@ -36,12 +36,17 @@ class BensController extends Controller
             ], 422);
         }
 
-        $bens = $this->bensQuery()
+        $perPage = $this->perPage($request);
+        $search = trim((string) $request->query('search', ''));
+
+        $paginator = $this->bensQuery()
             ->where('UnidadeJudiciaria', $unidadeJudiciaria)
             ->where('Setor', $setor)
+            ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
             ->orderBy('NumPatrimonio')
-            ->get()
-            ->map(fn (BemMovel $bem): array => $this->bemToArray($bem));
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (BemMovel $bem): array => $this->bemToArray($bem));
 
         return response()->json([
             'scope' => [
@@ -50,8 +55,17 @@ class BensController extends Controller
                 'setor' => $setor,
                 'unidade_judiciaria' => $unidadeJudiciaria,
             ],
-            'total' => $bens->count(),
-            'bens' => $bens,
+            'total' => $paginator->total(),
+            'bens' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'has_more' => $paginator->hasMorePages(),
+            ],
         ]);
     }
 
@@ -126,6 +140,34 @@ class BensController extends Controller
             ]);
     }
 
+    private function applySearch(Builder $query, string $search): Builder
+    {
+        $numericSearch = preg_replace('/\D+/', '', $search) ?? '';
+
+        return $query->where(function (Builder $query) use ($search, $numericSearch): void {
+            $query
+                ->where('Descricao', 'like', "%{$search}%")
+                ->orWhere('NumerodePatAnterior', 'like', "%{$search}%")
+                ->orWhere('NumerodeSerie', 'like', "%{$search}%")
+                ->orWhereHas('descricaoResumidaBemRef', function (Builder $relationQuery) use ($search): void {
+                    $relationQuery->where('Descricao', 'like', "%{$search}%");
+                })
+                ->orWhereHas('marcaRef', function (Builder $relationQuery) use ($search): void {
+                    $relationQuery->where('descricao', 'like', "%{$search}%");
+                })
+                ->orWhereHas('modeloRef', function (Builder $relationQuery) use ($search): void {
+                    $relationQuery->where('descricao', 'like', "%{$search}%");
+                });
+
+            if ($numericSearch !== '') {
+                $query
+                    ->orWhere('NumPatrimonio', (int) $numericSearch)
+                    ->orWhere('NumTomboSmarapd', (int) $numericSearch)
+                    ->orWhere('TomboSmarapd', 'like', "%{$numericSearch}%");
+            }
+        });
+    }
+
     private function bemToArray(BemMovel $bem): array
     {
         return [
@@ -179,5 +221,16 @@ class BensController extends Controller
         $integerValue = (int) $value;
 
         return $integerValue > 0 ? $integerValue : null;
+    }
+
+    private function perPage(Request $request): int
+    {
+        $perPage = (int) $request->query('per_page', 30);
+
+        if ($perPage < 1) {
+            return 30;
+        }
+
+        return min($perPage, 50);
     }
 }
