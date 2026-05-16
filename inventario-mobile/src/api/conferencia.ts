@@ -93,6 +93,7 @@ export interface AcaoConferenciaResult {
   status?: string;
   message: string;
   bem?: BemConferencia | null;
+  bens?: BemConferencia[];
   resumo?: ConferenciaResumo;
   inventario?: ConferenciaInventario;
   atividade?: ConferenciaAtividade;

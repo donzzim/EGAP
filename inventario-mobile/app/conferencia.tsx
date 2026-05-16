@@ -58,6 +58,7 @@ const FILTERS: { key: FilterStatus; label: string }[] = [
   { key: 'nao_localizado', label: 'Não localizados' },
   { key: 'divergente', label: 'Divergentes' },
   { key: 'em_transferencia', label: 'Transferência' },
+  { key: 'cadastrado_manualmente', label: 'Manuais' },
 ];
 
 function onlyDigits(value: string): string {
@@ -192,18 +193,46 @@ export default function ConferenciaScreen() {
     setNotification({ message, tone });
   }
 
-  async function refreshAfterAction(message?: string) {
-    const data = await conferenciaApi.listarBens();
-    setInfo({
-      inventario: data.inventario,
-      atividade: data.atividade,
-      resumo: data.resumo,
-      scope: data.scope,
-    });
-    setBens(data.bens);
+  function mergeBens(updatedBens: BemConferencia[]) {
+    if (updatedBens.length === 0) {
+      return;
+    }
 
-    if (message) {
-      showNotification(message, 'success');
+    setBens((currentBens) => {
+      const updatedById = new Map(updatedBens.map((bem) => [String(bem.id), bem]));
+
+      return currentBens.map((bem) => updatedById.get(String(bem.id)) ?? bem);
+    });
+  }
+
+  function applyActionResult(result: {
+    message?: string;
+    bem?: BemConferencia | null;
+    bens?: BemConferencia[];
+    resumo?: ConferenciaInfo['resumo'];
+    inventario?: ConferenciaInfo['inventario'];
+    atividade?: ConferenciaInfo['atividade'];
+  }) {
+    setInfo((currentInfo) => {
+      if (!currentInfo) {
+        return currentInfo;
+      }
+
+      return {
+        inventario: result.inventario ?? currentInfo.inventario,
+        atividade: result.atividade ?? currentInfo.atividade,
+        resumo: result.resumo ?? currentInfo.resumo,
+        scope: currentInfo.scope,
+      };
+    });
+
+    mergeBens([
+      ...(result.bem ? [result.bem] : []),
+      ...(result.bens ?? []),
+    ]);
+
+    if (result.message) {
+      showNotification(result.message, 'success');
     }
   }
 
@@ -277,7 +306,7 @@ export default function ConferenciaScreen() {
       const result = await conferenciaApi.localizar(payload);
       setResultadoLeitura(null);
       setManualCode('');
-      await refreshAfterAction(result.message);
+      applyActionResult(result);
     } catch (error) {
       showNotification(getRequestErrorMessage(error), 'error');
     } finally {
@@ -301,7 +330,7 @@ export default function ConferenciaScreen() {
       const result = await conferenciaApi.registrarNaoLocalizado([naoLocalizadoBem.id], justificativa.trim());
       setNaoLocalizadoBem(null);
       setJustificativa('');
-      await refreshAfterAction(result.message);
+      applyActionResult(result);
     } catch (error) {
       showNotification(getRequestErrorMessage(error), 'error');
     } finally {
@@ -335,7 +364,7 @@ export default function ConferenciaScreen() {
       setDivergenciaBem(null);
       setCamposDivergentes('');
       setObservacaoDivergencia('');
-      await refreshAfterAction(result.message);
+      applyActionResult(result);
     } catch (error) {
       showNotification(getRequestErrorMessage(error), 'error');
     } finally {
@@ -357,7 +386,7 @@ export default function ConferenciaScreen() {
 
             try {
               const result = await conferenciaApi.finalizar();
-              await refreshAfterAction(result.message);
+              applyActionResult(result);
             } catch (error) {
               showNotification(getRequestErrorMessage(error), 'error');
             } finally {
@@ -588,6 +617,7 @@ export default function ConferenciaScreen() {
           {renderMetric('Não localizados', info?.resumo.nao_localizados ?? 0, '#C53030')}
           {renderMetric('Divergentes', info?.resumo.divergentes ?? 0, '#1E4E79')}
           {renderMetric('Transferência', info?.resumo.em_transferencia ?? 0, '#1E4E79')}
+          {renderMetric('Manuais', info?.resumo.cadastrados_manualmente ?? 0, '#B7791F')}
         </View>
 
         <View style={styles.scanPanel}>

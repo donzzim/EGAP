@@ -11,7 +11,86 @@ use Illuminate\Http\Request;
 
 class BensController extends Controller
 {
+    private const SITUACOES_ELEGIVEIS = [1, 7, 8];
+
     public function index(Request $request, UsersConnectionService $usersConnectionService): JsonResponse
+    {
+        $scope = $this->scope($request, $usersConnectionService);
+
+        if ($scope instanceof JsonResponse) {
+            return $scope;
+        }
+
+        $perPage = $this->perPage($request);
+        $search = trim((string) $request->query('search', ''));
+
+        $paginator = $this->bensQuery()
+            ->where('UnidadeJudiciaria', $scope['unidade_judiciaria'])
+            ->where('Setor', $scope['setor'])
+            ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS)
+            ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
+            ->orderBy('NumPatrimonio')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (BemMovel $bem): array => $this->bemToArray($bem));
+
+        return response()->json([
+            'scope' => $scope,
+            'total' => $paginator->total(),
+            'bens' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'has_more' => $paginator->hasMorePages(),
+            ],
+        ]);
+    }
+
+    public function show(Request $request, UsersConnectionService $usersConnectionService, string $numPatrimonio): JsonResponse
+    {
+        $scope = $this->scope($request, $usersConnectionService);
+
+        if ($scope instanceof JsonResponse) {
+            return $scope;
+        }
+
+        $numPatrimonio = trim($numPatrimonio);
+
+        if ($numPatrimonio === '') {
+            return response()->json([
+                'message' => 'Informe o NumPatrimonio do bem.',
+            ], 422);
+        }
+
+        $bem = $this->bensQuery()
+            ->where('UnidadeJudiciaria', $scope['unidade_judiciaria'])
+            ->where('Setor', $scope['setor'])
+            ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS)
+            ->where(function (Builder $query) use ($numPatrimonio): void {
+                $this->applyPatrimonioSearch($query, $numPatrimonio);
+            })
+            ->first();
+
+        if ($bem === null) {
+            return response()->json([
+                'message' => 'Bem não encontrado.',
+                'patrimonio' => $numPatrimonio,
+            ], 404);
+        }
+
+        return response()->json([
+            'bem' => $this->bemToArray($bem),
+        ]);
+    }
+
+    /**
+     * @return array{user_id:int|string|null,id_egap:int|string|null,setor:int,unidade_judiciaria:int}|JsonResponse
+     */
+    private function scope(Request $request, UsersConnectionService $usersConnectionService): array|JsonResponse
     {
         $mobileUser = $usersConnectionService->findByUser($request->user());
 
@@ -36,63 +115,12 @@ class BensController extends Controller
             ], 422);
         }
 
-        $perPage = $this->perPage($request);
-        $search = trim((string) $request->query('search', ''));
-
-        $paginator = $this->bensQuery()
-            ->where('UnidadeJudiciaria', $unidadeJudiciaria)
-            ->where('Setor', $setor)
-            ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
-            ->orderBy('NumPatrimonio')
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(fn (BemMovel $bem): array => $this->bemToArray($bem));
-
-        return response()->json([
-            'scope' => [
-                'user_id' => $mobileUser->id(),
-                'id_egap' => $mobileUser->idEgap(),
-                'setor' => $setor,
-                'unidade_judiciaria' => $unidadeJudiciaria,
-            ],
-            'total' => $paginator->total(),
-            'bens' => $paginator->items(),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-                'last_page' => $paginator->lastPage(),
-                'from' => $paginator->firstItem(),
-                'to' => $paginator->lastItem(),
-                'has_more' => $paginator->hasMorePages(),
-            ],
-        ]);
-    }
-
-    public function show(string $numPatrimonio): JsonResponse
-    {
-        $numPatrimonio = trim($numPatrimonio);
-
-        if ($numPatrimonio === '') {
-            return response()->json([
-                'message' => 'Informe o NumPatrimonio do bem.',
-            ], 422);
-        }
-
-        $bem = $this->bensQuery()
-            ->where('NumPatrimonio', $numPatrimonio)
-            ->first();
-
-        if ($bem === null) {
-            return response()->json([
-                'message' => 'Bem não encontrado.',
-                'patrimonio' => $numPatrimonio,
-            ], 404);
-        }
-
-        return response()->json([
-            'bem' => $this->bemToArray($bem),
-        ]);
+        return [
+            'user_id' => $mobileUser->id(),
+            'id_egap' => $mobileUser->idEgap(),
+            'setor' => $setor,
+            'unidade_judiciaria' => $unidadeJudiciaria,
+        ];
     }
 
     private function bensQuery(): Builder
@@ -166,6 +194,20 @@ class BensController extends Controller
                     ->orWhere('TomboSmarapd', 'like', "%{$numericSearch}%");
             }
         });
+    }
+
+    private function applyPatrimonioSearch(Builder $query, string $patrimonio): void
+    {
+        $codigo = preg_replace('/\s+/', '', $patrimonio) ?? '';
+        $semZeros = ltrim($codigo, '0') ?: '0';
+
+        $query
+            ->where('NumPatrimonio', $codigo)
+            ->orWhere('NumPatrimonio', $semZeros)
+            ->orWhereRaw("TRIM(LEADING '0' FROM NumPatrimonio) = ?", [$semZeros])
+            ->orWhere('TomboSmarapd', $codigo)
+            ->orWhere('NumTomboSmarapd', $codigo)
+            ->orWhere('NumerodePatAnterior', $codigo);
     }
 
     private function bemToArray(BemMovel $bem): array

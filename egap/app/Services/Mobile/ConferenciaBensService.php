@@ -211,6 +211,13 @@ class ConferenciaBensService
 
         return [
             'message' => 'Bem não localizado registrado.',
+            'bens' => $bens
+                ->map(fn (BemMovel $bem): array => $this->bemToArray(
+                    $bem->fresh(),
+                    $inventario,
+                    $this->itemExistente($inventario, $scope, $bem),
+                ))
+                ->values(),
             'resumo' => $this->resumo($inventario, $scope),
         ];
     }
@@ -247,6 +254,17 @@ class ConferenciaBensService
                     'date_time' => now(),
                 ])->save();
 
+                BemMovel::query()
+                    ->whereKey($bem->getKey())
+                    ->update([
+                        'sit_inventario' => self::STATUS_DIVERGENTE,
+                        'id_inventario' => $inventario->id,
+                        'Usuario' => $scope['id_egap'],
+                        'date_time' => now(),
+                    ]);
+
+                $this->atualizarQuantidadeInventariada($inventario, $scope);
+
                 return $item;
             }
 
@@ -258,6 +276,15 @@ class ConferenciaBensService
                 $observacaoCompleta,
             ));
 
+            BemMovel::query()
+                ->whereKey($bem->getKey())
+                ->update([
+                    'sit_inventario' => self::STATUS_DIVERGENTE,
+                    'id_inventario' => $inventario->id,
+                    'Usuario' => $scope['id_egap'],
+                    'date_time' => now(),
+                ]);
+
             $this->atualizarQuantidadeInventariada($inventario, $scope);
 
             return $item;
@@ -266,7 +293,7 @@ class ConferenciaBensService
         return [
             'status' => 'divergente',
             'message' => 'Divergência registrada.',
-            'bem' => $this->bemToArray($bem, $inventario, $item),
+            'bem' => $this->bemToArray($bem->fresh(), $inventario, $item),
             'resumo' => $this->resumo($inventario, $scope),
         ];
     }
@@ -556,18 +583,44 @@ class ConferenciaBensService
         $divergentes = $this->countItens($inventario, $scope, self::STATUS_DIVERGENTE);
 
         $pendentes = (clone $this->bensEsperadosQuery($scope))
+            ->where('SituacaoBem', '<>', 7)
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('SituacaoBem', '<>', 8)
+                    ->orWhereExists(function ($query): void {
+                        $query
+                            ->selectRaw('1')
+                            ->from('mat_transferencia')
+                            ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
+                            ->whereColumn('mat_transferencia.NumPatrimonio', 'mat_patrimonio.id')
+                            ->where('mat_arquivodigital.situacao', 1);
+                    });
+            })
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereNull('sit_inventario')
+                    ->orWhere('sit_inventario', 'not like', 'EM TRANSF%');
+            })
             ->whereNotExists(function ($query) use ($inventario, $scope): void {
                 $query
                     ->selectRaw('1')
                     ->from('mat_itensinventario')
-                    ->whereColumn('mat_itensinventario.id_bem', 'mat_patrimonio.id')
                     ->where('mat_itensinventario.id_inventario', $inventario->id)
-                    ->where('mat_itensinventario.setor', $scope['setor']);
+                    ->where('mat_itensinventario.setor', $scope['setor'])
+                    ->where(function ($query): void {
+                        $query
+                            ->whereColumn('mat_itensinventario.id_bem', 'mat_patrimonio.id')
+                            ->orWhereColumn('mat_itensinventario.num_patrimonio', 'mat_patrimonio.NumPatrimonio');
+                    });
             })
             ->count();
 
         $emTransferencia = (clone $this->bensEsperadosQuery($scope))
-            ->where('sit_inventario', 'like', 'EM TRANSF%')
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('SituacaoBem', 7)
+                    ->orWhere('sit_inventario', 'like', 'EM TRANSF%');
+            })
             ->count();
 
         $cadastradosManualmente = (clone $this->bensEsperadosQuery($scope))
@@ -726,7 +779,8 @@ class ConferenciaBensService
 
     private function isEmTransferencia(BemMovel $bem): bool
     {
-        return Str::startsWith(Str::upper(Str::ascii((string) $bem->sit_inventario)), 'EM TRANSF');
+        return (int) $bem->SituacaoBem === 7
+            || Str::startsWith(Str::upper(Str::ascii((string) $bem->sit_inventario)), 'EM TRANSF');
     }
 
     private function inventarioToArray(Inventario $inventario): array
