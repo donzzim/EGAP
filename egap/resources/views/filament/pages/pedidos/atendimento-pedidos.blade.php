@@ -4,7 +4,7 @@
                  class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div style="flex: 1; min-height: 0; overflow: hidden; padding: 1rem;">
                 @livewire(
-                    \App\Filament\Egap\Livewire\AtendimentoPedidos\PedidosEmAbertoTable::class,
+                    \App\Filament\Livewire\AtendimentoPedidos\PedidosEmAbertoTable::class,
                     [],
                     key('pedidos-em-aberto-table')
                 )
@@ -15,7 +15,7 @@
                  class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div style="flex: 1; min-height: 0; overflow: hidden; padding: 1rem;">
                 @livewire(
-                    \App\Filament\Egap\Livewire\AtendimentoPedidos\MateriaisDisponiveisTable::class,
+                    \App\Filament\Livewire\AtendimentoPedidos\MateriaisDisponiveisTable::class,
                     [],
                     key('materiais-disponiveis-table')
                 )
