@@ -4,14 +4,79 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensMoveis\SituacaoBemMovel;
+use App\Services\Mobile\ConferenciaBensService;
 use App\Services\UsersConnectionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class BensController extends Controller
 {
     private const SITUACOES_ELEGIVEIS = [1, 7, 8];
+
+    public function dashboard(
+        Request $request,
+        UsersConnectionService $usersConnectionService,
+        ConferenciaBensService $conferenciaBensService,
+    ): JsonResponse {
+        $scope = $this->scope($request, $usersConnectionService);
+
+        if ($scope instanceof JsonResponse) {
+            return $scope;
+        }
+
+        $baseQuery = $this->bensDoSetorBaseQuery($scope);
+        $totalBens = (clone $baseQuery)->count();
+        $financeiro = (clone $baseQuery)
+            ->selectRaw('
+                COALESCE(SUM(ValorAquisicao), 0) as valor_aquisicao,
+                COALESCE(SUM(Valor), 0) as valor_atual,
+                COALESCE(SUM(CASE WHEN ValorAquisicao IS NULL AND Valor IS NULL THEN 1 ELSE 0 END), 0) as sem_valor
+            ')
+            ->first();
+        $situacoes = (clone $baseQuery)
+            ->selectRaw('SituacaoBem as situacao_id, COUNT(*) as total')
+            ->groupBy('SituacaoBem')
+            ->orderByDesc('total')
+            ->get();
+        $situacaoLabels = SituacaoBemMovel::query()
+            ->whereIn('id', $situacoes->pluck('situacao_id')->filter()->values())
+            ->get(['id', 'descricao', 'situacao'])
+            ->keyBy('id');
+
+        try {
+            $conferencia = $conferenciaBensService->atual($scope);
+        } catch (Throwable) {
+            $conferencia = null;
+        }
+
+        return response()->json([
+            'scope' => $scope,
+            'bens' => [
+                'total' => $totalBens,
+                'situacoes' => $situacoes
+                    ->map(function ($row) use ($situacaoLabels): array {
+                        $situacao = $situacaoLabels->get($row->situacao_id);
+
+                        return [
+                            'id' => $row->situacao_id,
+                            'label' => $situacao?->descricao_completa ?? 'Sem situaÃ§Ã£o',
+                            'total' => (int) $row->total,
+                        ];
+                    })
+                    ->values(),
+            ],
+            'conferencia' => $conferencia,
+            'financeiro' => [
+                'valor_aquisicao' => (float) ($financeiro?->valor_aquisicao ?? 0),
+                'valor_atual' => (float) ($financeiro?->valor_atual ?? 0),
+                'sem_valor' => (int) ($financeiro?->sem_valor ?? 0),
+                'avaliados' => $totalBens,
+            ],
+        ]);
+    }
 
     public function index(Request $request, UsersConnectionService $usersConnectionService): JsonResponse
     {
@@ -24,10 +89,7 @@ class BensController extends Controller
         $perPage = $this->perPage($request);
         $search = trim((string) $request->query('search', ''));
 
-        $paginator = $this->bensQuery()
-            ->where('UnidadeJudiciaria', $scope['unidade_judiciaria'])
-            ->where('Setor', $scope['setor'])
-            ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS)
+        $paginator = $this->bensDoSetorQuery($scope)
             ->when($search !== '', fn (Builder $query) => $this->applySearch($query, $search))
             ->orderBy('NumPatrimonio')
             ->paginate($perPage)
@@ -164,6 +226,22 @@ class BensController extends Controller
                 'setorRef:id,Setor,CodigoPai',
                 'complementoSetorRef:id,descricao',
             ]);
+    }
+
+    private function bensDoSetorQuery(array $scope): Builder
+    {
+        return $this->bensQuery()
+            ->where('UnidadeJudiciaria', $scope['unidade_judiciaria'])
+            ->where('Setor', $scope['setor'])
+            ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS);
+    }
+
+    private function bensDoSetorBaseQuery(array $scope): Builder
+    {
+        return BemMovel::query()
+            ->where('UnidadeJudiciaria', $scope['unidade_judiciaria'])
+            ->where('Setor', $scope['setor'])
+            ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS);
     }
 
     private function applySearch(Builder $query, string $search): Builder

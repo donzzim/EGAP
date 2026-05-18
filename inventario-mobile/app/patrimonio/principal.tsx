@@ -21,6 +21,7 @@ import {
   type DimensionValue,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppMenuButton } from '@/components/app-menu-button';
 import { BottomBar } from '@/components/bottom-bar';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { authApi, type MobileUser } from '@/src/api/auth';
@@ -321,7 +322,6 @@ function formatRecentConsultedAt(value: string): string {
 export default function PrincipalScreen() {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [isScannerActive, setIsScannerActive] = useState(false);
   const [hasScannedBarcode, setHasScannedBarcode] = useState(false);
@@ -465,16 +465,6 @@ export default function PrincipalScreen() {
       notificationProgress.stopAnimation();
     };
   }, [notification, notificationProgress]);
-
-  async function handleLogout() {
-    setIsLoggingOut(true);
-
-    try {
-      await authApi.logout();
-    } finally {
-      router.replace('/');
-    }
-  }
 
   async function addBemToRecent(bem: BemPatrimonial) {
     const sessionUser = user ?? (await authApi.getStoredSession())?.user ?? null;
@@ -673,8 +663,8 @@ export default function PrincipalScreen() {
     { label: 'Localizados', value: 'localizados', color: '#2F855A' },
     { label: 'Pendentes', value: 'pendentes', color: '#B7791F' },
     { label: 'Divergentes', value: 'divergentes', color: '#1E4E79' },
-    { label: 'Nao localizados', value: 'nao_localizados', color: '#C53030' },
-    { label: 'Transferencia', value: 'em_transferencia', color: '#805AD5' },
+    { label: 'Não localizados', value: 'nao_localizados', color: '#C53030' },
+    { label: 'Transferência', value: 'em_transferencia', color: '#805AD5' },
   ];
 
   const renderMetricCard = (
@@ -822,23 +812,11 @@ export default function PrincipalScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
+          <AppMenuButton />
           <View style={styles.headerTextGroup}>
             <Text style={styles.eyebrow}>EGap Mobile</Text>
             <Text style={styles.title}>Seção Patrimonial</Text>
           </View>
-          <Pressable
-            disabled={isLoggingOut}
-            onPress={handleLogout}
-            style={({ pressed }) => [
-              styles.logoutButton,
-              (pressed || isLoggingOut) && styles.logoutButtonPressed,
-            ]}>
-            {isLoggingOut ? (
-              <ActivityIndicator color="#1E4E79" />
-            ) : (
-              <MaterialIcons name="logout" size={21} color="#1E4E79" />
-            )}
-          </Pressable>
         </View>
 
         <View style={styles.sectorPanel}>
@@ -858,13 +836,13 @@ export default function PrincipalScreen() {
           <View style={styles.panelHeaderRow}>
             <View>
               <Text style={styles.sectionTitle}>Painel do setor</Text>
-              <Text style={styles.sectionDescription}>Resumo operacional do patrimonio.</Text>
+              <Text style={styles.sectionDescription}>Resumo operacional do patrimônio.</Text>
             </View>
             {dashboard.isLoading ? (
               <ActivityIndicator color="#1E4E79" />
             ) : (
               <View style={styles.modeBadge}>
-                <Text style={styles.modeBadgeText}>Atualizado</Text>
+                <MaterialIcons name="check" size={16} color="#1E4E79" />
               </View>
             )}
           </View>
@@ -903,7 +881,7 @@ export default function PrincipalScreen() {
           <View style={styles.progressPanel}>
             <View style={styles.progressHeader}>
               <View>
-                <Text style={styles.progressTitle}>Progresso da conferencia</Text>
+                <Text style={styles.progressTitle}>Progresso da conferência</Text>
                 <Text style={styles.progressMeta}>
                   {formatCompactNumber(totalConferidos)} de {formatCompactNumber(totalConferencia)} bens tratados
                 </Text>
@@ -918,9 +896,9 @@ export default function PrincipalScreen() {
 
         <View style={styles.insightsPanel}>
           <View style={styles.panelHeaderRow}>
-            <Text style={styles.sectionTitle}>Estatisticas</Text>
+            <Text style={styles.sectionTitle}>Estatísticas</Text>
             <Pressable
-              onPress={() => router.push('/conferencia' as Href)}
+              onPress={() => router.push('/patrimonio/conferencia' as Href)}
               style={({ pressed }) => [
                 styles.headerActionButton,
                 pressed && styles.actionButtonPressed,
@@ -931,7 +909,7 @@ export default function PrincipalScreen() {
           </View>
 
           <View style={styles.statusChartPanel}>
-            <Text style={styles.chartGroupTitle}>Conferencia</Text>
+            <Text style={styles.chartGroupTitle}>Conferência</Text>
             {statusRows.map((row) => renderStatusBar(
               row.label,
               conferenciaResumo?.[row.value] ?? 0,
@@ -942,7 +920,7 @@ export default function PrincipalScreen() {
 
           {dashboard.situacoes.length > 0 ? (
             <View style={styles.statusChartPanel}>
-              <Text style={styles.chartGroupTitle}>Situacao patrimonial</Text>
+              <Text style={styles.chartGroupTitle}>Situação patrimonial</Text>
               {dashboard.situacoes.slice(0, 4).map((situacao, index) => renderStatusBar(
                 situacao.label,
                 situacao.total,
@@ -965,18 +943,12 @@ export default function PrincipalScreen() {
 
           <View style={styles.financeGrid}>
             <View style={styles.financeCard}>
-              <Text style={styles.financeLabel}>Aquisicao</Text>
+              <Text style={styles.financeLabel}>Aquisição</Text>
               <Text style={styles.financeValue}>{formatCompactMoney(dashboard.financeiro.aquisicao)}</Text>
             </View>
             <View style={styles.financeCard}>
               <Text style={styles.financeLabel}>Valor atual</Text>
               <Text style={styles.financeValue}>{formatCompactMoney(dashboard.financeiro.atual)}</Text>
-            </View>
-            <View style={styles.financeCardWide}>
-              <MaterialIcons name="info-outline" size={18} color="#627D98" />
-              <Text style={styles.financeNote}>
-                {dashboard.financeiro.semValor} bens estao sem valor informado.
-              </Text>
             </View>
           </View>
         </View>
@@ -1288,19 +1260,6 @@ const styles = StyleSheet.create({
     color: '#102A43',
     fontSize: 28,
     fontWeight: '800',
-  },
-  logoutButton: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#B6D4EA',
-    backgroundColor: '#EAF4FB',
-  },
-  logoutButtonPressed: {
-    opacity: 0.72,
   },
   modeBadge: {
     borderRadius: 8,

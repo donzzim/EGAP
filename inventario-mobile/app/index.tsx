@@ -34,7 +34,7 @@ export default function LoginScreen() {
       }
 
       if (session) {
-        router.replace('/principal');
+        router.replace('/patrimonio/principal');
         return;
       }
 
@@ -61,7 +61,7 @@ export default function LoginScreen() {
 
     try {
       await authApi.login(trimmedLogin, password);
-      router.replace('/principal');
+      router.replace('/patrimonio/principal');
     } catch (error) {
       if (error instanceof ApiError || error instanceof NetworkError) {
         setErrorMessage(error.message);

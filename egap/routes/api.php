@@ -14,6 +14,7 @@ Route::prefix('mobile-api')->group(function (): void {
 
         Route::post('/logout', [MobileAuthController::class, 'logout'])->name('mobile.logout');
 
+        Route::get('/dashboard', [BensController::class, 'dashboard'])->name('mobile.dashboard');
         Route::get('/bens', [BensController::class, 'index'])->name('mobile.bens');
         Route::get('/bens/{numPatrimonio}', [BensController::class, 'show'])->name('mobile.bens.show');
 

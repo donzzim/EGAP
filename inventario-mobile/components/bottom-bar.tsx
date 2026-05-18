@@ -1,26 +1,32 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, usePathname, type Href } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { authApi } from '@/src/api/auth';
+import {
+  setPatrimonioNavigationDirectionFromRoutes,
+  type PatrimonioRoute,
+} from '@/src/navigation/patrimonioNavigation';
 
 interface BottomBarItem {
-  href: '/principal' | '/bens' | '/conferencia';
+  href: PatrimonioRoute;
   label: string;
   icon: keyof typeof MaterialIcons.glyphMap;
 }
 
 const ITEMS: BottomBarItem[] = [
   {
-    href: '/principal',
+    href: '/patrimonio/principal',
     label: 'Início',
     icon: 'home',
   },
   {
-    href: '/bens',
+    href: '/patrimonio/bens',
     label: 'Bens',
     icon: 'inventory-2',
   },
   {
-    href: '/conferencia',
+    href: '/patrimonio/conferencia',
     label: 'Conferência',
     icon: 'fact-check',
   },
@@ -28,13 +34,25 @@ const ITEMS: BottomBarItem[] = [
 
 export function BottomBar() {
   const pathname = usePathname();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   function handleNavigate(href: BottomBarItem['href']) {
     if (pathname === href) {
       return;
     }
 
+    setPatrimonioNavigationDirectionFromRoutes(pathname, href);
     router.replace(href as Href);
+  }
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+
+    try {
+      await authApi.logout();
+    } finally {
+      router.replace('/');
+    }
   }
 
   return (
@@ -62,6 +80,23 @@ export function BottomBar() {
           </Pressable>
         );
       })}
+      <Pressable
+        disabled={isLoggingOut}
+        onPress={handleLogout}
+        style={({ pressed }) => [
+          styles.item,
+          styles.logoutItem,
+          (pressed || isLoggingOut) && styles.itemPressed,
+        ]}>
+        {isLoggingOut ? (
+          <ActivityIndicator color="#C53030" />
+        ) : (
+          <MaterialIcons name="logout" size={22} color="#C53030" />
+        )}
+        <Text style={[styles.label, styles.logoutLabel]}>
+          Sair
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -93,6 +128,9 @@ const styles = StyleSheet.create({
   itemPressed: {
     backgroundColor: '#EAF4FB',
   },
+  logoutItem: {
+    maxWidth: 72,
+  },
   label: {
     color: '#1E4E79',
     fontSize: 11,
@@ -100,5 +138,8 @@ const styles = StyleSheet.create({
   },
   labelActive: {
     color: '#FFFFFF',
+  },
+  logoutLabel: {
+    color: '#C53030',
   },
 });

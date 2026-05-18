@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppMenuButton } from '@/components/app-menu-button';
 import { BottomBar } from '@/components/bottom-bar';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
@@ -203,6 +204,7 @@ export default function BensScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
+        <AppMenuButton />
         <View style={styles.headerTextGroup}>
           <Text style={styles.eyebrow}>Bens do setor</Text>
           <Text style={styles.title}>Patrimônio localizado</Text>

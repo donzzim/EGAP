@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppMenuButton } from '@/components/app-menu-button';
 import { BottomBar } from '@/components/bottom-bar';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { ApiError, NetworkError } from '@/src/api/errors';
@@ -572,6 +573,7 @@ export default function ConferenciaScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}>
         <View style={styles.header}>
+          <AppMenuButton />
           <View style={styles.headerTextGroup}>
             <Text style={styles.eyebrow}>Conferência de bens</Text>
             <Text style={styles.title}>Inventário</Text>
