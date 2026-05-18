@@ -21,7 +21,7 @@ O mobile consome a API Laravel em `/mobile-api`, autenticada com Laravel Sanctum
 ## Visao Geral Do Fluxo
 
 ```mermaid
-flowchart TD
+graph TD
     A[Usuario abre o app mobile] --> B[Login em /mobile-api/login]
     B --> C[Laravel valida usuario local ou usuario EGAP]
     C --> D[UsersConnectionService resolve CPF, usuario EGAP e ultima lotacao]
