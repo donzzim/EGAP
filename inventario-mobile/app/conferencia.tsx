@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomBar } from '@/components/bottom-bar';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { ApiError, NetworkError } from '@/src/api/errors';
 import {
@@ -571,9 +572,6 @@ export default function ConferenciaScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.iconButton}>
-            <MaterialIcons name="arrow-back" size={23} color="#1E4E79" />
-          </Pressable>
           <View style={styles.headerTextGroup}>
             <Text style={styles.eyebrow}>Conferência de bens</Text>
             <Text style={styles.title}>Inventário</Text>
@@ -727,6 +725,7 @@ export default function ConferenciaScreen() {
           <Text style={styles.primaryButtonText}>Finalizar conferência</Text>
         </Pressable>
       </ScrollView>
+      <BottomBar />
     </SafeAreaView>
   );
 }

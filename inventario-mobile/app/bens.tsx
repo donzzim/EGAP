@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomBar } from '@/components/bottom-bar';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { ApiError, NetworkError } from '@/src/api/errors';
@@ -202,10 +203,6 @@ export default function BensScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.iconButton}>
-          <MaterialIcons name="arrow-back" size={23} color="#1E4E79" />
-        </Pressable>
-
         <View style={styles.headerTextGroup}>
           <Text style={styles.eyebrow}>Bens do setor</Text>
           <Text style={styles.title}>Patrimônio localizado</Text>
@@ -316,6 +313,7 @@ export default function BensScreen() {
           }
         />
       )}
+      <BottomBar />
     </SafeAreaView>
   );
 }

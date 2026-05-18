@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomBar } from '@/components/bottom-bar';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { ApiError, NetworkError } from '@/src/api/errors';
@@ -756,32 +757,6 @@ export default function PrincipalScreen() {
 
         </View>
 
-        <View style={styles.actionsPanel}>
-          <Text style={styles.sectionTitle}>Ações do serviço</Text>
-          <View style={styles.actionsGrid}>
-            <Pressable
-              onPress={() => router.push('/conferencia' as Href)}
-              style={({ pressed }) => [
-                styles.actionButtonPrimary,
-                pressed && styles.actionButtonPressed,
-              ]}>
-              <MaterialIcons name="fact-check" size={22} color="#FFFFFF" />
-              <Text style={styles.actionButtonPrimaryText}>
-                Conferência de bens
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/bens' as Href)}
-              style={({ pressed }) => [
-                styles.actionButtonSecondary,
-                pressed && styles.actionButtonPressed,
-              ]}>
-              <MaterialIcons name="list-alt" size={22} color="#1E4E79" />
-              <Text style={styles.actionButtonSecondaryText}>Bens do setor</Text>
-            </Pressable>
-          </View>
-        </View>
-
         <View style={styles.assetsPanel}>
           <View style={styles.panelHeaderRow}>
             <Text style={styles.sectionTitle}>Últimas leituras</Text>
@@ -831,6 +806,7 @@ export default function PrincipalScreen() {
           )}
         </View>
       </ScrollView>
+      <BottomBar />
     </SafeAreaView>
   );
 }
