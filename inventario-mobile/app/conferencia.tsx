@@ -600,7 +600,7 @@ export default function ConferenciaScreen() {
           </View>
           <View style={styles.contextText}>
             <Text style={styles.contextName}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
-            <Text style={styles.contextMeta}>Setor {user?.setor ?? '-'} | Unidade {user?.unidade_judiciaria ?? '-'}</Text>
+            <Text style={styles.contextMeta}>Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}</Text>
             <Text style={styles.contextMeta}>Atividade: {info?.atividade.situacao ?? '-'}</Text>
           </View>
           <View style={[styles.lockBadge, canEdit ? styles.editableBadge : styles.blockedBadge]}>

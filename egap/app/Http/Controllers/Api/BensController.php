@@ -66,14 +66,7 @@ class BensController extends Controller
             ], 422);
         }
 
-        $bem = $this->bensQuery()
-            ->where('UnidadeJudiciaria', $scope['unidade_judiciaria'])
-            ->where('Setor', $scope['setor'])
-            ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS)
-            ->where(function (Builder $query) use ($numPatrimonio): void {
-                $this->applyPatrimonioSearch($query, $numPatrimonio);
-            })
-            ->first();
+        $bem = $this->buscarBemPorPatrimonio($numPatrimonio);
 
         if ($bem === null) {
             return response()->json([
@@ -84,6 +77,11 @@ class BensController extends Controller
 
         return response()->json([
             'bem' => $this->bemToArray($bem),
+            'scope' => [
+                'belongs_to_user_scope' => (int) $bem->UnidadeJudiciaria === $scope['unidade_judiciaria']
+                    && (int) $bem->Setor === $scope['setor'],
+                'situacao_elegivel' => in_array((int) $bem->SituacaoBem, self::SITUACOES_ELEGIVEIS, true),
+            ],
         ]);
     }
 
@@ -198,8 +196,9 @@ class BensController extends Controller
 
     private function applyPatrimonioSearch(Builder $query, string $patrimonio): void
     {
-        $codigo = preg_replace('/\s+/', '', $patrimonio) ?? '';
-        $semZeros = ltrim($codigo, '0') ?: '0';
+        $codigo = preg_replace('/\s+/', '', trim($patrimonio)) ?? '';
+        $somenteDigitos = preg_replace('/\D+/', '', $codigo) ?? '';
+        $semZeros = ltrim($somenteDigitos !== '' ? $somenteDigitos : $codigo, '0') ?: '0';
 
         $query
             ->where('NumPatrimonio', $codigo)
@@ -208,6 +207,23 @@ class BensController extends Controller
             ->orWhere('TomboSmarapd', $codigo)
             ->orWhere('NumTomboSmarapd', $codigo)
             ->orWhere('NumerodePatAnterior', $codigo);
+
+        if ($somenteDigitos !== '' && $somenteDigitos !== $codigo) {
+            $query
+                ->orWhere('NumPatrimonio', $somenteDigitos)
+                ->orWhere('TomboSmarapd', $somenteDigitos)
+                ->orWhere('NumTomboSmarapd', $somenteDigitos)
+                ->orWhere('NumerodePatAnterior', $somenteDigitos);
+        }
+    }
+
+    private function buscarBemPorPatrimonio(string $numPatrimonio): ?BemMovel
+    {
+        return $this->bensQuery()
+            ->where(function (Builder $query) use ($numPatrimonio): void {
+                $this->applyPatrimonioSearch($query, $numPatrimonio);
+            })
+            ->first();
     }
 
     private function bemToArray(BemMovel $bem): array

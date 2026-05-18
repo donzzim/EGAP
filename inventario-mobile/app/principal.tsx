@@ -5,8 +5,8 @@ import {
   type BarcodeScanningResult,
   type BarcodeType,
 } from 'expo-camera';
-import { router, type Href } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect, type Href } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -50,6 +50,113 @@ function displayValue(value: unknown, fallback = '-'): string {
   }
 
   return String(value);
+}
+
+function padDatePart(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+function buildLocalDate(
+  year: number,
+  month: number,
+  day: number,
+  hours = 0,
+  minutes = 0,
+  seconds = 0,
+): Date | null {
+  const date = new Date(year, month - 1, day, hours, minutes, seconds);
+
+  if (
+    date.getFullYear() !== year
+    || date.getMonth() !== month - 1
+    || date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function parseDateTime(value: unknown): Date | null {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      return null;
+    }
+
+    const timestamp = Math.abs(value) < 100000000000 ? value * 1000 : value;
+    const date = new Date(timestamp);
+
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  if (/^-?\d+(\.\d+)?$/.test(trimmedValue)) {
+    return parseDateTime(Number(trimmedValue));
+  }
+
+  const brazilianDateMatch = trimmedValue.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/,
+  );
+
+  if (brazilianDateMatch) {
+    return buildLocalDate(
+      Number(brazilianDateMatch[3]),
+      Number(brazilianDateMatch[2]),
+      Number(brazilianDateMatch[1]),
+      Number(brazilianDateMatch[4] ?? 0),
+      Number(brazilianDateMatch[5] ?? 0),
+      Number(brazilianDateMatch[6] ?? 0),
+    );
+  }
+
+  const databaseDateMatch = trimmedValue.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/,
+  );
+
+  if (databaseDateMatch) {
+    return buildLocalDate(
+      Number(databaseDateMatch[1]),
+      Number(databaseDateMatch[2]),
+      Number(databaseDateMatch[3]),
+      Number(databaseDateMatch[4] ?? 0),
+      Number(databaseDateMatch[5] ?? 0),
+      Number(databaseDateMatch[6] ?? 0),
+    );
+  }
+
+  const parsedDate = new Date(trimmedValue);
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function formatDateTime(value: unknown, fallback = '-'): string {
+  if (value === null || value === undefined || value === '') {
+    return fallback;
+  }
+
+  const date = parseDateTime(value);
+
+  if (!date) {
+    return String(value);
+  }
+
+  return [
+    `${padDatePart(date.getDate())}/${padDatePart(date.getMonth() + 1)}/${date.getFullYear()}`,
+    `${padDatePart(date.getHours())}:${padDatePart(date.getMinutes())}:${padDatePart(date.getSeconds())}`,
+  ].join(' ');
 }
 
 function onlyDigits(value: string): string {
@@ -129,6 +236,19 @@ function getRecentBemStatusColor(situacao: string): string {
   return '#2F855A';
 }
 
+function formatRecentConsultedAt(value: string): string {
+  const consultedAt = new Date(value);
+
+  if (Number.isNaN(consultedAt.getTime())) {
+    return '';
+  }
+
+  return consultedAt.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export default function PrincipalScreen() {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
@@ -143,6 +263,16 @@ export default function PrincipalScreen() {
   const [isPatrimonioModalVisible, setIsPatrimonioModalVisible] = useState(false);
   const [recentBens, setRecentBens] = useState<RecentBem[]>([]);
   const notificationProgress = useRef(new Animated.Value(0)).current;
+
+  const loadRecentBens = useCallback(async (userId: number | string) => {
+    try {
+      const storedRecentBens = await recentBensStorage.list(userId);
+
+      setRecentBens(storedRecentBens);
+    } catch (error) {
+      console.warn('não foi possivel carregar o historico de bens recentes.', error);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -166,14 +296,8 @@ export default function PrincipalScreen() {
         return;
       }
 
-      try {
-        const storedRecentBens = await recentBensStorage.list(session.user.id);
-
-        if (isMounted) {
-          setRecentBens(storedRecentBens);
-        }
-      } catch (error) {
-        console.warn('Nao foi possivel carregar o historico de bens recentes.', error);
+      if (isMounted) {
+        await loadRecentBens(session.user.id);
       }
 
       if (isMounted) {
@@ -186,7 +310,17 @@ export default function PrincipalScreen() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadRecentBens]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.id === undefined || user?.id === null) {
+        return;
+      }
+
+      loadRecentBens(user.id);
+    }, [loadRecentBens, user?.id]),
+  );
 
   useEffect(() => {
     if (!notification) {
@@ -232,16 +366,18 @@ export default function PrincipalScreen() {
   }
 
   async function addBemToRecent(bem: BemPatrimonial) {
-    if (!user) {
+    const sessionUser = user ?? (await authApi.getStoredSession())?.user ?? null;
+
+    if (!sessionUser) {
       return;
     }
 
     try {
-      const nextRecentBens = await recentBensStorage.add(user.id, bem);
+      const nextRecentBens = await recentBensStorage.add(sessionUser.id, bem);
 
       setRecentBens(nextRecentBens);
     } catch (error) {
-      console.warn('Nao foi possivel atualizar o historico de bens recentes.', error);
+      console.warn('não foi possivel atualizar o historico de bens recentes.', error);
     }
   }
 
@@ -312,7 +448,7 @@ export default function PrincipalScreen() {
 
       if (!bem) {
         setNotification({
-          message: 'Patrimônio não localizado para o setor do usuário.',
+          message: 'Patrimônio não localizado.',
           tone: 'error',
         });
         return;
@@ -325,6 +461,41 @@ export default function PrincipalScreen() {
         message: 'Patrimônio consultado com sucesso.',
         tone: 'success',
       });
+    } catch (error) {
+      setNotification({
+        message: getRequestErrorMessage(error),
+        tone: 'error',
+      });
+    } finally {
+      setIsConsultingPatrimonio(false);
+    }
+  }
+
+  async function handleOpenRecentBem(asset: RecentBem) {
+    const codigo = onlyDigits(asset.codigo) || asset.codigo.trim();
+
+    if (!codigo) {
+      return;
+    }
+
+    setPatrimonioCode(onlyDigits(codigo));
+    setIsConsultingPatrimonio(true);
+    setConsultedBem(null);
+
+    try {
+      const bem = await bensApi.consultByPatrimonio(codigo);
+
+      if (!bem) {
+        setNotification({
+          message: 'Patrimônio não localizado.',
+          tone: 'error',
+        });
+        return;
+      }
+
+      setConsultedBem(bem);
+      await addBemToRecent(bem);
+      setIsPatrimonioModalVisible(true);
     } catch (error) {
       setNotification({
         message: getRequestErrorMessage(error),
@@ -399,7 +570,7 @@ export default function PrincipalScreen() {
                 <MaterialIcons name="inventory-2" size={24} color="#1E4E79" />
               </View>
               <View style={styles.modalHeaderText}>
-                <Text style={styles.modalEyebrow}>Patrimonio consultado</Text>
+                <Text style={styles.modalEyebrow}>Patrimônio consultado</Text>
                 <Text style={styles.modalTitle}>{consultedBem ? getBemCodigo(consultedBem) : '-'}</Text>
               </View>
               <Pressable
@@ -412,16 +583,16 @@ export default function PrincipalScreen() {
             {consultedBem ? (
               <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Identificacao</Text>
+                  <Text style={styles.modalSectionTitle}>Identificação</Text>
                   <Text style={styles.modalDescription}>{getBemDescricao(consultedBem)}</Text>
                   {renderDetailRow('Situacao', consultedBem.situacao ?? consultedBem.estado)}
                   {renderDetailRow('Tipo do bem', consultedBem.tipo_bem)}
-                  {renderDetailRow('Estado de conservacao', consultedBem.estado_conservacao)}
+                  {renderDetailRow('Estado de conservação', consultedBem.estado_conservacao)}
                   {renderDetailRow('Patrimônio anterior', consultedBem.patrimonio_anterior)}
                 </View>
 
                 <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Caracteristicas</Text>
+                  <Text style={styles.modalSectionTitle}>Características</Text>
                   {renderDetailRow('Marca', consultedBem.marca)}
                   {renderDetailRow('Modelo', consultedBem.modelo)}
                   {renderDetailRow('Número de série', consultedBem.numero_serie ?? consultedBem.serie)}
@@ -431,7 +602,7 @@ export default function PrincipalScreen() {
                 </View>
 
                 <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Localizacao</Text>
+                  <Text style={styles.modalSectionTitle}>Localização</Text>
                   {renderDetailRow('Unidade Judiciária', getReferenciaNome(consultedBem.unidade_judiciaria))}
                   {renderDetailRow('Setor', getReferenciaNome(consultedBem.setor))}
                   {renderDetailRow('Complemento', getReferenciaNome(consultedBem.complemento_setor))}
@@ -440,20 +611,20 @@ export default function PrincipalScreen() {
 
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>Valores e documentos</Text>
-                  {renderDetailRow('Valor de aquisicao', formatMoney(consultedBem.valor_aquisicao))}
+                  {renderDetailRow('Valor de aquisição', formatMoney(consultedBem.valor_aquisicao))}
                   {renderDetailRow('Valor atual', formatMoney(consultedBem.valor))}
-                  {renderDetailRow('Data de incorporação', consultedBem.data_incorporacao)}
-                  {renderDetailRow('Data de cadastro', consultedBem.data_cadastro)}
+                  {renderDetailRow('Data de incorporação', formatDateTime(consultedBem.data_incorporacao))}
+                  {renderDetailRow('Data de cadastro', formatDateTime(consultedBem.data_cadastro))}
                   {renderDetailRow('Numero do processo', consultedBem.numero_processo)}
                   {renderDetailRow('Nota de empenho', consultedBem.nota_empenho)}
                   {renderDetailRow('Nota de liquidação', consultedBem.nota_liquidacao)}
-                  {renderDetailRow('Data de liquidação', consultedBem.data_liquidacao)}
+                  {renderDetailRow('Data de liquidação', formatDateTime(consultedBem.data_liquidacao))}
                 </View>
 
                 {consultedBem.data_baixa || consultedBem.processo_baixa ? (
                   <View style={styles.modalSection}>
                     <Text style={styles.modalSectionTitle}>Baixa</Text>
-                    {renderDetailRow('Data da baixa', consultedBem.data_baixa)}
+                    {renderDetailRow('Data da baixa', formatDateTime(consultedBem.data_baixa))}
                     {renderDetailRow('Processo de baixa', consultedBem.processo_baixa)}
                   </View>
                 ) : null}
@@ -499,7 +670,7 @@ export default function PrincipalScreen() {
             <Text style={styles.panelLabel}>Sessão ativa</Text>
             <Text style={styles.sectorName}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
             <Text style={styles.sectorMeta}>
-              Setor {user?.setor ?? '-'} | Unidade {user?.unidade_judiciaria ?? '-'}
+              Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}
             </Text>
           </View>
         </View>
@@ -622,12 +793,21 @@ export default function PrincipalScreen() {
               const statusColor = getRecentBemStatusColor(asset.situacao);
 
               return (
-                <View key={`${asset.id}-${asset.consultedAt}`} style={styles.assetRow}>
+                <Pressable
+                  key={`${asset.id}-${asset.consultedAt}`}
+                  onPress={() => handleOpenRecentBem(asset)}
+                  style={({ pressed }) => [
+                    styles.assetRow,
+                    pressed && styles.assetRowPressed,
+                  ]}>
                   <View style={styles.assetIcon}>
                     <MaterialIcons name="inventory-2" size={20} color="#1E4E79" />
                   </View>
                   <View style={styles.assetInfo}>
-                    <Text style={styles.assetCode}>{asset.codigo}</Text>
+                    <View style={styles.assetTitleRow}>
+                      <Text style={styles.assetCode}>{asset.codigo}</Text>
+                      <Text style={styles.assetTime}>{formatRecentConsultedAt(asset.consultedAt)}</Text>
+                    </View>
                     <Text style={styles.assetDescription} numberOfLines={2}>
                       {asset.descricao}
                     </Text>
@@ -637,7 +817,7 @@ export default function PrincipalScreen() {
                       {asset.situacao}
                     </Text>
                   </View>
-                </View>
+                </Pressable>
               );
             })
           ) : (
@@ -1117,6 +1297,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     padding: 10,
   },
+  assetRowPressed: {
+    opacity: 0.72,
+  },
   assetIcon: {
     width: 36,
     height: 36,
@@ -1129,9 +1312,21 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  assetTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   assetCode: {
+    flex: 1,
     color: '#102A43',
     fontSize: 14,
+    fontWeight: '800',
+  },
+  assetTime: {
+    color: '#627D98',
+    fontSize: 11,
     fontWeight: '800',
   },
   assetDescription: {

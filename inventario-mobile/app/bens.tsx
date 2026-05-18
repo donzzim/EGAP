@@ -219,7 +219,7 @@ export default function BensScreen() {
         <View style={styles.contextText}>
           <Text style={styles.contextLabel}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
           <Text style={styles.contextMeta}>
-            Setor {user?.setor ?? '-'} | Unidade {user?.unidade_judiciaria ?? '-'}
+            Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}
           </Text>
         </View>
         <View style={styles.totalBadge}>

@@ -21,7 +21,9 @@ function displayValue(value: unknown, fallback = '-'): string {
 }
 
 function getStorageKey(userId: number | string): string {
-    return `${STORAGE_KEY_PREFIX}:${userId}`;
+    const safeUserId = String(userId).replace(/[^\w.-]/g, '_') || 'unknown';
+
+    return `${STORAGE_KEY_PREFIX}.${safeUserId}`;
 }
 
 function getBemCodigo(bem: BemPatrimonial): string {
@@ -43,6 +45,13 @@ function getBemDescricao(bem: BemPatrimonial): string {
 
 function getBemSituacao(bem: BemPatrimonial): string {
     return displayValue(bem.situacao ?? bem.estado, 'Consultado');
+}
+
+function normalizeCode(value: string): string {
+    const trimmedValue = value.trim();
+    const digitsOnly = trimmedValue.replace(/\D/g, '');
+
+    return (digitsOnly || trimmedValue).replace(/^0+/, '') || '0';
 }
 
 function toRecentBem(bem: BemPatrimonial): RecentBem {
@@ -97,9 +106,12 @@ export const recentBensStorage = {
     async add(userId: number | string, bem: BemPatrimonial): Promise<RecentBem[]> {
         const recentBem = toRecentBem(bem);
         const currentRecentBens = await this.list(userId);
+        const recentBemCode = normalizeCode(recentBem.codigo);
         const nextRecentBens = [
             recentBem,
-            ...currentRecentBens.filter((item) => item.id !== recentBem.id && item.codigo !== recentBem.codigo),
+            ...currentRecentBens.filter((item) => {
+                return item.id !== recentBem.id && normalizeCode(item.codigo) !== recentBemCode;
+            }),
         ].slice(0, MAX_RECENT_BENS);
 
         await SecureStore.setItemAsync(getStorageKey(userId), JSON.stringify(nextRecentBens));
