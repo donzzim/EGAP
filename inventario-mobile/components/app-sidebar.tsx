@@ -21,8 +21,15 @@ const SIDEBAR_MIN_WIDTH = 280;
 const SIDEBAR_SCREEN_RATIO = 0.84;
 const SIDEBAR_HORIZONTAL_MARGIN = 18;
 
+type AppRoute =
+  | '/patrimonio/principal'
+  | '/patrimonio/bens'
+  | '/patrimonio/conferencia'
+  | '/pedidos/consumo'
+  | '/pedidos/permanentes';
+
 interface SidebarItem {
-  href: PatrimonioRoute;
+  href: AppRoute;
   label: string;
   description: string;
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -54,11 +61,22 @@ const PATRIMONIO_ITEMS: SidebarItem[] = [
   },
 ];
 
-const FUTURE_GROUPS = [
+const PEDIDOS_ITEMS: SidebarItem[] = [
   {
-    label: 'Almoxarifado',
-    icon: 'warehouse' as keyof typeof MaterialIcons.glyphMap,
+    href: '/pedidos/consumo',
+    label: 'Bens de Consumo',
+    description: 'Carrinho de materiais de almoxarifado',
+    icon: 'shopping-basket',
   },
+  {
+    href: '/pedidos/permanentes',
+    label: 'Bens Permanentes',
+    description: 'Carrinho de materiais patrimoniais',
+    icon: 'inventory-2',
+  },
+];
+
+const FUTURE_GROUPS = [
   {
     label: 'Processos',
     icon: 'assignment' as keyof typeof MaterialIcons.glyphMap,
@@ -74,6 +92,7 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const [isPatrimonioOpen, setIsPatrimonioOpen] = useState(true);
+  const [isPedidosOpen, setIsPedidosOpen] = useState(true);
   const sidebarWidth = Math.min(
     SIDEBAR_MAX_WIDTH,
     Math.max(
@@ -89,7 +108,10 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
       return;
     }
 
-    setPatrimonioNavigationDirectionFromRoutes(pathname, href);
+    if (href.startsWith('/patrimonio')) {
+      setPatrimonioNavigationDirectionFromRoutes(pathname, href as PatrimonioRoute);
+    }
+
     router.replace(href as Href);
   }
 
@@ -101,6 +123,55 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
     }
 
     router.replace('/patrimonio' as Href);
+  }
+
+  function handleOpenPedidos() {
+    onClose();
+
+    if (pathname.startsWith('/pedidos')) {
+      return;
+    }
+
+    router.replace('/pedidos' as Href);
+  }
+
+  function renderItems(items: SidebarItem[]) {
+    return (
+      <View style={styles.items}>
+        {items.map((item) => {
+          const isActive = pathname === item.href;
+
+          return (
+            <Pressable
+              key={item.href}
+              onPress={() => handleNavigate(item.href)}
+              style={({ pressed }) => [
+                styles.item,
+                isActive && styles.itemActive,
+                pressed && !isActive && styles.itemPressed,
+              ]}>
+              <View style={[styles.itemIcon, isActive && styles.itemIconActive]}>
+                <MaterialIcons
+                  name={item.icon}
+                  size={19}
+                  color={isActive ? '#FFFFFF' : '#1E4E79'}
+                />
+              </View>
+              <View style={styles.itemText}>
+                <Text style={[styles.itemTitle, isActive && styles.itemTitleActive]}>
+                  {item.label}
+                </Text>
+                <Text
+                  style={[styles.itemDescription, isActive && styles.itemDescriptionActive]}
+                  numberOfLines={2}>
+                  {item.description}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
+    );
   }
 
   return (
@@ -169,41 +240,41 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
               </View>
 
               {isPatrimonioOpen ? (
-                <View style={styles.items}>
-                  {PATRIMONIO_ITEMS.map((item) => {
-                    const isActive = pathname === item.href;
-
-                    return (
-                      <Pressable
-                        key={item.href}
-                        onPress={() => handleNavigate(item.href)}
-                        style={({ pressed }) => [
-                          styles.item,
-                          isActive && styles.itemActive,
-                          pressed && !isActive && styles.itemPressed,
-                        ]}>
-                        <View style={[styles.itemIcon, isActive && styles.itemIconActive]}>
-                          <MaterialIcons
-                            name={item.icon}
-                            size={19}
-                            color={isActive ? '#FFFFFF' : '#1E4E79'}
-                          />
-                        </View>
-                        <View style={styles.itemText}>
-                          <Text style={[styles.itemTitle, isActive && styles.itemTitleActive]}>
-                            {item.label}
-                          </Text>
-                          <Text
-                            style={[styles.itemDescription, isActive && styles.itemDescriptionActive]}
-                            numberOfLines={2}>
-                            {item.description}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                renderItems(PATRIMONIO_ITEMS)
               ) : null}
+            </View>
+
+            <View style={styles.group}>
+              <View style={styles.groupHeader}>
+                <Pressable
+                  onPress={handleOpenPedidos}
+                  style={({ pressed }) => [
+                    styles.groupMain,
+                    pressed && styles.pressed,
+                  ]}>
+                  <View style={styles.groupIcon}>
+                    <MaterialIcons name="shopping-cart" size={21} color="#1E4E79" />
+                  </View>
+                  <View style={styles.groupText}>
+                    <Text style={styles.groupTitle}>Pedidos</Text>
+                    <Text style={styles.groupMeta}>{PEDIDOS_ITEMS.length} funcionalidades</Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  onPress={() => setIsPedidosOpen((currentValue) => !currentValue)}
+                  style={({ pressed }) => [
+                    styles.collapseButton,
+                    pressed && styles.pressed,
+                  ]}>
+                  <MaterialIcons
+                    name={isPedidosOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                    size={23}
+                    color="#627D98"
+                  />
+                </Pressable>
+              </View>
+
+              {isPedidosOpen ? renderItems(PEDIDOS_ITEMS) : null}
             </View>
 
             <View style={styles.futureGroup}>
