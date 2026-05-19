@@ -10,7 +10,9 @@ export interface MobileUser {
     name: string | null;
     email: string | null;
     unidade_judiciaria: number | string | null;
+    unidade_judiciaria_nome?: string | null;
     setor: number | string | null;
+    setor_nome?: string | null;
     token: string;
 }
 
@@ -25,7 +27,9 @@ interface LoginResponse {
 }
 
 interface MeResponse {
-    user: unknown;
+    user: Omit<MobileUser, 'token'> & {
+        token?: string | null;
+    };
 }
 
 async function setStoredUser(user: MobileUser): Promise<void> {
@@ -84,6 +88,19 @@ export const authApi = {
         }
 
         return { token, user };
+    },
+
+    async me(): Promise<MobileUser> {
+        const { data } = await apiClient.get<MeResponse>('/me');
+        const storedSession = await this.getStoredSession();
+        const user = {
+            ...data.user,
+            token: storedSession?.token ?? data.user.token ?? '',
+        };
+
+        await setStoredUser(user);
+
+        return user;
     },
 
     async validateSession(): Promise<boolean> {

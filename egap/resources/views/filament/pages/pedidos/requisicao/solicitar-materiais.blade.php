@@ -5,7 +5,7 @@
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <x-filament::button
                 tag="a"
-                :href="\App\Filament\Egap\Clusters\PedidosCluster\Requisicao\Pedidos::getUrl()"
+                :href="\App\Filament\Clusters\PedidosCluster\Requisicao\Pedidos::getUrl()"
                 color="gray"
                 outlined
                 icon="heroicon-m-arrow-left"

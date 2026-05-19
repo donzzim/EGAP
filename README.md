@@ -17,9 +17,6 @@ O mobile consome a API Laravel em `/mobile-api`, autenticada com **Laravel Sanct
 .
 ├── egap/                 # Aplicação Laravel/Filament principal
 ├── inventario-mobile/    # Aplicação Expo/React Native
-├── docs/                 # Documentos auxiliares e análises de fluxo
-├── .gitignore
-└── README.md             # Este documento
 ```
 
 ---

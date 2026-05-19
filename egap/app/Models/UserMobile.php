@@ -86,9 +86,19 @@ class UserMobile extends Model implements Arrayable, JsonSerializable
         return $this->lotacaoMobile()?->unidade_judiciaria;
     }
 
+    public function unidadeJudiciariaNome(): ?string
+    {
+        return $this->lotacaoMobile()?->unidadeJudiciaria?->Setor;
+    }
+
     public function setor(): int|string|null
     {
         return $this->lotacaoMobile()?->setor;
+    }
+
+    public function setorNome(): ?string
+    {
+        return $this->lotacaoMobile()?->setorRef?->Setor;
     }
 
     public function token(): ?string
@@ -105,7 +115,9 @@ class UserMobile extends Model implements Arrayable, JsonSerializable
             'name' => $this->name(),
             'email' => $this->email(),
             'unidade_judiciaria' => $this->unidadeJudiciaria(),
+            'unidade_judiciaria_nome' => $this->unidadeJudiciariaNome(),
             'setor' => $this->setor(),
+            'setor_nome' => $this->setorNome(),
             'token' => $this->token(),
         ];
     }
@@ -156,6 +168,10 @@ class UserMobile extends Model implements Arrayable, JsonSerializable
         }
 
         $this->lotacaoMobile = Lotacao::query()
+            ->with([
+                'unidadeJudiciaria:id,Setor',
+                'setorRef:id,Setor',
+            ])
             ->where('id_user', $idEgap)
             ->orderByDesc('date_time')
             ->orderByDesc('id')

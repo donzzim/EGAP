@@ -7,12 +7,19 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   setPatrimonioNavigationDirectionFromRoutes,
   type PatrimonioRoute,
 } from '@/src/navigation/patrimonioNavigation';
+
+const SIDEBAR_MAX_WIDTH = 360;
+const SIDEBAR_MIN_WIDTH = 280;
+const SIDEBAR_SCREEN_RATIO = 0.84;
+const SIDEBAR_HORIZONTAL_MARGIN = 18;
 
 interface SidebarItem {
   href: PatrimonioRoute;
@@ -29,7 +36,7 @@ interface AppSidebarProps {
 const PATRIMONIO_ITEMS: SidebarItem[] = [
   {
     href: '/patrimonio/principal',
-    label: 'Painel',
+    label: 'Dashboard',
     description: 'Resumo, estatísticas e leitura patrimonial',
     icon: 'dashboard',
   },
@@ -64,7 +71,16 @@ const FUTURE_GROUPS = [
 
 export function AppSidebar({ visible, onClose }: AppSidebarProps) {
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const [isPatrimonioOpen, setIsPatrimonioOpen] = useState(true);
+  const sidebarWidth = Math.min(
+    SIDEBAR_MAX_WIDTH,
+    Math.max(
+      Math.min(SIDEBAR_MIN_WIDTH, windowWidth - SIDEBAR_HORIZONTAL_MARGIN),
+      windowWidth * SIDEBAR_SCREEN_RATIO,
+    ),
+  );
 
   function handleNavigate(href: SidebarItem['href']) {
     onClose();
@@ -92,24 +108,36 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
       animationType="fade"
       transparent
       visible={visible}
+      statusBarTranslucent
       onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} />
-        <View style={styles.sidebar}>
+        <View
+          style={[
+            styles.sidebar,
+            {
+              width: sidebarWidth,
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+            },
+          ]}>
           <View style={styles.header}>
             <View style={styles.brandIcon}>
               <MaterialIcons name="apps" size={22} color="#1E4E79" />
             </View>
             <View style={styles.headerText}>
               <Text style={styles.headerLabel}>EGap Mobile</Text>
-              <Text style={styles.headerTitle}>Modulos</Text>
+              <Text style={styles.headerTitle}>Módulos</Text>
             </View>
             <Pressable onPress={onClose} style={styles.iconButton}>
               <MaterialIcons name="close" size={21} color="#1E4E79" />
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}>
             <View style={styles.group}>
               <View style={styles.groupHeader}>
                 <Pressable
@@ -179,7 +207,7 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
             </View>
 
             <View style={styles.futureGroup}>
-              <Text style={styles.futureTitle}>Proximos grupos</Text>
+              <Text style={styles.futureTitle}>Próximos grupos</Text>
               {FUTURE_GROUPS.map((group) => (
                 <View style={styles.futureItem} key={group.label}>
                   <MaterialIcons name={group.icon} size={19} color="#9FB3C8" />
@@ -205,9 +233,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   sidebar: {
-    width: '84%',
-    maxWidth: 360,
-    minWidth: 292,
     backgroundColor: '#FFFFFF',
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
@@ -255,6 +280,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#B6D4EA',
     backgroundColor: '#EAF4FB',
+  },
+  scroll: {
+    flex: 1,
   },
   content: {
     gap: 14,

@@ -511,7 +511,7 @@ class PedidosResource extends Resource
                     ->color('danger')
                     ->hiddenLabel()
                     ->tooltip('Impressão')
-                    ->url(fn (Pedidos $record): string => route('impressao_pedido', $record))
+//                    ->url(fn (Pedidos $record): string => route('impressao_pedido', $record))
                     ->openUrlInNewTab(),
 
                 Tables\Actions\Action::make('anexar_requisicao')

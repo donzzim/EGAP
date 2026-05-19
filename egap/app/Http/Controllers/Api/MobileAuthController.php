@@ -54,10 +54,18 @@ class MobileAuthController extends Controller
         ], 401);
     }
 
-    public function me(Request $request)
+    public function me(Request $request, UsersConnectionService $usersConnectionService): JsonResponse
     {
+        $mobileUser = $usersConnectionService->findByUser($request->user());
+
+        if (! $mobileUser instanceof UserMobile) {
+            return response()->json([
+                'message' => 'Usuário sem vinculo valido para acesso mobile.',
+            ], 403);
+        }
+
         return response()->json([
-            'user' => $request->user(),
+            'user' => $mobileUser->toArray(),
         ]);
     }
 

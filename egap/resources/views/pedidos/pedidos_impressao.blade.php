@@ -209,7 +209,7 @@
 
             $qtdeSolicitada = $item->QuantidadeMaterial ?? 0;
             $qtdeAtendida = $item->QuantidadeMaterialAtendida ?? 0;
-            $valorMedio = \App\Filament\Egap\Resources\Almoxarifado\PedidosResource::normalizarValorMonetario($item->valor_material ?? 0);
+            $valorMedio = \App\Filament\Resources\Almoxarifado\PedidosResource::normalizarValorMonetario($item->valor_material ?? 0);
             $valorTotalMedio = $qtdeAtendida * $valorMedio;
             $total += $valorTotalMedio;
         @endphp

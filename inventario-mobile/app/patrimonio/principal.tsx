@@ -321,6 +321,9 @@ function formatRecentConsultedAt(value: string): string {
 
 export default function PrincipalScreen() {
   const [user, setUser] = useState<MobileUser | null>(null);
+  const [sessionDetails, setSessionDetails] = useState<MobileUser | null>(null);
+  const [isSessionModalVisible, setIsSessionModalVisible] = useState(false);
+  const [isLoadingSessionDetails, setIsLoadingSessionDetails] = useState(false);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [isScannerActive, setIsScannerActive] = useState(false);
@@ -482,6 +485,23 @@ export default function PrincipalScreen() {
     }
   }
 
+  async function handleOpenSessionModal() {
+    setIsSessionModalVisible(true);
+    setIsLoadingSessionDetails(true);
+
+    try {
+      const currentUser = await authApi.me();
+
+      setUser(currentUser);
+      setSessionDetails(currentUser);
+    } catch (error) {
+      console.warn('não foi possivel carregar os dados da sessão.', error);
+      setSessionDetails(user);
+    } finally {
+      setIsLoadingSessionDetails(false);
+    }
+  }
+
   async function handleStartScanner() {
     setNotification(null);
 
@@ -622,6 +642,13 @@ export default function PrincipalScreen() {
     <View style={styles.modalDetailRow} key={label}>
       <Text style={styles.modalDetailLabel}>{label}</Text>
       <Text style={styles.modalDetailValue}>{displayValue(value)}</Text>
+    </View>
+  );
+
+  const renderSessionRow = (label: string, value: unknown) => (
+    <View style={styles.sessionDetailRow} key={label}>
+      <Text style={styles.sessionDetailLabel}>{label}</Text>
+      <Text style={styles.sessionDetailValue}>{displayValue(value)}</Text>
     </View>
   );
 
@@ -810,6 +837,64 @@ export default function PrincipalScreen() {
         </View>
       </Modal>
 
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isSessionModalVisible}
+        onRequestClose={() => setIsSessionModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.sessionModal}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderIcon}>
+                <MaterialIcons name="person" size={24} color="#1E4E79" />
+              </View>
+              <View style={styles.modalHeaderText}>
+                <Text style={styles.modalEyebrow}>Sessão ativa</Text>
+                <Text style={styles.modalTitle}>
+                  {sessionDetails?.name ?? sessionDetails?.login ?? user?.name ?? 'Usuário mobile'}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => setIsSessionModalVisible(false)}
+                style={styles.modalCloseButton}>
+                <MaterialIcons name="close" size={22} color="#1E4E79" />
+              </Pressable>
+            </View>
+
+            <View style={styles.sessionModalContent}>
+              {isLoadingSessionDetails ? (
+                <View style={styles.sessionLoadingPanel}>
+                  <ActivityIndicator color="#1E4E79" />
+                  <Text style={styles.sessionLoadingText}>Carregando dados da sessão</Text>
+                </View>
+              ) : (
+                <>
+                  {renderSessionRow('Nome', sessionDetails?.name ?? user?.name)}
+                  {renderSessionRow('Login', sessionDetails?.login ?? user?.login)}
+                  {renderSessionRow('E-mail', sessionDetails?.email ?? user?.email)}
+                  {renderSessionRow(
+                    'Unidade judiciária',
+                    sessionDetails?.unidade_judiciaria_nome
+                      ?? user?.unidade_judiciaria_nome
+                      ?? sessionDetails?.unidade_judiciaria
+                      ?? user?.unidade_judiciaria,
+                  )}
+                  {renderSessionRow(
+                    'Setor',
+                    sessionDetails?.setor_nome
+                      ?? user?.setor_nome
+                      ?? sessionDetails?.setor
+                      ?? user?.setor,
+                  )}
+                  {renderSessionRow('ID mobile', sessionDetails?.id ?? user?.id)}
+                  {renderSessionRow('ID EGap', sessionDetails?.idEgap ?? user?.idEgap)}
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <AppMenuButton />
@@ -830,6 +915,14 @@ export default function PrincipalScreen() {
               Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}
             </Text>
           </View>
+          <Pressable
+            onPress={handleOpenSessionModal}
+            style={({ pressed }) => [
+              styles.sessionInfoButton,
+              pressed && styles.actionButtonPressed,
+            ]}>
+            <MaterialIcons name="info-outline" size={21} color="#1E4E79" />
+          </Pressable>
         </View>
 
         <View style={styles.dashboardPanel}>
@@ -1136,6 +1229,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
   },
+  sessionModal: {
+    width: '100%',
+    maxWidth: 420,
+    overflow: 'hidden',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'center',
+  },
   modalHeader: {
     minHeight: 72,
     flexDirection: 'row',
@@ -1223,6 +1324,42 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     fontWeight: '700',
   },
+  sessionModalContent: {
+    gap: 10,
+    padding: 14,
+  },
+  sessionDetailRow: {
+    gap: 3,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  sessionDetailLabel: {
+    color: '#627D98',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  sessionDetailValue: {
+    color: '#102A43',
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '800',
+  },
+  sessionLoadingPanel: {
+    minHeight: 116,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+  },
+  sessionLoadingText: {
+    color: '#52616B',
+    fontSize: 13,
+    fontWeight: '800',
+  },
   content: {
     gap: 16,
     padding: 20,
@@ -1292,6 +1429,16 @@ const styles = StyleSheet.create({
   sectorInfo: {
     flex: 1,
     gap: 3,
+  },
+  sessionInfoButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#B6D4EA',
+    backgroundColor: '#EAF4FB',
   },
   panelLabel: {
     color: '#627D98',
