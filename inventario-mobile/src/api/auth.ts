@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store';
 import { apiClient, tokenStorage } from './client';
+import { appStorage } from '@/src/storage/appStorage';
 
 const USER_KEY = 'auth_user';
 
@@ -33,11 +33,11 @@ interface MeResponse {
 }
 
 async function setStoredUser(user: MobileUser): Promise<void> {
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+    await appStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 async function getStoredUser(): Promise<MobileUser | null> {
-    const rawUser = await SecureStore.getItemAsync(USER_KEY);
+    const rawUser = await appStorage.getItem(USER_KEY);
 
     if (!rawUser) {
         return null;
@@ -46,7 +46,7 @@ async function getStoredUser(): Promise<MobileUser | null> {
     try {
         return JSON.parse(rawUser) as MobileUser;
     } catch {
-        await SecureStore.deleteItemAsync(USER_KEY);
+        await appStorage.deleteItem(USER_KEY);
         return null;
     }
 }
@@ -54,7 +54,7 @@ async function getStoredUser(): Promise<MobileUser | null> {
 async function clearStoredSession(): Promise<void> {
     await Promise.all([
         tokenStorage.remove(),
-        SecureStore.deleteItemAsync(USER_KEY),
+        appStorage.deleteItem(USER_KEY),
     ]);
 }
 

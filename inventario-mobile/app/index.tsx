@@ -19,6 +19,7 @@ import { authApi } from '@/src/api/auth';
 export default function LoginScreen() {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -125,7 +126,7 @@ export default function LoginScreen() {
                 <TextInput
                   placeholder="Digite sua senha"
                   placeholderTextColor="#829AB1"
-                  secureTextEntry
+                  secureTextEntry={!isPasswordVisible}
                   editable={!isSubmitting && !isCheckingSession}
                   returnKeyType="done"
                   value={password}
@@ -133,6 +134,22 @@ export default function LoginScreen() {
                   onSubmitEditing={handleLogin}
                   style={styles.input}
                 />
+                <Pressable
+                  accessibilityLabel={isPasswordVisible ? 'Ocultar senha' : 'Visualizar senha'}
+                  accessibilityRole="button"
+                  disabled={isSubmitting || isCheckingSession}
+                  hitSlop={10}
+                  onPress={() => setIsPasswordVisible((currentValue) => !currentValue)}
+                  style={({ pressed }) => [
+                    styles.passwordVisibilityButton,
+                    pressed && styles.passwordVisibilityButtonPressed,
+                  ]}>
+                  <MaterialIcons
+                    name={isPasswordVisible ? 'visibility-off' : 'visibility'}
+                    size={22}
+                    color="#627D98"
+                  />
+                </Pressable>
               </View>
             </View>
 
@@ -261,6 +278,16 @@ const styles = StyleSheet.create({
     color: '#102A43',
     fontSize: 16,
     fontWeight: '700',
+  },
+  passwordVisibilityButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  passwordVisibilityButtonPressed: {
+    backgroundColor: '#EAF4FB',
   },
   primaryButton: {
     minHeight: 52,

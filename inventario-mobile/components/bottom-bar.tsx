@@ -17,8 +17,8 @@ interface BottomBarItem {
 const ITEMS: BottomBarItem[] = [
   {
     href: '/patrimonio/principal',
-    label: 'Início',
-    icon: 'home',
+    label: 'Dashboard',
+    icon: 'dashboard',
   },
   {
     href: '/patrimonio/bens',

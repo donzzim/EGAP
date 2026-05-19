@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store';
 import type { BemPatrimonial } from '@/src/api/bens';
+import { appStorage } from '@/src/storage/appStorage';
 
 const MAX_RECENT_BENS = 5;
 const STORAGE_KEY_PREFIX = 'recent_bens';
@@ -82,7 +82,7 @@ function isRecentBem(value: unknown): value is RecentBem {
 
 export const recentBensStorage = {
     async list(userId: number | string): Promise<RecentBem[]> {
-        const rawRecentBens = await SecureStore.getItemAsync(getStorageKey(userId));
+        const rawRecentBens = await appStorage.getItem(getStorageKey(userId));
 
         if (!rawRecentBens) {
             return [];
@@ -92,13 +92,13 @@ export const recentBensStorage = {
             const parsedRecentBens = JSON.parse(rawRecentBens);
 
             if (!Array.isArray(parsedRecentBens)) {
-                await SecureStore.deleteItemAsync(getStorageKey(userId));
+                await appStorage.deleteItem(getStorageKey(userId));
                 return [];
             }
 
             return parsedRecentBens.filter(isRecentBem).slice(0, MAX_RECENT_BENS);
         } catch {
-            await SecureStore.deleteItemAsync(getStorageKey(userId));
+            await appStorage.deleteItem(getStorageKey(userId));
             return [];
         }
     },
@@ -114,7 +114,7 @@ export const recentBensStorage = {
             }),
         ].slice(0, MAX_RECENT_BENS);
 
-        await SecureStore.setItemAsync(getStorageKey(userId), JSON.stringify(nextRecentBens));
+        await appStorage.setItem(getStorageKey(userId), JSON.stringify(nextRecentBens));
 
         return nextRecentBens;
     },

@@ -1,6 +1,6 @@
-import * as SecureStore from 'expo-secure-store';
 import { ENV } from '../config/env';
 import { ApiError, NetworkError } from './errors';
+import { appStorage } from '@/src/storage/appStorage';
 
 // ---------------------------------------------------------------------------
 // Constantes
@@ -12,20 +12,20 @@ const TOKEN_KEY = 'auth_token';
 const NGROK_HEADER = { 'ngrok-skip-browser-warning': '1' };
 
 // ---------------------------------------------------------------------------
-// Gerenciamento de token (SecureStore)
+// Gerenciamento de token
 // ---------------------------------------------------------------------------
 
 export const tokenStorage = {
     async get(): Promise<string | null> {
-        return SecureStore.getItemAsync(TOKEN_KEY);
+        return appStorage.getItem(TOKEN_KEY);
     },
 
     async set(token: string): Promise<void> {
-        await SecureStore.setItemAsync(TOKEN_KEY, token);
+        await appStorage.setItem(TOKEN_KEY, token);
     },
 
     async remove(): Promise<void> {
-        await SecureStore.deleteItemAsync(TOKEN_KEY);
+        await appStorage.deleteItem(TOKEN_KEY);
     },
 };
 
