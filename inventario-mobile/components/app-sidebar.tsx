@@ -2,6 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, usePathname, type Href } from 'expo-router';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   Modal,
   Pressable,
   ScrollView,
@@ -11,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { authApi } from '@/src/api/auth';
 import {
   setPatrimonioNavigationDirectionFromRoutes,
   type PatrimonioRoute,
@@ -93,6 +95,7 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [isPatrimonioOpen, setIsPatrimonioOpen] = useState(true);
   const [isPedidosOpen, setIsPedidosOpen] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const sidebarWidth = Math.min(
     SIDEBAR_MAX_WIDTH,
     Math.max(
@@ -133,6 +136,17 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
     }
 
     router.replace('/pedidos' as Href);
+  }
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    onClose();
+
+    try {
+      await authApi.logout();
+    } finally {
+      router.replace('/');
+    }
   }
 
   function renderItems(items: SidebarItem[]) {
@@ -288,6 +302,25 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
               ))}
             </View>
           </ScrollView>
+
+          <View style={styles.footer}>
+            <Pressable
+              disabled={isLoggingOut}
+              onPress={handleLogout}
+              style={({ pressed }) => [
+                styles.logoutButton,
+                (pressed || isLoggingOut) && styles.logoutButtonPressed,
+              ]}>
+              <View style={styles.logoutIcon}>
+                {isLoggingOut ? (
+                  <ActivityIndicator color="#C53030" />
+                ) : (
+                  <MaterialIcons name="logout" size={20} color="#C53030" />
+                )}
+              </View>
+              <Text style={styles.logoutText}>Sair</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </Modal>
@@ -493,5 +526,35 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.72,
+  },
+  footer: {
+    borderTopWidth: 1,
+    borderTopColor: '#D9E2EC',
+    padding: 14,
+  },
+  logoutButton: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 8,
+    backgroundColor: '#FFF5F5',
+    paddingHorizontal: 10,
+  },
+  logoutButtonPressed: {
+    backgroundColor: '#FFE3E3',
+  },
+  logoutIcon: {
+    width: 34,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: '#FFE3E3',
+  },
+  logoutText: {
+    color: '#C53030',
+    fontSize: 14,
+    fontWeight: '800',
   },
 });
