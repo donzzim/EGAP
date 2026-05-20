@@ -5,7 +5,7 @@ export default function PedidosPermanentesScreen() {
     <PedidosCarrinhoScreen
       tipo="permanente"
       title="Bens Permanentes"
-      subtitle="Materiais patrimoniais com justificativa por item"
+      subtitle="Materiais patrimoniais para uso do setor"
       icon="inventory-2"
       accentColor="#2F855A"
       currentRoute="/pedidos/permanentes"

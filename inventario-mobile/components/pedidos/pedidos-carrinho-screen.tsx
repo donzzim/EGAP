@@ -1,6 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, type Href } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -48,7 +48,7 @@ interface PedidosCarrinhoScreenProps {
   helperText: string;
 }
 
-const PER_PAGE = 30;
+const PER_PAGE = 25;
 
 const TABS: { href: PedidoRoute; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
   {
@@ -105,13 +105,16 @@ export function PedidosCarrinhoScreen({
   const [search, setSearch] = useState('');
   const [submittedSearch, setSubmittedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalMaterials, setTotalMaterials] = useState(0);
+  const [lastPage, setLastPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplementoModalVisible, setIsComplementoModalVisible] = useState(false);
   const [justificativaGeral, setJustificativaGeral] = useState('');
   const [notification, setNotification] = useState<NotificationState | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const materialsPanelYRef = useRef(0);
 
   const selectedItems = useMemo(() => {
     return Object.values(cartMaterials)
@@ -124,6 +127,11 @@ export function PedidosCarrinhoScreen({
 
   const selectedQuantity = selectedItems.reduce((total, item) => total + item.state.quantity, 0);
   const selectedComplemento = complementos.find((complemento) => complemento.id === selectedComplementoId) ?? null;
+  const materialsCounterText = isLoading
+    ? 'Carregando catálogo'
+    : `${materials.length} de ${totalMaterials} material(is) nesta página`;
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = hasMore || currentPage < lastPage;
 
   const loadContext = useCallback(async () => {
     const data = await pedidosApi.contexto();
@@ -134,18 +142,12 @@ export function PedidosCarrinhoScreen({
 
   const loadMaterials = useCallback(async ({
     pageToLoad = 1,
-    append = false,
     searchTerm = '',
   }: {
     pageToLoad?: number;
-    append?: boolean;
     searchTerm?: string;
   } = {}) => {
-    if (append) {
-      setIsLoadingMore(true);
-    } else {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
 
     try {
       const data = await pedidosApi.materiais({
@@ -155,10 +157,10 @@ export function PedidosCarrinhoScreen({
         search: searchTerm,
       });
 
-      setMaterials((currentMaterials) => append
-        ? [...currentMaterials, ...data.materiais]
-        : data.materiais);
+      setMaterials(data.materiais);
       setCurrentPage(data.meta.current_page);
+      setTotalMaterials(data.meta.total);
+      setLastPage(Math.max(data.meta.last_page, 1));
       setHasMore(data.meta.has_more);
     } catch (error) {
       setNotification({
@@ -168,7 +170,6 @@ export function PedidosCarrinhoScreen({
       setHasMore(false);
     } finally {
       setIsLoading(false);
-      setIsLoadingMore(false);
     }
   }, [tipo]);
 
@@ -273,15 +274,19 @@ export function PedidosCarrinhoScreen({
     });
   }
 
-  function handleLoadMore() {
-    if (isLoading || isLoadingMore || !hasMore) {
+  async function handlePageChange(nextPage: number) {
+    if (isLoading || nextPage < 1 || nextPage > lastPage || nextPage === currentPage) {
       return;
     }
 
-    loadMaterials({
-      pageToLoad: currentPage + 1,
-      append: true,
+    await loadMaterials({
+      pageToLoad: nextPage,
       searchTerm: submittedSearch,
+    });
+
+    scrollRef.current?.scrollTo({
+      y: Math.max(materialsPanelYRef.current - 12, 0),
+      animated: true,
     });
   }
 
@@ -422,6 +427,7 @@ export function PedidosCarrinhoScreen({
       </Modal>
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
@@ -511,12 +517,16 @@ export function PedidosCarrinhoScreen({
         </View>
 
         <View style={styles.contentGrid}>
-          <View style={styles.materialsPanel}>
+          <View
+            style={styles.materialsPanel}
+            onLayout={(event) => {
+              materialsPanelYRef.current = event.nativeEvent.layout.y;
+            }}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Materiais</Text>
                 <Text style={styles.sectionMeta}>
-                  {isLoading ? 'Carregando catalogo' : `${materials.length} material(is) carregado(s)`}
+                  {materialsCounterText}
                 </Text>
               </View>
               <View style={styles.countBadge}>
@@ -608,12 +618,18 @@ export function PedidosCarrinhoScreen({
                       ) : null}
                     </View>
                     <View style={styles.quantityBox}>
-                      <Pressable onPress={() => decrementMaterial(material)} style={styles.quantityButton}>
-                        <MaterialIcons name="remove" size={18} color="#C53030" />
+                      <Pressable
+                        accessibilityLabel={`Adicionar ${material.descricao}`}
+                        onPress={() => incrementMaterial(material)}
+                        style={[styles.quantityButton, styles.quantityButtonAdd]}>
+                        <MaterialIcons name="add" size={18} color="#2F855A" />
                       </Pressable>
                       <Text style={styles.quantityText}>{itemState.quantity}</Text>
-                      <Pressable onPress={() => incrementMaterial(material)} style={styles.quantityButton}>
-                        <MaterialIcons name="add" size={18} color="#2F855A" />
+                      <Pressable
+                        accessibilityLabel={`Remover ${material.descricao}`}
+                        onPress={() => decrementMaterial(material)}
+                        style={[styles.quantityButton, styles.quantityButtonRemove]}>
+                        <MaterialIcons name="remove" size={18} color="#C53030" />
                       </Pressable>
                     </View>
                   </View>
@@ -621,17 +637,47 @@ export function PedidosCarrinhoScreen({
               })
             )}
 
-            {!isLoading && hasMore ? (
-              <Pressable
-                disabled={isLoadingMore}
-                onPress={handleLoadMore}
-                style={({ pressed }) => [
-                  styles.loadMoreButton,
-                  pressed && styles.pressed,
-                ]}>
-                {isLoadingMore ? <ActivityIndicator color="#1E4E79" /> : <MaterialIcons name="expand-more" size={21} color="#1E4E79" />}
-                <Text style={styles.loadMoreText}>{isLoadingMore ? 'Carregando' : 'Carregar mais'}</Text>
-              </Pressable>
+            {!isLoading && totalMaterials > PER_PAGE ? (
+              <View style={styles.paginationFooter}>
+                <Pressable
+                  disabled={!hasPreviousPage || isLoading}
+                  onPress={() => handlePageChange(currentPage - 1)}
+                  style={({ pressed }) => [
+                    styles.paginationButton,
+                    (!hasPreviousPage || isLoading) && styles.paginationButtonDisabled,
+                    pressed && hasPreviousPage && styles.pressed,
+                  ]}>
+                  <MaterialIcons name="chevron-left" size={21} color={hasPreviousPage ? '#1E4E79' : '#9FB3C8'} />
+                  <Text style={[
+                    styles.paginationButtonText,
+                    !hasPreviousPage && styles.paginationButtonTextDisabled,
+                  ]}>
+                    Voltar
+                  </Text>
+                </Pressable>
+
+                <View style={styles.paginationMeta}>
+                  <Text style={styles.paginationPageText}>Página {currentPage} de {lastPage}</Text>
+                  <Text style={styles.paginationRangeText}>{PER_PAGE} por página</Text>
+                </View>
+
+                <Pressable
+                  disabled={!hasNextPage || isLoading}
+                  onPress={() => handlePageChange(currentPage + 1)}
+                  style={({ pressed }) => [
+                    styles.paginationButton,
+                    (!hasNextPage || isLoading) && styles.paginationButtonDisabled,
+                    pressed && hasNextPage && styles.pressed,
+                  ]}>
+                  <Text style={[
+                    styles.paginationButtonText,
+                    !hasNextPage && styles.paginationButtonTextDisabled,
+                  ]}>
+                    Avançar
+                  </Text>
+                  <MaterialIcons name="chevron-right" size={21} color={hasNextPage ? '#1E4E79' : '#9FB3C8'} />
+                </Pressable>
+              </View>
             ) : null}
           </View>
 
@@ -970,6 +1016,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
   },
+  quantityButtonAdd: {
+    backgroundColor: '#F0FFF4',
+  },
+  quantityButtonRemove: {
+    backgroundColor: '#FFF5F5',
+  },
   quantityText: {
     color: '#102A43',
     fontSize: 16,
@@ -1037,19 +1089,50 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  loadMoreButton: {
-    minHeight: 44,
+  paginationFooter: {
+    minHeight: 58,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E5EAF0',
+    paddingTop: 10,
+  },
+  paginationButton: {
+    minHeight: 42,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     borderRadius: 8,
     backgroundColor: '#EAF4FB',
   },
-  loadMoreText: {
+  paginationButtonDisabled: {
+    backgroundColor: '#F8FAFC',
+  },
+  paginationButtonText: {
     color: '#1E4E79',
     fontSize: 13,
     fontWeight: '800',
+  },
+  paginationButtonTextDisabled: {
+    color: '#9FB3C8',
+  },
+  paginationMeta: {
+    minWidth: 88,
+    alignItems: 'center',
+    gap: 2,
+  },
+  paginationPageText: {
+    color: '#102A43',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  paginationRangeText: {
+    color: '#627D98',
+    fontSize: 11,
+    fontWeight: '700',
   },
   cartPanel: {
     gap: 12,

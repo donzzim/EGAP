@@ -781,7 +781,7 @@ export default function PrincipalScreen() {
                 <View style={styles.modalSection}>
                   <Text style={styles.modalSectionTitle}>Identificação</Text>
                   <Text style={styles.modalDescription}>{getBemDescricao(consultedBem)}</Text>
-                  {renderDetailRow('Situacao', consultedBem.situacao ?? consultedBem.estado)}
+                  {renderDetailRow('Situação', consultedBem.situacao ?? consultedBem.estado)}
                   {renderDetailRow('Tipo do bem', consultedBem.tipo_bem)}
                   {renderDetailRow('Estado de conservação', consultedBem.estado_conservacao)}
                   {renderDetailRow('Patrimônio anterior', consultedBem.patrimonio_anterior)}
@@ -963,7 +963,7 @@ export default function PrincipalScreen() {
               `${progressoConferencia}% da atividade`,
             )}
             {renderMetricCard(
-              'Pendencias',
+              'Pendências',
               formatCompactNumber(pendenciasConferencia),
               'report-problem',
               '#B7791F',
@@ -1130,7 +1130,6 @@ export default function PrincipalScreen() {
         <View style={styles.assetsPanel}>
           <View style={styles.panelHeaderRow}>
             <Text style={styles.sectionTitle}>Últimas leituras</Text>
-            <Text style={styles.panelHeaderMeta}>Hoje</Text>
           </View>
 
           {recentBens.length > 0 ? (
