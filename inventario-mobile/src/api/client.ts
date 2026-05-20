@@ -1,5 +1,6 @@
 import { ENV } from '../config/env';
 import { ApiError, NetworkError } from './errors';
+import { notifyAppError } from '@/src/errors/appErrorEvents';
 import { appStorage } from '@/src/storage/appStorage';
 
 // ---------------------------------------------------------------------------
@@ -93,7 +94,7 @@ export async function request<T = unknown>(
             body: body !== undefined ? JSON.stringify(body) : undefined,
         });
 
-        // Tenta parsear o JSON mesmo em caso de erro HTTP
+        // Tenta converter o JSON mesmo em caso de erro HTTP
         let data: T;
         try {
             data = await response.json();
@@ -102,7 +103,18 @@ export async function request<T = unknown>(
         }
 
         if (!response.ok) {
-            throw new ApiError(response.status, getErrorMessage(data), data);
+            const message = getErrorMessage(data);
+
+            if (response.status >= 500) {
+                notifyAppError({
+                    kind: 'server',
+                    title: 'Falha no servidor',
+                    message,
+                    status: response.status,
+                });
+            }
+
+            throw new ApiError(response.status, message, data);
         }
 
         return { status: response.status, data };
@@ -111,7 +123,15 @@ export async function request<T = unknown>(
         if (err instanceof ApiError) throw err;
 
         // Erro de rede (sem internet, servidor fora, ngrok expirado, etc.)
-        throw new NetworkError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+        const networkError = new NetworkError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+
+        notifyAppError({
+            kind: 'network',
+            title: 'Sem conexão com o servidor',
+            message: networkError.message,
+        });
+
+        throw networkError;
     }
 }
 

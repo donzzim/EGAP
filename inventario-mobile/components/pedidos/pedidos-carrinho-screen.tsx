@@ -591,7 +591,7 @@ export function PedidosCarrinhoScreen({
                                 styles.segmentText,
                                 itemState.tipoAtendimento === 'substituicao' && styles.segmentTextActive,
                               ]}>
-                                Substituicao
+                                Substituição
                               </Text>
                             </Pressable>
                           </View>
@@ -702,7 +702,7 @@ export function PedidosCarrinhoScreen({
                     <Text style={styles.cartName}>{material.descricao}</Text>
                     <Text style={styles.cartDetail}>
                       {tipo === 'permanente'
-                        ? state.tipoAtendimento === 'substituicao' ? 'Substituicao' : 'Adicao'
+                        ? state.tipoAtendimento === 'substituicao' ? 'Substituição' : 'Adição'
                         : material.unidade}
                     </Text>
                   </View>
@@ -725,7 +725,7 @@ export function PedidosCarrinhoScreen({
               </Pressable>
 
               <Text style={styles.formLabel}>
-                {tipo === 'consumo' ? 'Justificativa' : 'Observacao geral'}
+                {tipo === 'consumo' ? 'Justificativa' : 'Observação geral'}
               </Text>
               <TextInput
                 placeholder={tipo === 'consumo'
