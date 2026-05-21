@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Unidades extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'age_unidades';
 
     protected $primaryKey = 'id';

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SituacaoNotaFiscal extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     public $timestamps = false;
     protected $table = 'alm_situacao_notafiscal';
     protected $fillable = [

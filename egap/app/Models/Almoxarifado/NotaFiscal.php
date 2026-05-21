@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class NotaFiscal extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'alm_notafiscal';
     public $timestamps = false;
 

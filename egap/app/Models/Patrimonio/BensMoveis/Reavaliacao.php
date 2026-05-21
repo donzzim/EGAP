@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reavaliacao extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_reavaliacao'; // ✅ Nome provável baseado no padrão
     public $timestamps = false;
     public static $snakeAttributes = false;

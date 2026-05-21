@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TipoMovimentacaoNotaFiscal extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     public $timestamps = false;
     protected $table = 'alm_tipo_movimentacao';
     protected $fillable = [

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class TipoBemIntagivel extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     public $timestamps = false;
     protected $table = 'int_tipo';
     protected $fillable = [

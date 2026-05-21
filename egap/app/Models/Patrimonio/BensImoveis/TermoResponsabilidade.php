@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TermoResponsabilidade extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_termos';
     protected $primaryKey = 'id';
     protected $guarded = [];

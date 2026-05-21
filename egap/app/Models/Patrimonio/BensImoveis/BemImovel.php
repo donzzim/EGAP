@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BemImovel extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_imovel';
     protected $primaryKey = 'Id';
     public $timestamps = false;

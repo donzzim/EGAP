@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ComplementoSetor extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     public $timestamps = false;
     protected $table = 'mat_complementosetor';
     protected $fillable = [

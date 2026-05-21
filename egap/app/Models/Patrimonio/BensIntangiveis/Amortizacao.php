@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Amortizacao extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     protected $table = 'int_amortizacao';
 

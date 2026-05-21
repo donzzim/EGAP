@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reavaliacao extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_reavaliacao';
     protected $primaryKey = 'Id';
     protected $guarded = [];

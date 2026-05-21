@@ -3,7 +3,7 @@ namespace App\Models\Patrimonio\BensImoveis;
 use Illuminate\Database\Eloquent\Model;
 
 class EstadoConservacao extends Model {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_estadoconservacao';
     protected $primaryKey = 'Id';
     protected $guarded = [];

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Processo extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     protected $table = 'mat_processos';
 

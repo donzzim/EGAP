@@ -7,7 +7,7 @@ use App\Models\Patrimonio\BensImoveis\Processo;
 
 class MatTipoProcesso extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_tipo_processo';
     protected $primaryKey = 'id';
     public $timestamps = false;

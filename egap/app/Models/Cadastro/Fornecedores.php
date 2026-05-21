@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Fornecedores extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_fornecedor';
     protected $fillable = [
         'date_time',

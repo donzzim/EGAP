@@ -8,7 +8,7 @@ use App\Models\Cadastro\DescricaoResumida;
 
 class MatAnexoProcesso extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_anexoprocesso';
     protected $primaryKey = 'id';
     public $timestamps = false;

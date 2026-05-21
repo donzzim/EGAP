@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProMaterial extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     protected $table = 'pro_materiais';
 

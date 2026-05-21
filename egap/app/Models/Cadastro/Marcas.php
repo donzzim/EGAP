@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Marcas extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_marca';
     protected $fillable = [
         'date_time',

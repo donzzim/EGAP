@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BemMovel extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_patrimonio';
     protected $primaryKey = 'id';
     public $timestamps = false;

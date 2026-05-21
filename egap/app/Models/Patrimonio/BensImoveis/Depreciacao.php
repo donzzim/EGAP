@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Depreciacao extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_depreciacao';
     protected $primaryKey = 'Id';
     protected $guarded = [];

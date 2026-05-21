@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Obra extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_obras';
     protected $primaryKey = 'id';
     protected $guarded = [];

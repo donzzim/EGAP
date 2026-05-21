@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ItemBaixa extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_itembaixa';
     public $timestamps = false;
 

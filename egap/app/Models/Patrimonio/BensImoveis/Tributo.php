@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tributo extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_tributos';
     protected $primaryKey = 'Id';
     protected $guarded = [];

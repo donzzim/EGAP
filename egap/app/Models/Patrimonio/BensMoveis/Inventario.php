@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Inventario extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     /** ✅ O FIX: Garante que o Laravel use mat_inventario e não mat_table */
     protected $table = 'mat_inventario';

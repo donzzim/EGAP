@@ -15,7 +15,7 @@ class Termo extends Model
 {
     private const TIPO_TRANSPORTE_CARGA = '2';
 
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_termos';
     public $timestamps = false;
     public static $snakeAttributes = false;

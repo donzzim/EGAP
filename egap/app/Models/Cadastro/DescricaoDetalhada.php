@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DescricaoDetalhada extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     protected $table = 'mat_descricaodetalhada';
 

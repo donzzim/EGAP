@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class FasePedido extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     public $timestamps = false;
     protected $table = 'ped_fases';
     protected $fillable = [

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SituacaoBemMovel extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_situacao';
     public $timestamps = false;
 

@@ -3,7 +3,7 @@ namespace App\Models\Patrimonio\BensImoveis;
 use Illuminate\Database\Eloquent\Model;
 
 class CidUf extends Model {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_ciduf';
     protected $primaryKey = 'id';
     protected $guarded = [];

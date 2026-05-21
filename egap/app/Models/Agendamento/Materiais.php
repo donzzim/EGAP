@@ -13,7 +13,7 @@ class Materiais extends Model
 {
     public const TIPO_TRANSPORTE_CARGA = '2';
 
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'age_materiais';
     protected $primaryKey = 'id';
     public $timestamps = false;

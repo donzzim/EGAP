@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Baixa extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_baixa';
     public $timestamps = false;
 

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ContaContabil extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_planocontas';
     public $timestamps = false;
     protected $fillable = [

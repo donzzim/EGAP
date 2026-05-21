@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cedido extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'imo_cedidos';
     protected $primaryKey = 'id';
     protected $guarded = [];

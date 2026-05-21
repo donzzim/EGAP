@@ -4,10 +4,7 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
-use App\Models\Cadastro\Modelos;
-use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
-use App\Models\Patrimonio\BensMoveis\SituacaoBemMovel;
 use Filament\Forms;
 use Filament\Forms\Components\{DatePicker, Grid, Select, Tabs, Textarea, TextInput};
 use Filament\Forms\Form;
@@ -19,13 +16,12 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
+use PhpParser\Node\Stmt\Return_;
 
 class BemMovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-
     protected static ?string $model = BemMovel::class;
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?string $navigationGroup = 'Bens Móveis';
@@ -53,29 +49,11 @@ class BemMovelResource extends Resource
 
                         Tabs\Tab::make('2. Descrição do Bem')
                             ->schema([
-                                Select::make('DescricaoResumidadoBem')
-                                    ->label('Descrição Resumida')
-                                    ->relationship('descricaoResumidaBemRef', 'Descricao')
-                                    ->searchable()
-                                    ->preload(),
-
+                                TextInput::make('DescricaoResumidadoBem')->label('ID Descrição Resumida'),
                                 Textarea::make('Descricao')->label('Descrição Detalhada')->required()->rows(5)->columnSpanFull(),
-
-                                Grid::make(2)->schema([
-                                    Select::make('Marca')
-                                        ->label('Marca')
-                                        ->relationship('marcaRef', 'descricao')
-                                        ->searchable()->live()
-                                        ->afterStateUpdated(fn (Forms\Set $set) => $set('Modelo', null)),
-
-                                    Select::make('Modelo')
-                                        ->label('Modelo')
-                                        ->options(function (Forms\Get $get) {
-                                            $marcaId = $get('Marca');
-                                            if (!$marcaId) return [];
-                                            return Modelos::where('marca', $marcaId)->pluck('descricao', 'id');
-                                        })->searchable(),
-
+                                Grid::make(3)->schema([
+                                    TextInput::make('Marca')->label('ID Marca'),
+                                    TextInput::make('Modelo')->label('ID Modelo'),
                                     Select::make('TipodoBem')->label('Tipo do Bem')->options(['Móveis' => 'Móveis', 'Imóveis' => 'Imóveis', 'Veículos' => 'Veículos']),
                                     Select::make('EstadodeConservacao')->label('Estado de Conservação')->options(['ÓTIMO' => 'ÓTIMO', 'BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA']),
                                     Select::make('Voltagem')->label('Voltagem')->options(['N/A' => 'Não Aplicável', '110v' => '110v', '220v' => '220v', 'BIVOLT' => 'BIVOLT']),
@@ -85,19 +63,8 @@ class BemMovelResource extends Resource
                         Tabs\Tab::make('3. Localização')
                             ->schema([
                                 Grid::make(2)->schema([
-                                    Select::make('UnidadeJudiciaria')
-                                        ->label('Unidade Judiciária')
-                                        ->relationship('unidadeJudiciariaRef', 'Setor')
-                                        ->searchable()->live()
-                                        ->afterStateUpdated(fn (Forms\Set $set) => $set('Setor', null)),
-
-                                    Select::make('Setor')
-                                        ->label('Setor')
-                                        ->options(function (Forms\Get $get) {
-                                            $unidadeId = $get('UnidadeJudiciaria');
-                                            if (!$unidadeId) return [];
-                                            return Setores::where('CodigoPai', $unidadeId)->pluck('Setor', 'id');
-                                        })->searchable(),
+                                    TextInput::make('UnidadeJudiciaria')->label('ID Unidade Judiciária'),
+                                    TextInput::make('Setor')->label('ID Setor'),
                                     TextInput::make('ComplementoSetor')->label('Complemento'),
                                     TextInput::make('AndarSetor')->label('Andar'),
                                 ]),
@@ -106,7 +73,7 @@ class BemMovelResource extends Resource
                         Tabs\Tab::make('4. Informações da Nota')
                             ->schema([
                                 Grid::make(2)->schema([
-                                    Select::make('Fornecedor')->label('Fornecedor')->relationship('fornecedorRef', 'NomeFornecedor')->searchable(),
+                                    TextInput::make('Fornecedor')->label('ID Fornecedor'),
                                     TextInput::make('NotaFiscal')->label('N° Nota Fiscal'),
                                     DatePicker::make('DataCadastro')->label('Data do Cadastro'),
                                     TextInput::make('ValorAquisicao')->label('Valor Aquisição')->numeric()->prefix('R$'),
@@ -115,55 +82,34 @@ class BemMovelResource extends Resource
                                 ]),
                             ]),
 
-                        Tabs\Tab::make('5. Veículos')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    TextInput::make('Placa')->label('Placa'),
-                                    TextInput::make('Chassi')->label('Chassi'),
-                                    TextInput::make('Renavam')->label('Renavam'),
-                                    Select::make('Combustivel')->label('Combustível')->options(['Gasolina' => 'Gasolina', 'Diesel' => 'Diesel', 'Flex' => 'Flex']),
-                                    TextInput::make('AnoFabricacao')->label('Ano Fabricação'),
-                                    TextInput::make('AnoModelo')->label('Ano Modelo'),
-                                ]),
+                        Tabs\Tab::make('5. Veículos')->schema([
+                            Grid::make(3)->schema([
+                                TextInput::make('Placa')->label('Placa'),
+                                TextInput::make('Chassi')->label('Chassi'),
+                                TextInput::make('Renavam')->label('Renavam'),
+                                Select::make('Combustivel')->label('Combustível')->options(['Gasolina' => 'Gasolina', 'Diesel' => 'Diesel', 'Flex' => 'Flex']),
                             ]),
+                        ]),
 
-                        Tabs\Tab::make('6. Contábil')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    Select::make('ContaContabil')->label('Conta Contábil')->relationship('contaContabilRef', 'titulo')->searchable(),
-                                    TextInput::make('VidaUtil')->label('Vida Útil (meses)')->numeric(),
-                                    TextInput::make('ValorResidual')->label('Valor Residual (R$)')->numeric()->prefix('R$'),
-                                    TextInput::make('DepreciacaoAcumulada')->label('Depreciação Acumulada')->numeric()->prefix('R$'),
-                                ]),
+                        Tabs\Tab::make('6. Contábil')->schema([
+                            Grid::make(2)->schema([
+                                TextInput::make('ContaContabil')->label('ID Conta Contábil'),
+                                TextInput::make('VidaUtil')->label('Vida Útil (meses)')->numeric(),
+                                TextInput::make('ValorResidual')->label('Valor Residual (R$)')->numeric()->prefix('R$'),
+                                TextInput::make('DepreciacaoAcumulada')->label('Depreciação Acumulada')->numeric()->prefix('R$'),
                             ]),
+                        ]),
 
-                        Tabs\Tab::make('7. Observação')
-                            ->schema([
-                                Textarea::make('Observacao')->label('Observações Gerais')->columnSpanFull()->rows(4),
-                            ]),
+                        Tabs\Tab::make('7. Observação')->schema([Textarea::make('Observacao')->label('Observações Gerais')->columnSpanFull()->rows(4)]),
 
-                        Tabs\Tab::make('8. Reavaliação')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    DatePicker::make('DatadaReavaliacao')->label('Data da Reavaliação'),
-                                    TextInput::make('ValordaReavaliacao')->label('Valor da Reavaliação')->numeric()->prefix('R$'),
-                                    TextInput::make('VidaUtilReavaliacao')->label('Vida Útil Reavaliação (meses)'),
-                                    TextInput::make('ValordeMercado')->label('Valor de Mercado')->numeric()->prefix('R$'),
-                                ]),
+                        Tabs\Tab::make('9. Situação')->schema([
+                            Grid::make(2)->schema([
+                                DatePicker::make('DataBaixa')->label('Data da Baixa')->disabled(),
+                                TextInput::make('ProcessoBaixa')->label('Processo de Baixa')->disabled(),
+                                DatePicker::make('DatadaReavaliacao')->label('Data da Última Reavaliação')->disabled(),
+                                TextInput::make('SituacaoBem')->label('ID Situação')->disabled(),
                             ]),
-
-                        Tabs\Tab::make('9. Situação')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    DatePicker::make('DataBaixa')->label('Data da Baixa')->disabled(),
-                                    TextInput::make('ProcessoBaixa')->label('Processo de Baixa')->disabled(),
-                                    Select::make('SituacaoBem')
-                                        ->label('Situação')
-                                        ->relationship('situacaoBemRef', 'descricao')
-                                        ->getOptionLabelFromRecordUsing(fn ($record) => $record->descricao_completa)
-                                        ->disabled(),
-                                ]),
-                            ]),
+                        ]),
                     ])->columnSpanFull(),
             ]);
     }
@@ -171,18 +117,126 @@ class BemMovelResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->deferLoading()
+            ->poll(null)
             ->columns([
-                Tables\Columns\TextColumn::make('NumPatrimonio')->label('Patrimônio')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('Descricao')->label('Descrição')->limit(50)->searchable(),
-                Tables\Columns\TextColumn::make('unidadeJudiciariaRef.Setor')->label('Unidade')->alignCenter(),
-                Tables\Columns\TextColumn::make('ValorAquisicao')->label('Valor')->alignCenter()->money('BRL')->sortable(),
-                Tables\Columns\TextColumn::make('situacaoBemRef.descricao_completa')->label('Situação')->alignCenter(),
+                Tables\Columns\TextColumn::make('NumPatrimonio')
+                    ->label('Patrimônio')
+                    ->sortable()
+                    ->searchable(isIndividual: true),
+
+                Tables\Columns\TextColumn::make('Descricao')
+                    ->label('Descrição')
+                    ->limit(35)
+                    ->searchable(isIndividual: true),
+
+                Tables\Columns\TextColumn::make('unidadeJudiciariaRef.Setor')
+                    ->label('Unidade')
+                    ->alignCenter()
+                    ->default('Não Informado'),
+
+                Tables\Columns\TextColumn::make('ValorAquisicao')
+                    ->label('Valor')
+                    ->alignCenter()
+                    ->money('BRL')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('situacaoBemRef.descricao')
+                    ->label('Situação')
+                    ->alignCenter()
+                    ->default('Não Informado'),
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\EditAction::make()->label('Editar'),
 
-                    // ✅ CONCILIAÇÃO (ATUALIZADA)
+                    // ✅ CORRIGIR INFORMAÇÕES INDIVIDUAL
+                    Action::make('corrigir_informacao_individual')
+                        ->label('Corrigir informações')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('warning')
+                        ->form([
+                            Grid::make(2)->schema([
+                                Select::make('elemento')
+                                    ->label('Elemento')
+                                    ->options([
+                                        'DescricaoResumidadoBem' => 'Descrição Resumida',
+                                        'UnidadeJudiciaria' => 'Unidade Judiciária',
+                                        'Setor' => 'Setor',
+                                        'UnidadeGestora' => 'Unidade Gestora',
+                                    ])
+                                    ->required()
+                                    ->live(),
+
+                                Select::make('valor')
+                                    ->label('Valor')
+                                    ->options(function (Forms\Get $get) {
+                                        $elemento = $get('elemento');
+                                        if (!$elemento) return [];
+
+                                        try {
+
+                                               return match ($elemento) {
+                                                    'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
+
+                                                    // 🌟 LÓGICA DO TJES APLICADA: Comarca possui id = CodigoPai
+                                                    'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+
+                                                    // 🌟 LÓGICA DO TJES APLICADA: Setor possui id != CodigoPai
+                                                    'Setor' => DB::connection('egap')->table('mat_setores')->whereRaw('id != CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+
+                                                    'UnidadeGestora' => DB::connection('egap')->table('mat_unidadegestora')->orderBy('nome')->pluck('nome', 'id'),
+                                                    default => [],
+                                                    };
+
+                                        } catch (\Exception $e) {
+                                            return [];
+                                        }
+                                    })
+                                    ->searchable()
+                                    ->required(),
+                            ]),
+                        ])
+                        ->action(function ($record, array $data) {
+                            $record->update([
+                                $data['elemento'] => $data['valor']
+                            ]);
+
+                            Notification::make()->title('Informação do bem corrigida!')->success()->send();
+                        }),
+
+                    // ✅ HISTÓRICO
+                    Action::make('historico_movimentacao')
+                        ->label('Histórico')
+                        ->icon('heroicon-o-clock')
+                        ->color('info')
+                        ->modalHeading(fn ($record) => "Histórico de Movimentações - {$record->NumPatrimonio}")
+                        ->modalSubmitAction(false)
+                        ->modalContent(function ($record) {
+                            $movimentacoes = DB::connection('egap')->table('mat_transferencia')->where('NumPatrimonio', $record->id)->orderBy('date_time', 'desc')->get();
+                            return view('patrimonio.historico-movimentacoes', ['historico' => $movimentacoes]);
+                        }),
+
+                    // ✅ TERMOS DIGITALIZADOS
+                    Action::make('termos_digitalizados')
+                        ->label('Termos Digitalizados')
+                        ->icon('heroicon-o-document-magnifying-glass')
+                        ->color('gray')
+                        ->modalHeading(fn ($record) => "Termos Digitalizados - Patrimônio {$record->NumPatrimonio}")
+                        ->modalSubmitAction(false)
+                        ->modalContent(function ($record) {
+                            $termos = DB::connection('egap')
+                                ->table('mat_transferencia')
+                                ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
+                                ->where('mat_transferencia.NumPatrimonio', $record->id)
+                                ->select('mat_arquivodigital.arquivo_digital as Caminho', 'mat_transferencia.Termo as TermoNo', 'mat_transferencia.date_time')
+                                ->orderBy('mat_transferencia.date_time', 'desc')
+                                ->get()
+                                ->unique('TermoNo');
+                            return view('patrimonio.termos-digitalizados-modal', ['termos' => $termos]);
+                        }),
+
+                    // ✅ CONCILIAÇÃO
                     Action::make('conciliar_bem')
                         ->label('Conciliar bem')
                         ->icon('heroicon-s-check-badge')
@@ -190,36 +244,22 @@ class BemMovelResource extends Resource
                         ->form([
                             Grid::make(2)->schema([
                                 TextInput::make('NumPatrimonio')->label('Patrimônio Atual')->disabled(),
-                                TextInput::make('TomboSmarapd')->label('Patrimônio (Conciliação Smarapd)'),
-                                TextInput::make('NumTomboSmarapd')->label('Patrimônio (sem cód. barras)'),
-                                DatePicker::make('DatadaReavaliacao')->label('Data da Conciliação')->default(now()),
+                                TextInput::make('TomboSmarapd')->label('Patrimônio (Smarapd)')->required(),
+                                DatePicker::make('DatadaReavaliacao')->label('Data Conciliation')->default(now())->required(),
                             ]),
                         ])
-                        ->fillForm(fn (BemMovel $record): array => [
-                            'NumPatrimonio' => $record->NumPatrimonio,
-                            'TomboSmarapd' => $record->TomboSmarapd,
-                            'NumTomboSmarapd' => $record->NumTomboSmarapd,
-                            'DatadaReavaliacao' => $record->DatadaReavaliacao,
-                        ])
-                        ->action(function (BemMovel $record, array $data) {
-                            DB::connection('egap')->transaction(function () use ($record, $data) {
-                                $record->update([
-                                    'TomboSmarapd' => $data['TomboSmarapd'],
-                                    'NumTomboSmarapd' => $data['NumTomboSmarapd'],
-                                    'DatadaReavaliacao' => $data['DatadaReavaliacao'],
-                                    'Observacao' => $record->Observacao . "\n[CONCILIAÇÃO REALIZADA EM " . now()->format('d/m/Y') . "]",
-                                ]);
+                        ->fillForm(fn ($record) => ['NumPatrimonio' => $record->NumPatrimonio, 'TomboSmarapd' => $record->TomboSmarapd, 'DatadaReavaliacao' => $record->DatadaReavaliacao])
+                        ->action(function ($record, array $data) {
+                            $record->update([
+                                'TomboSmarapd' => $data['TomboSmarapd'],
+                                'DatadaReavaliacao' => $data['DatadaReavaliacao']
+                            ]);
 
-                                DB::connection('egap')->table('mat_conciliacao')->insert([
-                                    'date_time' => now(),
-                                    'NumPatrimonio' => $record->NumPatrimonio,
-                                    'Usuario' => auth()->id(),
-                                    'DataConciliacao' => $data['DatadaReavaliacao'],
-                                    'TomboAnterior' => $record->getOriginal('TomboSmarapd'),
-                                    'TomboNovo' => $data['TomboSmarapd'],
-                                ]);
-                            });
-                            Notification::make()->title('Bem conciliado com sucesso!')->success()->send();
+                            DB::connection('egap')->table('mat_conciliacao')->insert([
+                                'date_time' => now(), 'numero_patrimonio' => $record->NumPatrimonio, 'descricao' => $record->Descricao,
+                                'data_conciliacao' => $data['DatadaReavaliacao'], 'patrimonio' => $data['TomboSmarapd']
+                            ]);
+                            Notification::make()->title('Conciliado com sucesso!')->success()->send();
                         }),
 
                     // ✅ TRANSFERÊNCIA
@@ -229,74 +269,89 @@ class BemMovelResource extends Resource
                         ->color('warning')
                         ->form([
                             Grid::make(2)->schema([
-                                Select::make('unidade_atual')->label('Unidade')->relationship('unidadeJudiciariaRef', 'Setor')->searchable()->live()->required(),
-                                Select::make('setor_atual')->label('Setor')->options(fn (Forms\Get $get) => $get('unidade_atual') ? Setores::where('CodigoPai', $get('unidade_atual'))->pluck('Setor', 'id') : [])->searchable()->required(),
-                                Select::make('pedido_no')
-                                    ->label('Pedido No')
-                                    ->options(fn () => DB::connection('egap')->table('age_solicitacao')->select('id', 'date_time')->limit(50)->get()->mapWithKeys(fn ($i) => [$i->id => "{$i->id}/".Carbon::parse($i->date_time)->year]))
-                                    ->searchable(),
+                                Select::make('unidade_atual')
+                                    ->label('Unidade')
+                                    ->options(fn () => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'))
+                                    ->searchable()->live()->required(),
+                                Select::make('setor_atual')
+                                    ->label('Setor')
+                                    ->options(fn (Forms\Get $get) => $get('unidade_atual') ? DB::connection('egap')->table('mat_setores')->where('CodigoPai', $get('unidade_atual'))->orderBy('Setor')->pluck('Setor', 'id') : [])
+                                    ->searchable()->required(),
+                                TextInput::make('pedido_no')->label('Pedido Nº'),
+                                TextInput::make('observacao')->label('Observação'),
                             ]),
                         ])
-                        ->action(function (BemMovel $record, array $data) {
+                        ->action(function ($record, array $data) {
                             DB::connection('egap')->transaction(function () use ($record, $data) {
+                                $user = auth()->id();
+                                $id_termo = DB::connection('egap')->table('mat_termos')->insertGetId([
+                                    'date_time' => now(),
+                                    'num_termo' => DB::connection('egap')->table('mat_termos')->whereYear('date_time', now()->year)->max('num_termo') + 1 ?: 1,
+                                    'ano_termo' => now()->year,
+                                    'atualizado_em' => now(), 'atualizado_por' => $user, 'pedido_no' => $data['pedido_no'] ?? null,
+                                ]);
+                                DB::connection('egap')->table('mat_arquivodigital')->insert(['date_time' => now(), 'termo' => $id_termo, 'atualizado_em' => now(), 'atualizado_por' => $user, 'arquivo_digital' => null]);
                                 DB::connection('egap')->table('mat_transferencia')->insert([
-                                    'date_time' => now(), 'NumPatrimonio' => $record->NumPatrimonio, 'Usuario' => auth()->id(),
-                                    'UnidadeAnterior' => $record->UnidadeJudiciaria, 'SetorAnterior' => $record->Setor,
-                                    'UnidadeAtual' => $data['unidade_atual'], 'SetorAtual' => $data['setor_atual'], 'pedido_no' => $data['pedido_no'] ?? null,
+                                    'date_time' => now(), 'NumPatrimonio' => $record->id, 'UnidadeAtual' => $data['unidade_atual'], 'SetorAtual' => $data['setor_atual'],
+                                    'Usuario' => $user, 'Termo' => $id_termo, 'pedido_no' => $data['pedido_no'] ?? null, 'UnidadeAnterior' => $record->UnidadeJudiciaria, 'SetorAnterior' => $record->Setor,
                                 ]);
                                 $record->update(['UnidadeJudiciaria' => $data['unidade_atual'], 'Setor' => $data['setor_atual']]);
                             });
-                            Notification::make()->title('Bem transferido!')->success()->send();
+                            Notification::make()->title('Transferência registrada!')->success()->send();
                         }),
 
                     // ✅ BAIXA
                     Action::make('vincular_baixa')
-                        ->label('Vincular bens para baixa')
+                        ->label('Vincular para baixa')
                         ->icon('heroicon-o-archive-box-x-mark')
                         ->color('danger')
                         ->form([
-                            Grid::make(2)->schema([
-                                TextInput::make('processo_baixa')->label('Processo Nº')->required()->mask('9999.99.999.999'),
-                                Select::make('situacao_baixa_id')
-                                    ->label('Tipo da baixa')
-                                    ->options(fn() => SituacaoBemMovel::where('situacao', 'Baixado')->get()->pluck('descricao_completa', 'id'))
-                                    ->required(),
-                                DatePicker::make('data_baixa')->label('Data da Baixa')->default(now())->required(),
-                                TextInput::make('requisitante')->label('Requisitante'),
-                                Textarea::make('detalhes')->label('Detalhes')->rows(3)->columnSpanFull(),
-                            ]),
+                            TextInput::make('processo_baixa')->label('Processo Nº')->required(),
+                            Select::make('situacao_baixa_id')->label('Motivo')
+                                ->options(fn() => DB::connection('egap')->table('mat_situacao')->where('situacao', 'Baixado')->pluck('descricao', 'id'))
+                                ->required(),
+                            DatePicker::make('data_baixa')->label('Data')->default(now())->required(),
                         ])
-                        ->action(function (BemMovel $record, array $data) {
+                        ->action(function ($record, array $data) {
                             DB::connection('egap')->transaction(function () use ($record, $data) {
-                                DB::connection('egap')->table('mat_baixa')->insert([
-                                    'date_time' => now(), 'Usuario' => auth()->id(), 'NumeroProcesso' => $data['processo_baixa'],
-                                    'DataBaixa' => $data['data_baixa'], 'Requisitante' => $data['requisitante'] ?? null, 'Observacao' => $data['detalhes'] ?? null,
-                                ]);
+                                DB::connection('egap')->table('mat_baixa')->insert(['date_time' => now(), 'Usuario' => auth()->id(), 'NumeroProcesso' => $data['processo_baixa'], 'DataBaixa' => $data['data_baixa']]);
                                 $record->update(['ProcessoBaixa' => $data['processo_baixa'], 'DataBaixa' => $data['data_baixa'], 'SituacaoBem' => $data['situacao_baixa_id']]);
                             });
-                            Notification::make()->title('Bem baixado com sucesso!')->success()->send();
-                        })
-                        ->visible(fn ($record) => in_array($record->SituacaoBem, [1, 7, 8, 9, 12])),
+                            Notification::make()->title('Baixa registrada!')->success()->send();
+                        }),
 
-                    // ✅ HISTÓRICO
-                    Action::make('historico_movimentacoes')
-                        ->label('Histórico')
-                        ->icon('heroicon-o-clock')
-                        ->modalContent(fn ($record) => view('patrimonio.historico-movimentacoes', [
-                            'historico' => DB::connection('egap')->table('mat_transferencia')->where('NumPatrimonio', $record->NumPatrimonio)->orderBy('date_time', 'desc')->get()
-                        ])),
+                    // ✅ REAVALIAÇÃO (Sem travas de visualização para rodar livre)
+                    Action::make('reavaliar_bem')
+                        ->label('Reavaliação')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('success')
+                        ->form([
+                            Select::make('estado_conservacao')
+                                ->label('Estado de Conservação (Cálculo)')
+                                ->options([
+                                    10 => 'Ótimo (10)',
+                                    8 => 'Bom (8)',
+                                    5 => 'Regular (5)',
+                                    2 => 'Ruim (2)',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function ($record, array $data) {
+                            // Lógica de cálculo customizada
+                        }),
 
+                    // ✅ DEPRECIAÇÃO
                     Action::make('calculo_depreciacao')
-                        ->label('Cálculo de Depreciação Mensal')
+                        ->label('Depreciação')
                         ->icon('heroicon-o-calculator')
                         ->color('success')
-                        ->url(fn (BemMovel $record) => route('depreciacao.imprimir', ['id' => $record->id]))
+                        ->url(fn ($record) => route('depreciacao.imprimir', ['id' => $record->id]))
                         ->openUrlInNewTab(),
 
+                    // ✅ IMPRIMIR TERMO
                     Action::make('imprimir_termo')
                         ->label('Imprimir termo')
                         ->icon('heroicon-o-printer')
-                        ->color('info')
                         ->url(fn ($record) => route('termo.imprimir.dinamico', ['id' => $record->id]))
                         ->openUrlInNewTab(),
 
@@ -305,28 +360,75 @@ class BemMovelResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('imprimir_selecionados')
-                        ->label('Relatório de Bens (Selecionados)')
-                        ->icon('heroicon-o-document-text')
-                        ->color('info')
-                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                            $ids = $records->pluck('id')->implode(',');
-                            return redirect()->route('bens.imprimir.lote', ['ids' => $ids]);
-                        })
-                        ->deselectRecordsAfterCompletion(),
+                    // ✅ CORRIGIR INFORMAÇÕES EM LOTE
+                    Tables\Actions\BulkAction::make('corrigir_informacoes_lote')
+                        ->label('Corrigir informações')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('warning')
+                        ->deselectRecordsAfterCompletion()
+                        ->form([
+                            Grid::make(2)->schema([
+                                Select::make('elemento')
+                                    ->label('Elemento')
+                                    ->options([
+                                        'DescricaoResumidadoBem' => 'Descrição Resumida',
+                                        'UnidadeJudiciaria' => 'Unidade Judiciária',
+                                        'Setor' => 'Setor',
+                                        'UnidadeGestora' => 'Unidade Gestora',
+                                    ])
+                                    ->required()
+                                    ->live(),
+
+                                Select::make('valor')
+                                    ->label('Valor')
+                                    ->options(function (Forms\Get $get) {
+                                        $elemento = $get('elemento');
+                                        if (!$elemento) return [];
+
+                                        try {
+return
+                                                match ($elemento) {
+                                                    'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
+
+                                                    // 🌟 LÓGICA DO TJES REPLICADA EM LOTE
+                                                    'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+
+                                                    'Setor' => DB::connection('egap')->table('mat_setores')->whereRaw('id != CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+
+                                                    'UnidadeGestora' => DB::connection('egap')->table('mat_unidadegestora')->orderBy('nome')->pluck('nome', 'id'),
+                                                    default => [],
+                                                    };
+
+                                                    } catch (\Exception $e) {
+                                            return [];
+                                        }
+                                    })
+                                    ->searchable()
+                                    ->required(),
+                            ]),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                            DB::connection('egap')->transaction(function () use ($records, $data) {
+                                $coluna = $data['elemento'];
+                                $novoValor = $data['valor'];
+                                $ids = $records->pluck('id')->toArray();
+
+                                DB::connection('egap')
+                                    ->table('mat_patrimonio')
+                                    ->whereIn('id', $ids)
+                                    ->update([$coluna => $novoValor]);
+                            });
+
+                            Notification::make()->title('Informações corrigidas em massa!')->success()->send();
+                        }),
+
                     Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
                 ])->label('Ações em Grupo'),
-            ])
-            ->striped()
-            ->paginated([50, 100, 150]);
+            ]);
     }
 
     public static function getPages(): array
     {
-        return [
-            'index' => Pages\ListBemMovels::route('/'),
-            'create' => Pages\CreateBemMovel::route('/create'),
-            'edit' => Pages\EditBemMovel::route('/{record}/edit'),
-        ];
+        return ['index' => Pages\ListBemMovels::route('/'), 'create' => Pages\CreateBemMovel::route('/create'), 'edit' => Pages\EditBemMovel::route('/{record}/edit')];
     }
 }

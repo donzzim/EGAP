@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AtendimentoPedidoView extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     protected $table = 'ped_atendimentopedidos';
 

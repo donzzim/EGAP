@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class CentroCusto extends Model
 {
     //
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     public $timestamps = false;
     protected $table = 'cad_centrocusto';
     protected $fillable = [

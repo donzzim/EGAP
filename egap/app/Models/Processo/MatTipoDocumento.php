@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MatTipoDocumento extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
     protected $table = 'mat_tipo_documentos';
     protected $primaryKey = 'id';
     public $timestamps = false;

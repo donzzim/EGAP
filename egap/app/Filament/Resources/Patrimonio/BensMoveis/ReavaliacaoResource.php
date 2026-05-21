@@ -14,7 +14,7 @@ class ReavaliacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Reavaliacao::class;
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
@@ -22,7 +22,6 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     protected static ?string $navigationLabel = 'Reavaliação';
     protected static ?string $modelLabel = 'Reavaliação';
     protected static ?int $navigationSort = 7;
-
 
     /** ✅ TRAVA DE SEGURANÇA: Apenas Consulta */
     public static function canCreate(): bool { return false; }
@@ -33,7 +32,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('bem.NumPatrimonio')
+                Tables\Columns\TextColumn::make('patrimonio')
                     ->label('Patrimônio')
                     ->searchable()
                     ->sortable(),
@@ -82,9 +81,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                         'RUIM' => 'RUIM',
                     ]),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-            ]);
+            ->actions([]);
     }
 
     public static function getPages(): array

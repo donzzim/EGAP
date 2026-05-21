@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class BemIntangivel extends Model
 {
-    protected $connection = 'egap';
+    //protected $connection = 'egap';
 
     protected $table = 'int_intangivel';
 
