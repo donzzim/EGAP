@@ -1,13 +1,13 @@
 # 🗂️ EGAP e Inventário Mobile
 
-> Repositório com duas aplicações integradas para gestão e conferência patrimonial.
+> Repositório com duas aplicações integradas para gestão patrimonial, conferência de inventário e solicitação de materiais.
 
 | Aplicação | Tecnologia | Finalidade |
 |---|---|---|
 | `egap` | Laravel 11 + Filament 3 | Administração patrimonial, pedidos, almoxarifado, relatórios e agendamento |
-| `inventario-mobile` | Expo / React Native | Consulta e conferência patrimonial em campo |
+| `inventario-mobile` | Expo / React Native | Consulta, conferência patrimonial e criação de pedidos em campo |
 
-O mobile consome a API Laravel em `/mobile-api`, autenticada com **Laravel Sanctum**. O Laravel é a fonte de verdade para autenticação, escopo do usuário, regras de patrimônio e gravações de inventário.
+O mobile consome a API Laravel em `/mobile-api`, autenticada com **Laravel Sanctum**. O Laravel é a fonte de verdade para autenticação, escopo do usuário, regras patrimoniais, conferência de inventário e pedidos.
 
 ---
 
@@ -28,18 +28,20 @@ graph TD
     A[Usuário abre o app mobile] --> B[Login em /mobile-api/login]
     B --> C[Laravel valida usuário local ou usuário EGAP]
     C --> D[UsersConnectionService resolve CPF e última lotação]
-    D --> E[Expo salva token e usuário no SecureStore]
-    E --> F[Painel Patrimônio Mobile]
-    F --> G[Consulta direta de patrimônio]
-    F --> H[Listagem de bens do setor]
-    F --> I[Conferência de inventário]
+    D --> E[Expo armazena token separado dos dados do usuário]
+    E --> F{Módulo Mobile}
+    F --> G[Patrimônio: dashboard, bens e conferência]
+    F --> H[Pedidos: consumo e permanentes]
+    G --> I[Conferência de inventário]
     G --> J[BensController - show]
-    H --> K[BensController - index]
+    G --> K[BensController - index e dashboard]
     I --> L[ConferenciaBensService]
+    H --> Q[PedidosMobileService]
     L --> M[(mat_patrimonio)]
     L --> N[(mat_inventario)]
     L --> O[(inv_atividades)]
     L --> P[(mat_itensinventario)]
+    Q --> R[(ped_pedidos / ped_itempedido / ped_fases)]
 ```
 
 ---
@@ -157,9 +159,9 @@ graph TD
 
 ---
 
-## 📱 Inventário Mobile
+## 📱 Aplicativo Mobile
 
-O mobile fica em `inventario-mobile` e usa Expo Router com rotas baseadas em arquivos.
+O mobile fica em `inventario-mobile` e usa Expo Router com rotas baseadas em arquivos. Os módulos disponíveis atualmente são **Patrimônio** e **Pedidos**.
 
 ### Estrutura Mobile
 
@@ -168,21 +170,30 @@ inventario-mobile/
 ├── app/
 │   ├── _layout.tsx              # Layout raiz, ThemeProvider e GestureHandlerRootView
 │   ├── index.tsx                # Login
-│   └── patrimonio/
-│       ├── _layout.tsx          # Stack interno e menu lateral por gesto
-│       ├── index.tsx            # Redirect para /patrimonio/principal
-│       ├── principal.tsx        # Painel principal patrimonial
-│       ├── bens.tsx             # Lista paginada de bens do setor
-│       └── conferencia.tsx      # Conferência de inventário
+│   ├── erro.tsx                 # Tela global para falhas de rede/servidor
+│   ├── patrimonio/
+│   │   ├── _layout.tsx          # Stack interno e menu lateral por gesto
+│   │   ├── index.tsx            # Redirect para /patrimonio/principal
+│   │   ├── principal.tsx        # Painel principal patrimonial
+│   │   ├── bens.tsx             # Lista paginada de bens do setor
+│   │   └── conferencia.tsx      # Conferência de inventário
+│   └── pedidos/
+│       ├── _layout.tsx          # Stack do módulo e menu lateral por gesto
+│       ├── index.tsx            # Redirect para /pedidos/consumo
+│       ├── consumo.tsx          # Solicitação de bens de consumo
+│       └── permanentes.tsx      # Solicitação de bens permanentes
 ├── components/
 │   ├── app-sidebar.tsx          # Menu lateral por módulo
 │   ├── app-menu-button.tsx      # Botão de abertura do menu
-│   └── bottom-bar.tsx           # Navegação inferior e logout
+│   ├── bottom-bar.tsx           # Navegação inferior do patrimônio
+│   └── pedidos/
+│       └── pedidos-carrinho-screen.tsx # Catálogo, carrinho e envio de pedidos
 ├── src/
-│   ├── api/                     # Cliente HTTP e contratos de API
+│   ├── api/                     # Cliente HTTP e contratos de patrimônio/pedidos
 │   ├── config/env.ts            # Variáveis EXPO_PUBLIC_*
+│   ├── errors/                  # Eventos globais de falhas de API
 │   ├── navigation/              # Direção das animações do stack patrimônio
-│   └── storage/recentBens.ts    # Histórico local de consultas
+│   └── storage/                 # Sessão multiplataforma e histórico local
 └── app.json                     # Config Expo, plugins e permissões
 ```
 
@@ -195,15 +206,19 @@ inventario-mobile/
 | `/patrimonio/principal` | Painel de resumo, consulta de patrimônio, leitura por câmera e últimas consultas |
 | `/patrimonio/bens` | Lista de bens vinculados ao setor do usuário |
 | `/patrimonio/conferencia` | Conferência de inventário do setor |
+| `/pedidos` | Redireciona para `/pedidos/consumo` |
+| `/pedidos/consumo` | Catálogo e envio de pedido de materiais de consumo |
+| `/pedidos/permanentes` | Catálogo e envio de pedido de bens permanentes |
+| `/erro` | Tela exibida para falhas de rede ou erros de servidor reportados pelo cliente HTTP |
 
 ### Navegação Mobile
 
-O app usa duas formas de navegação:
+O app usa duas formas principais de navegação:
 
-- **Barra inferior** (`BottomBar`) — Início, Bens, Conferência e Sair.
-- **Menu lateral** (`AppSidebar`) — grupo Patrimônio e placeholders para Almoxarifado, Processos e Relatórios.
+- **Barra inferior** (`BottomBar`) — Dashboard, Bens e Conferência, disponível no módulo Patrimônio.
+- **Menu lateral** (`AppSidebar`) — módulos funcionais Patrimônio e Pedidos; Processos e Relatórios permanecem indicados como futuros.
 
-O layout `app/patrimonio/_layout.tsx` também permite abrir o menu lateral por gesto de arrasto na borda esquerda.
+O logout é realizado pelo menu lateral ou pelo botão no dashboard patrimonial. Os layouts de `patrimonio` e `pedidos` permitem abrir o menu lateral por gesto de arrasto na borda esquerda.
 
 As transições entre telas de patrimônio usam:
 
@@ -224,7 +239,7 @@ graph TD
     L5 --> L6[authApi.login]
     L6 --> L7[API Laravel valida credenciais]
     L7 --> L8[Retorna usuário + token]
-    L8 --> L9[Grava token e usuário no SecureStore]
+    L8 --> L9[Grava token separado dos dados do usuário]
     L9 --> L3
 ```
 
@@ -233,12 +248,15 @@ graph TD
 - `inventario-mobile/src/api/auth.ts`
 - `inventario-mobile/src/api/client.ts`
 - `inventario-mobile/src/config/env.ts`
+- `inventario-mobile/src/storage/appStorage.ts`
 
 **Dados salvos localmente:**
 
-- `auth_token`
-- `auth_user`
+- `auth_token` — token Sanctum armazenado separadamente.
+- `auth_user` — dados do usuário, sem o token em texto.
 - `recent_bens:{userId}`
+
+Em Android/iOS, `appStorage` usa `expo-secure-store`; na execução web, usa `localStorage` com fallback em memória. A rota `/me` valida a sessão e atualiza os dados do usuário, mas não retorna o token.
 
 ### Cliente HTTP Mobile
 
@@ -248,9 +266,10 @@ graph TD
 
 - Ler `ENV.API_URL`.
 - Montar headers `Content-Type`, `Accept`, `Authorization` e `ngrok-skip-browser-warning`.
-- Guardar/remover token via `SecureStore`.
+- Guardar/remover token por `appStorage`.
 - Converter respostas HTTP com erro em `ApiError`.
 - Converter falhas de rede em `NetworkError`.
+- Encaminhar falhas de rede e respostas HTTP `5xx` para a tela global `/erro`.
 
 **Variáveis de ambiente:**
 
@@ -306,6 +325,31 @@ EXPO_PUBLIC_USE_MOCK_API=false
 GET /mobile-api/bens?page=1&per_page=30&search=...
 ```
 
+### Pedidos Mobile
+
+**Arquivos principais:**
+
+- `inventario-mobile/components/pedidos/pedidos-carrinho-screen.tsx`
+- `inventario-mobile/src/api/pedidos.ts`
+- `egap/app/Http/Controllers/Api/PedidosController.php`
+- `egap/app/Services/Mobile/PedidosMobileService.php`
+
+**Funcionalidades:**
+
+- Oferece abas de pedidos de **consumo** e **permanentes**.
+- Busca materiais visíveis para a unidade, com paginação e seleção de quantidades.
+- Carrega complementos de setor e exige um destino para o pedido.
+- Monta carrinho e envia o pedido diretamente para a API.
+- Em consumo, exige justificativa geral e encaminha o pedido ao Almoxarifado.
+- Em permanentes, exige justificativa por item, aceita adição ou substituição e exige o patrimônio substituído quando aplicável.
+
+**Regras de persistência:**
+
+- Novos pedidos são gravados com situação inicial `6` (em análise).
+- Consumo utiliza setor responsável `799` (Almoxarifado); permanentes utilizam `1239` (Patrimônio).
+- A criação grava cabeçalho em `ped_pedidos`, itens em `ped_itempedido` e histórico em `ped_fases`, dentro de transação na conexão `egap`.
+- A listagem `GET /mobile-api/pedidos` existe na API para pedidos do usuário, ainda que as telas atuais estejam concentradas no cadastro pelo carrinho.
+
 ### Conferência de Inventário
 
 **Arquivo:** `inventario-mobile/app/patrimonio/conferencia.tsx`
@@ -319,6 +363,7 @@ GET /mobile-api/bens?page=1&per_page=30&search=...
 - Permite confirmar localização.
 - Permite registrar bem não localizado com justificativa.
 - Permite registrar divergência com campos e observação.
+- Permite declarar divergência para código lido sem cadastro patrimonial digital.
 - Permite finalizar conferência quando a API indicar `pode_finalizar`.
 - Bloqueia ações quando a atividade está finalizada/bloqueada.
 
@@ -337,6 +382,8 @@ GET /mobile-api/bens?page=1&per_page=30&search=...
 **Resultados possíveis de leitura:**
 
 - `localizavel`, `ja_conferido`, `outro_setor`, `nao_cadastrado`, `situacao_nao_conferivel`, `em_transferencia`, `cadastrado_manualmente`
+
+Quando um código sem cadastro já foi registrado como divergente no inventário atual, uma nova leitura retorna `ja_conferido`, evitando duplicidade.
 
 ---
 
@@ -359,6 +406,10 @@ GET /mobile-api/bens?page=1&per_page=30&search=...
 | `GET` | `/mobile-api/dashboard` | `BensController` | Resumo patrimonial do setor |
 | `GET` | `/mobile-api/bens` | `BensController` | Lista bens do setor |
 | `GET` | `/mobile-api/bens/{numPatrimonio}` | `BensController` | Consulta patrimônio por código |
+| `GET` | `/mobile-api/pedidos` | `PedidosController` | Lista pedidos do usuário |
+| `GET` | `/mobile-api/pedidos/contexto` | `PedidosController` | Resolve escopo e complementos disponíveis |
+| `GET` | `/mobile-api/pedidos/materiais` | `PedidosController` | Lista materiais de consumo ou permanentes |
+| `POST` | `/mobile-api/pedidos` | `PedidosController` | Cria pedido e itens |
 | `GET` | `/mobile-api/conferencia/atual` | `ConferenciaBensController` | Inventário/atividade/resumo |
 | `GET` | `/mobile-api/conferencia/bens` | `ConferenciaBensController` | Bens esperados no setor |
 | `POST` | `/mobile-api/conferencia/validar-leitura` | `ConferenciaBensController` | Valida código lido |
@@ -386,7 +437,9 @@ php artisan route:list --path=mobile-api
 4. Valida senha com `Hash::check`.
 5. Usa `UsersConnectionService` para resolver vínculo mobile.
 6. Gera token Sanctum com nome `mobile-app`.
-7. Retorna usuário normalizado para o Expo.
+7. Retorna usuário normalizado e token somente na resposta de login.
+
+Nas chamadas subsequentes, `GET /mobile-api/me` retorna os dados normalizados do usuário sem expor novamente o token. No aplicativo, `auth_token` e `auth_user` permanecem armazenados separadamente.
 
 **Serviço de vínculo:** `egap/app/Services/UsersConnectionService.php`
 
@@ -419,6 +472,22 @@ Esse serviço cruza: usuário local (`users`), CPF normalizado, `InfoUser`, usu�
 - Resumo financeiro: valor de aquisição, valor atual, bens sem valor e quantidade avaliada.
 - Dados de conferência atual, quando existir inventário acessível.
 
+### Pedidos no Backend
+
+**Controller:** `egap/app/Http/Controllers/Api/PedidosController.php`
+
+**Serviço:** `egap/app/Services/Mobile/PedidosMobileService.php`
+
+**Responsabilidades:** resolver escopo do solicitante; listar complementos; filtrar materiais visíveis para a unidade; consultar estoque/preço de referência; listar pedidos já criados; validar e persistir novos pedidos de consumo ou permanentes.
+
+**Parâmetros principais da API:**
+
+| Endpoint | Parâmetros |
+|---|---|
+| `GET /mobile-api/pedidos/materiais` | `tipo=consumo\|permanente`, `search`, `page`, `per_page` |
+| `GET /mobile-api/pedidos` | `page`, `per_page` |
+| `POST /mobile-api/pedidos` | `tipo`, `complemento_setor_id`, `justificativa`, `itens[]` |
+
 ### Conferência de Bens no Backend
 
 **Controller:** `egap/app/Http/Controllers/Api/ConferenciaBensController.php`
@@ -433,6 +502,7 @@ Esse serviço cruza: usuário local (`users`), CPF normalizado, `InfoUser`, usu�
 > - Escritas usam transação na conexão `egap`.
 > - O backend impede duplicidade de item no inventário.
 > - Atividade finalizada ou com carga efetuada bloqueia edições.
+> - Um código sem bem cadastrado pode gerar item divergente com `id_bem = null`, preservando o número lido.
 > - `mat_patrimonio.sit_inventario` e `mat_patrimonio.id_inventario` são atualizados para compatibilidade com o legado.
 > - `mat_itensinventario` é a fonte principal do registro da conferência atual.
 
@@ -454,6 +524,9 @@ Esse serviço cruza: usuário local (`users`), CPF normalizado, `InfoUser`, usu�
 | `mat_arquivodigital` | `ArquivoDigital` | Arquivos/validação de termos |
 | `mat_setores` | `Setores` | Unidades e setores |
 | `mat_complementosetor` | `ComplementoSetor` | Complementos físicos/lógicos do setor |
+| `ped_pedidos` | `Pedidos` | Cabeçalho das solicitações de materiais |
+| `ped_itempedido` | `ItemPedido` | Materiais e quantidades solicitados |
+| `ped_fases` | `FasePedido` | Histórico funcional do pedido e seus itens |
 
 ---
 
@@ -645,6 +718,32 @@ Authorization: Bearer {token}
 }
 ```
 
+### Criação de Pedido Permanente
+
+```http
+POST /mobile-api/pedidos
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+```json
+{
+  "tipo": "permanente",
+  "complemento_setor_id": 20,
+  "itens": [
+    {
+      "material_id": 45,
+      "quantidade": 1,
+      "tipo_atendimento": "substituicao",
+      "justificativa": "Equipamento sem condições de uso.",
+      "patrimonio_substituido": "12345"
+    }
+  ]
+}
+```
+
+Para `tipo=consumo`, cada item requer apenas `material_id` e `quantidade`, e o campo geral `justificativa` é obrigatório.
+
 ### Conferência Atual
 
 ```http
@@ -695,8 +794,11 @@ Authorization: Bearer {token}
 - Confirmar localização cria/atualiza dados de inventário em transação.
 - Não localizado **exige justificativa**.
 - Divergência **exige observação**.
+- Código lido sem cadastro pode ser registrado como divergência sem criar um bem patrimonial.
 - Atividade finalizada **bloqueia** novas escritas.
 - Finalização só deve ocorrer quando `pode_finalizar = true`.
+- Pedidos de consumo exigem justificativa geral; pedidos permanentes exigem justificativa por item e patrimônio em caso de substituição.
+- O token Sanctum é persistido separado de `auth_user` e não é retornado pelo endpoint `/me`.
 - Histórico local do mobile é conveniência de interface; **não substitui** auditoria no banco.
 
 ---
@@ -708,6 +810,7 @@ Authorization: Bearer {token}
 - O fluxo de atendimento de pedidos usa histórico em `ped_fases`; novas automações devem preservar esse histórico.
 - A numeração de termos baseada em `max(num_termo) + 1` merece cuidado em **concorrência**.
 - Views legadas podem conter filtros de negócio embutidos.
+- Em execução web, o armazenamento mobile usa `localStorage`; em dispositivos nativos, usa `expo-secure-store`.
 - O mobile usa ngrok em desenvolvimento; URL expirada causa erro de rede no app.
 
 ---
