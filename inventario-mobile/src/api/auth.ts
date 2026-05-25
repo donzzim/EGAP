@@ -13,7 +13,6 @@ export interface MobileUser {
     unidade_judiciaria_nome?: string | null;
     setor: number | string | null;
     setor_nome?: string | null;
-    token: string;
 }
 
 export interface AuthSession {
@@ -23,13 +22,13 @@ export interface AuthSession {
 
 interface LoginResponse {
     message: string;
-    user: MobileUser;
+    user: MobileUser & {
+        token: string;
+    };
 }
 
 interface MeResponse {
-    user: Omit<MobileUser, 'token'> & {
-        token?: string | null;
-    };
+    user: MobileUser;
 }
 
 async function setStoredUser(user: MobileUser): Promise<void> {
@@ -44,7 +43,14 @@ async function getStoredUser(): Promise<MobileUser | null> {
     }
 
     try {
-        return JSON.parse(rawUser) as MobileUser;
+        const user = JSON.parse(rawUser) as MobileUser & { token?: string };
+
+        if ('token' in user) {
+            delete user.token;
+            await setStoredUser(user);
+        }
+
+        return user;
     } catch {
         await appStorage.deleteItem(USER_KEY);
         return null;
@@ -66,14 +72,16 @@ export const authApi = {
             false,
         );
 
+        const { token, ...user } = data.user;
+
         await Promise.all([
-            tokenStorage.set(data.user.token),
-            setStoredUser(data.user),
+            tokenStorage.set(token),
+            setStoredUser(user),
         ]);
 
         return {
-            token: data.user.token,
-            user: data.user,
+            token,
+            user,
         };
     },
 
@@ -92,15 +100,10 @@ export const authApi = {
 
     async me(): Promise<MobileUser> {
         const { data } = await apiClient.get<MeResponse>('/me');
-        const storedSession = await this.getStoredSession();
-        const user = {
-            ...data.user,
-            token: storedSession?.token ?? data.user.token ?? '',
-        };
 
-        await setStoredUser(user);
+        await setStoredUser(data.user);
 
-        return user;
+        return data.user;
     },
 
     async validateSession(): Promise<boolean> {

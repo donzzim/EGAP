@@ -64,18 +64,23 @@ class MobileAuthController extends Controller
             ], 403);
         }
 
+        $user = $mobileUser->toArray();
+        unset($user['token']);
+
         return response()->json([
-            'user' => $mobileUser->toArray(),
+            'user' => $user,
         ]);
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         $request->user()->currentAccessToken()?->delete();
 
         return response()->json([
             'message' => 'Logout realizado com sucesso.',
         ]);
     }
+
     private function attemptLocalAuthentication(
         string $login,
         string $password,
