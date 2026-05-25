@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
 use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -17,13 +19,14 @@ use Filament\Tables\Table;
 class TipoMovimentacaoNotaFiscalResource extends Resource
 {
     protected static ?string $model = TipoMovimentacaoNotaFiscal::class;
-
+    protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?string $navigationLabel = 'Tipo de Movimentação';
     protected static ?string $pluralLabel = 'Tipos de Movimentação';
 
-    protected static ?string $navigationGroup = 'Almoxarifado';
+    //protected static ?string $navigationGroup = 'Almoxarifado';
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 5;
 

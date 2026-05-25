@@ -14,8 +14,7 @@ class ListSituacaos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Situação')
                 ->modalWidth('md')
                 ->createAnother(false),

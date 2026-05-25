@@ -14,8 +14,7 @@ class ListProcessosAdms extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Processo')
                 ->modalWidth('4xl')
                 ->createAnother(false),

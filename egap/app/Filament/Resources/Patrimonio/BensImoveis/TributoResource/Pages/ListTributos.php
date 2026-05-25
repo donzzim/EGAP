@@ -14,8 +14,7 @@ class ListTributos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Tributo')
                 ->modalWidth('4xl')
                 ->createAnother(false),

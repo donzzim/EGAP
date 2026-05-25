@@ -14,8 +14,7 @@ class ListEstadoConservacaos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Estado de Conservação')
                 ->modalWidth('md')
                 ->createAnother(false),

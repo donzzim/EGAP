@@ -15,7 +15,7 @@ class ListItemInventarios extends ListRecords
         return [
             /** ✅ BOTÃO "NOVO" ADICIONADO */
             Actions\CreateAction::make()
-                ->label('New Material'),
+                ->label('Novo')
         ];
     }
 }

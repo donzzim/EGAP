@@ -14,8 +14,7 @@ class ListTermoResponsabilidades extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Termos de Responsabilidade')
                 ->modalWidth('4xl')
                 ->createAnother(false),

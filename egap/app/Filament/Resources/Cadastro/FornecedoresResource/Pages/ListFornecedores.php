@@ -14,9 +14,7 @@ class ListFornecedores extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
-                ->color('info'),
+                ->label('Novo')
         ];
     }
 }

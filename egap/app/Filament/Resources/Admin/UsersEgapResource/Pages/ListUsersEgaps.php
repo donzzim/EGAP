@@ -14,6 +14,7 @@ class ListUsersEgaps extends ListRecords
     {
         return [
             Actions\CreateAction::make()
+                ->label('Novo')
                 ->visible(fn (): bool => in_array(auth()->user()?->login, ['admin', 'admin2'], true)),
         ];
     }

@@ -14,8 +14,7 @@ class ListCedidos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle'),
+                ->label('Novo')
         ];
     }
 }

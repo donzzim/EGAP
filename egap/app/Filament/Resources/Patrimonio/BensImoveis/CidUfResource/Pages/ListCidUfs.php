@@ -14,8 +14,7 @@ class ListCidUfs extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Cidade/UF')
                 ->modalWidth('md')
                 ->createAnother(false),

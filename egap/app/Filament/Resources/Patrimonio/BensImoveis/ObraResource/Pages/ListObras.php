@@ -14,8 +14,7 @@ class ListObras extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Obras e Ampliações')
                 ->modalWidth('md')
                 ->createAnother(false),

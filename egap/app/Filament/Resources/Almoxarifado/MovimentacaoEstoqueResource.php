@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
@@ -15,6 +16,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -24,11 +26,13 @@ class MovimentacaoEstoqueResource extends Resource
 {
     protected static ?string $model = MovimentacaoEstoque::class;
 
+    protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
     protected static ?string $navigationLabel = 'Movimentação de Estoque';
     protected static ?string $modelLabel = 'Movimentação de Estoque';
     protected static ?string $pluralModelLabel = 'Movimentações de Estoque';
-    protected static ?string $navigationGroup = 'Almoxarifado';
+    //protected static ?string $navigationGroup = 'Almoxarifado';
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

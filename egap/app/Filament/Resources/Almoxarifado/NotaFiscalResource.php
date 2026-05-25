@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Cadastro\Setores;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,11 +20,13 @@ class NotaFiscalResource extends Resource
 {
     protected static ?string $model = NotaFiscal::class;
 
+    protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $modelLabel = 'Nota Fiscal';
     protected static ?string $pluralModelLabel = 'Notas Fiscais';
     protected static ?string $navigationLabel = 'Nota Fiscal';
-    protected static ?string $navigationGroup = 'Almoxarifado';
+    //protected static ?string $navigationGroup = 'Almoxarifado';
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form

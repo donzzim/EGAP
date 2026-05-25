@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Almoxarifado\SituacaoPedido;
@@ -12,6 +13,7 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,12 +22,13 @@ use Illuminate\Database\Eloquent\Builder;
 class PedidosResource extends Resource
 {
     protected static ?string $model = Pedidos::class;
-
+    protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $modelLabel = 'Pedido';
     protected static ?string $pluralModelLabel = 'Pedidos';
     protected static ?string $navigationLabel = 'Requisição de Materiais';
-    protected static ?string $navigationGroup = 'Almoxarifado';
+    //protected static ?string $navigationGroup = 'Almoxarifado';
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form

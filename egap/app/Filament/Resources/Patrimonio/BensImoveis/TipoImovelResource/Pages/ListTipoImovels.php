@@ -14,8 +14,7 @@ class ListTipoImovels extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Adicionar')
-                ->icon('heroicon-o-plus-circle')
+                ->label('Novo')
                 ->modalHeading('Adicionar Tipo de Imóvel')
                 ->modalWidth('md')
                 ->createAnother(false),
