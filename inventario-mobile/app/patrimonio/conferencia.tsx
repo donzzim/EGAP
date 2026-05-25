@@ -6,10 +6,12 @@ import {
   type BarcodeType,
 } from 'expo-camera';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
   Modal,
   Pressable,
   RefreshControl,
@@ -51,6 +53,12 @@ type NotificationTone = 'success' | 'error' | 'info';
 interface NotificationState {
   message: string;
   tone: NotificationTone;
+}
+
+interface DivergenciaTarget {
+  bem: BemConferencia | null;
+  codigo: string;
+  originatedFromRead: boolean;
 }
 
 const FILTERS: { key: FilterStatus; label: string }[] = [
@@ -133,6 +141,8 @@ export default function ConferenciaScreen() {
   const [manualCode, setManualCode] = useState('');
   const [resultadoLeitura, setResultadoLeitura] = useState<ResultadoLeitura | null>(null);
   const [notification, setNotification] = useState<NotificationState | null>(null);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
+  const toastTranslateY = useRef(new Animated.Value(24)).current;
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('pendente');
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [isScannerActive, setIsScannerActive] = useState(false);
@@ -141,7 +151,7 @@ export default function ConferenciaScreen() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedBem, setSelectedBem] = useState<BemConferencia | null>(null);
   const [naoLocalizadoBem, setNaoLocalizadoBem] = useState<BemConferencia | null>(null);
-  const [divergenciaBem, setDivergenciaBem] = useState<BemConferencia | null>(null);
+  const [divergenciaTarget, setDivergenciaTarget] = useState<DivergenciaTarget | null>(null);
   const [justificativa, setJustificativa] = useState('');
   const [camposDivergentes, setCamposDivergentes] = useState('');
   const [observacaoDivergencia, setObservacaoDivergencia] = useState('');
@@ -179,6 +189,61 @@ export default function ConferenciaScreen() {
   useEffect(() => {
     loadConferencia();
   }, []);
+
+  useEffect(() => {
+    if (!notification) {
+      toastOpacity.setValue(0);
+      toastTranslateY.setValue(24);
+      return;
+    }
+
+    toastOpacity.stopAnimation();
+    toastTranslateY.stopAnimation();
+    toastOpacity.setValue(0);
+    toastTranslateY.setValue(24);
+
+    Animated.parallel([
+      Animated.timing(toastOpacity, {
+        toValue: 1,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(toastTranslateY, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    const dismissTimeout = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(toastOpacity, {
+          toValue: 0,
+          duration: 180,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(toastTranslateY, {
+          toValue: 18,
+          duration: 180,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) {
+          setNotification((currentNotification) => (
+            currentNotification === notification ? null : currentNotification
+          ));
+        }
+      });
+    }, 3600);
+
+    return () => {
+      clearTimeout(dismissTimeout);
+    };
+  }, [notification, toastOpacity, toastTranslateY]);
 
   const filteredBens = useMemo(() => {
     if (filterStatus === 'todos') {
@@ -340,8 +405,60 @@ export default function ConferenciaScreen() {
     }
   }
 
+  function openDivergencia(
+    bem: BemConferencia | null,
+    codigo = '',
+    originatedFromRead = false,
+    campos = '',
+    observacao = '',
+  ) {
+    setDivergenciaTarget({
+      bem,
+      codigo: codigo || (bem ? getBemCodigo(bem) : manualCode),
+      originatedFromRead,
+    });
+    setCamposDivergentes(campos);
+    setObservacaoDivergencia(observacao);
+  }
+
+  function closeDivergencia() {
+    setDivergenciaTarget(null);
+    setCamposDivergentes('');
+    setObservacaoDivergencia('');
+  }
+
+  function handleDivergenciaLeitura() {
+    if (!resultadoLeitura) {
+      return;
+    }
+
+    if (resultadoLeitura.status === 'outro_setor') {
+      openDivergencia(
+        lastReadBem,
+        manualCode,
+        true,
+        'Setor',
+        'Bem encontrado fisicamente neste setor, mas cadastrado em outro setor.',
+      );
+      return;
+    }
+
+    if (resultadoLeitura.status === 'nao_cadastrado') {
+      openDivergencia(
+        null,
+        manualCode,
+        true,
+        'Cadastro patrimonial',
+        'Bem encontrado fisicamente neste setor, mas nao consta no cadastro patrimonial digital.',
+      );
+      return;
+    }
+
+    openDivergencia(lastReadBem, manualCode, true);
+  }
+
   async function handleRegistrarDivergencia() {
-    if (!divergenciaBem) {
+    if (!divergenciaTarget) {
       return;
     }
 
@@ -359,13 +476,18 @@ export default function ConferenciaScreen() {
 
     try {
       const result = await conferenciaApi.registrarDivergencia({
-        bem_id: divergenciaBem.id,
+        bem_id: divergenciaTarget.bem?.id,
+        codigo: divergenciaTarget.bem ? undefined : divergenciaTarget.codigo,
         campos,
         observacao: observacaoDivergencia.trim(),
       });
-      setDivergenciaBem(null);
-      setCamposDivergentes('');
-      setObservacaoDivergencia('');
+
+      if (divergenciaTarget.originatedFromRead) {
+        setResultadoLeitura(null);
+        setManualCode('');
+      }
+
+      closeDivergencia();
       applyActionResult(result);
     } catch (error) {
       showNotification(getRequestErrorMessage(error), 'error');
@@ -406,6 +528,27 @@ export default function ConferenciaScreen() {
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
   );
+
+  const renderToast = (isModalToast = false) => notification ? (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.toast,
+        isModalToast ? styles.modalToast : styles.screenToast,
+        notification.tone === 'success' ? styles.toastSuccess : notification.tone === 'error' ? styles.toastError : styles.toastInfo,
+        {
+          opacity: toastOpacity,
+          transform: [{ translateY: toastTranslateY }],
+        },
+      ]}>
+      <MaterialIcons
+        name={notification.tone === 'success' ? 'check-circle' : notification.tone === 'error' ? 'error-outline' : 'info-outline'}
+        size={20}
+        color="#FFFFFF"
+      />
+      <Text style={styles.toastText}>{notification.message}</Text>
+    </Animated.View>
+  ) : null;
 
   const renderBemRow = (bem: BemConferencia) => {
     const status = getStatus(bem);
@@ -450,7 +593,7 @@ export default function ConferenciaScreen() {
                   <Text style={styles.inlineActionDangerText}>Não localizado</Text>
                 </Pressable>
               ) : null}
-              <Pressable onPress={() => setDivergenciaBem(bem)} style={styles.inlineActionSecondary}>
+              <Pressable onPress={() => openDivergencia(bem)} style={styles.inlineActionSecondary}>
                 <MaterialIcons name="report-problem" size={17} color="#1E4E79" />
                 <Text style={styles.inlineActionSecondaryText}>Divergência</Text>
               </Pressable>
@@ -506,6 +649,7 @@ export default function ConferenciaScreen() {
               </ScrollView>
             ) : null}
           </View>
+          {renderToast(true)}
         </View>
       </Modal>
 
@@ -532,14 +676,17 @@ export default function ConferenciaScreen() {
               </Pressable>
             </View>
           </View>
+          {renderToast(true)}
         </View>
       </Modal>
 
-      <Modal transparent animationType="fade" visible={divergenciaBem !== null} onRequestClose={() => setDivergenciaBem(null)}>
+      <Modal transparent animationType="fade" visible={divergenciaTarget !== null} onRequestClose={closeDivergencia}>
         <View style={styles.modalOverlay}>
           <View style={styles.formModal}>
             <Text style={styles.modalTitle}>Divergência</Text>
-            <Text style={styles.formModalText}>{divergenciaBem ? getBemCodigo(divergenciaBem) : '-'}</Text>
+            <Text style={styles.formModalText}>
+              {divergenciaTarget?.bem ? getBemCodigo(divergenciaTarget.bem) : displayValue(divergenciaTarget?.codigo)}
+            </Text>
             <TextInput
               placeholder="Campos divergentes"
               placeholderTextColor="#829AB1"
@@ -556,7 +703,7 @@ export default function ConferenciaScreen() {
               style={styles.textArea}
             />
             <View style={styles.modalActions}>
-              <Pressable onPress={() => setDivergenciaBem(null)} style={styles.secondaryButton}>
+              <Pressable onPress={closeDivergencia} style={styles.secondaryButton}>
                 <Text style={styles.secondaryButtonText}>Cancelar</Text>
               </Pressable>
               <Pressable onPress={handleRegistrarDivergencia} style={styles.primaryButton}>
@@ -565,6 +712,7 @@ export default function ConferenciaScreen() {
               </Pressable>
             </View>
           </View>
+          {renderToast(true)}
         </View>
       </Modal>
 
@@ -579,20 +727,6 @@ export default function ConferenciaScreen() {
             <Text style={styles.title}>Inventário</Text>
           </View>
         </View>
-
-        {notification ? (
-          <View style={[
-            styles.notification,
-            notification.tone === 'success' ? styles.notificationSuccess : notification.tone === 'error' ? styles.notificationError : styles.notificationInfo,
-          ]}>
-            <MaterialIcons
-              name={notification.tone === 'success' ? 'check-circle' : notification.tone === 'error' ? 'error-outline' : 'info-outline'}
-              size={20}
-              color="#FFFFFF"
-            />
-            <Text style={styles.notificationText}>{notification.message}</Text>
-          </View>
-        ) : null}
 
         <View style={styles.contextPanel}>
           <View style={styles.contextIcon}>
@@ -672,11 +806,24 @@ export default function ConferenciaScreen() {
                   <Text style={styles.readResultDescription}>{getBemDescricao(lastReadBem)}</Text>
                 </>
               ) : null}
-              {canEdit && resultadoLeitura.pode_localizar ? (
-                <Pressable onPress={() => handleLocalizar()} style={styles.confirmButton}>
-                  {actionLoading === 'localizar' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="check-circle" size={20} color="#FFFFFF" />}
-                  <Text style={styles.primaryButtonText}>Confirmar localização</Text>
-                </Pressable>
+              {canEdit && (
+                resultadoLeitura.pode_localizar
+                || ['outro_setor', 'nao_cadastrado'].includes(resultadoLeitura.status)
+              ) ? (
+                <View style={styles.readResultActions}>
+                  {resultadoLeitura.pode_localizar ? (
+                    <Pressable onPress={() => handleLocalizar()} style={styles.confirmButton}>
+                      {actionLoading === 'localizar' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="check-circle" size={20} color="#FFFFFF" />}
+                      <Text style={styles.primaryButtonText}>Localizado</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable onPress={handleDivergenciaLeitura} style={styles.divergenceButton}>
+                    <MaterialIcons name="report-problem" size={20} color="#1E4E79" />
+                    <Text style={styles.divergenceButtonText}>
+                      {resultadoLeitura.pode_localizar ? 'Divergência' : 'Declarar divergência'}
+                    </Text>
+                  </Pressable>
+                </View>
               ) : null}
             </View>
           ) : null}
@@ -728,6 +875,7 @@ export default function ConferenciaScreen() {
         </Pressable>
       </ScrollView>
       <BottomBar />
+      {renderToast()}
     </SafeAreaView>
   );
 }
@@ -783,7 +931,12 @@ const styles = StyleSheet.create({
     fontSize: 23,
     fontWeight: '800',
   },
-  notification: {
+  toast: {
+    position: 'absolute',
+    left: 18,
+    right: 18,
+    zIndex: 30,
+    elevation: 12,
     minHeight: 46,
     flexDirection: 'row',
     alignItems: 'center',
@@ -791,17 +944,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    shadowColor: '#102A43',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
   },
-  notificationSuccess: {
+  screenToast: {
+    bottom: 82,
+  },
+  modalToast: {
+    bottom: 20,
+  },
+  toastSuccess: {
     backgroundColor: '#2F855A',
   },
-  notificationError: {
+  toastError: {
     backgroundColor: '#C53030',
   },
-  notificationInfo: {
+  toastInfo: {
     backgroundColor: '#1E4E79',
   },
-  notificationText: {
+  toastText: {
     flex: 1,
     color: '#FFFFFF',
     fontSize: 13,
@@ -986,7 +1149,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '700',
   },
+  readResultActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingTop: 4,
+  },
   confirmButton: {
+    flex: 1,
+    minWidth: 124,
     minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
@@ -994,6 +1165,24 @@ const styles = StyleSheet.create({
     gap: 8,
     borderRadius: 8,
     backgroundColor: '#2F855A',
+  },
+  divergenceButton: {
+    flex: 1,
+    minWidth: 150,
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#B6D4EA',
+    backgroundColor: '#EAF4FB',
+  },
+  divergenceButtonText: {
+    color: '#1E4E79',
+    fontSize: 13,
+    fontWeight: '800',
   },
   filtersPanel: {
     minHeight: 44,

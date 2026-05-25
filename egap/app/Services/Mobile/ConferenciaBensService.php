@@ -73,6 +73,12 @@ class ConferenciaBensService
         $bem = $this->buscarBemPorCodigo($codigo);
 
         if (! $bem) {
+            $item = $this->itemSemCadastroExistente($inventario, $scope, $codigo);
+
+            if ($item) {
+                return $this->resultadoLeitura('ja_conferido', 'Bem sem cadastro já registrado como divergência neste inventário.', null, false);
+            }
+
             return $this->resultadoLeitura('nao_cadastrado', 'Bem não encontrado no cadastro.', null, false);
         }
 
@@ -232,7 +238,6 @@ class ConferenciaBensService
 
         $inventario = $this->inventarioAtual();
         $this->atividadeEditavel($inventario, $scope);
-        $bem = $this->resolverBem($data);
 
         $campos = collect($data['campos'] ?? [])
             ->filter(fn ($value): bool => filled($value))
@@ -243,7 +248,25 @@ class ConferenciaBensService
             ? "Campos divergentes: {$campos}. {$observacao}"
             : $observacao;
 
-        $item = DB::connection('egap')->transaction(function () use ($inventario, $scope, $bem, $observacaoCompleta): ItemInventario {
+        try {
+            $bem = $this->resolverBem($data);
+        } catch (NotFoundHttpException $exception) {
+            if (empty($data['codigo'])) {
+                throw $exception;
+            }
+
+            return $this->registrarDivergenciaSemCadastro(
+                $inventario,
+                $scope,
+                (string) $data['codigo'],
+                $observacaoCompleta,
+            );
+        }
+
+        $atualizarBem = (int) $bem->Setor === (int) $scope['setor']
+            && (int) $bem->UnidadeJudiciaria === (int) $scope['unidade_judiciaria'];
+
+        $item = DB::connection('egap')->transaction(function () use ($inventario, $scope, $bem, $observacaoCompleta, $atualizarBem): ItemInventario {
             $item = $this->itemExistente($inventario, $scope, $bem);
 
             if ($item) {
@@ -253,7 +276,17 @@ class ConferenciaBensService
                     'atualizado_por' => $scope['id_egap'],
                     'date_time' => now(),
                 ])->save();
+            } else {
+                $item = ItemInventario::query()->create($this->dadosItemInventario(
+                    $inventario,
+                    $scope,
+                    $bem,
+                    self::STATUS_DIVERGENTE,
+                    $observacaoCompleta,
+                ));
+            }
 
+            if ($atualizarBem) {
                 BemMovel::query()
                     ->whereKey($bem->getKey())
                     ->update([
@@ -262,28 +295,7 @@ class ConferenciaBensService
                         'Usuario' => $scope['id_egap'],
                         'date_time' => now(),
                     ]);
-
-                $this->atualizarQuantidadeInventariada($inventario, $scope);
-
-                return $item;
             }
-
-            $item = ItemInventario::query()->create($this->dadosItemInventario(
-                $inventario,
-                $scope,
-                $bem,
-                self::STATUS_DIVERGENTE,
-                $observacaoCompleta,
-            ));
-
-            BemMovel::query()
-                ->whereKey($bem->getKey())
-                ->update([
-                    'sit_inventario' => self::STATUS_DIVERGENTE,
-                    'id_inventario' => $inventario->id,
-                    'Usuario' => $scope['id_egap'],
-                    'date_time' => now(),
-                ]);
 
             $this->atualizarQuantidadeInventariada($inventario, $scope);
 
@@ -294,6 +306,50 @@ class ConferenciaBensService
             'status' => 'divergente',
             'message' => 'Divergência registrada.',
             'bem' => $this->bemToArray($bem->fresh(), $inventario, $item),
+            'resumo' => $this->resumo($inventario, $scope),
+        ];
+    }
+
+    private function registrarDivergenciaSemCadastro(
+        Inventario $inventario,
+        array $scope,
+        string $codigo,
+        string $observacao,
+    ): array {
+        $codigo = $this->normalizarCodigo($codigo);
+
+        DB::connection('egap')->transaction(function () use ($inventario, $scope, $codigo, $observacao): void {
+            $item = $this->itemSemCadastroExistente($inventario, $scope, $codigo);
+
+            if ($item) {
+                $item->fill([
+                    'situacao' => self::STATUS_DIVERGENTE,
+                    'observacao' => $observacao,
+                    'atualizado_por' => $scope['id_egap'],
+                    'date_time' => now(),
+                ])->save();
+            } else {
+                ItemInventario::query()->create([
+                    'date_time' => now(),
+                    'id_bem' => null,
+                    'unidades' => $scope['unidade_judiciaria'],
+                    'num_patrimonio' => $codigo,
+                    'descricao_detalhada' => 'Bem encontrado fisicamente sem cadastro patrimonial digital.',
+                    'setor' => $scope['setor'],
+                    'id_inventario' => $inventario->id,
+                    'observacao' => $observacao,
+                    'situacao' => self::STATUS_DIVERGENTE,
+                    'atualizado_por' => $scope['id_egap'],
+                ]);
+            }
+
+            $this->atualizarQuantidadeInventariada($inventario, $scope);
+        });
+
+        return [
+            'status' => 'divergente',
+            'message' => 'Divergência de bem sem cadastro registrada.',
+            'bem' => null,
             'resumo' => $this->resumo($inventario, $scope),
         ];
     }
@@ -456,13 +512,27 @@ class ConferenciaBensService
             ->first();
     }
 
+    private function itemSemCadastroExistente(Inventario $inventario, array $scope, string $codigo): ?ItemInventario
+    {
+        $codigo = $this->normalizarCodigo($codigo);
+        $semZeros = ltrim($codigo, '0') ?: '0';
+
+        return ItemInventario::query()
+            ->where('id_inventario', $inventario->id)
+            ->where('setor', $scope['setor'])
+            ->whereNull('id_bem')
+            ->where(function (Builder $query) use ($codigo, $semZeros): void {
+                $query
+                    ->where('num_patrimonio', $codigo)
+                    ->orWhere('num_patrimonio', $semZeros)
+                    ->orWhereRaw("TRIM(LEADING '0' FROM num_patrimonio) = ?", [$semZeros]);
+            })
+            ->first();
+    }
+
     private function buscarBemPorCodigo(string $codigo): ?BemMovel
     {
-        $codigo = preg_replace('/\s+/', '', trim($codigo)) ?? '';
-
-        if ($codigo === '') {
-            throw new HttpException(422, 'Informe o código patrimonial.');
-        }
+        $codigo = $this->normalizarCodigo($codigo);
 
         $semZeros = ltrim($codigo, '0') ?: '0';
 
@@ -487,6 +557,17 @@ class ConferenciaBensService
                     ->orWhere('NumerodePatAnterior', $codigo);
             })
             ->first();
+    }
+
+    private function normalizarCodigo(string $codigo): string
+    {
+        $codigo = preg_replace('/\s+/', '', trim($codigo)) ?? '';
+
+        if ($codigo === '') {
+            throw new HttpException(422, 'Informe o código patrimonial.');
+        }
+
+        return $codigo;
     }
 
     private function resolverBem(array $data): BemMovel
