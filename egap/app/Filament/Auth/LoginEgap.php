@@ -31,7 +31,7 @@ class LoginApp extends BaseLogin
     /**
      * @var view-string
      */
-    protected static string $view = 'filament-panels::pages.auth.login';
+    protected static string $view = 'filament.login';
 
     /**
      * @var array<string, mixed> | null
@@ -187,12 +187,12 @@ class LoginApp extends BaseLogin
 
     public function getTitle(): string|Htmlable
     {
-        return __('filament-panels::pages/auth/login.title');
+        return 'Login';
     }
 
     public function getHeading(): string|Htmlable
     {
-        return __('filament-panels::pages/auth/login.heading');
+        return 'Acesse sua conta';
     }
 
     /**
@@ -208,7 +208,7 @@ class LoginApp extends BaseLogin
     protected function getAuthenticateFormAction(): Action
     {
         return Action::make('authenticate')
-            ->label(__('filament-panels::pages/auth/login.form.actions.authenticate.label'))
+            ->label('Entrar no sistema')
             ->submit('authenticate');
     }
 
