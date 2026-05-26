@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Auth\LoginApp;
+use App\Filament\Auth\LoginEgap;
 use App\Filament\Auth\LoginResponse;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -28,7 +28,7 @@ class EgapPanelProvider extends PanelProvider
         return $panel
             ->id('egap')
             ->path('/egap')
-            ->login(LoginApp::class)
+            ->login(LoginEgap::class)
             ->passwordReset()
             //->topNavigation()
             ->maxContentWidth(MaxWidth::Full)
@@ -52,9 +52,6 @@ class EgapPanelProvider extends PanelProvider
 
                 NavigationGroup::make()
                     ->label('Pedidos'),
-
-                NavigationGroup::make()
-                    ->label('Almoxarifado'),
 
                 NavigationGroup::make()
                     ->label('Bens Imóveis'),

@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * @property Form $form
  */
-class LoginApp extends BaseLogin
+class LoginEgap extends BaseLogin
 {
     use InteractsWithFormActions;
     use WithRateLimiting;
