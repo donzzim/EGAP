@@ -1,11 +1,6 @@
 <?php
 
 use Illuminate\Support\Str;
-use Pdo\Mysql;
-
-$mysqlSslCaAttribute = defined('Pdo\\Mysql::ATTR_SSL_CA')
-    ? Mysql::ATTR_SSL_CA
-    : PDO::MYSQL_ATTR_SSL_CA;
 
 return [
 
@@ -60,7 +55,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -80,27 +75,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                $mysqlSslCaAttribute => env('EGAP_MYSQL_ATTR_SSL_CA', env('MYSQL_ATTR_SSL_CA')),
-            ]) : [],
-        ],
-
-        'emes' => [
-            'driver' => 'mysql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => 'patrimonio',
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_0900_ai_ci'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_CA => env('EGAP_MYSQL_ATTR_SSL_CA', env('MYSQL_ATTR_SSL_CA')),
             ]) : [],
         ],
 
@@ -120,7 +95,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
