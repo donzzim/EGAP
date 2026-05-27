@@ -16,7 +16,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $connection = 'emes';
     protected $table = 'users';
 
     /**
