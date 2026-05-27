@@ -36,7 +36,7 @@ O painel fica disponível em `http://127.0.0.1:8000/egap`.
 
 Os módulos patrimoniais e de pedidos possuem consultas e transações explícitas em `DB::connection('egap')`; a conexão nomeada `egap` precisa existir no ambiente e apontar para as tabelas legadas (`mat_*`, `ped_*`, `alm_*`, `jos_users`). Ela aceita variáveis `EGAP_DB_*` e reutiliza `DB_*` quando não forem definidas.
 
-O model `App\Models\User` representa a tabela usada pela autenticação Laravel e pelos tokens Sanctum e, na configuração atual, usa a conexão `emes` para o banco `emes`. Essa conexão também precisa conter as tabelas criadas pelas migrations de autenticação e tokens.
+O model `App\Models\User` representa a tabela usada pela autenticação Laravel e pelos tokens Sanctum e usa a conexão `emes`. Essa conexão deve apontar para o banco que contém as tabelas criadas pelas migrations de autenticação e tokens.
 
 ## Verificação
 
