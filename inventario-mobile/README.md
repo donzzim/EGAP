@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+# Inventário Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo Expo / React Native integrado à API Laravel do EGAP. O fluxo ativo oferece autenticação, consulta e conferência patrimonial e criação de pedidos de consumo ou de bens permanentes.
 
-## Get started
+A descrição da arquitetura e dos endpoints está no [README principal](../README.md).
 
-1. Install dependencies
+## Rotas Ativas
 
-   ```bash
-   npm install
-   ```
+| Rota | Função |
+|---|---|
+| `/` | Login e restauração de sessão local |
+| `/patrimonio/principal` | Dashboard e consulta por código ou câmera |
+| `/patrimonio/bens` | Lista de bens do setor |
+| `/patrimonio/conferencia` | Conferência de inventário |
+| `/pedidos/consumo` | Carrinho de materiais de consumo |
+| `/pedidos/permanentes` | Carrinho de bens permanentes |
+| `/erro` | Falhas de rede ou respostas `5xx` |
 
-2. Start the app
+## Configuração
 
-   ```bash
-   npx expo start
-   ```
+Crie `inventario-mobile/.env.local` com a URL da API:
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+EXPO_PUBLIC_API_URL=https://seu-host/mobile-api
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+O arquivo `src/config/env.ts` também aceita `EXPO_PUBLIC_EGAP_API_URL` como fallback legado. A variável `EXPO_PUBLIC_USE_MOCK_API` é lida na configuração, mas o cliente HTTP atual não possui implementação mock.
 
-## Learn more
+## Execução
 
-To learn more about developing your project with Expo, look at the following resources:
+```powershell
+npm install
+npm run start
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Alternativas
+npm run android
+npm run ios
+npm run web
+```
 
-## Join the community
+No Windows, quando scripts PowerShell do npm estiverem bloqueados, use `npm.cmd run start` ou `npx.cmd expo start`.
 
-Join our community of developers creating universal apps.
+## Verificação
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```powershell
+npm.cmd run lint
+npx.cmd tsc --noEmit
+```

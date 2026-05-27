@@ -133,7 +133,7 @@ class LoginEgap extends BaseLogin
             ->required()
             ->autocomplete()
             ->autofocus()
-            ->hint('cpf, login ou email')
+            ->hint('CPF, Usuário ou E-mail')
             ->hintColor('sky')
             ->extraInputAttributes(['tabindex' => 1]);
     }

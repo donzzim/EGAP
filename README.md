@@ -15,9 +15,12 @@ O mobile consome a API Laravel em `/mobile-api`, autenticada com **Laravel Sanct
 
 ```text
 .
+├── docs/                 # Documentos acadêmicos e materiais de apoio
 ├── egap/                 # Aplicação Laravel/Filament principal
-├── inventario-mobile/    # Aplicação Expo/React Native
+└── inventario-mobile/    # Aplicação Expo/React Native
 ```
+
+Os diretórios das aplicações também possuem READMEs curtos, voltados à execução de cada componente. Este arquivo concentra a arquitetura integrada e os contratos entre backend e mobile.
 
 ---
 
@@ -56,7 +59,7 @@ graph TD
 | Laravel | `^11` |
 | Filament | `3.3` |
 | Laravel Sanctum | `^4` |
-| Banco de dados | MySQL / MariaDB (conexão `egap`) |
+| Banco de dados | MySQL / MariaDB (legado/patrimônio em `egap`; autenticação local em `emes`) |
 | Assets | Vite |
 | Qualidade | PHPUnit + Laravel Pint |
 
@@ -87,7 +90,7 @@ O EGAP desktop fica no diretório `egap` e registra um painel Filament em `/egap
 | Panel ID | `egap` |
 | Path | `/egap` |
 | Auth guard | `pessoa` |
-| Login customizado | `App\Filament\Auth\LoginApp` |
+| Login customizado | `App\Filament\Auth\LoginEgap` |
 | SPA | habilitado via `->spa()` |
 
 ### Módulos Principais do Desktop
@@ -275,8 +278,9 @@ Em Android/iOS, `appStorage` usa `expo-secure-store`; na execução web, usa `lo
 
 ```text
 EXPO_PUBLIC_API_URL=https://seu-ngrok-ou-host/mobile-api
-EXPO_PUBLIC_USE_MOCK_API=false
 ```
+
+`EXPO_PUBLIC_EGAP_API_URL` ainda é aceito como fallback legado quando `EXPO_PUBLIC_API_URL` não está definida. `EXPO_PUBLIC_USE_MOCK_API` é lida pela configuração atual, mas não há implementação de transporte mock no cliente HTTP.
 
 > Durante desenvolvimento com ngrok, se a URL mudar, atualize somente `.env.local` do mobile.
 
@@ -512,7 +516,7 @@ Esse serviço cruza: usuário local (`users`), CPF normalizado, `InfoUser`, usu�
 
 | Tabela | Model | Papel |
 |---|---|---|
-| `users` | `App\Models\User` | Usuário local Laravel/Sanctum |
+| `users` | `App\Models\User` | Usuário local Laravel/Sanctum (conexão `emes`) |
 | `jos_users` / equiv. EGAP | `App\Models\UserEgap` | Usuário do sistema EGAP legado |
 | `mat_lotacao` | `App\Models\Admin\Lotacao` | Unidade/setor vigente do usuário |
 | `mat_patrimonio` | `BemMovel` | Cadastro principal de bens móveis |
@@ -556,6 +560,11 @@ DB_DATABASE=patrimonio
 DB_USERNAME=admin
 DB_PASSWORD=admin
 
+# Se a conexão legada usar credenciais ou banco diferentes:
+# EGAP_DB_DATABASE=patrimonio
+# EGAP_DB_USERNAME=admin
+# EGAP_DB_PASSWORD=admin
+
 # 5. Rodar migrations (quando necessário)
 php artisan migrate
 
@@ -568,7 +577,7 @@ npm run dev
 
 > Acesse o desktop em: `http://127.0.0.1:8000/egap`
 
-> A conexão `egap` em `config/database.php` usa as variáveis `EGAP_DB_*` quando existirem; caso contrário, reutiliza `DB_*`.
+> Serviços, relatórios e transações patrimoniais chamam explicitamente `DB::connection('egap')`, configurada por `EGAP_DB_*` com fallback em `DB_*`. O model `App\Models\User` usa a conexão `emes`, cujo banco atual é `emes` com host e credenciais `DB_*`; migrations e tabelas do Sanctum usadas por autenticação local devem existir nesse banco.
 
 ### API Mobile com Ngrok
 
@@ -582,7 +591,6 @@ Depois atualize `inventario-mobile/.env.local`:
 
 ```text
 EXPO_PUBLIC_API_URL=https://seu-subdominio.ngrok-free.dev/mobile-api
-EXPO_PUBLIC_USE_MOCK_API=false
 ```
 
 > O cliente mobile envia o header `ngrok-skip-browser-warning: 1` automaticamente.
@@ -810,6 +818,8 @@ Authorization: Bearer {token}
 - O fluxo de atendimento de pedidos usa histórico em `ped_fases`; novas automações devem preservar esse histórico.
 - A numeração de termos baseada em `max(num_termo) + 1` merece cuidado em **concorrência**.
 - Views legadas podem conter filtros de negócio embutidos.
+- Diversos fluxos usam `DB::connection('egap')`; remover ou renomear essa conexão quebra relatórios, pedidos e conferência.
+- Os scripts `migrar_jos_users_para_users*.sql` usam `USE patrimonio`; com `users` em `emes`, ajuste ou qualifique a tabela de destino antes da execução.
 - Em execução web, o armazenamento mobile usa `localStorage`; em dispositivos nativos, usa `expo-secure-store`.
 - O mobile usa ngrok em desenvolvimento; URL expirada causa erro de rede no app.
 
