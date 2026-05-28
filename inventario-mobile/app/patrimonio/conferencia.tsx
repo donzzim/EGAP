@@ -6,12 +6,13 @@ import {
   type BarcodeType,
 } from 'expo-camera';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Animated,
   Easing,
+  FlatList,
   Modal,
   Pressable,
   RefreshControl,
@@ -34,6 +35,8 @@ import {
   type ConferenciaStatus,
   type ResultadoLeitura,
 } from '@/src/api/conferencia';
+
+const CONFERENCIA_BENS_PER_PAGE = 30;
 
 const BARCODE_TYPES: BarcodeType[] = [
   'ean13',
@@ -136,8 +139,13 @@ export default function ConferenciaScreen() {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [info, setInfo] = useState<ConferenciaInfo | null>(null);
   const [bens, setBens] = useState<BemConferencia[]>([]);
+  const [totalBensListados, setTotalBensListados] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingList, setIsLoadingList] = useState(false);
   const [manualCode, setManualCode] = useState('');
   const [resultadoLeitura, setResultadoLeitura] = useState<ResultadoLeitura | null>(null);
   const [notification, setNotification] = useState<NotificationState | null>(null);
@@ -147,7 +155,9 @@ export default function ConferenciaScreen() {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [isScannerActive, setIsScannerActive] = useState(false);
   const [hasScannedBarcode, setHasScannedBarcode] = useState(false);
+  const scannerLockedRef = useRef(false);
   const [isValidating, setIsValidating] = useState(false);
+  const validationLockedRef = useRef(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedBem, setSelectedBem] = useState<BemConferencia | null>(null);
   const [naoLocalizadoBem, setNaoLocalizadoBem] = useState<BemConferencia | null>(null);
@@ -156,9 +166,27 @@ export default function ConferenciaScreen() {
   const [camposDivergentes, setCamposDivergentes] = useState('');
   const [observacaoDivergencia, setObservacaoDivergencia] = useState('');
 
-  async function loadConferencia(showLoader = true) {
-    if (showLoader) {
+  const loadConferencia = useCallback(async ({
+    pageToLoad = 1,
+    append = false,
+    refreshing = false,
+    status = filterStatus,
+    showLoader = true,
+  }: {
+    pageToLoad?: number;
+    append?: boolean;
+    refreshing?: boolean;
+    status?: FilterStatus;
+    showLoader?: boolean;
+  } = {}) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else if (refreshing) {
+      setIsRefreshing(true);
+    } else if (showLoader) {
       setIsLoading(true);
+    } else {
+      setIsLoadingList(true);
     }
 
     try {
@@ -170,25 +198,38 @@ export default function ConferenciaScreen() {
       }
 
       setUser(session.user);
-      const data: ConferenciaBensResult = await conferenciaApi.listarBens();
+      const data: ConferenciaBensResult = await conferenciaApi.listarBens({
+        page: pageToLoad,
+        perPage: CONFERENCIA_BENS_PER_PAGE,
+        status,
+      });
       setInfo({
         inventario: data.inventario,
         atividade: data.atividade,
         resumo: data.resumo,
         scope: data.scope,
       });
-      setBens(data.bens);
+      setBens((currentBens) => append ? [...currentBens, ...data.bens] : data.bens);
+      setTotalBensListados(data.total);
+      setCurrentPage(data.meta.current_page);
+      setHasMore(data.meta.has_more);
     } catch (error) {
+      if (append) {
+        setHasMore(false);
+      }
+
       setNotification({ message: getRequestErrorMessage(error), tone: 'error' });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
+      setIsLoadingMore(false);
+      setIsLoadingList(false);
     }
-  }
+  }, [filterStatus]);
 
   useEffect(() => {
     loadConferencia();
-  }, []);
+  }, [loadConferencia]);
 
   useEffect(() => {
     if (!notification) {
@@ -268,7 +309,9 @@ export default function ConferenciaScreen() {
     setBens((currentBens) => {
       const updatedById = new Map(updatedBens.map((bem) => [String(bem.id), bem]));
 
-      return currentBens.map((bem) => updatedById.get(String(bem.id)) ?? bem);
+      return currentBens
+        .map((bem) => updatedById.get(String(bem.id)) ?? bem)
+        .filter((bem) => filterStatus === 'todos' || getStatus(bem) === filterStatus);
     });
   }
 
@@ -293,10 +336,25 @@ export default function ConferenciaScreen() {
       };
     });
 
-    mergeBens([
+    const updatedBens = [
       ...(result.bem ? [result.bem] : []),
       ...(result.bens ?? []),
-    ]);
+    ];
+
+    if (filterStatus !== 'todos') {
+      const removedFromCurrentFilter = updatedBens.filter((bem) => getStatus(bem) !== filterStatus).length;
+      setTotalBensListados((currentTotal) => Math.max(0, currentTotal - removedFromCurrentFilter));
+
+      if (removedFromCurrentFilter > 0) {
+        loadConferencia({
+          pageToLoad: 1,
+          status: filterStatus,
+          showLoader: false,
+        });
+      }
+    }
+
+    mergeBens(updatedBens);
 
     if (result.message) {
       showNotification(result.message, 'success');
@@ -304,14 +362,32 @@ export default function ConferenciaScreen() {
   }
 
   async function handleRefresh() {
-    setIsRefreshing(true);
-    await loadConferencia(false);
+    await loadConferencia({
+      pageToLoad: 1,
+      refreshing: true,
+      status: filterStatus,
+      showLoader: false,
+    });
+  }
+
+  function handleLoadMore() {
+    if (isLoading || isRefreshing || isLoadingMore || isLoadingList || !hasMore) {
+      return;
+    }
+
+    loadConferencia({
+      pageToLoad: currentPage + 1,
+      append: true,
+      status: filterStatus,
+      showLoader: false,
+    });
   }
 
   async function handleStartScanner() {
     setNotification(null);
 
     if (isScannerActive) {
+      scannerLockedRef.current = true;
       setIsScannerActive(false);
       return;
     }
@@ -325,11 +401,16 @@ export default function ConferenciaScreen() {
       }
     }
 
+    scannerLockedRef.current = false;
     setHasScannedBarcode(false);
     setIsScannerActive(true);
   }
 
   async function validateCode(code: string) {
+    if (validationLockedRef.current) {
+      return;
+    }
+
     const trimmedCode = onlyDigits(code);
 
     if (!trimmedCode) {
@@ -337,6 +418,7 @@ export default function ConferenciaScreen() {
       return;
     }
 
+    validationLockedRef.current = true;
     setIsValidating(true);
     setResultadoLeitura(null);
 
@@ -349,15 +431,17 @@ export default function ConferenciaScreen() {
     } catch (error) {
       showNotification(getRequestErrorMessage(error), 'error');
     } finally {
+      validationLockedRef.current = false;
       setIsValidating(false);
     }
   }
 
   function handleBarcodeScanned(result: BarcodeScanningResult) {
-    if (hasScannedBarcode) {
+    if (scannerLockedRef.current) {
       return;
     }
 
+    scannerLockedRef.current = true;
     setHasScannedBarcode(true);
     setIsScannerActive(false);
     validateCode(result.data);
@@ -716,10 +800,17 @@ export default function ConferenciaScreen() {
         </View>
       </Modal>
 
-      <ScrollView
+      <FlatList
+        data={filteredBens}
+        keyExtractor={(item, index) => `${getBemCodigo(item)}-${item.id}-${index}`}
+        renderItem={({ item }) => renderBemRow(item)}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}>
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.35}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        ListHeaderComponent={(
+          <View style={styles.headerContent}>
         <View style={styles.header}>
           <AppMenuButton />
           <View style={styles.headerTextGroup}>
@@ -849,18 +940,40 @@ export default function ConferenciaScreen() {
         <View style={styles.assetsPanel}>
           <View style={styles.panelHeader}>
             <Text style={styles.sectionTitle}>Bens do setor</Text>
-            <Text style={styles.panelMeta}>{filteredBens.length}</Text>
+            <Text style={styles.panelMeta}>{totalBensListados}</Text>
           </View>
 
-          {filteredBens.length > 0 ? (
-            filteredBens.map(renderBemRow)
-          ) : (
+          {isLoadingList ? (
+            <View style={styles.emptyPanel}>
+              <ActivityIndicator color="#1E4E79" />
+              <Text style={styles.emptyTitle}>Carregando bens</Text>
+            </View>
+          ) : filteredBens.length === 0 ? (
             <View style={styles.emptyPanel}>
               <MaterialIcons name="inventory" size={28} color="#627D98" />
               <Text style={styles.emptyTitle}>Nenhum bem neste filtro</Text>
             </View>
-          )}
+          ) : null}
         </View>
+
+          </View>
+        )}
+        ListFooterComponent={(
+          <View style={styles.footerContent}>
+            {filteredBens.length > 0 ? (
+              <View style={styles.listFooter}>
+                {isLoadingMore ? (
+                  <>
+                    <ActivityIndicator color="#1E4E79" />
+                    <Text style={styles.listFooterText}>Carregando mais bens</Text>
+                  </>
+                ) : hasMore ? (
+                  <Text style={styles.listFooterText}>Role para carregar mais</Text>
+                ) : (
+                  <Text style={styles.listFooterText}>Todos os bens foram carregados</Text>
+                )}
+              </View>
+            ) : null}
 
         <Pressable
           disabled={!info?.atividade.pode_finalizar || actionLoading === 'finalizar'}
@@ -873,7 +986,9 @@ export default function ConferenciaScreen() {
           {actionLoading === 'finalizar' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="task-alt" size={21} color="#FFFFFF" />}
           <Text style={styles.primaryButtonText}>Finalizar conferência</Text>
         </Pressable>
-      </ScrollView>
+          </View>
+        )}
+      />
       <BottomBar />
       {renderToast()}
     </SafeAreaView>
@@ -889,6 +1004,12 @@ const styles = StyleSheet.create({
     gap: 14,
     padding: 18,
     paddingBottom: 30,
+  },
+  headerContent: {
+    gap: 14,
+  },
+  footerContent: {
+    gap: 12,
   },
   loadingContainer: {
     flex: 1,
@@ -1324,6 +1445,17 @@ const styles = StyleSheet.create({
   emptyTitle: {
     color: '#52616B',
     fontSize: 14,
+    fontWeight: '800',
+  },
+  listFooter: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  listFooterText: {
+    color: '#627D98',
+    fontSize: 12,
     fontWeight: '800',
   },
   finalizeButton: {

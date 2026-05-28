@@ -25,8 +25,14 @@ class ConferenciaBensController extends Controller
 
     public function bens(Request $request): JsonResponse
     {
+        $status = $request->query('status');
+
         return response()->json(
-            $this->conferenciaBensService->bens($this->scope($request)),
+            $this->conferenciaBensService->bens(
+                $this->scope($request),
+                is_string($status) ? $status : null,
+                $this->perPage($request),
+            ),
         );
     }
 
@@ -139,5 +145,16 @@ class ConferenciaBensController extends Controller
         $integerValue = (int) $value;
 
         return $integerValue > 0 ? $integerValue : null;
+    }
+
+    private function perPage(Request $request): int
+    {
+        $perPage = (int) $request->query('per_page', 30);
+
+        if ($perPage < 1) {
+            return 30;
+        }
+
+        return min($perPage, 50);
     }
 }

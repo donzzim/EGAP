@@ -80,6 +80,23 @@ export interface BemConferencia extends BemPatrimonial {
 export interface ConferenciaBensResult extends ConferenciaInfo {
   total: number;
   bens: BemConferencia[];
+  meta: ConferenciaPaginationMeta;
+}
+
+export interface ConferenciaPaginationMeta {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+  from: number | null;
+  to: number | null;
+  has_more: boolean;
+}
+
+export interface ConferenciaBensListParams {
+  page?: number;
+  perPage?: number;
+  status?: 'todos' | ConferenciaStatus;
 }
 
 export interface ResultadoLeitura {
@@ -99,6 +116,46 @@ export interface AcaoConferenciaResult {
   atividade?: ConferenciaAtividade;
 }
 
+type ConferenciaBensApiResponse = Omit<ConferenciaBensResult, 'meta'> & {
+  meta?: Partial<ConferenciaPaginationMeta>;
+};
+
+function buildBensEndpoint(params: ConferenciaBensListParams = {}): string {
+  const query = new URLSearchParams();
+
+  query.set('page', String(params.page ?? 1));
+  query.set('per_page', String(params.perPage ?? 30));
+
+  if (params.status && params.status !== 'todos') {
+    query.set('status', params.status);
+  }
+
+  return `/conferencia/bens?${query.toString()}`;
+}
+
+function normalizeBensResponse(response: ConferenciaBensApiResponse): ConferenciaBensResult {
+  const bens = response.bens ?? [];
+  const total = response.total ?? response.meta?.total ?? bens.length;
+  const currentPage = response.meta?.current_page ?? 1;
+  const perPage = response.meta?.per_page ?? bens.length;
+  const lastPage = response.meta?.last_page ?? currentPage;
+
+  return {
+    ...response,
+    bens,
+    total,
+    meta: {
+      current_page: currentPage,
+      per_page: perPage,
+      total,
+      last_page: lastPage,
+      from: response.meta?.from ?? (bens.length > 0 ? 1 : null),
+      to: response.meta?.to ?? (bens.length > 0 ? bens.length : null),
+      has_more: response.meta?.has_more ?? currentPage < lastPage,
+    },
+  };
+}
+
 export const conferenciaApi = {
   async atual(): Promise<ConferenciaInfo> {
     const { data } = await apiClient.get<ConferenciaInfo>('/conferencia/atual');
@@ -106,10 +163,10 @@ export const conferenciaApi = {
     return data;
   },
 
-  async listarBens(): Promise<ConferenciaBensResult> {
-    const { data } = await apiClient.get<ConferenciaBensResult>('/conferencia/bens');
+  async listarBens(params: ConferenciaBensListParams = {}): Promise<ConferenciaBensResult> {
+    const { data } = await apiClient.get<ConferenciaBensApiResponse>(buildBensEndpoint(params));
 
-    return data;
+    return normalizeBensResponse(data);
   },
 
   async validarLeitura(codigo: string): Promise<ResultadoLeitura> {

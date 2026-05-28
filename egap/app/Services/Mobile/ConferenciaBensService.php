@@ -37,23 +37,33 @@ class ConferenciaBensService
         ];
     }
 
-    public function bens(array $scope): array
+    public function bens(array $scope, ?string $status = null, int $perPage = 30): array
     {
         $inventario = $this->inventarioAtual();
         $atividade = $this->atividadeDoSetor($inventario, $scope);
-        $items = $this->itensDoSetor($inventario, $scope);
 
-        $bens = $this->bensEsperadosQuery($scope)
+        $paginator = $this->bensEsperadosQuery($scope)
+            ->when($status !== null && $status !== 'todos', fn (Builder $query): Builder => $this->applyStatusFilter(
+                $query,
+                $inventario,
+                $scope,
+                $status,
+            ))
             ->orderBy('Descricao')
             ->orderBy('Marca')
             ->orderBy('Modelo')
             ->orderBy('NumPatrimonio')
-            ->get()
-            ->map(fn (BemMovel $bem): array => $this->bemToArray(
+            ->paginate($perPage);
+
+        $bensPage = collect($paginator->items());
+        $items = $this->itensDosBens($inventario, $scope, $bensPage);
+        $bens = $bensPage
+            ->map(fn (BemMovel $bem): ?array => $this->bemToArray(
                 $bem,
                 $inventario,
                 $this->itemDoBem($items, $bem),
             ))
+            ->filter()
             ->values();
 
         $resumo = $this->resumo($inventario, $scope);
@@ -61,9 +71,18 @@ class ConferenciaBensService
         return [
             'inventario' => $this->inventarioToArray($inventario),
             'atividade' => $this->atividadeToArray($atividade, $scope, $resumo),
-            'total' => $bens->count(),
+            'total' => $paginator->total(),
             'bens' => $bens,
             'resumo' => $resumo,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+                'has_more' => $paginator->hasMorePages(),
+            ],
         ];
     }
 
@@ -483,11 +502,92 @@ class ConferenciaBensService
             ->whereIn('SituacaoBem', self::SITUACOES_ELEGIVEIS);
     }
 
-    private function itensDoSetor(Inventario $inventario, array $scope): Collection
+    private function applyStatusFilter(Builder $query, Inventario $inventario, array $scope, string $status): Builder
     {
+        return match ($status) {
+            'localizado' => $this->whereItemStatus($query, $inventario, $scope, self::STATUS_LOCALIZADO),
+            'nao_localizado' => $this->whereItemStatus($query, $inventario, $scope, self::STATUS_NAO_LOCALIZADO),
+            'divergente' => $this->whereItemStatus($query, $inventario, $scope, self::STATUS_DIVERGENTE),
+            'em_transferencia' => $query->where(function (Builder $query): void {
+                $query
+                    ->where('SituacaoBem', 7)
+                    ->orWhere('sit_inventario', 'like', 'EM TRANSF%');
+            }),
+            'cadastrado_manualmente' => $query->where('SituacaoBem', 8),
+            'pendente' => $this->wherePendente($query, $inventario, $scope),
+            default => $query,
+        };
+    }
+
+    private function whereItemStatus(Builder $query, Inventario $inventario, array $scope, string $status): Builder
+    {
+        return $query->whereExists(function ($query) use ($inventario, $scope, $status): void {
+            $query
+                ->selectRaw('1')
+                ->from('mat_itensinventario')
+                ->where('mat_itensinventario.id_inventario', $inventario->id)
+                ->where('mat_itensinventario.setor', $scope['setor'])
+                ->where('mat_itensinventario.situacao', $status)
+                ->where(function ($query): void {
+                    $query
+                        ->whereColumn('mat_itensinventario.id_bem', 'mat_patrimonio.id')
+                        ->orWhereColumn('mat_itensinventario.num_patrimonio', 'mat_patrimonio.NumPatrimonio');
+                });
+        });
+    }
+
+    private function wherePendente(Builder $query, Inventario $inventario, array $scope): Builder
+    {
+        return $query
+            ->where('SituacaoBem', '<>', 7)
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('SituacaoBem', '<>', 8)
+                    ->orWhereExists(function ($query): void {
+                        $query
+                            ->selectRaw('1')
+                            ->from('mat_transferencia')
+                            ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
+                            ->whereColumn('mat_transferencia.NumPatrimonio', 'mat_patrimonio.id')
+                            ->where('mat_arquivodigital.situacao', 1);
+                    });
+            })
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereNull('sit_inventario')
+                    ->orWhere('sit_inventario', 'not like', 'EM TRANSF%');
+            })
+            ->whereNotExists(function ($query) use ($inventario, $scope): void {
+                $query
+                    ->selectRaw('1')
+                    ->from('mat_itensinventario')
+                    ->where('mat_itensinventario.id_inventario', $inventario->id)
+                    ->where('mat_itensinventario.setor', $scope['setor'])
+                    ->where(function ($query): void {
+                        $query
+                            ->whereColumn('mat_itensinventario.id_bem', 'mat_patrimonio.id')
+                            ->orWhereColumn('mat_itensinventario.num_patrimonio', 'mat_patrimonio.NumPatrimonio');
+                    });
+            });
+    }
+
+    private function itensDosBens(Inventario $inventario, array $scope, Collection $bens): Collection
+    {
+        $ids = $bens->pluck('id')->filter()->values();
+        $patrimonios = $bens->pluck('NumPatrimonio')->filter()->values();
+
+        if ($ids->isEmpty() && $patrimonios->isEmpty()) {
+            return collect();
+        }
+
         return ItemInventario::query()
             ->where('id_inventario', $inventario->id)
             ->where('setor', $scope['setor'])
+            ->where(function (Builder $query) use ($ids, $patrimonios): void {
+                $query
+                    ->when($ids->isNotEmpty(), fn (Builder $query): Builder => $query->whereIn('id_bem', $ids))
+                    ->when($patrimonios->isNotEmpty(), fn (Builder $query): Builder => $query->orWhereIn('num_patrimonio', $patrimonios));
+            })
             ->get();
     }
 

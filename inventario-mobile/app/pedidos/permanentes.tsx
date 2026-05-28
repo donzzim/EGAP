@@ -10,7 +10,7 @@ export default function PedidosPermanentesScreen() {
       accentColor="#2F855A"
       currentRoute="/pedidos/permanentes"
       summaryTitle="Carrinho de permanentes"
-      helperText="Itens permanentes poderao indicar adicao ou substituicao."
+      helperText="Itens permanentes poderão indicar adição ou substituição."
     />
   );
 }
