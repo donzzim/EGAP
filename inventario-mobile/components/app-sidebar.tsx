@@ -212,7 +212,7 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
             </View>
             <View style={styles.headerText}>
               <Text style={styles.headerLabel}>EGap Mobile</Text>
-              <Text style={styles.headerTitle}>Módulos</Text>
+              <Text style={styles.headerTitle}>Menu</Text>
             </View>
             <Pressable onPress={onClose} style={styles.iconButton}>
               <MaterialIcons name="close" size={21} color="#1E4E79" />
