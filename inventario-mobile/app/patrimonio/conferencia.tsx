@@ -672,7 +672,9 @@ export default function ConferenciaScreen() {
                 </Pressable>
               ) : null}
               {canNaoLocalizadoBem ? (
-                <Pressable onPress={() => setNaoLocalizadoBem(bem)} style={styles.inlineActionSecondary}>
+                <Pressable
+                  onPress={() => setNaoLocalizadoBem(bem)}
+                  style={[styles.inlineActionSecondary, styles.inlineActionDanger]}>
                   <MaterialIcons name="block" size={17} color="#C53030" />
                   <Text style={styles.inlineActionDangerText}>Não localizado</Text>
                 </Pressable>
@@ -1397,17 +1399,22 @@ const styles = StyleSheet.create({
   inlineActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 7,
-    paddingTop: 3,
+    gap: 8,
+    marginTop: 4,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E6EDF3',
   },
   inlineActionPrimary: {
-    minHeight: 34,
+    flexBasis: '100%',
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 5,
     borderRadius: 8,
     backgroundColor: '#2F855A',
-    paddingHorizontal: 9,
+    paddingHorizontal: 12,
   },
   inlineActionPrimaryText: {
     color: '#FFFFFF',
@@ -1415,15 +1422,22 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   inlineActionSecondary: {
-    minHeight: 34,
+    flex: 1,
+    minWidth: 128,
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 5,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D9E2EC',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 9,
+    borderColor: '#B6D4EA',
+    backgroundColor: '#EAF4FB',
+    paddingHorizontal: 10,
+  },
+  inlineActionDanger: {
+    borderColor: '#F1C7C7',
+    backgroundColor: '#FFF5F5',
   },
   inlineActionSecondaryText: {
     color: '#1E4E79',
