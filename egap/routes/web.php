@@ -1,27 +1,38 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DepreciacaoController;
+use App\Http\Controllers\TermosPrintController;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensMoveis\Termo;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
     return redirect('/egap');
 });
 
-Route::get('/patrimonio/bens-selecionados/{ids}/imprimir', function ($ids) {
-    $itemIds = explode(',', $ids);
-    $bens = \App\Models\Patrimonio\BensMoveis\BemMovel::with([
-        'marcaRef', 'modeloRef', 'unidadeJudiciariaRef', 'setorRef', 'situacaoBemRef'
-    ])->whereIn('id', $itemIds)->get();
+Route::group(['prefix' => 'patrimonio'], function () {
+    Route::get('/depreciacao/{id}/imprimir', [DepreciacaoController::class, 'imprimir'])
+        ->name('depreciacao.imprimir');
+    Route::get('/termos/{id}/imprimir', [TermosPrintController::class, 'imprimir'])
+        ->name('termo.imprimir.dinamico');
+    Route::get('/bens-selecionados/{ids}/imprimir', function ($ids) {
+        $itemIds = explode(',', $ids);
+        $bens = BemMovel::with([
+            'marcaRef', 'modeloRef', 'unidadeJudiciariaRef', 'setorRef', 'situacaoBemRef'
+        ])->whereIn('id', $itemIds)->get();
 
-    return view('patrimonio.relatorio-bens-lote', [
-        'bens' => $bens
-    ]);
-})->name('bens.imprimir.lote');
+        return view('patrimonio.relatorio-bens-lote', [
+            'bens' => $bens
+        ]);
+    })->name('bens.imprimir.lote');
+});
 
 Route::get('/termos/imprimir/{id}', function ($id) {
-    $termo = \App\Models\Patrimonio\BensMoveis\Termo::findOrFail($id);
-    $arquivoDigital = \Illuminate\Support\Facades\DB::connection('egap')->table('mat_arquivodigital')->where('termo', $id)->first();
+    $termo = Termo::findOrFail($id);
+    $arquivoDigital = DB::connection('egap')->table('mat_arquivodigital')->where('termo', $id)->first();
 
-    $termoData = \Illuminate\Support\Facades\DB::connection('egap')
+    $termoData = DB::connection('egap')
         ->table('mat_transferencia as t')
         ->leftJoin('mat_setores as s', 't.SetorAtual', '=', 's.id')
         ->leftJoin('mat_complementosetor as c', 't.ComplementoAtual', '=', 'c.id')
@@ -38,7 +49,7 @@ Route::get('/termos/imprimir/{id}', function ($id) {
         )->first();
 
     // 2. Consulta os Bens calculando a regra de 2015 do legado
-    $bens = \Illuminate\Support\Facades\DB::connection('egap')
+    $bens = DB::connection('egap')
         ->table('mat_patrimonio as p')
         ->join('mat_transferencia as t', 'p.id', '=', 't.NumPatrimonio')
         ->leftJoin('mat_marca as ma', 'p.Marca', '=', 'ma.id')
@@ -50,7 +61,7 @@ Route::get('/termos/imprimir/{id}', function ($id) {
             'ma.Descricao as marca_desc',
             'mo.descricao as modelo_desc',
             'p.EstadodeConservacao',
-            \Illuminate\Support\Facades\DB::raw("IF(p.DatadeIncorporacao < '2015-01-01 00:00:00', p.ValordaReavaliacao, p.ValorAquisicao) as ValorCalculado")
+            DB::raw("IF(p.DatadeIncorporacao < '2015-01-01 00:00:00', p.ValordaReavaliacao, p.ValorAquisicao) as ValorCalculado")
         )->get();
 
     // 3. Fallbacks e Formatação do CPF
