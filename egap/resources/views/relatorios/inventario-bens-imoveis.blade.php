@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-bottom: 20px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .conta-titulo { font-family: Verdana, sans-serif; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
     </style>
 
@@ -31,7 +31,7 @@
     @endif
 
     @foreach($dadosAgrupados as $tituloConta => $itens)
-        
+
         <div class="conta-titulo">
             CONTA CONTÁBIL: {{ $tituloConta }}
         </div>
@@ -51,15 +51,15 @@
                 <th width="12%">LOCALIZAÇÃO<br>ATUAL</th>
             </tr>
 
-            @php 
-                $seq = 1; 
-                $tValHistorico = 0; 
-                $tDepAcumulada = 0; 
-                $tValContabil = 0; 
+            @php
+                $seq = 1;
+                $tValHistorico = 0;
+                $tDepAcumulada = 0;
+                $tValContabil = 0;
             @endphp
 
             @foreach ($itens as $linha)
-                @php 
+                @php
                     $tValHistorico += $linha->valor_historico;
                     $tDepAcumulada += $linha->depreciacao;
                     $tValContabil += $linha->valor_contabil;

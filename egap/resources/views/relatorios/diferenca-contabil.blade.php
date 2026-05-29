@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório da Diferença Contábil')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 11px; margin-bottom: 30px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 6px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; font-size: 11px; }
-        
+
         .texto-resumo { font-family: Verdana, sans-serif; font-size: 13px; margin-bottom: 10px; }
     </style>
 

@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório - Estoque Atual')
 
@@ -7,15 +7,15 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 11px; margin-bottom: 20px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #ddd; padding: 8px; vertical-align: middle; }
         .linha-cabecalho th { font-weight: bold; text-align: left; border-bottom: 2px solid #ccc !important; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 16px; padding: 6px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
-        
+
         /* Zebrado Bootstrap clássico */
         .tabela-grid tbody tr:nth-child(odd) { background-color: #f9f9f9; }
-        
+
         /* Destaca as linhas zeradas */
         .linha-zerada, .linha-zerada td { background-color: #f2dede !important; color: #a94442; }
-        
+
         .grupo-titulo td { font-weight: bold; font-size: 14px; padding-top: 15px !important; padding-bottom: 10px !important; background-color: #fff !important; border-left: none; border-right: none; }
     </style>
 

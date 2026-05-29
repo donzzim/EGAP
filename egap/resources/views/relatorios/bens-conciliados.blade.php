@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Conciliação - Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 11px; margin-top: 10px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 6px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 8px; text-transform: uppercase; font-family: Verdana, sans-serif; }
         .caixa-info { border: 1px solid #000 !important; padding: 4px 6px; font-family: Verdana, sans-serif; font-size: 11px; }
     </style>
@@ -51,14 +51,14 @@
             <th width="11%">PERDA/DEPRECIAÇÃO</th>
         </tr>
 
-        @php 
-            $totHist = 0; 
-            $totReav = 0; 
+        @php
+            $totHist = 0;
+            $totReav = 0;
             $totPerda = 0;
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $totHist += $linha->valor_historico;
                 $totReav += $linha->valor_reavaliado;
                 $totPerda += $linha->perda_depreciacao;

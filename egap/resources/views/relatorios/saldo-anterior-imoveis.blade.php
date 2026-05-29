@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório Imóveis - Teste do Saldo Anterior')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 10px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #ddd !important; padding: 6px; }
         .linha-cabecalho th { font-weight: bold; background-color: #f9f9f9; text-align: left; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 6px; text-transform: uppercase; font-family: Verdana, sans-serif; margin-bottom: 10px;}
         .texto-datas { font-family: Verdana, sans-serif; font-size: 10px; margin-bottom: 10px; }
     </style>

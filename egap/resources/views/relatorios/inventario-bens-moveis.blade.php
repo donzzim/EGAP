@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Bens Patrimoniais')
 
@@ -47,15 +47,15 @@
             <th width="12%">LOCALIZAÇÃO ATUAL</th>
         </tr>
 
-        @php 
-            $seq = 1; 
-            $tValReavaliado = 0; 
-            $tDepAcumulada = 0; 
+        @php
+            $seq = 1;
+            $tValReavaliado = 0;
+            $tDepAcumulada = 0;
             // O legado calculava o total final de Valor Contábil subtraindo as outras duas somas
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $tValReavaliado += $linha->valor_reavaliado;
                 $tDepAcumulada += $linha->depreciacao_acumulada;
             @endphp

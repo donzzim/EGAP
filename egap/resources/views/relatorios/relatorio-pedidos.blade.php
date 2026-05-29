@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Pedido de Materiais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-bottom: 20px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px; vertical-align: middle; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; font-size: 9px; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 6px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
         .texto-justificativa { font-size: 9px; line-height: 1.2; }
     </style>

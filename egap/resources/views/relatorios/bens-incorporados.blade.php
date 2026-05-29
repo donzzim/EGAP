@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Bens Incorporados - Bens Patrimoniais')
 
@@ -39,7 +39,7 @@
             border-bottom: 1px solid #000 !important;
             padding: 8px 4px;
         }
-        
+
         /* Caixas do Cabeçalho */
         .caixa-titulo {
             border: 1px solid #000 !important;
@@ -92,8 +92,8 @@
             <th width="16%" style="text-align: center;">DATA DA<br>INCORPORAÇÃO</th>
         </tr>
 
-        @php 
-            $totalGeral = 0; 
+        @php
+            $totalGeral = 0;
             $seq = 1;
         @endphp
 
@@ -101,17 +101,17 @@
             <tr class="linha-conta">
                 <td colspan="6">{{ $conta }}</td>
             </tr>
-            
+
             @php $subtotal = 0; @endphp
 
             @foreach ($itens as $linha)
-                @php 
+                @php
                     $marca = $linha->marca ? '/' . $linha->marca : '';
                     $modelo = $linha->modelo ? '/' . $linha->modelo : '';
                     $subtotal += $linha->valor;
                     $totalGeral += $linha->valor;
                 @endphp
-                
+
                 <tr class="linha-item-topo">
                     <td rowspan="2" style="text-align: center; border-bottom: 1px solid #ccc !important; vertical-align: middle;">{{ $seq++ }}</td>
                     <td style="text-align: center;">{{ number_format($linha->patrimonio, 0, ',', '.') }}</td>

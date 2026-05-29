@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 5px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 5px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; font-size: 10px; }
-        
+
         @media print {
             .nova-pagina { page-break-before: always; }
             .grafico-container { page-break-inside: avoid; }
@@ -38,7 +38,7 @@
         @php $seq = 1; $totalAquisicao = 0; @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $totalAquisicao += $linha->valor_aquisicao;
                 $marca = $linha->marca ? '/' . $linha->marca : '';
                 $modelo = $linha->modelo ? '/' . $linha->modelo : '';
@@ -72,7 +72,7 @@
 
     @if($dados->count() > 0)
         <div class="nova-pagina" style="margin-top: 40px;">
-            
+
             <table style="width: 100%; border-bottom: 2px solid #000; margin-bottom: 10px;">
                 <tr>
                     <td width="10%"><img src="{{ asset('images/brasao-tjes.png') }}" width="60" alt="Brasão"></td>
@@ -158,7 +158,7 @@
                         ]);
 
                         var options = {
-                            title: 'Acurácia dos Bens {{ $filtros["acuracia"] ? "- " . $filtros["acuracia"] : "" }}',
+                            title: 'Acurácia dos Bens {{ !empty($filtros["acuracia"]) ? " - " . $filtros["acuracia"] : "" }}',
                             pieSliceText: 'label',
                             is3D: true,
                             pieHole: 0.4,

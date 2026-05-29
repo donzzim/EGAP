@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Média de Consumo por Material')
 
@@ -7,12 +7,12 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 11px; margin-bottom: 20px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 6px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 16px; padding: 6px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
 
         .btn-success { background-color: #5cb85c; color: white; border: 1px solid #4cae4c; padding: 8px 14px; font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; font-family: Verdana, sans-serif; }
         .btn-success:hover { background-color: #449d44; }
-        
+
         @media print {
             .nao-imprimir { display: none !important; }
         }
@@ -54,7 +54,7 @@
         @forelse ($dados as $linha)
             <tr class="linha-material">
                 <td style="text-align: left;">
-                    <input type="checkbox" class="item-checkbox nao-imprimir" style="margin-right: 5px;"> 
+                    <input type="checkbox" class="item-checkbox nao-imprimir" style="margin-right: 5px;">
                     {{ $linha->descricao_detalhada }}
                 </td>
                 <td style="text-align: center;">{{ number_format($linha->qtde_atual, 2, ',', '.') }}</td>
@@ -80,7 +80,7 @@
             const checkAll = document.getElementById('checkAll');
             const checkboxes = document.querySelectorAll('.item-checkbox');
             const btnImprimir = document.getElementById('btn-imprimir-selecionados');
-            
+
             if (checkAll) {
                 checkAll.addEventListener('change', function() {
                     checkboxes.forEach(cb => cb.checked = checkAll.checked);
@@ -90,7 +90,7 @@
             if (btnImprimir) {
                 btnImprimir.addEventListener('click', function() {
                     let temSelecionado = false;
-                    
+
                     checkboxes.forEach(cb => {
                         if (cb.checked) temSelecionado = true;
                     });

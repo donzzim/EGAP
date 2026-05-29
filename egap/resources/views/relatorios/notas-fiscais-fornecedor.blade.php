@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Notas Fiscais por Fornecedor')
 
@@ -8,10 +8,10 @@
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px 6px; }
         .linha-cabecalho th { font-weight: bold; text-align: center; font-size: 11px; }
         .nf-header td { font-weight: bold; font-size: 12px; background-color: #f9f9f9; text-align: left; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 16px; padding: 8px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
         .fornecedor-titulo { font-family: Verdana, sans-serif; font-size: 14px; font-weight: bold; margin-top: 15px; margin-bottom: 5px; }
-        
+
         .resumo-tabela { width: 50%; margin: 0 auto; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 11px; }
         .resumo-tabela th, .resumo-tabela td { border: 1px solid #000 !important; padding: 6px; text-align: center; }
 
@@ -49,7 +49,7 @@
 
     @forelse($agrupadoPorFornecedor as $idFornecedor => $itensFornecedor)
         @php $f = $itensFornecedor->first(); @endphp
-        
+
         <div class="fornecedor-titulo">
             {{ $f->fornecedor }} - {{ $f->cnpj_formatado }}
         </div>

@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório Analítico Contábil')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 10px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px; text-align: center; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; }
-        
+
         .caixa-info { border: 1px solid #000 !important; padding: 4px 6px; font-family: Verdana, sans-serif; font-size: 11px; }
 
         .tabela-footer { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 0px; }
@@ -51,15 +51,15 @@
             <th>VALOR REAVALIADO</th>
         </tr>
 
-        @php 
-            $totEntrada = 0; 
-            $totLiq = 0; 
+        @php
+            $totEntrada = 0;
+            $totLiq = 0;
             $totRes = 0;
             $totReav = 0;
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $totEntrada += $linha->valor_entrada;
                 $totLiq += $linha->valor_liquido_contabil;
                 $totRes += $linha->valor_residual;

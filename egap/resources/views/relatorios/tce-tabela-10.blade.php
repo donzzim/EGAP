@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'TCE IN 34 - Tabela 10')
 
@@ -24,15 +24,15 @@
             <th width="8%" class="text-center">SALDO ATUAL</th>
         </tr>
 
-        @php 
+        @php
             $totais = [
-                'anterior' => 0, 
-                'entradas' => 0, 
-                'saidas' => 0, 
-                'bruto' => 0, 
-                'depreciacao' => 0, 
+                'anterior' => 0,
+                'entradas' => 0,
+                'saidas' => 0,
+                'bruto' => 0,
+                'depreciacao' => 0,
                 'atual' => 0
-            ]; 
+            ];
         @endphp
 
         @forelse ($dados as $linha)

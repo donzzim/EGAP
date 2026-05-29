@@ -1,39 +1,39 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Quantidade de Materiais de Consumo')
 
 @section('tabela')
     <style>
         table[width="100%"] { display: none; }
-        
+
         .container { font-family: Arial, sans-serif; width: 100%; color: #333; }
-        
+
         .well { background-color: #f5f5f5; padding: 20px; border-radius: 4px; border: 1px solid #e3e3e3; text-align: center; margin-bottom: 20px; }
         .well h1 { font-size: 22px; font-weight: bold; margin-top: 0; margin-bottom: 15px; color: #333; }
-        
+
         .form-inline { display: inline-block; }
         .form-inline label { font-weight: bold; margin: 0 5px; font-size: 13px; }
         .form-inline input[type="date"], .form-inline select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .form-inline select { width: 300px; max-width: 100%; }
-        
+
         .btn-primary { background-color: #006dcc; color: white; border: 1px solid #0044cc; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 10px; font-size: 13px;}
         .btn-primary:hover { background-color: #0044cc; }
 
         .periodo-header { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 25px; margin-top: 25px; }
         .unidade-selecionada { font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 5px; }
-        
+
         h3.uo-title { font-size: 15px; font-weight: bold; margin-top: 30px; margin-bottom: 10px; text-transform: uppercase; }
         h3.resumo-title { text-align: center; margin-top: 15px; font-size: 15px; font-weight: bold; }
-        
+
         .tabela-limpa { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; border: 1px solid #ddd; }
         .tabela-limpa th, .tabela-limpa td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
         .tabela-limpa th { background-color: #fff; font-weight: bold; }
-        
+
         .tabela-resumo { width: 60%; margin: 0 auto 40px auto; border-collapse: collapse; font-size: 12px; border: 1px solid #ddd; }
         .tabela-resumo th, .tabela-resumo td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
-        
+
         .bg-striped tbody tr:nth-child(odd) { background-color: #f9f9f9; }
-        
+
         .text-center { text-align: center !important; }
         .text-right { text-align: right !important; }
 
@@ -43,12 +43,12 @@
     </style>
 
     <div class="container">
-        
+
         <div class="well no-print">
             <h1>Quantidade de Materiais de Consumo Fornecidos por Unidade Judiciária</h1>
             <form method="GET" action="{{ route('relatorios.gerais.imprimir') }}" class="form-inline">
                 <input type="hidden" name="relatorio" value="{{ $filtros['relatorio'] ?? 'qtd_material_consumo_unidade' }}">
-                
+
                 <label>Unidade: </label>
                 <select name="unidade_selecionada">
                     <option value="">-- TODAS --</option>
@@ -58,12 +58,12 @@
                         </option>
                     @endforeach
                 </select>
-                
+
                 <label>Período: </label>
                 <input type="date" name="data_inicio" value="{{ $filtros['data_inicio'] ?? '' }}" required>
                 <label>a</label>
                 <input type="date" name="data_termino" value="{{ $filtros['data_termino'] ?? '' }}" required>
-                
+
                 <button type="submit" class="btn-primary">Enviar</button>
             </form>
         </div>
@@ -119,7 +119,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php 
+                        @php
                             $resumoLocal = collect($itens)->groupBy('descricao_detalhada')->map(function($g, $desc) {
                                 return (object)['desc' => $desc, 'atendidos' => collect($g)->sum('atendido'), 'val_unit' => collect($g)->first()->valor_unitario, 'total' => collect($g)->sum('total')];
                             })->sortBy('desc')->values();

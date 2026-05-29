@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'TCE IN 34 - Tabela 11')
 
@@ -17,7 +17,7 @@
             <th width="8%">CONTA CONTÁBIL</th>
             <th width="8%">CÓD. NAT. DESPESA</th>
             <th width="20%">DESCRIÇÃO P/ SUBITEM CONTÁBIL</th>
-            
+
             <th width="7%" class="text-center">INCORPORADAS<br>AO PATRIMÔNIO</th>
             <th width="7%" class="text-center">DOAÇÃO</th>
             <th width="7%" class="text-center">OUTRAS</th>
@@ -42,12 +42,12 @@
                 <td>{{ $linha->conta_contabil }}</td>
                 <td>{{ $linha->cod_nat_despesa }}</td>
                 <td>{{ $linha->descricao }}</td>
-                
+
                 <td class="text-right">{{ number_format($linha->ent_incorporadas, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->ent_doacao, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->ent_outras, 2, ',', '.') }}</td>
                 <td class="text-right"><b>{{ number_format($linha->total_entradas, 2, ',', '.') }}</b></td>
-                
+
                 <td class="text-right">{{ number_format($linha->sai_alienacao, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->sai_doacao, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->sai_perda, 2, ',', '.') }}</td>

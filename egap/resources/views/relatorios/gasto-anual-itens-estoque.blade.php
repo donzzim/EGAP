@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Gasto Anual com Itens de Estoque')
 
@@ -7,19 +7,19 @@
         /* Esconder a tabela do layout-tce padrão, pois este relatório tem um cabeçalho único */
         table[width="100%"] { display: none; }
         .tabela-gasto { display: table !important; width: 100%; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; font-size: 12px; margin-top: 20px;}
-        
+
         .relatorio-title { font-family: Helvetica, Arial, sans-serif; font-size: 22px; font-weight: bold; margin-bottom: 10px; margin-top: 10px; }
-        
+
         .tabela-gasto th { border-bottom: 2px solid #ddd; padding: 8px; text-align: left; font-weight: bold; }
         .tabela-gasto td { border-top: 1px solid #ddd; padding: 8px; text-align: left; }
-        
+
         /* Simula o visual table-striped do bootstrap na tabela */
         .tabela-gasto tbody tr:nth-child(odd) { background-color: #f9f9f9; }
-        
+
         /* Estilos dos totais */
         .linha-subtotal td { background-color: #d9d9d9 !important; font-weight: bold; }
         .linha-total td { background-color: #666 !important; color: white !important; font-weight: bold; }
-        
+
         .text-right { text-align: right !important; }
         .text-center { text-align: center !important; }
     </style>
@@ -39,7 +39,7 @@
         </thead>
         <tbody>
             @php $totalGeralValor = 0; @endphp
-            
+
             @forelse($dadosAgrupados as $elemento => $materiais)
                 @php $subtotalValor = 0; @endphp
 

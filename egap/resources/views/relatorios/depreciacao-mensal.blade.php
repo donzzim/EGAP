@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Depreciação Mensal - Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 10px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 5px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 8px; text-transform: uppercase; font-family: Verdana, sans-serif; }
         .caixa-info { border: 1px solid #000 !important; padding: 4px 6px; font-family: Verdana, sans-serif; font-size: 11px; }
     </style>
@@ -60,12 +60,12 @@
             <th width="9%">DEPRECIAÇÃO ACUMULADA DAS SAÍDAS</th>
         </tr>
 
-        @php 
+        @php
             $tVal = 0; $tRes = 0; $tDepM = 0; $tDepA = 0; $tLiq = 0; $tDepS = 0;
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $tVal += $linha->valor_base;
                 $tRes += $linha->valor_residual;
                 $tDepM += $linha->dep_mensal;

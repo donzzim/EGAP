@@ -1,29 +1,29 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Aquisição de Materiais - Item Estoque/Visível')
 
 @section('tabela')
     <style>
         .container { font-family: Verdana, sans-serif; width: 100%; color: #000; font-size: 10px; }
-        
+
         /* Estilos do Formulário do Topo */
         .form-top { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #000; padding-bottom: 10px; }
         .form-inline { display: inline-block; }
         .form-inline label { font-weight: bold; margin: 0 5px; font-size: 12px; }
         .form-inline input[type="date"] { padding: 4px; border: 1px solid #ccc; font-size: 12px; }
-        
+
         .btn-primary { background-color: #006dcc; color: white; border: 1px solid #0044cc; padding: 5px 15px; cursor: pointer; font-weight: bold; margin-left: 10px;}
         .btn-success { background-color: #5cb85c; color: white; border: 1px solid #4cae4c; padding: 8px 15px; cursor: pointer; font-weight: bold;}
-        
+
         .mes-titulo { font-size: 18px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; }
-        
+
         .tabela-grid { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; border: 1px solid #000; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 6px; }
         .tabela-grid th { font-weight: bold; text-align: center; text-transform: uppercase; }
-        
+
         .text-center { text-align: center !important; }
         .text-right { text-align: right !important; }
-        
+
         .box-bottom { text-align: center; margin-top: 20px; margin-bottom: 40px; }
 
         @media print {
@@ -33,16 +33,16 @@
     </style>
 
     <div class="container">
-        
+
         <div class="form-top naoimprimir">
             <form method="GET" action="{{ route('relatorios.gerais.imprimir') }}" class="form-inline" id="formPesquisa">
                 <input type="hidden" name="relatorio" value="{{ $filtros['relatorio'] ?? 'aquisicao_materiais_estoque_visivel' }}">
-                
+
                 <label>Período: </label>
                 <input type="date" name="data_inicio" value="{{ $data_inicio_padrao }}" required>
                 <label>a</label>
                 <input type="date" name="data_termino" value="{{ $data_termino_padrao }}" required>
-                
+
                 <button type="submit" class="btn-primary">Enviar</button>
             </form>
         </div>
@@ -82,11 +82,11 @@
 
                 @foreach($dadosAgrupados as $grupo)
                     <div class="mes-titulo">{{ $grupo->nome }}</div>
-                    
+
                     <table class="tabela-grid">
                         <tr>
                             <th width="5%">
-                                <input type="checkbox" class="naoimprimir" id="checkAll_{{ Str::slug($grupo->nome) }}" onclick="toggleCheckboxes(this, 'item_{{ Str::slug($grupo->nome) }}')" /> 
+                                <input type="checkbox" class="naoimprimir" id="checkAll_{{ Str::slug($grupo->nome) }}" onclick="toggleCheckboxes(this, 'item_{{ Str::slug($grupo->nome) }}')" />
                                 <br class="naoimprimir">ITEM
                             </th>
                             <th width="55%">DESCRIÇÃO</th>
@@ -94,25 +94,25 @@
                             <th width="15%">VALOR UNITÁRIO</th>
                             <th width="15%">VALOR TOTAL</th>
                         </tr>
-                        
-                        @php 
-                            $seq = 1; 
-                            $tQtde = 0; 
-                            $tGasto = 0; 
-                            $tUnitario = 0; 
+
+                        @php
+                            $seq = 1;
+                            $tQtde = 0;
+                            $tGasto = 0;
+                            $tUnitario = 0;
                         @endphp
-                        
+
                         @foreach($grupo->itens as $linha)
-                            @php 
-                                $tQtde += $linha->quantidade; 
-                                $tGasto += $linha->valor_total; 
+                            @php
+                                $tQtde += $linha->quantidade;
+                                $tGasto += $linha->valor_total;
                                 $tUnitario += $linha->preco_unitario;
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $seq++ }}</td>
                                 <td>
                                     <span class="naoimprimir">
-                                        <input type="checkbox" name="materiais[]" class="item_{{ Str::slug($grupo->nome) }}" value="{{ $linha->id_descricao_detalhada }}" /> - 
+                                        <input type="checkbox" name="materiais[]" class="item_{{ Str::slug($grupo->nome) }}" value="{{ $linha->id_descricao_detalhada }}" /> -
                                     </span>
                                     {{ $linha->descricao_detalhada }}
                                 </td>
@@ -121,7 +121,7 @@
                                 <td class="text-right">R$ {{ number_format($linha->valor_total, 2, ',', '.') }}</td>
                             </tr>
                         @endforeach
-                        
+
                         <tr>
                             <td colspan="2" class="text-right" style="font-weight: bold;">TOTAL:</td>
                             <td class="text-center" style="font-weight: bold;">{{ number_format($tQtde, 0, ',', '.') }}</td>

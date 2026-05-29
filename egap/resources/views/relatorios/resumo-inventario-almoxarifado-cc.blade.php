@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Resumo do Inventário do Almoxarifado - Material de Consumo')
 
@@ -7,16 +7,16 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-bottom: 20px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 6px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
-        
+
         @media print {
             .nova-pagina { page-break-before: always; }
         }
     </style>
 
-    @php 
-        $porCC = $dados->groupBy(fn($i) => $i->cc_codigo . ' ' . $i->cc_descricao); 
+    @php
+        $porCC = $dados->groupBy(fn($i) => $i->cc_codigo . ' ' . $i->cc_descricao);
         $isFirst = true;
     @endphp
 
@@ -26,7 +26,7 @@
 
     @foreach($porCC as $nomeCC => $itens)
         <div class="{{ $isFirst ? '' : 'nova-pagina' }}" style="{{ $isFirst ? '' : 'margin-top: 40px;' }}">
-            
+
             <table style="width: 100%; font-family: Verdana, sans-serif; font-size: 12px; font-weight: bold; margin-bottom: 5px; padding-bottom: 5px;">
                 <tr>
                     <td width="60%" align="left">Relatório do TCE - Tabela 14 - Resumo do Inventário do Almoxarifado - Material de Consumo</td>
@@ -70,12 +70,12 @@
                     <th width="8%">SAÍDAS ACUMULADAS</th>
                 </tr>
 
-                @php 
+                @php
                     $tSA = 0; $tEnt = 0; $tSai = 0; $tSAt = 0; $tSAcum = 0;
                 @endphp
 
                 @foreach ($itens as $linha)
-                    @php 
+                    @php
                         $tSA += $linha->sa; $tEnt += $linha->entradas; $tSai += $linha->saidas; $tSAt += $linha->saldo_atual; $tSAcum += $linha->saidas_acum;
                     @endphp
                     <tr>
@@ -133,7 +133,7 @@
                 </tr>
                 @php $tSA = 0; $tEnt = 0; $tSai = 0; $tSAt = 0; $tSAcum = 0; @endphp
                 @foreach ($porCC as $ccNome => $itens)
-                    @php 
+                    @php
                         $s1 = $itens->sum('sa'); $s2 = $itens->sum('entradas'); $s3 = $itens->sum('saidas'); $s4 = $itens->sum('saldo_atual'); $s5 = $itens->sum('saidas_acum');
                         $tSA += $s1; $tEnt += $s2; $tSai += $s3; $tSAt += $s4; $tSAcum += $s5;
                     @endphp
@@ -173,7 +173,7 @@
                 </tr>
                 @php $tSA = 0; $tEnt = 0; $tSai = 0; $tSAt = 0; $tSAcum = 0; @endphp
                 @foreach ($dados->groupBy(fn($i) => $i->conta_contabil . '|' . $i->produto) as $grupo => $itens)
-                    @php 
+                    @php
                         $s1 = $itens->sum('sa'); $s2 = $itens->sum('entradas'); $s3 = $itens->sum('saidas'); $s4 = $itens->sum('saldo_atual'); $s5 = $itens->sum('saidas_acum');
                         $tSA += $s1; $tEnt += $s2; $tSai += $s3; $tSAt += $s4; $tSAcum += $s5;
                     @endphp
@@ -212,7 +212,7 @@
                 </tr>
                 @php $tSA = 0; $tEnt = 0; $tSai = 0; $tSAt = 0; $tSAcum = 0; @endphp
                 @foreach ($dados->groupBy('item_patrimonial') as $itemPat => $itens)
-                    @php 
+                    @php
                         $s1 = $itens->sum('sa'); $s2 = $itens->sum('entradas'); $s3 = $itens->sum('saidas'); $s4 = $itens->sum('saldo_atual'); $s5 = $itens->sum('saidas_acum');
                         $tSA += $s1; $tEnt += $s2; $tSai += $s3; $tSAt += $s4; $tSAcum += $s5;
                     @endphp

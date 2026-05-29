@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'TCE IN 34 - Tabela 15')
 
@@ -21,7 +21,7 @@
             <th width="8%">CONTA CONTÁBIL</th>
             <th width="8%">CÓD. NAT. DESPESA</th>
             <th width="20%">DESCRIÇÃO P/ SUBITEM CONTÁBIL</th>
-            
+
             <th width="7%" class="text-center">COMPRAS</th>
             <th width="7%" class="text-center">DOAÇÃO<br>TRANSFERÊNCIA</th>
             <th width="7%" class="text-center">REENTRADAS<br>OUTRAS</th>
@@ -46,12 +46,12 @@
                 <td class="text-center">{{ $linha->conta_contabil }}</td>
                 <td>{{ $linha->cod_nat_despesa }}</td>
                 <td>{{ $linha->descricao }}</td>
-                
+
                 <td class="text-right">{{ number_format($linha->ent_compras, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->ent_doacao, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->ent_outras, 2, ',', '.') }}</td>
                 <td class="text-right"><b>{{ number_format($linha->total_entradas, 2, ',', '.') }}</b></td>
-                
+
                 <td class="text-right">{{ number_format($linha->sai_consumo, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->sai_doacao, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linha->sai_perdas, 2, ',', '.') }}</td>
@@ -60,7 +60,8 @@
             </tr>
             @php
                 $t['ec'] += $linha->ent_compras; $t['ed'] += $linha->ent_doacao;
-                $t['eo'] += $linha->ent_outras;  $t['et'] += $linha->total_entradas;
+                $t['eo'] += ($linha->ent_compras + $linha->ent_outras);
+                $t['et'] += $linha->ent_compras;
                 $t['sc'] += $linha->sai_consumo; $t['sd'] += $linha->sai_doacao;
                 $t['sp'] += $linha->sai_perdas;  $t['so'] += $linha->sai_outras;
                 $t['st'] += $linha->total_saidas;

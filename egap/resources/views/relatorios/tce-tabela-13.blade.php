@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'TCE IN 34 - Tabela 13')
 
@@ -51,11 +51,11 @@
                 <td class="text-right"><b>{{ number_format($linha->total_saidas, 2, ',', '.') }}</b></td>
             </tr>
             @php
-                $t['e_com'] += $linha->ent_compras; $t['e_doa'] += $linha->ent_doacao; 
-                $t['e_con'] += $linha->ent_construcao; $t['e_des'] += $linha->ent_desapropriacao; 
+                $t['e_com'] += $linha->ent_compras; $t['e_doa'] += $linha->ent_doacao;
+                $t['e_con'] += $linha->ent_construcao; $t['e_des'] += $linha->ent_desapropriacao;
                 $t['e_out'] += $linha->ent_outras; $t['e_tot'] += $linha->total_entradas;
-                $t['s_ali'] += $linha->sai_alienacao; $t['s_doa'] += $linha->sai_doacao; 
-                $t['s_per'] += $linha->sai_perdas; $t['s_out'] += $linha->sai_outras; 
+                $t['s_ali'] += $linha->sai_alienacao; $t['s_doa'] += $linha->sai_doacao;
+                $t['s_per'] += $linha->sai_perdas; $t['s_out'] += $linha->sai_outras;
                 $t['s_tot'] += $linha->total_saidas;
             @endphp
         @empty

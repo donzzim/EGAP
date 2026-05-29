@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Balancete Contábil')
 
@@ -7,9 +7,9 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-bottom: 20px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px 6px; }
         .linha-cabecalho th { font-weight: bold; text-align: center; font-size: 10px; text-transform: uppercase; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 16px; padding: 6px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
-        
+
         @media print {
             .nova-pagina { page-break-before: always; }
         }
@@ -87,16 +87,16 @@
                         <td style="text-align: center;">{{ $seq++ }}</td>
                         <td>{{ $item->descricao_detalhada }} - {{ $item->elemento }}</td>
                         <td style="text-align: center;">{!! str_replace(' ', '<br/>', $item->tipo_desc) !!}</td>
-                        
+
                         <td style="text-align: right;">{{ number_format($item->sa_qtd, 0, '', '.') }}</td>
                         <td style="text-align: right;">R$ {{ number_format($item->sa_valor, 2, ',', '.') }}</td>
-                        
+
                         <td style="text-align: right;">{{ number_format($item->ent_qtd, 0, '', '.') }}</td>
                         <td style="text-align: right;">R$ {{ number_format($item->ent_valor, 2, ',', '.') }}</td>
-                        
+
                         <td style="text-align: right;">{{ number_format($item->sai_qtd, 0, '', '.') }}</td>
                         <td style="text-align: right;">R$ {{ number_format($item->sai_valor, 2, ',', '.') }}</td>
-                        
+
                         <td style="text-align: right;">{{ number_format($item->atual_qtd, 0, '', '.') }}</td>
                         <td style="text-align: right;">R$ {{ number_format($item->atual_valor, 2, ',', '.') }}</td>
                     </tr>
@@ -107,13 +107,13 @@
                     <td></td>
                     <td style="text-align: right; font-weight: bold;">{{ number_format($tSaQtd, 0, '', '.') }}</td>
                     <td style="text-align: right; font-weight: bold;">R$ {{ number_format($tSaValor, 2, ',', '.') }}</td>
-                    
+
                     <td style="text-align: right; font-weight: bold;">{{ number_format($tEntQtd, 0, '', '.') }}</td>
                     <td style="text-align: right; font-weight: bold;">R$ {{ number_format($tEntValor, 2, ',', '.') }}</td>
-                    
+
                     <td style="text-align: right; font-weight: bold;">{{ number_format($tSaiQtd, 0, '', '.') }}</td>
                     <td style="text-align: right; font-weight: bold;">R$ {{ number_format($tSaiValor, 2, ',', '.') }}</td>
-                    
+
                     <td style="text-align: right; font-weight: bold;">{{ number_format($tAtQtd, 0, '', '.') }}</td>
                     <td style="text-align: right; font-weight: bold;">R$ {{ number_format($tAtValor, 2, ',', '.') }}</td>
                 </tr>

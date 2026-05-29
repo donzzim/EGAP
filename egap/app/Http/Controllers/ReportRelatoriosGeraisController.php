@@ -5,6 +5,19 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\Patrimonio\BensImoveis\Obra;
+use App\Models\Patrimonio\BensImoveis\Depreciacao as DepreciacaoImovel;
+use App\Models\Patrimonio\BensMoveis\Depreciacao as DepreciacaoBemMovel;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Patrimonio\BensImoveis\Reavaliacao;
+use App\Models\Patrimonio\BensImoveis\BemImovel;
+use App\Models\Almoxarifado\MovimentacaoEstoque;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Patrimonio\BensIntangiveis\BemIntangivel;
+use App\Models\Almoxarifado\NotaFiscal;
+use App\Models\Almoxarifado\Pedidos;
 
 class ReportRelatoriosGeraisController extends Controller
 {
@@ -53,7 +66,7 @@ class ReportRelatoriosGeraisController extends Controller
     private function aplicarFiltros($query, $filtros, $colConta = 'pc.id', $colSituacao = 'p.situacao_contabil')
     {
         $query->when($filtros['conta_contabil'] ?? null, fn($q, $v) => $q->where($colConta, $v));
-        
+
         if ($colSituacao) {
             $query->when($filtros['situacao_contabil'] ?? 'Todos', fn($q, $v) => $v !== 'Todos' ? $q->where($colSituacao, $v) : null);
         }
@@ -61,16 +74,23 @@ class ReportRelatoriosGeraisController extends Controller
 
     private function subObrasImoveis($fimStr)
     {
-        return DB::connection('egap')->table('imo_obras')
-            ->select('id_imovel', DB::raw('SUM(valor) as valor_obra'))
+        return Obra::query()
+            ->selectRaw('id_imovel, SUM(valor) as valor_obra')
             ->where('data', '<=', $fimStr)
             ->groupBy('id_imovel');
     }
 
     private function subDepreciacaoImoveis($mesRef)
     {
-        return DB::connection('egap')->table('imo_depreciacao')
-            ->select('Id_imovel', 'valor', 'depreciacao_mensal', 'depreciacao_acumulada', 'valor_liquido_contabil', 'valor_residual')
+        return DepreciacaoImovel::query()
+            ->select([
+                'Id_imovel',
+                'valor',
+                'depreciacao_mensal',
+                'depreciacao_acumulada',
+                'valor_liquido_contabil',
+                'valor_residual'
+            ])
             ->whereRaw("DATE_FORMAT(data_calculo, '%Y-%m') = ?", [$mesRef]);
     }
 
@@ -84,28 +104,28 @@ class ReportRelatoriosGeraisController extends Controller
         $val = "IF(DatadeIncorporacao < '2015-01-01 00:00:01', ROUND(ValordaReavaliacao,4), ROUND(ValorAquisicao,4))";
         $reavCond = "(DatadaReavaliacao < '{$d->ini}' OR DatadaReavaliacao = '0000-00-00 00:00:00')";
 
-        $subDepre = DB::connection('egap')->table('mat_depreciacao as d')
+        $subDepre = DepreciacaoBemMovel::query()->from('mat_depreciacao as d')
             ->join('mat_patrimonio as p', 'p.id', '=', 'd.patrimonio')
             ->where('d.item', '>', 1)
             ->whereBetween('d.data_calculo', [$iniDep, $fimDep])
             ->whereRaw("((p.DatadeIncorporacao < ? AND p.SituacaoBem NOT IN (2,3,4,5,6,8,9)) OR (p.DataBaixa > ? AND p.SituacaoBem IN (2,3,4,5,6)))", [$iniDep, $d->fim])
             ->whereRaw("(p.DatadaReavaliacao < ? OR p.DatadaReavaliacao = '0000-00-00 00:00:00')", [$iniDep])
-            ->select('p.ContaContabil', 'p.Produto', DB::raw("SUM(d.depreciacao_acumulada) as depreciacao_acumulada"))
+            ->selectRaw("p.ContaContabil, p.Produto, SUM(d.depreciacao_acumulada) as depreciacao_acumulada")
             ->groupBy('p.ContaContabil', 'p.Produto');
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as pat')
+        $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->join('mat_planocontas as pc', 'pc.id', '=', 'pat.ContaContabil')
             ->join('mat_produtos as prod', 'prod.id', '=', 'pat.Produto')
             ->leftJoinSub($subDepre, 'dep', function($join) {
                 $join->on('pat.ContaContabil', '=', 'dep.ContaContabil')
-                     ->on('pat.Produto', '=', 'dep.Produto');
+                    ->on('pat.Produto', '=', 'dep.Produto');
             })
             ->selectRaw("
                 pc.codigo as conta_contabil, prod.CodigodaClasse as cod_nat_despesa, prod.DescricaodaClasse as descricao,
-                SUM(CASE WHEN ((DatadeIncorporacao < '{$d->ini}' AND SituacaoBem NOT IN (2,3,4,5,6,8,9)) OR (DataBaixa >= '{$d->fim}' AND SituacaoBem IN (2,3,4,5,6)) OR 
-                (DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem IN (2,3,4,5,6))) AND $reavCond THEN $val ELSE 0 END) 
+                SUM(CASE WHEN ((DatadeIncorporacao < '{$d->ini}' AND SituacaoBem NOT IN (2,3,4,5,6,8,9)) OR (DataBaixa >= '{$d->fim}' AND SituacaoBem IN (2,3,4,5,6)) OR
+                (DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem IN (2,3,4,5,6))) AND $reavCond THEN $val ELSE 0 END)
                 - SUM(CASE WHEN DataBaixa >= '{$d->fim}' AND DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' THEN $val ELSE 0 END) as saldo_anterior,
-                SUM(CASE WHEN DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) THEN $val ELSE 0 END) 
+                SUM(CASE WHEN DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) THEN $val ELSE 0 END)
                 + SUM(CASE WHEN DatadaReavaliacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) THEN ValordaReavaliacao ELSE 0 END) as entradas,
                 SUM(CASE WHEN DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem IN (2,3,4,5,6) THEN $val ELSE 0 END) as saidas,
                 IFNULL(dep.depreciacao_acumulada, 0) as depreciacao
@@ -114,27 +134,30 @@ class ReportRelatoriosGeraisController extends Controller
             ->when($filtros['unidade_gestora'] ?? 'Todos', fn($q, $v) => $v !== 'Todos' ? $q->where('pat.unidade_gestora', $v) : null)
             ->groupBy('pc.codigo', 'prod.CodigodaClasse', 'prod.DescricaodaClasse', 'pat.ContaContabil', 'pat.Produto', 'dep.depreciacao_acumulada')
             ->orderBy('pc.codigo')->orderBy('prod.CodigodaClasse')
+            ->toBase()
             ->get()
-            ->map(fn($i) => (object)[... (array)$i, 
+            ->map(fn($i) => (object)[... (array)$i,
                 'saldo_bruto' => ($i->saldo_anterior + $i->entradas) - $i->saidas,
                 'saldo_atual' => ($i->saldo_anterior + $i->entradas - $i->saidas) - $i->depreciacao
             ]);
 
         return $this->render('tce-tabela-10', $dados, $filtros);
     }
-    
+
     private function gerarTabela11($filtros)
     {
         $d = $this->getPeriodo($filtros);
         $val = "IF(DatadeIncorporacao < '2015-01-01 00:00:01', ROUND(ValordaReavaliacao,4), ROUND(ValorAquisicao,4))";
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as pat')
-            ->join('mat_planocontas as pc', 'pc.id', 'pat.ContaContabil')
-            ->join('mat_produtos as prod', 'prod.id', 'pat.Produto')
+        $dados = BemMovel::query()->from('mat_patrimonio as pat')
+            ->join('mat_planocontas as pc', 'pc.id', '=', 'pat.ContaContabil')
+            ->join('mat_produtos as prod', 'prod.id', '=', 'pat.Produto')
             ->selectRaw("
                 pc.codigo as conta_contabil, prod.CodigodaClasse as cod_nat_despesa, prod.DescricaodaClasse as descricao,
-                SUM(CASE WHEN DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) AND FormaAquisicao = 'Compra' THEN $val ELSE 0 END) as ent_incorporadas,
-                SUM(CASE WHEN DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) AND FormaAquisicao = 'Doação' THEN $val ELSE 0 END) as ent_doacao,
+                SUM(CASE WHEN DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) AND FormaAquisicao = 'Compra' THEN $val ELSE 0 END) as
+                ent_incorporadas,
+                SUM(CASE WHEN DatadeIncorporacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) AND FormaAquisicao = 'Doação' THEN $val ELSE 0 END) as
+                ent_doacao,
                 SUM(CASE WHEN DatadaReavaliacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem NOT IN (8,9) THEN ValordaReavaliacao ELSE 0 END) as ent_outras,
                 0 as sai_alienacao,
                 SUM(CASE WHEN DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem = 3 THEN $val ELSE 0 END) as sai_doacao,
@@ -144,8 +167,9 @@ class ReportRelatoriosGeraisController extends Controller
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
             ->groupBy('pc.codigo', 'prod.CodigodaClasse', 'prod.DescricaodaClasse', 'pat.ContaContabil', 'pat.Produto')
             ->orderBy('pc.codigo')->orderBy('prod.CodigodaClasse')
+            ->toBase()
             ->get()
-            ->map(fn($i) => (object)[... (array)$i, 
+            ->map(fn($i) => (object)[... (array)$i,
                 'total_entradas' => $i->ent_incorporadas + $i->ent_doacao + $i->ent_outras,
                 'total_saidas' => $i->sai_alienacao + $i->sai_doacao + $i->sai_perda + $i->sai_outras
             ]);
@@ -157,45 +181,54 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $sa = DB::connection('egap')->table('imo_imovel as imo')
-            ->leftJoinSub(DB::connection('egap')->table('imo_reavaliacao')->select('Id_imovel', DB::raw('MAX(data_reavaliacao) as data'))->where('data_reavaliacao', '<', $d->ini)->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
+        $sa = BemImovel::query()->from('imo_imovel as imo')
+            ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->where('data_reavaliacao', '<', $d->ini)
+                ->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
             ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
-            ->leftJoinSub(DB::connection('egap')->table('imo_obras as o')->leftJoinSub(DB::connection('egap')->table('imo_reavaliacao')->select('Id_imovel', DB::raw('MAX(data_reavaliacao) as d_rea'))->where('data_reavaliacao', '<', $d->ini)->groupBy('Id_imovel'), 'r', 'r.Id_imovel', '=', 'o.Id_imovel')->select('o.id_imovel', DB::raw('SUM(o.valor) as valor'))->whereRaw("o.data BETWEEN IFNULL(r.d_rea, '1900-01-01') AND ?", [$d->ini])->groupBy('o.id_imovel'), 'obra', 'imo.id', '=', 'obra.id_imovel')
-            ->select('imo.Id_planocontas as conta', DB::raw('SUM(IFNULL(rea.valor_reavaliacao, imo.valor_historico_1a_avaliacao) + IFNULL(obra.valor, 0)) as total'))
+            ->leftJoinSub(Obra::query()->from('imo_obras as o')->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as d_rea')
+                ->where('data_reavaliacao', '<', $d->ini)->groupBy('Id_imovel'), 'r', 'r.Id_imovel', '=', 'o.Id_imovel')->selectRaw('o.id_imovel, SUM(o.valor) as valor')
+                ->whereRaw("o.data BETWEEN IFNULL(r.d_rea, '1900-01-01') AND ?", [$d->ini])->groupBy('o.id_imovel'), 'obra', 'imo.id', '=', 'obra.id_imovel')
+            ->selectRaw('imo.Id_planocontas as conta, SUM(IFNULL(rea.valor_reavaliacao, imo.valor_historico_1a_avaliacao) + IFNULL(obra.valor, 0)) as total')
             ->where('imo.Id_situacao', 1)->where('imo.data_aquisicao', '<', $d->ini)
             ->whereRaw("(imo.data_situacao = '0000-00-00 00:00:00' OR imo.data_situacao <= ?)", [$d->fim])
             ->whereRaw("(imo.data_baixa >= ? OR imo.data_baixa = '0000-00-00 00:00:00' OR imo.data_baixa IS NULL)", [$d->fim])
             ->groupBy('imo.Id_planocontas');
 
-        $ent = DB::connection('egap')->table('imo_imovel as imo')
-            ->leftJoinSub(DB::connection('egap')->table('imo_reavaliacao')->select('Id_imovel', DB::raw('MAX(data_reavaliacao) as data'))->whereBetween('data_reavaliacao', [$d->ini, $d->fim])->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
+        $ent = BemImovel::query()->from('imo_imovel as imo')
+            ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->whereBetween('data_reavaliacao', [$d->ini, $d->fim])
+                ->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
             ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
-            ->leftJoinSub(DB::connection('egap')->table('imo_obras')->select('Id_imovel', DB::raw('SUM(valor) as valor'))->whereBetween('data', [$d->ini, $d->fim])->groupBy('Id_imovel'), 'oe', 'imo.id', '=', 'oe.Id_imovel')
-            ->select('imo.Id_planocontas as conta', DB::raw('SUM(IF(rea.ajuste_contabil >= 0, rea.ajuste_contabil, 0) + IFNULL(oe.valor, 0)) as entradas'), DB::raw('SUM(IF(rea.ajuste_contabil < 0, ABS(rea.ajuste_contabil), 0)) as ajustecontabil_saida'))
+            ->leftJoinSub(Obra::query()->selectRaw('Id_imovel, SUM(valor) as valor')->whereBetween('data', [$d->ini, $d->fim])
+                ->groupBy('Id_imovel'), 'oe', 'imo.id', '=', 'oe.Id_imovel')
+            ->selectRaw('imo.Id_planocontas as conta, SUM(IF(rea.ajuste_contabil >= 0, rea.ajuste_contabil, 0) + IFNULL(oe.valor, 0)) as entradas,
+            SUM(IF(rea.ajuste_contabil < 0, ABS(rea.ajuste_contabil), 0)) as ajustecontabil_saida')
             ->where('imo.Id_situacao', 1)->where('imo.data_aquisicao', '<', $d->ini)
             ->whereRaw("(imo.data_situacao = '0000-00-00 00:00:00' OR imo.data_situacao <= ?)", [$d->fim])
             ->whereRaw("(imo.data_baixa >= ? OR imo.data_baixa = '0000-00-00 00:00:00' OR imo.data_baixa IS NULL)", [$d->fim])
             ->groupBy('imo.Id_planocontas');
 
-        $sai = DB::connection('egap')->table('imo_imovel as imo')
-            ->leftJoinSub(DB::connection('egap')->table('imo_reavaliacao')->select('Id_imovel', DB::raw('MAX(data_reavaliacao) as data'))->where('data_reavaliacao', '<', $d->ini)->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
+        $sai = BemImovel::query()->from('imo_imovel as imo')
+            ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->where('data_reavaliacao', '<', $d->ini)
+                ->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
             ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
-            ->leftJoinSub(DB::connection('egap')->table('imo_obras')->select('Id_imovel', DB::raw('MAX(data) as data'))->groupBy('Id_imovel'), 'u_obra', 'imo.id', '=', 'u_obra.Id_imovel')
-            ->leftJoinSub(DB::connection('egap')->table('imo_obras as o')->leftJoin('imo_reavaliacao as r', 'r.Id_imovel', '=', 'o.Id_imovel')->select('o.valor', 'o.data', 'o.Id_imovel')->whereRaw('(r.data_reavaliacao < o.data OR r.data_reavaliacao IS NULL)'), 'obra', fn($join) => $join->on('u_obra.data', '=', 'obra.data')->on('u_obra.Id_imovel', '=', 'obra.Id_imovel'))
-            ->select('imo.Id_planocontas as conta', DB::raw('SUM(IFNULL(rea.valor_reavaliacao, imo.valor_historico_1a_avaliacao) + IFNULL(obra.valor, 0)) as saidas'))
+            ->leftJoinSub(Obra::query()->selectRaw('Id_imovel, MAX(data) as data')->groupBy('Id_imovel'), 'u_obra', 'imo.id', '=', 'u_obra.Id_imovel')
+            ->leftJoinSub(Obra::query()->from('imo_obras as o')->leftJoin('imo_reavaliacao as r', 'r.Id_imovel', '=', 'o.Id_imovel')
+                ->selectRaw('o.valor, o.data, o.Id_imovel')->whereRaw('(r.data_reavaliacao < o.data OR r.data_reavaliacao IS NULL)'), 'obra', fn($join) => $join
+                ->on('u_obra.data', '=', 'obra.data')->on('u_obra.Id_imovel', '=', 'obra.Id_imovel'))
+            ->selectRaw('imo.Id_planocontas as conta, SUM(IFNULL(rea.valor_reavaliacao, imo.valor_historico_1a_avaliacao) + IFNULL(obra.valor, 0)) as saidas')
             ->whereBetween('imo.data_baixa', [$d->ini, $d->fim])->groupBy('imo.Id_planocontas');
 
         $iniDep = $d->objFim->copy()->startOfMonth()->format('Y-m-d 00:00:00');
         $fimDep = $d->objFim->copy()->endOfMonth()->format('Y-m-d 23:59:59');
 
-        $dep = DB::connection('egap')->table('imo_depreciacao as d')
+        $dep = DepreciacaoImovel::query()->from('imo_depreciacao as d')
             ->join('imo_imovel as imo', 'imo.id', '=', 'd.Id_imovel')
             ->whereBetween('d.data_calculo', [$iniDep, $fimDep])
             ->where('imo.id_situacao', 1)
-            ->select('imo.Id_planocontas as conta', DB::raw('IFNULL(SUM(d.depreciacao_acumulada), 0) as valor'))
+            ->selectRaw('imo.Id_planocontas as conta, IFNULL(SUM(d.depreciacao_acumulada), 0) as valor')
             ->groupBy('imo.Id_planocontas');
 
-        $dados = DB::connection('egap')->table('mat_planocontas as pc')
+        $dados = ContaContabil::query()->from('mat_planocontas as pc')
             ->join('imo_imovel as imo', 'pc.id', '=', 'imo.id_planocontas')
             ->leftJoinSub($sa, 'sa', 'pc.id', '=', 'sa.conta')
             ->leftJoinSub($ent, 'ent', 'pc.id', '=', 'ent.conta')
@@ -203,7 +236,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($dep, 'dep', 'pc.id', '=', 'dep.conta')
             ->where('imo.id_situacao', 1)
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', null))
-            ->select('pc.codigo as conta_contabil', 'pc.titulo as descricao', DB::raw('IFNULL(sa.total, 0) as saldo_anterior'), DB::raw('IFNULL(ent.entradas, 0) as entradas'), DB::raw('(IFNULL(ent.ajustecontabil_saida, 0) + IFNULL(sai.saidas, 0)) as saidas'), DB::raw('IFNULL(dep.valor, 0) as depreciacao_acumulada'))
+            ->selectRaw('pc.codigo as conta_contabil, pc.titulo as descricao, IFNULL(sa.total, 0) as saldo_anterior, IFNULL(ent.entradas, 0) as entradas,
+            (IFNULL(ent.ajustecontabil_saida, 0) + IFNULL(sai.saidas, 0)) as saidas, IFNULL(dep.valor, 0) as depreciacao_acumulada')
             ->distinct()->orderBy('pc.codigo')->get()
             ->map(function($i) {
                 $i->saldo_bruto = ($i->saldo_anterior + $i->entradas) - $i->saidas;
@@ -213,14 +247,14 @@ class ReportRelatoriosGeraisController extends Controller
 
         return $this->render('tce-tabela-12', $dados, $filtros);
     }
-    
+
     private function gerarTabela13($filtros)
     {
         $d = $this->getPeriodo($filtros);
         $val = "IF(imo.data_reavaliacao IS NOT NULL, imo.valor_reavaliado, imo.valor_historico_1a_avaliacao)";
 
-        $agr = DB::connection('egap')->table('imo_imovel as imo')
-            ->select('imo.id_planocontas as conta')
+        $agr = BemImovel::query()->from('imo_imovel as imo')
+            ->selectRaw('imo.id_planocontas as conta')
             ->selectRaw("SUM(CASE WHEN imo.id_entradasaida = 1 AND imo.data_situacao BETWEEN ? AND ? THEN $val ELSE 0 END) as e_com", [$d->ini, $d->fim])
             ->selectRaw("SUM(CASE WHEN imo.id_entradasaida = 2 AND imo.data_situacao BETWEEN ? AND ? THEN $val ELSE 0 END) as e_doa", [$d->ini, $d->fim])
             ->selectRaw("SUM(CASE WHEN imo.id_entradasaida = 3 AND imo.data_situacao BETWEEN ? AND ? THEN $val ELSE 0 END) as e_con", [$d->ini, $d->fim])
@@ -231,32 +265,34 @@ class ReportRelatoriosGeraisController extends Controller
             ->selectRaw("SUM(CASE WHEN imo.id_entradasaida = 9 AND imo.data_baixa BETWEEN ? AND ? THEN $val ELSE 0 END) as s_out_base", [$d->ini, $d->fim])
             ->groupBy('imo.id_planocontas');
 
-        $obs = DB::connection('egap')->table('imo_imovel as imo')
+        $obs = BemImovel::query()->from('imo_imovel as imo')
             ->join('imo_obras as o', 'imo.id', '=', 'o.id_imovel')
-            ->select('imo.id_planocontas as conta', DB::raw('SUM(o.valor) as valor'))
+            ->selectRaw('imo.id_planocontas as conta, SUM(o.valor) as valor')
             ->whereBetween('o.data', [$d->ini, $d->fim])
             ->where('imo.id_situacao', 1)
             ->groupBy('imo.id_planocontas');
 
-        $eo = DB::connection('egap')->table('imo_imovel as imo')
-            ->leftJoinSub(DB::connection('egap')->table('imo_reavaliacao')->select('Id_imovel', DB::raw('MAX(data_reavaliacao) as data'))->whereBetween('data_reavaliacao', [$d->ini, $d->fim])->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
+        $eo = BemImovel::query()->from('imo_imovel as imo')
+            ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->whereBetween('data_reavaliacao', [$d->ini, $d->fim])->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
             ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
             ->leftJoinSub($this->subObrasImoveis($d->fim), 'oe', 'imo.id', '=', 'oe.Id_imovel')
-            ->select('imo.Id_planocontas as conta', DB::raw('SUM(IF(rea.ajuste_contabil >= 0, rea.ajuste_contabil, 0) + IFNULL(oe.valor_obra, 0)) as entradas'), DB::raw('SUM(IF(rea.ajuste_contabil < 0, ABS(rea.ajuste_contabil), 0)) as ajustecontabil_saida'))
+            ->selectRaw('imo.Id_planocontas as conta, SUM(IF(rea.ajuste_contabil >= 0, rea.ajuste_contabil, 0) + IFNULL(oe.valor_obra, 0)) as entradas, SUM(IF(rea.ajuste_contabil < 0, ABS(rea.ajuste_contabil), 0)) as ajustecontabil_saida')
             ->where('imo.Id_situacao', 1)->where('imo.data_aquisicao', '<', $d->ini)
             ->whereRaw("(imo.data_situacao = '0000-00-00 00:00:00' OR imo.data_situacao <= ?)", [$d->fim])
             ->whereRaw("(imo.data_baixa >= ? OR imo.data_baixa = '0000-00-00 00:00:00' OR imo.data_baixa IS NULL)", [$d->fim])
             ->groupBy('imo.Id_planocontas');
 
-        $dados = DB::connection('egap')->table('mat_planocontas as pc')
+        $dados = ContaContabil::query()->from('mat_planocontas as pc')
             ->join('imo_imovel as imo', 'pc.id', '=', 'imo.id_planocontas')
             ->leftJoinSub($agr, 'agr', 'pc.id', '=', 'agr.conta')
             ->leftJoinSub($obs, 'obs', 'pc.id', '=', 'obs.conta')
             ->leftJoinSub($eo, 'eo', 'pc.id', '=', 'eo.conta')
             ->where('imo.id_situacao', 1)
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', null))
-            ->select('pc.codigo as conta_contabil', 'pc.titulo as descricao', DB::raw('IFNULL(agr.e_com, 0) as ent_compras'), DB::raw('IFNULL(agr.e_doa, 0) as ent_doacao'), DB::raw('(IFNULL(agr.e_con, 0) + IFNULL(obs.valor, 0)) as ent_construcao'), DB::raw('IFNULL(agr.e_des, 0) as ent_desapropriacao'), DB::raw('IFNULL(eo.entradas, 0) as ent_outras'), DB::raw('IFNULL(agr.s_ali, 0) as sai_alienacao'), DB::raw('IFNULL(agr.s_doa, 0) as sai_doacao'), DB::raw('IFNULL(agr.s_per, 0) as sai_perdas'), DB::raw('(IFNULL(agr.s_out_base, 0) + IFNULL(eo.ajustecontabil_saida, 0)) as sai_outras'))
-            ->distinct()->orderBy('pc.codigo')->get()
+            ->selectRaw('pc.codigo as conta_contabil, pc.titulo as descricao, IFNULL(agr.e_com, 0) as ent_compras, IFNULL(agr.e_doa, 0) as ent_doacao, (IFNULL(agr.e_con, 0) + IFNULL(obs.valor, 0)) as ent_construcao, IFNULL(agr.e_des, 0) as ent_desapropriacao, IFNULL(eo.entradas, 0) as ent_outras, IFNULL(agr.s_ali, 0) as sai_alienacao, IFNULL(agr.s_doa, 0) as sai_doacao, IFNULL(agr.s_per, 0) as sai_perdas, (IFNULL(agr.s_out_base, 0) + IFNULL(eo.ajustecontabil_saida, 0)) as sai_outras')
+            ->distinct()->orderBy('pc.codigo')
+            ->toBase()
+            ->get()
             ->map(function($i) {
                 $i->total_entradas = $i->ent_compras + $i->ent_doacao + $i->ent_construcao + $i->ent_desapropriacao + $i->ent_outras;
                 $i->total_saidas = $i->sai_alienacao + $i->sai_doacao + $i->sai_perdas + $i->sai_outras;
@@ -270,58 +306,59 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $latestIds = DB::connection('egap')
-            ->table('alm_estoque as e2')
-            ->select('e2.material', DB::raw('MAX(e2.id) as max_id'))
-            ->where('e2.date_time', '<', $d->iniDate)
-            ->groupBy('e2.material');
-
-        $query = DB::connection('egap')
-            ->table('mat_descricaoresumida as dr')
+        $baseQuery = DescricaoResumida::query()->from('mat_descricaoresumida as dr')
             ->join('mat_planocontas as pc', 'dr.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as pr', 'dr.id_produto', '=', 'pr.id')
-            // Saldo Anterior
-            ->join('mat_descricaodetalhada as dd_sa', 'dr.id', '=', 'dd_sa.descricao_resumida')
-            ->leftJoinSub($latestIds, 'latest', fn($j) =>
-                $j->on('dd_sa.id', '=', 'latest.material')
-            )
-            ->leftJoin('alm_estoque as est_sa', 'est_sa.id', '=', 'latest.max_id')
-            // Movimentações
-            ->leftJoin('mat_descricaodetalhada as dd_mov', 'dr.id', '=', 'dd_mov.descricao_resumida')
-            ->leftJoin('alm_estoque as est_mov', function ($j) use ($d) {
-                $j->on('dd_mov.id', '=', 'est_mov.material')
-                ->whereBetween('est_mov.date_time', [$d->ini, $d->fim])
-                ->whereIn('est_mov.tipo_movimentacao', [1, 2]);
-            })
+            ->selectRaw('pc.id as id_conta, pr.id as id_produto, pc.codigo as conta_contabil, pr.CodigodaClasse as cod_nat_despesa, pr.DescricaodaClasse as descricao')
             ->where('dr.id_tipo_material', '<>', 'P')
-            ->select(
-                'pc.id as id_conta',
-                'pr.id as id_produto',
-                'pc.codigo as conta_contabil',
-                'pr.CodigodaClasse as cod_nat_despesa',
-                'pr.DescricaodaClasse as descricao',
-                DB::raw('COALESCE(SUM(est_sa.valor_total_estoque), 0) as saldo_anterior'),
-                DB::raw('COALESCE(SUM(CASE WHEN est_mov.tipo_movimentacao = 1 THEN est_mov.valor_total ELSE 0 END), 0) as entradas'),
-                DB::raw('COALESCE(SUM(CASE WHEN est_mov.tipo_movimentacao = 2 THEN est_mov.valor_total ELSE 0 END), 0) as saidas')
-            )
-            ->groupBy(
-                'pc.id',
-                'pr.id',
-                'pc.codigo',
-                'pr.CodigodaClasse',
-                'pr.DescricaodaClasse'
-            );
+            ->distinct();
 
-        $this->aplicarFiltros($query, $filtros, 'pc.id', null);
+        $this->aplicarFiltros($baseQuery, $filtros, 'pc.id', null);
+        $base = $baseQuery->toBase()->get();
 
-        $dados = $query
-            ->orderBy('pc.codigo')
-            ->orderBy('pr.CodigodaClasse')
-            ->get()
-            ->map(function ($item) {
-                $item->saldo_atual = $item->saldo_anterior + $item->entradas - $item->saidas;
-                return $item;
-            });
+        $latestIds = MovimentacaoEstoque::query()->from('alm_estoque')
+            ->selectRaw('material, MAX(id) as max_id')
+            ->where('date_time', '<', $d->iniDate)
+            ->groupBy('material');
+
+        $saQuery = MovimentacaoEstoque::query()->from('alm_estoque as est')
+            ->joinSub($latestIds, 'latest', 'est.id', '=', 'latest.max_id')
+            ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
+            ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
+            ->where('dr.id_tipo_material', '<>', 'P')
+            ->selectRaw('dr.ContaContabil as id_conta, dr.id_produto, SUM(est.valor_total_estoque) as SaldoAnterior')
+            ->groupBy('dr.ContaContabil', 'dr.id_produto');
+
+        $this->aplicarFiltros($saQuery, $filtros, 'dr.ContaContabil', null);
+        $sa = $saQuery->toBase()->get()->keyBy(fn($item) => $item->id_conta . '_' . $item->id_produto);
+
+        $movQuery = MovimentacaoEstoque::query()->from('alm_estoque as est')
+            ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
+            ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
+            ->whereBetween('est.date_time', [$d->ini, $d->fim])
+            ->whereIn('est.tipo_movimentacao', [1, 2])
+            ->where('dr.id_tipo_material', '<>', 'P')
+            ->selectRaw("
+                dr.ContaContabil as id_conta,
+                dr.id_produto,
+                SUM(CASE WHEN est.tipo_movimentacao = 1 THEN est.valor_total ELSE 0 END) as ValorEntrada,
+                SUM(CASE WHEN est.tipo_movimentacao = 2 THEN est.valor_total ELSE 0 END) as ValorSaida
+            ")
+            ->groupBy('dr.ContaContabil', 'dr.id_produto');
+
+        $this->aplicarFiltros($movQuery, $filtros, 'dr.ContaContabil', null);
+        $mov = $movQuery->toBase()->get()->keyBy(fn($item) => $item->id_conta . '_' . $item->id_produto);
+
+        $dados = $base->map(function($item) use ($sa, $mov) {
+            $key = $item->id_conta . '_' . $item->id_produto;
+
+            $item->saldo_anterior = $sa->has($key) ? $sa->get($key)->SaldoAnterior : 0;
+            $item->entradas = $mov->has($key) ? $mov->get($key)->ValorEntrada : 0;
+            $item->saidas = $mov->has($key) ? $mov->get($key)->ValorSaida : 0;
+            $item->saldo_atual = $item->saldo_anterior + $item->entradas - $item->saidas;
+
+            return $item;
+        })->sortBy([['conta_contabil', 'asc'], ['cod_nat_despesa', 'asc']])->values();
 
         return $this->render('tce-tabela-14', $dados, $filtros);
     }
@@ -330,32 +367,97 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $base = DB::connection('egap')->table('mat_descricaoresumida as dr')
-            ->join('mat_planocontas as pc', 'dr.ContaContabil', '=', 'pc.id')
-            ->join('mat_produtos as pr', 'dr.id_produto', '=', 'pr.id')
-            ->select('pc.id as id_conta', 'pr.id as id_produto', 'pc.codigo as ContaContabil', 'pr.CodigodaClasse as Produto', 'pr.DescricaodaClasse as Descricao')
-            ->where('dr.id_tipo_material', '<>', 'P')
-            ->distinct();
-
-        $mov = DB::connection('egap')->table('alm_estoque as est')
+        $baseQuery = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
-            ->leftJoin('alm_notafiscal as nf', 'nf.id', '=', 'est.nota_fiscal')
-            ->select('dr.ContaContabil as id_conta', 'dr.id_produto')
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as e_compras")
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 3 THEN est.valor_total ELSE 0 END) as e_outras")
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 2 THEN est.valor_total ELSE 0 END) as s_consumo")
-            ->whereBetween('est.date_time', [$d->ini, $d->fim])
-            ->whereIn('est.tipo_movimentacao', [1, 2])
-            ->groupBy('dr.ContaContabil', 'dr.id_produto');
+            ->join('mat_planocontas as pc', 'dr.ContaContabil', '=', 'pc.id')
+            ->join('mat_produtos as pr', 'dr.id_produto', '=', 'pr.id')
+            ->where('dr.id_tipo_material', '<>', 'P')
+            ->selectRaw('
+                pc.id as id_conta,
+                pr.id as id_produto,
+                pc.codigo as conta_contabil,
+                pr.CodigodaClasse as cod_nat_despesa,
+                pr.DescricaodaClasse as descricao
+            ')
+            ->distinct();
 
-        $dados = DB::connection('egap')->query()
-            ->fromSub($base, 'conta')
-            ->leftJoinSub($mov, 'mov', fn($j) => $j->on('conta.id_conta', '=', 'mov.id_conta')->on('conta.id_produto', '=', 'mov.id_produto'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'conta.id_conta', null))
-            ->select('conta.ContaContabil as conta_contabil', 'conta.Produto as cod_nat_despesa', 'conta.Descricao as descricao', DB::raw('IFNULL(mov.e_compras, 0) as ent_compras'), DB::raw('0 as ent_doacao'), DB::raw('IFNULL(mov.e_outras, 0) as ent_outras'), DB::raw('IFNULL(mov.s_consumo, 0) as sai_consumo'), DB::raw('0 as sai_doacao'), DB::raw('0 as sai_perdas'), DB::raw('0 as sai_outras'))
-            ->orderBy('conta.ContaContabil')->orderBy('conta.Produto')->get()
-            ->map(fn($i) => (object)[... (array)$i, 'total_entradas' => $i->ent_compras + $i->ent_doacao + $i->ent_outras, 'total_saidas' => $i->sai_consumo + $i->sai_doacao + $i->sai_perdas + $i->sai_outras]);
+        $this->aplicarFiltros($baseQuery, $filtros, 'pc.id', null);
+        $baseItems = $baseQuery->toBase()->get();
+
+        $resultados = [];
+        foreach ($baseItems as $item) {
+            $key = $item->id_conta . '_' . $item->id_produto;
+            $resultados[$key] = [
+                'conta_contabil'  => $item->conta_contabil,
+                'cod_nat_despesa' => $item->cod_nat_despesa,
+                'descricao'       => $item->descricao,
+                'ent_compras'     => 0,
+                'ent_doacao'      => 0,
+                'ent_outras'      => 0,
+                'sai_consumo'     => 0,
+                'sai_doacao'      => 0,
+                'sai_perdas'      => 0,
+                'sai_outras'      => 0,
+            ];
+        }
+
+        $materiais = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
+            ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
+            ->where('dr.id_tipo_material', '<>', 'P')
+            ->selectRaw('dd.id as material, dr.ContaContabil as id_conta, dr.id_produto')
+            ->toBase()
+            ->get()
+            ->keyBy('material');
+
+        $entradas = MovimentacaoEstoque::query()->from('alm_estoque as est')
+            ->leftJoin('alm_notafiscal as nf', 'est.nota_fiscal', '=', 'nf.id')
+            ->whereBetween('est.date_time', [$d->ini, $d->fim])
+            ->where('est.tipo_movimentacao', 1)
+            ->selectRaw("
+                est.material,
+                SUM(CASE WHEN nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as e_compras,
+                SUM(CASE WHEN nf.tipo_documento = 3 THEN est.valor_total ELSE 0 END) as e_outras
+            ")
+            ->groupBy('est.material')
+            ->toBase()
+            ->get();
+
+        $saidas = MovimentacaoEstoque::query()->from('alm_estoque as est')
+            ->whereBetween('est.date_time', [$d->ini, $d->fim])
+            ->where('est.tipo_movimentacao', 2)
+            ->selectRaw("est.material, SUM(est.valor_total) as s_consumo")
+            ->groupBy('est.material')
+            ->toBase()
+            ->get();
+
+        foreach ($entradas as $ent) {
+            if ($materiais->has($ent->material)) {
+                $mat = $materiais->get($ent->material);
+                $key = $mat->id_conta . '_' . $mat->id_produto;
+                if (isset($resultados[$key])) {
+                    $resultados[$key]['ent_compras'] += (float) $ent->e_compras;
+                    $resultados[$key]['ent_outras']  += (float) $ent->e_outras;
+                }
+            }
+        }
+
+        foreach ($saidas as $sai) {
+            if ($materiais->has($sai->material)) {
+                $mat = $materiais->get($sai->material);
+                $key = $mat->id_conta . '_' . $mat->id_produto;
+                if (isset($resultados[$key])) {
+                    $resultados[$key]['sai_consumo'] += (float) $sai->s_consumo;
+                }
+            }
+        }
+
+        $dados = collect($resultados)->map(function($item) {
+            $obj = (object) $item;
+            $obj->total_entradas = $obj->ent_compras + $obj->ent_doacao + $obj->ent_outras;
+            $obj->total_saidas   = $obj->sai_consumo + $obj->sai_doacao + $obj->sai_perdas + $obj->sai_outras;
+            return $obj;
+        })->values();
 
         return $this->render('tce-tabela-15', $dados, $filtros);
     }
@@ -364,35 +466,55 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $base = DB::connection('egap')->table('alm_estoque as est')
+        $base = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->join('mat_planocontas as pc', 'dr.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as pr', 'dr.id_produto', '=', 'pr.id')
-            ->select('pc.id as id_conta', 'pr.id as id_produto', 'pc.codigo as ContaContabil', 'pr.CodigodaClasse as Produto', 'pr.DescricaodaClasse as Descricao')
+            ->selectRaw('pc.id as id_conta, pr.id as id_produto, pc.codigo as ContaContabil, pr.CodigodaClasse as Produto, pr.DescricaodaClasse as Descricao')
             ->where('dr.id_tipo_material', '=', 'P')->distinct();
 
-        $sa = DB::connection('egap')->table('alm_estoque as est')
+        $sa = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
-            ->joinSub(DB::connection('egap')->table('alm_estoque')->select(DB::raw('MAX(id) as id'), 'material')->where('date_time', '<', $d->iniDate)->groupBy('material'), 'ult', 'est.id', '=', 'ult.id')
-            ->select('dr.ContaContabil as id_conta', 'dr.id_produto', DB::raw('SUM(est.valor_total_estoque) as SaldoAnterior'))->groupBy('dr.ContaContabil', 'dr.id_produto');
+            ->joinSub(MovimentacaoEstoque::query()->selectRaw('MAX(id) as id, material')->where('date_time', '<', $d->iniDate)
+                ->groupBy('material'), 'ult', 'est.id', '=', 'ult.id')
+            ->selectRaw('dr.ContaContabil as id_conta, dr.id_produto, SUM(est.valor_total_estoque) as SaldoAnterior')
+            ->groupBy('dr.ContaContabil', 'dr.id_produto');
 
-        $mov = DB::connection('egap')->table('alm_estoque as est')
+        $mov = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
-            ->select('dr.ContaContabil as id_conta', 'dr.id_produto')
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 1 THEN est.valor_total ELSE 0 END) as ValorEntrada")
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 2 THEN est.valor_total ELSE 0 END) as ValorSaida")
-            ->whereBetween('est.date_time', [$d->ini, $d->fim])->whereIn('est.tipo_movimentacao', [1, 2])->groupBy('dr.ContaContabil', 'dr.id_produto');
+            ->whereBetween('est.date_time', [$d->ini, $d->fim])
+            ->whereIn('est.tipo_movimentacao', [1, 2])
+            ->selectRaw("
+                dr.ContaContabil as id_conta,
+                dr.id_produto,
+                SUM(CASE WHEN est.tipo_movimentacao = 1 THEN est.valor_total ELSE 0 END) as ValorEntrada,
+                SUM(CASE WHEN est.tipo_movimentacao = 2 THEN est.valor_total ELSE 0 END) as ValorSaida
+            ")
+            ->groupBy('dr.ContaContabil', 'dr.id_produto');
 
-        $dados = DB::connection('egap')->query()->fromSub($base, 'conta')
+        $dados = ContaContabil::query()->fromSub($base, 'conta')
             ->leftJoinSub($sa, 'sa', fn($j) => $j->on('conta.id_conta', '=', 'sa.id_conta')->on('conta.id_produto', '=', 'sa.id_produto'))
             ->leftJoinSub($mov, 'mov', fn($j) => $j->on('conta.id_conta', '=', 'mov.id_conta')->on('conta.id_produto', '=', 'mov.id_produto'))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'conta.id_conta', null))
-            ->select('conta.ContaContabil as conta_contabil', 'conta.Produto as cod_nat_despesa', 'conta.Descricao as descricao', DB::raw('IFNULL(sa.SaldoAnterior, 0) as saldo_anterior'), DB::raw('IFNULL(mov.ValorEntrada, 0) as entradas'), DB::raw('IFNULL(mov.ValorSaida, 0) as saidas'))
-            ->orderBy('conta.ContaContabil')->orderBy('conta.Produto')->get()
-            ->map(fn($i) => (object)[... (array)$i, 'saldo_atual' => $i->saldo_anterior + $i->entradas - $i->saidas]);
+            ->selectRaw('
+                conta.ContaContabil as conta_contabil,
+                conta.Produto as cod_nat_despesa,
+                conta.Descricao as descricao,
+                IFNULL(sa.SaldoAnterior, 0) as saldo_anterior,
+                IFNULL(mov.ValorEntrada, 0) as entradas,
+                IFNULL(mov.ValorSaida, 0) as saidas
+            ')
+            ->orderBy('conta.ContaContabil')
+            ->orderBy('conta.Produto')
+            ->toBase()
+            ->get()
+            ->map(function($i) {
+                $i->saldo_atual = $i->saldo_anterior + $i->entradas - $i->saidas;
+                return $i;
+            });
 
         return $this->render('tce-tabela-16', $dados, $filtros);
     }
@@ -401,31 +523,91 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $base = DB::connection('egap')->table('alm_estoque as est')
+        $baseQuery = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->join('mat_planocontas as pc', 'dr.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as pr', 'dr.id_produto', '=', 'pr.id')
-            ->select('pc.id as id_conta', 'pr.id as id_produto', 'pc.codigo as ContaContabil', 'pr.CodigodaClasse as Produto', 'pr.DescricaodaClasse as Descricao')
-            ->where('dr.id_tipo_material', '=', 'P')->distinct();
+            ->where('dr.id_tipo_material', '=', 'P')
+            ->selectRaw('
+                pc.id as id_conta,
+                pr.id as id_produto,
+                pc.codigo as conta_contabil,
+                pr.CodigodaClasse as cod_nat_despesa,
+                pr.DescricaodaClasse as descricao
+            ')
+            ->distinct();
 
-        $mov = DB::connection('egap')->table('alm_estoque as est')
-            ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
+        $this->aplicarFiltros($baseQuery, $filtros, 'pc.id', null);
+        $baseItems = $baseQuery->toBase()->get();
+
+        $resultados = [];
+        foreach ($baseItems as $item) {
+            $key = $item->id_conta . '_' . $item->id_produto;
+            $resultados[$key] = [
+                'conta_contabil'  => $item->conta_contabil,
+                'cod_nat_despesa' => $item->cod_nat_despesa,
+                'descricao'       => $item->descricao,
+                'ent_compras'     => 0,
+                'ent_doacao'      => 0,
+                'ent_outras'      => 0,
+                'sai_consumo'     => 0,
+                'sai_doacao'      => 0,
+                'sai_perdas'      => 0,
+                'sai_outras'      => 0,
+            ];
+        }
+
+        $materiais = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
-            ->leftJoin('alm_notafiscal as nf', 'nf.id', '=', 'est.nota_fiscal')
-            ->select('dr.ContaContabil as id_conta', 'dr.id_produto')
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as e_compras")
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 2 THEN est.valor_total ELSE 0 END) as e_doacao")
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 2 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as s_consumo")
-            ->selectRaw("SUM(CASE WHEN est.tipo_movimentacao = 2 AND nf.tipo_documento = 2 THEN est.valor_total ELSE 0 END) as s_doacao")
-            ->whereBetween('est.date_time', [$d->ini, $d->fim])->whereIn('est.tipo_movimentacao', [1, 2])->groupBy('dr.ContaContabil', 'dr.id_produto');
+            ->where('dr.id_tipo_material', '=', 'P')
+            ->selectRaw('dd.id as material, dr.ContaContabil as id_conta, dr.id_produto')
+            ->toBase()
+            ->get()
+            ->keyBy('material');
 
-        $dados = DB::connection('egap')->query()->fromSub($base, 'conta')
-            ->leftJoinSub($mov, 'mov', fn($j) => $j->on('conta.id_conta', '=', 'mov.id_conta')->on('conta.id_produto', '=', 'mov.id_produto'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'conta.id_conta', null))
-            ->select('conta.ContaContabil as conta_contabil', 'conta.Produto as cod_nat_despesa', 'conta.Descricao as descricao', DB::raw('IFNULL(mov.e_compras, 0) as ent_compras'), DB::raw('IFNULL(mov.e_doacao, 0) as ent_doacao'), DB::raw('0 as ent_outras'), DB::raw('IFNULL(mov.s_consumo, 0) as sai_consumo'), DB::raw('IFNULL(mov.s_doacao, 0) as sai_doacao'), DB::raw('0 as sai_perdas'), DB::raw('0 as sai_outras'))
-            ->orderBy('conta.ContaContabil')->orderBy('conta.Produto')->get()
-            ->map(fn($i) => (object)[... (array)$i, 'total_entradas' => $i->ent_compras, 'total_saidas' => $i->sai_consumo]);
+        $movimentacoes = MovimentacaoEstoque::query()->from('alm_estoque as est')
+            ->leftJoin('alm_notafiscal as nf', 'est.nota_fiscal', '=', 'nf.id')
+            ->whereBetween('est.date_time', [$d->ini, $d->fim])
+            ->whereIn('est.tipo_movimentacao', [1, 2])
+            ->selectRaw("
+                est.material,
+                SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as e_compras,
+                SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 2 THEN est.valor_total ELSE 0 END) as e_doacao,
+                SUM(CASE WHEN est.tipo_movimentacao = 2 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as s_consumo,
+                SUM(CASE WHEN est.tipo_movimentacao = 2 AND nf.tipo_documento = 2 THEN est.valor_total ELSE 0 END) as s_doacao
+            ")
+            ->groupBy('est.material')
+            ->toBase()
+            ->get();
+
+        foreach ($movimentacoes as $mov) {
+            if ($materiais->has($mov->material)) {
+                $mat = $materiais->get($mov->material);
+                $key = $mat->id_conta . '_' . $mat->id_produto;
+
+                if (isset($resultados[$key])) {
+                    $resultados[$key]['ent_compras'] += (float) $mov->e_compras;
+                    $resultados[$key]['ent_doacao']  += (float) $mov->e_doacao;
+                    $resultados[$key]['sai_consumo'] += (float) $mov->s_consumo;
+                    $resultados[$key]['sai_doacao']  += (float) $mov->s_doacao;
+                }
+            }
+        }
+
+        $dados = collect($resultados)->map(function($item) {
+
+            $obj = (object) $item;
+            $obj->total_entradas = $obj->ent_compras;
+            $obj->total_saidas   = $obj->sai_consumo;
+
+            return $obj;
+        })->sortBy([
+            ['conta_contabil', 'asc'],
+            ['cod_nat_despesa', 'asc']
+        ])->values();
+
+        return $this->render('tce-tabela-17', $dados, $filtros);
 
         return $this->render('tce-tabela-17', $dados, $filtros);
     }
@@ -435,31 +617,48 @@ class ReportRelatoriosGeraisController extends Controller
         $d = $this->getPeriodo($filtros);
         $val = "IF(p.DatadeIncorporacao < '2015-01-01 00:00:01', ROUND(p.ValordaReavaliacao,4), ROUND(p.ValorAquisicao,4))";
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as p')
+        $dados = BemMovel::query()->from('mat_patrimonio as p')
             ->leftJoin('mat_descricaoresumida as dr', 'p.DescricaoResumidadoBem', '=', 'dr.id')
             ->leftJoin('mat_planocontas as pc', 'p.ContaContabil', '=', 'pc.id')
             ->join('mat_situacao as s', 'p.SituacaoBem', '=', 's.id')
             ->leftJoin('mat_setores as set', 'p.Setor', '=', 'set.id')
             ->leftJoin('mat_marca as m', 'p.Marca', '=', 'm.id')
             ->leftJoin('mat_modelo as mod', 'p.Modelo', '=', 'mod.id')
-            ->select('pc.codigo as conta_contabil', 'p.NumPatrimonio as patrimonio', 'dr.Descricao as descricao', 'm.Descricao as marca', 'mod.descricao as modelo', 'p.DatadeIncorporacao as data_incorporacao', DB::raw("$val as valor"), 'p.FormaAquisicao as forma_aquisicao', 's.descricao as situacao', 'set.setor')
-            ->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])->whereNotIn('p.SituacaoBem', [8, 9])
+            ->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])
+            ->whereNotIn('p.SituacaoBem', [8, 9])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
             ->when($filtros['unidade_gestora'] ?? 'Todos', fn($q, $v) => $v !== 'Todos' ? $q->where('p.unidade_gestora', $v) : null)
-            ->orderBy('pc.codigo')->orderBy('p.NumPatrimonio')->get();
+            ->selectRaw(" pc.codigo as conta_contabil, p.NumPatrimonio as patrimonio, dr.Descricao as descricao, m.Descricao as marca, mod.descricao as modelo,
+                p.DatadeIncorporacao as data_incorporacao, $val as valor, p.FormaAquisicao as forma_aquisicao, s.descricao as situacao, set.setor")
+            ->orderBy('pc.codigo')
+            ->orderBy('p.NumPatrimonio')
+            ->toBase()
+            ->get();
 
-        return $this->render('bens-incorporados', null, $filtros, ['dadosAgrupados' => $dados->groupBy('conta_contabil')]);
+        return $this->render('bens-incorporados', null, $filtros, [
+            'dadosAgrupados' => $dados->groupBy('conta_contabil')
+        ]);
     }
 
     private function gerarBensBaixados($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $subDepAcum = DB::connection('egap')->table('mat_depreciacao as d')->whereColumn('d.patrimonio', 'p.id')->whereRaw("DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y')")->select('d.depreciacao_acumulada')->limit(1);
-        $subValorLiq = DB::connection('egap')->table('mat_depreciacao as d')->whereColumn('d.patrimonio', 'p.id')->whereRaw("DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y')")->select('d.valor_liquido_contabil')->limit(1);
+        $subDepAcum = DepreciacaoBemMovel::query()->from('mat_depreciacao as d')
+            ->whereColumn('d.patrimonio', 'p.id')
+            ->whereRaw("DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y')")
+            ->select('d.depreciacao_acumulada')
+            ->limit(1);
+
+        $subValorLiq = DepreciacaoBemMovel::query()->from('mat_depreciacao as d')
+            ->whereColumn('d.patrimonio', 'p.id')
+            ->whereRaw("DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y')")
+            ->select('d.valor_liquido_contabil')
+            ->limit(1);
+
         $valBruto = "IF(p.DatadeIncorporacao < '2015-01-01 00:00:00', p.ValordaReavaliacao, p.ValorAquisicao)";
 
-        $dados = DB::connection('egap')->table('mat_itembaixa as ib')
+        $dados = BemMovel::query()->from('mat_itembaixa as ib')
             ->join('mat_baixa as b', 'ib.id_baixa', '=', 'b.id')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
             ->join('mat_planocontas as pc', 'p.ContaContabil', '=', 'pc.id')
@@ -467,16 +666,34 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_descricaoresumida as dr', 'p.DescricaoResumidadoBem', '=', 'dr.id')
             ->leftJoin('mat_marca as ma', 'p.Marca', '=', 'ma.id')
             ->leftJoin('mat_modelo as mo', 'p.Modelo', '=', 'mo.id')
-            ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6])
+            ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])
+            ->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->select('b.NumeroProcesso as processo', 'b.Requisitante as requisitante', 'b.RequisitanteCnpj as cnpj', 'b.DataBaixa as data_baixa_processo', 'b.Observacao as observacao', 'b.Endereco as endereco', 'pc.codigo as conta_contabil', 'p.NumPatrimonio as patrimonio', 'dr.Descricao as descricao', 'ma.Descricao as marca', 'mo.descricao as modelo', DB::raw("$valBruto as valor_bruto"), 'p.ValordaReavaliacao as valor_reavaliacao', 's.descricao as situacao')
-            ->selectSub($subDepAcum, 'depreciacao_acumulada')->selectSub($subValorLiq, 'valor_liquido_calc')
-            ->orderBy('b.NumeroProcesso')->orderBy('pc.codigo')->orderBy('p.NumPatrimonio')->get()
-            ->map(fn($item) => (object)[... (array)$item, 'depreciacao_acumulada' => $item->depreciacao_acumulada ?? 0, 'valor_liquido' => $item->valor_liquido_calc ?? $item->valor_reavaliacao]);
+            ->selectRaw("
+                b.NumeroProcesso as processo, b.Requisitante as requisitante, b.RequisitanteCnpj as cnpj, b.DataBaixa as data_baixa_processo, b.Observacao as observacao,
+                b.Endereco as endereco, pc.codigo as conta_contabil, p.NumPatrimonio as patrimonio, dr.Descricao as descricao, ma.Descricao as marca, mo.descricao as modelo,
+                $valBruto as valor_bruto, p.ValordaReavaliacao as valor_reavaliacao, s.descricao as situacao")
+            ->selectSub($subDepAcum, 'depreciacao_acumulada')
+            ->selectSub($subValorLiq, 'valor_liquido_calc')
+            ->orderBy('b.NumeroProcesso')
+            ->orderBy('pc.codigo')
+            ->orderBy('p.NumPatrimonio')
+            ->toBase()
+            ->get()
+            ->map(fn($item) => (object)[... (array)$item,
+                'depreciacao_acumulada' => $item->depreciacao_acumulada ?? 0,
+                'valor_liquido' => $item->valor_liquido_calc ?? $item->valor_reavaliacao
+            ]);
 
         return $this->render('bens-baixados', null, $filtros, [
             'agrupadoPorProcesso' => $dados->groupBy('processo'),
-            'resumoFinal' => $dados->groupBy(fn($i) => $i->conta_contabil . '|' . $i->processo)->map(fn($group) => (object) ['conta_contabil' => $group->first()->conta_contabil, 'processo' => $group->first()->processo, 'valor_bruto' => $group->sum('valor_bruto'), 'valor_liquido' => $group->sum('valor_liquido'), 'depreciacao_acumulada' => $group->sum('depreciacao_acumulada')])->sortBy('conta_contabil')->values()
+            'resumoFinal' => $dados->groupBy(fn($i) => $i->conta_contabil . '|' . $i->processo)->map(fn($group) => (object) [
+                'conta_contabil'        => $group->first()->conta_contabil,
+                'processo'              => $group->first()->processo,
+                'valor_bruto'           => $group->sum('valor_bruto'),
+                'valor_liquido'         => $group->sum('valor_liquido'),
+                'depreciacao_acumulada' => $group->sum('depreciacao_acumulada')
+            ])->sortBy('conta_contabil')->values()
         ]);
     }
 
@@ -484,13 +701,21 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('mat_baixa as b')
+        $dados = BemMovel::query()->from('mat_baixa as b')
             ->join('mat_itembaixa as ib', 'b.id', '=', 'ib.id_baixa')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
             ->whereBetween('b.DataBaixa', [$d->ini, $d->fim])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->select('p.ProcessoBaixa as processo', DB::raw('COUNT(ib.id) as quantidade'), DB::raw('SUM(p.ValorAquisicao) as valor_aquisicao'), DB::raw('SUM(p.ValordaReavaliacao) as valor_reavaliado'))
-            ->groupBy('p.ProcessoBaixa')->orderBy('p.ProcessoBaixa')->get();
+            ->selectRaw("
+                p.ProcessoBaixa as processo,
+                COUNT(ib.id) as quantidade,
+                SUM(p.ValorAquisicao) as valor_aquisicao,
+                SUM(p.ValordaReavaliacao) as valor_reavaliado
+            ")
+            ->groupBy('p.ProcessoBaixa')
+            ->orderBy('p.ProcessoBaixa')
+            ->toBase()
+            ->get();
 
         return $this->render('bens-baixados-por-processo', $dados, $filtros);
     }
@@ -499,14 +724,28 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as p')
+        $dados = BemMovel::query()->from('mat_patrimonio as p')
             ->join('mat_planocontas as pc', 'p.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as pr', 'p.Produto', '=', 'pr.id')
-            ->select('pc.codigo as conta_contabil', 'pr.CodigodaClasse as cod_nat_despesa', 'pr.DescricaodaClasse as descricao', DB::raw("SUM(CASE WHEN p.DatadaReavaliacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND p.SituacaoBem NOT IN (8,9) THEN ROUND(p.ValorAquisicao, 4) ELSE 0 END) as valor_historico"), DB::raw("SUM(CASE WHEN p.DatadaReavaliacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND p.SituacaoBem NOT IN (8,9) THEN p.ValordaReavaliacao ELSE 0 END) as valor_reavaliado"))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'p.situacao_contabil'))
+            ->selectRaw("
+                pc.codigo as conta_contabil,
+                pr.CodigodaClasse as cod_nat_despesa,
+                pr.DescricaodaClasse as descricao,
+                SUM(CASE WHEN p.DatadaReavaliacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND p.SituacaoBem NOT IN (8,9) THEN ROUND(p.ValorAquisicao, 4) ELSE 0 END)
+                as valor_historico,
+                SUM(CASE WHEN p.DatadaReavaliacao BETWEEN '{$d->ini}' AND '{$d->fim}' AND p.SituacaoBem NOT IN (8,9) THEN p.ValordaReavaliacao ELSE 0 END)
+                as valor_reavaliado
+            ")
             ->groupBy('pc.id', 'pr.id', 'pc.codigo', 'pr.CodigodaClasse', 'pr.DescricaodaClasse')
-            ->orderBy('pc.codigo')->orderBy('pr.CodigodaClasse')->get()
-            ->map(fn($item) => (object)[... (array)$item, 'perda_depreciacao' => $item->valor_reavaliado - $item->valor_historico]);
+            ->orderBy('pc.codigo')
+            ->orderBy('pr.CodigodaClasse')
+            ->toBase()
+            ->get()
+            ->map(function($item) {
+                $item->perda_depreciacao = $item->valor_reavaliado - $item->valor_historico;
+                return $item;
+            });
 
         return $this->render('bens-conciliados', $dados, $filtros);
     }
@@ -515,12 +754,17 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as p')
+        $dados = BemMovel::query()->from('mat_patrimonio as p')
             ->leftJoin('mat_planocontas as c', 'p.ContaContabil', '=', 'c.id')
             ->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->select('c.codigo as conta_contabil', 'p.NumPatrimonio as patrimonio', 'p.DatadeIncorporacao as data_aquisicao', 'p.ValorAquisicao as valor_entrada', DB::raw('(IFNULL(p.VidaUtilSIAFi, 0) - IFNULL(p.UtilizacaodoBemMeses, 0)) as vida_util_remanescente'), 'p.DataDisponibilizacao as data_disponibilidade', 'p.Valor as valor_liquido_contabil', 'p.ValorResidual as valor_residual', 'p.ValordaReavaliacao as valor_reavaliado')
-            ->orderBy('c.codigo')->orderBy('p.NumPatrimonio')->get();
+            ->selectRaw("c.codigo as conta_contabil, p.NumPatrimonio as patrimonio, p.DatadeIncorporacao as data_aquisicao, p.ValorAquisicao as valor_entrada,
+                (IFNULL(p.VidaUtilSIAFi, 0) - IFNULL(p.UtilizacaodoBemMeses, 0)) as vida_util_remanescente, p.DataDisponibilizacao as data_disponibilidade,
+                p.Valor as valor_liquido_contabil, p.ValorResidual as valor_residual, p.ValordaReavaliacao as valor_reavaliado")
+            ->orderBy('c.codigo')
+            ->orderBy('p.NumPatrimonio')
+            ->toBase()
+            ->get();
 
         return $this->render('analitico-contabil', $dados, $filtros);
     }
@@ -529,32 +773,60 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $subValor = DB::connection('egap')->table('mat_patrimonio as p')
-            ->select('p.ContaContabil', 'p.Produto')->selectRaw("SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor")
+        $subValor = BemMovel::query()->from('mat_patrimonio as p')
             ->whereRaw("p.SituacaoBem NOT IN (8,9)")
-            ->where(fn($q) => $q->where(fn($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1,7]))->orWhere(fn($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2,3,4,5,6]))->orWhere(fn($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])))
+            ->where(fn($q) => $q
+                ->where(fn($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1,7]))
+                ->orWhere(fn($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2,3,4,5,6]))
+                ->orWhere(fn($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim]))
+            )
+            ->selectRaw("
+                p.ContaContabil,
+                p.Produto,
+                SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor
+            ")
             ->groupBy('p.ContaContabil', 'p.Produto');
 
-        $subDep = DB::connection('egap')->table('mat_depreciacao as d')
+        $subDep = DepreciacaoBemMovel::query()->from('mat_depreciacao as d')
             ->join('mat_patrimonio as p', 'd.patrimonio', '=', 'p.id')
-            ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])->where('d.item', '>', 1)
-            ->groupBy('p.ContaContabil', 'p.Produto')
-            ->select('p.ContaContabil', 'p.Produto', DB::raw('SUM(d.valor_residual) as valor_residual'), DB::raw('SUM(d.depreciacao_mensal) as depreciacao_mensal'), DB::raw('SUM(d.depreciacao_acumulada) as depreciacao_acumulada'));
+            ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
+            ->where('d.item', '>', 1)
+            ->selectRaw("
+                p.ContaContabil,
+                p.Produto,
+                SUM(d.valor_residual) as valor_residual,
+                SUM(d.depreciacao_mensal) as depreciacao_mensal,
+                SUM(d.depreciacao_acumulada) as depreciacao_acumulada
+            ")
+            ->groupBy('p.ContaContabil', 'p.Produto');
 
-        $subSaidas = DB::connection('egap')->table('mat_itembaixa as ib')
+        $subSaidas = BemMovel::query()->from('mat_itembaixa as ib')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
-            ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])->whereIn('p.SituacaoBem', [2,3,4,5,6])->groupBy('p.ContaContabil', 'p.Produto')
-            ->select('p.ContaContabil', 'p.Produto', DB::raw("SUM(IFNULL((SELECT d.depreciacao_acumulada FROM mat_depreciacao d WHERE d.patrimonio = p.id AND DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y') LIMIT 1), 0)) as dep_acumulada_saidas"));
+            ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])
+            ->whereIn('p.SituacaoBem', [2,3,4,5,6])
+            ->selectRaw("
+                p.ContaContabil,
+                p.Produto,
+                SUM(IFNULL((SELECT d.depreciacao_acumulada FROM mat_depreciacao d WHERE d.patrimonio = p.id AND DATE_FORMAT(d.data_calculo,'%m%Y') =
+                DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y') LIMIT 1), 0)) as dep_acumulada_saidas
+            ")
+            ->groupBy('p.ContaContabil', 'p.Produto');
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as pat')
+        $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->join('mat_planocontas as pc', 'pat.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as prod', 'pat.Produto', '=', 'prod.id')
             ->leftJoinSub($subValor, 'v', fn($j) => $j->on('pc.id', '=', 'v.ContaContabil')->on('prod.id', '=', 'v.Produto'))
             ->leftJoinSub($subDep, 'd', fn($j) => $j->on('pc.id', '=', 'd.ContaContabil')->on('prod.id', '=', 'd.Produto'))
             ->leftJoinSub($subSaidas, 'ds', fn($j) => $j->on('pc.id', '=', 'ds.ContaContabil')->on('prod.id', '=', 'ds.Produto'))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
-            ->select('pc.codigo as conta_contabil', 'prod.CodigodaClasse as cod_nat_despesa', 'prod.DescricaodaClasse as descricao', DB::raw('IFNULL(v.valor, 0) as valor_base'), DB::raw('IFNULL(d.valor_residual, 0) as valor_residual'), DB::raw('IFNULL(d.depreciacao_mensal, 0) as dep_mensal'), DB::raw('IFNULL(d.depreciacao_acumulada, 0) as dep_acumulada'), DB::raw('(IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0)) as valor_liquido'), DB::raw('IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas'))
-            ->distinct()->orderBy('pc.codigo')->orderBy('prod.CodigodaClasse')->get();
+            ->selectRaw("pc.codigo as conta_contabil, prod.CodigodaClasse as cod_nat_despesa, prod.DescricaodaClasse as descricao, IFNULL(v.valor, 0) as valor_base,
+                IFNULL(d.valor_residual, 0) as valor_residual, IFNULL(d.depreciacao_mensal, 0) as dep_mensal, IFNULL(d.depreciacao_acumulada, 0) as dep_acumulada,
+                (IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0)) as valor_liquido, IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas")
+            ->distinct()
+            ->orderBy('pc.codigo')
+            ->orderBy('prod.CodigodaClasse')
+            ->toBase()
+            ->get();
 
         return $this->render('depreciacao-mensal', $dados, $filtros);
     }
@@ -563,24 +835,37 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $subValor = DB::connection('egap')->table('mat_patrimonio as p')
-            ->select('p.ContaContabil', 'p.Produto', 'p.Setor')->selectRaw("SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor")
+        $subValor = BemMovel::query()->from('mat_patrimonio as p')
             ->whereRaw("p.SituacaoBem NOT IN (8,9)")
-            ->where(fn($q) => $q->where(fn($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1,7]))->orWhere(fn($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2,3,4,5,6]))->orWhere(fn($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])))
+            ->where(fn($q) => $q
+                ->where(fn($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1,7]))
+                ->orWhere(fn($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2,3,4,5,6]))
+                ->orWhere(fn($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim]))
+            )
+            ->selectRaw("
+                p.ContaContabil, p.Produto, p.Setor, SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor"
+            )
             ->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor');
 
-        $subDep = DB::connection('egap')->table('mat_depreciacao as d')
+        $subDep = DepreciacaoBemMovel::query()->from('mat_depreciacao as d')
             ->join('mat_patrimonio as p', 'd.patrimonio', '=', 'p.id')
-            ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])->where('d.item', '>', 1)
-            ->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor')
-            ->select('p.ContaContabil', 'p.Produto', 'p.Setor', DB::raw('SUM(d.valor_residual) as valor_residual'), DB::raw('SUM(d.depreciacao_mensal) as depreciacao_mensal'), DB::raw('SUM(d.depreciacao_acumulada) as depreciacao_acumulada'));
+            ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
+            ->where('d.item', '>', 1)
+            ->selectRaw("p.ContaContabil, p.Produto, p.Setor, SUM(d.valor_residual) as valor_residual, SUM(d.depreciacao_mensal) as depreciacao_mensal,
+                SUM(d.depreciacao_acumulada) as depreciacao_acumulada
+            ")
+            ->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor');
 
-        $subSaidas = DB::connection('egap')->table('mat_itembaixa as ib')
+        $subSaidas = BemMovel::query()->from('mat_itembaixa as ib')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
-            ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])->whereIn('p.SituacaoBem', [2,3,4,5,6])->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor')
-            ->select('p.ContaContabil', 'p.Produto', 'p.Setor', DB::raw("SUM(IFNULL((SELECT d.depreciacao_acumulada FROM mat_depreciacao d WHERE d.patrimonio = p.id AND DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y') LIMIT 1), 0)) as dep_acumulada_saidas"));
+            ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])
+            ->whereIn('p.SituacaoBem', [2,3,4,5,6])
+            ->selectRaw("p.ContaContabil, p.Produto, p.Setor, SUM(IFNULL((SELECT d.depreciacao_acumulada FROM mat_depreciacao d WHERE d.patrimonio = p.id AND
+                DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y') LIMIT 1), 0)) as dep_acumulada_saidas
+            ")
+            ->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor');
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as pat')
+        $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->join('mat_planocontas as pc', 'pat.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as prod', 'pat.Produto', '=', 'prod.id')
             ->join('mat_setores as s', 'pat.Setor', '=', 's.id')
@@ -590,86 +875,168 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($subSaidas, 'ds', fn($j) => $j->on('pc.id', '=', 'ds.ContaContabil')->on('prod.id', '=', 'ds.Produto')->on('pat.Setor', '=', 'ds.Setor'))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
             ->when($filtros['centro_custo'] ?? null, fn($q, $v) => $q->where('cc.codigo', $v))
-            ->select('cc.codigo as cc_codigo', 'cc.descricao as cc_descricao', 'pc.codigo as conta_contabil', 'prod.item_patrimonial', 'prod.CodigodaClasse as cod_nat_despesa', 'prod.DescricaodaClasse as descricao', DB::raw('IFNULL(v.valor, 0) as valor_base'), DB::raw('IFNULL(d.valor_residual, 0) as valor_residual'), DB::raw('IFNULL(d.depreciacao_mensal, 0) as dep_mensal'), DB::raw('IFNULL(d.depreciacao_acumulada, 0) as dep_acumulada'), DB::raw('(IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0)) as valor_liquido'), DB::raw('IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas'))
-            ->distinct()->orderBy('cc.codigo')->orderBy('pc.codigo')->orderBy('prod.CodigodaClasse')->get();
+            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, prod.item_patrimonial, prod.CodigodaClasse as cod_nat_despesa,
+                prod.DescricaodaClasse as descricao, IFNULL(v.valor, 0) as valor_base, IFNULL(d.valor_residual, 0) as valor_residual,
+                IFNULL(d.depreciacao_mensal, 0) as dep_mensal, IFNULL(d.depreciacao_acumulada, 0) as dep_acumulada, (IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0))
+                as valor_liquido, IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas
+            ")
+            ->distinct()
+            ->orderBy('cc.codigo')
+            ->orderBy('pc.codigo')
+            ->orderBy('prod.CodigodaClasse')
+            ->toBase()
+            ->get();
 
-        return $this->render('depreciacao-mensal-cc', null, $filtros, ['dadosAgrupados' => $dados->groupBy(fn($i) => $i->cc_codigo . ' ' . $i->cc_descricao)]);
+        return $this->render('depreciacao-mensal-cc', null, $filtros, [
+            'dadosAgrupados' => $dados->groupBy(fn($i) => $i->cc_codigo . ' ' . $i->cc_descricao)
+        ]);
     }
 
     private function gerarBensPatrimoniais($filtros)
     {
-        $dados = DB::connection('egap')->table('mat_patrimonio as p')
-            ->leftJoin('mat_marca as ma', 'p.Marca', '=', 'ma.id')->leftJoin('mat_modelo as mo', 'p.Modelo', '=', 'mo.id')
-            ->leftJoin('mat_setores as se', 'p.Setor', '=', 'se.id')->leftJoin('mat_fornecedor as fo', 'p.Fornecedor', '=', 'fo.id')
+        $dados = BemMovel::query()->from('mat_patrimonio as p')
+            ->leftJoin('mat_marca as ma', 'p.Marca', '=', 'ma.id')
+            ->leftJoin('mat_modelo as mo', 'p.Modelo', '=', 'mo.id')
+            ->leftJoin('mat_setores as se', 'p.Setor', '=', 'se.id')
+            ->leftJoin('mat_fornecedor as fo', 'p.Fornecedor', '=', 'fo.id')
             ->leftJoin('mat_descricaoresumida as de', 'p.DescricaoResumidadoBem', '=', 'de.id')
-            ->select('p.NumPatrimonio as patrimonio', 'p.Descricao as descricao', 'ma.Descricao as marca', 'mo.descricao as modelo', 'se.Setor as setor', 'p.numero_processo as processo', 'p.NotaFiscal as nota_fiscal', 'p.ValorAquisicao as valor_aquisicao', 'p.DatadeIncorporacao as data_incorporacao', 'fo.NomeFornecedor as fornecedor', 'p.grupo', 'de.Descricao as desc_resumida')
             ->when($filtros['numero_processo'] ?? null, fn($q, $v) => $q->where('p.numero_processo', $v))
             ->when($filtros['nota_fiscal'] ?? null, fn($q, $v) => $q->where('p.NotaFiscal', $v))
             ->when($filtros['acuracia'] ?? null, fn($q, $v) => $q->where('p.acuracia', $v))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, null, 'p.situacao_contabil'))
-            ->when($filtros['grupo'] ?? null, fn($q, $v) => $v === 'A' ? $q->where(fn($sq) => $sq->whereNotIn('p.grupo', ['B', 'C', 'D', 'E'])->orWhereNull('p.grupo')) : $q->where('p.grupo', $v))
-            ->orderBy('se.Setor')->orderBy('p.NumPatrimonio')->get()
+            ->when($filtros['grupo'] ?? null, fn($q, $v) => $v === 'A'
+                ? $q->where(fn($sq) => $sq->whereNotIn('p.grupo', ['B', 'C', 'D', 'E'])->orWhereNull('p.grupo'))
+                : $q->where('p.grupo', $v))
+            ->selectRaw("p.NumPatrimonio as patrimonio, p.Descricao as descricao, ma.Descricao as marca, mo.descricao as modelo, se.Setor as setor,
+                p.numero_processo as processo, p.NotaFiscal as nota_fiscal, p.ValorAquisicao as valor_aquisicao, p.DatadeIncorporacao as data_incorporacao,
+                fo.NomeFornecedor as fornecedor, p.grupo, de.Descricao as desc_resumida"
+            )
+            ->orderBy('se.Setor')
+            ->orderBy('p.NumPatrimonio')
+            ->toBase()
+            ->get()
             ->map(function($i) {
                 $g = $i->grupo;
-                if ($g === 'B') $i->grupo_desc = 'Inventariado antes de 2015'; elseif ($g === 'C') $i->grupo_desc = 'Inventário Online'; elseif ($g === 'D') $i->grupo_desc = 'A inventariar'; elseif ($g === 'E') $i->grupo_desc = 'Baixados'; else $i->grupo_desc = 'Inventariado a partir de 2015';
+                if ($g === 'B') {
+                    $i->grupo_desc = 'Inventariado antes de 2015';
+                } elseif ($g === 'C') {
+                    $i->grupo_desc = 'Inventário Online';
+                } elseif ($g === 'D') {
+                    $i->grupo_desc = 'A inventariar';
+                } elseif ($g === 'E') {
+                    $i->grupo_desc = 'Baixados';
+                } else {
+                    $i->grupo_desc = 'Inventariado a partir de 2015';
+                }
+
                 $i->desc_resumida = $i->desc_resumida ?: 'NÃO INFORMADA';
                 return $i;
             });
 
-        $resumo = $dados->groupBy('desc_resumida')->map(fn($itens, $desc) => (object) [
+        $resumoBase = BemMovel::query()->from('mat_patrimonio as p')
+            ->leftJoin('mat_descricaoresumida as de', 'p.DescricaoResumidadoBem', '=', 'de.id')
+            ->where('p.acuracia', 'Bens de TI')
+            ->selectRaw("p.ValorAquisicao as valor_aquisicao, p.grupo, de.Descricao as desc_resumida")
+            ->toBase()
+            ->get()
+            ->map(function($i) {
+                $g = $i->grupo;
+                if ($g === 'B') $i->grupo_desc = 'Inventariado antes de 2015';
+                elseif ($g === 'C') $i->grupo_desc = 'Inventário Online';
+                elseif ($g === 'D') $i->grupo_desc = 'A inventariar';
+                elseif ($g === 'E') $i->grupo_desc = 'Baixados';
+                else $i->grupo_desc = 'Inventariado a partir de 2015';
+
+                $i->desc_resumida = $i->desc_resumida ?: 'NÃO INFORMADA';
+                return $i;
+            });
+
+        $resumo = $resumoBase->groupBy('desc_resumida')->map(fn($itens, $desc) => (object) [
             'descricao' => $desc,
-            'qtd_a' => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->count(), 'val_a' => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->sum('valor_aquisicao'),
-            'qtd_b' => $itens->where('grupo_desc', 'Inventariado antes de 2015')->count(), 'val_b' => $itens->where('grupo_desc', 'Inventariado antes de 2015')->sum('valor_aquisicao'),
-            'qtd_c' => $itens->where('grupo_desc', 'Inventário Online')->count(), 'val_c' => $itens->where('grupo_desc', 'Inventário Online')->sum('valor_aquisicao'),
-            'qtd_d' => $itens->where('grupo_desc', 'A inventariar')->count(), 'val_d' => $itens->where('grupo_desc', 'A inventariar')->sum('valor_aquisicao'),
+            'qtd_a'     => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->count(),
+            'val_a'     => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->sum('valor_aquisicao'),
+            'qtd_b'     => $itens->where('grupo_desc', 'Inventariado antes de 2015')->count(),
+            'val_b'     => $itens->where('grupo_desc', 'Inventariado antes de 2015')->sum('valor_aquisicao'),
+            'qtd_c'     => $itens->where('grupo_desc', 'Inventário Online')->count(),
+            'val_c'     => $itens->where('grupo_desc', 'Inventário Online')->sum('valor_aquisicao'),
+            'qtd_d'     => $itens->where('grupo_desc', 'A inventariar')->count(),
+            'val_d'     => $itens->where('grupo_desc', 'A inventariar')->sum('valor_aquisicao'),
             'qtd_total' => $itens->count(),
         ])->sortBy('descricao')->values();
 
-        return $this->render('bens-patrimoniais', $dados, $filtros, ['resumo' => $resumo, 'chartData' => $dados->groupBy('grupo_desc')->map->count()]);
+        return $this->render('bens-patrimoniais', $dados, $filtros, [
+            'resumo'    => $resumo,
+            'chartData' => $resumoBase->groupBy('grupo_desc')->map->count()
+        ]);
     }
 
     private function gerarInventarioBensMoveis($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $subDep = DB::connection('egap')->table('mat_depreciacao')->whereRaw("DATE_FORMAT(data_calculo, '%Y-%m') = ?", [$d->mesRef])->select('patrimonio', 'depreciacao_acumulada', 'valor_liquido_contabil');
+        $subDep = DepreciacaoBemMovel::query()->from('mat_depreciacao')
+            ->whereRaw("DATE_FORMAT(data_calculo, '%Y-%m') = ?", [$d->mesRef])
+            ->select('patrimonio', 'depreciacao_acumulada', 'valor_liquido_contabil');
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as p')
-            ->join('mat_planocontas as pla', 'p.ContaContabil', '=', 'pla.id')->join('mat_setores as se', 'p.Setor', '=', 'se.id')
+        $dados = BemMovel::query()->from('mat_patrimonio as p')
+            ->join('mat_planocontas as pla', 'p.ContaContabil', '=', 'pla.id')
+            ->join('mat_setores as se', 'p.Setor', '=', 'se.id')
             ->leftJoinSub($subDep, 'dep', 'p.id', '=', 'dep.patrimonio')
-            ->whereIn('p.SituacaoBem', [1, 7])->where('p.DatadeIncorporacao', '<=', $d->fim)
+            ->whereIn('p.SituacaoBem', [1, 7])
+            ->where('p.DatadeIncorporacao', '<=', $d->fim)
             ->whereRaw("YEAR(p.DatadaReavaliacao) <= ?", [$d->ano])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->select('pla.titulo as conta_titulo', 'pla.codigo as conta_codigo', 'p.NumPatrimonio as patrimonio', 'p.Descricao as descricao', 'p.DatadeIncorporacao as data_aquisicao', DB::raw('IF(IFNULL(p.ValordaReavaliacao, 0) > 0, p.ValordaReavaliacao, p.ValorAquisicao) as valor_reavaliado'), DB::raw('IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada'), DB::raw('IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido'), 'se.Setor as setor')
-            ->orderBy('pla.titulo')->orderBy('p.NumPatrimonio')->get();
+            ->selectRaw("pla.titulo as conta_titulo, pla.codigo as conta_codigo, p.NumPatrimonio as patrimonio, p.Descricao as descricao,
+                p.DatadeIncorporacao as data_aquisicao, IF(IFNULL(p.ValordaReavaliacao, 0) > 0, p.ValordaReavaliacao, p.ValorAquisicao) as valor_reavaliado,
+                IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada, IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido, se.Setor as setor"
+            )
+            ->orderBy('pla.titulo')
+            ->orderBy('p.NumPatrimonio')
+            ->toBase()
+            ->get();
 
-        return $this->render('inventario-bens-moveis', $dados, $filtros, ['ano_inventario' => $d->ano]);
+        return $this->render('inventario-bens-moveis', $dados, $filtros, [
+            'ano_inventario' => $d->ano
+        ]);
     }
 
     private function gerarInventarioBensMoveisDetalhado($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as p')
-            ->join('mat_planocontas as pla', 'p.ContaContabil', '=', 'pla.id')->join('mat_setores as se', 'p.Setor', '=', 'se.id')
-            ->whereIn('p.SituacaoBem', [1, 7])->where('p.DatadeIncorporacao', '<=', $d->fim)
+        $dados = BemMovel::query()->from('mat_patrimonio as p')
+            ->join('mat_planocontas as pla', 'p.ContaContabil', '=', 'pla.id')
+            ->join('mat_setores as se', 'p.Setor', '=', 'se.id')
+            ->whereIn('p.SituacaoBem', [1, 7])
+            ->where('p.DatadeIncorporacao', '<=', $d->fim)
             ->whereRaw("YEAR(p.DatadaReavaliacao) <= ?", [$d->ano])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->select('pla.titulo as conta_titulo', 'pla.codigo as conta_codigo', 'p.NumPatrimonio as patrimonio', 'p.Descricao as descricao', 'p.DatadeIncorporacao as data_aquisicao', DB::raw('IFNULL(p.ValorAquisicao, 0) as valor_aquisicao'), DB::raw('IFNULL(p.ValordaReavaliacao, 0) as valor_ajustado'), DB::raw('IF(IFNULL(p.ValordaReavaliacao, 0) > 0, p.ValordaReavaliacao, p.ValorAquisicao) as valor_atual'), 'se.Setor as setor')
-            ->orderBy('pla.titulo')->orderBy('p.NumPatrimonio')->get();
+            ->selectRaw("pla.titulo as conta_titulo, pla.codigo as conta_codigo, p.NumPatrimonio as patrimonio, p.Descricao as descricao,
+                p.DatadeIncorporacao as data_aquisicao, IFNULL(p.ValorAquisicao, 0) as valor_aquisicao,
+                IFNULL(p.ValordaReavaliacao, 0) as valor_ajustado, IF(IFNULL(p.ValordaReavaliacao, 0) > 0, p.ValordaReavaliacao, p.ValorAquisicao) as valor_atual,
+                se.Setor as setor"
+            )
+            ->orderBy('pla.titulo')
+            ->orderBy('p.NumPatrimonio')
+            ->toBase()
+            ->get();
 
-        return $this->render('inventario-bens-moveis-detalhado', $dados, $filtros, ['ano_inventario' => $d->ano]);
+        return $this->render('inventario-bens-moveis-detalhado', $dados, $filtros, [
+            'ano_inventario' => $d->ano
+        ]);
     }
 
     private function gerarRelacaoBensImoveis($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $subRea = DB::connection('egap')->table('imo_reavaliacao as r')
-            ->joinSub(DB::connection('egap')->table('imo_reavaliacao')->select('Id_imovel', DB::raw('MAX(data_reavaliacao) as max_data'))->where('data_reavaliacao', '<=', $d->fim)->groupBy('Id_imovel'), 'rm', fn($j) => $j->on('r.Id_imovel', '=', 'rm.Id_imovel')->on('r.data_reavaliacao', '=', 'rm.max_data'))
-            ->select('r.Id_imovel', 'r.valor_reavaliacao', 'r.data_reavaliacao');
+        $subRea = Reavaliacao::query()->from('imo_reavaliacao')
+            ->where('data_reavaliacao', '<=', $d->fim)
+            ->orderBy('data_reavaliacao', 'desc')
+            ->limit(1)
+            ->select('Id_imovel', 'valor_reavaliacao');
 
-        $dados = DB::connection('egap')->table('imo_imovel as imo')
+        $dados = BemImovel::query()->from('imo_imovel as imo')
             ->leftJoin('imo_estadoconservacao as est', 'imo.Id_estadoconservacao', '=', 'est.Id')
             ->leftJoin('mat_planocontas as pla', 'imo.Id_planocontas', '=', 'pla.id')
             ->leftJoin('imo_situacao as sit', 'imo.Id_situacao', '=', 'sit.id')
@@ -677,36 +1044,67 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($this->subObrasImoveis($d->fim), 'obras', 'imo.id', '=', 'obras.id_imovel')
             ->where(fn($q) => $q->whereNull('imo.data_baixa')->orWhere('imo.data_baixa', '0000-00-00 00:00:00'))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->select('sit.Descricao as situacao_imovel', 'imo.num_registro', 'imo.descricao as denominacao', 'imo.data_aquisicao', 'imo.data_construcao', 'imo.data_incorporacao', 'est.descEstadoConservacao as estado_conservacao', 'pla.codigo as conta_contabil', 'imo.data_ingresso_contabil', 'imo.inscricao_generica', 'imo.end_logradouro', 'imo.end_numero', 'imo.end_bairro', 'imo.end_cidade', 'imo.end_estado', 'imo.end_compl_endereco', 'imo.area', 'imo.area_edificacao', 'imo.vida_util', 'imo.valor_historico_1a_avaliacao', 'rea.data_reavaliacao', DB::raw('IFNULL(rea.valor_reavaliacao, imo.valor_reavaliado) as valor_reavaliado'), DB::raw('IFNULL(obras.valor_obra, 0) as valor_obra'))
-            ->orderBy('imo.id_situacao')->orderBy('imo.Id_planocontas')->get()
+            ->selectRaw("sit.Descricao as situacao_imovel, imo.num_registro, imo.descricao as denominacao, imo.data_aquisicao, imo.data_construcao, imo.data_incorporacao,
+                est.descEstadoConservacao as estado_conservacao, pla.codigo as conta_contabil, imo.data_ingresso_contabil, imo.inscricao_generica, imo.end_logradouro,
+                imo.end_numero, imo.end_bairro, imo.end_cidade, imo.end_estado, imo.end_compl_endereco, imo.area, imo.area_edificacao, imo.vida_util,
+                imo.valor_historico_1a_avaliacao, imo.data_reavaliacao, IFNULL(rea.valor_reavaliacao, imo.valor_reavaliado) as valor_reavaliado,
+                IFNULL(obras.valor_obra, 0) as valor_obra"
+            )
+            ->orderBy('imo.id_situacao')
+            ->orderBy('imo.Id_planocontas')
+            ->toBase()
+            ->get()
             ->map(function($item) {
                 $item->valor_atualizado = $item->valor_reavaliado + $item->valor_obra;
+
                 $dates = [];
-                if ($item->data_aquisicao && $item->data_aquisicao != '0000-00-00 00:00:00') $dates[] = \Carbon\Carbon::parse($item->data_aquisicao)->format('d/m/Y');
-                if ($item->data_construcao && $item->data_construcao != '0000-00-00 00:00:00') $dates[] = \Carbon\Carbon::parse($item->data_construcao)->format('d/m/Y');
-                if ($item->data_incorporacao && $item->data_incorporacao != '0000-00-00 00:00:00') $dates[] = \Carbon\Carbon::parse($item->data_incorporacao)->format('d/m/Y');
+                if ($item->data_aquisicao && $item->data_aquisicao != '0000-00-00 00:00:00') {
+                    $dates[] = \Carbon\Carbon::parse($item->data_aquisicao)->format('d/m/Y');
+                }
+                if ($item->data_construcao && $item->data_construcao != '0000-00-00 00:00:00') {
+                    $dates[] = \Carbon\Carbon::parse($item->data_construcao)->format('d/m/Y');
+                }
+                if ($item->data_incorporacao && $item->data_incorporacao != '0000-00-00 00:00:00') {
+                    $dates[] = \Carbon\Carbon::parse($item->data_incorporacao)->format('d/m/Y');
+                }
                 $item->datas_concat = implode('/<br>', $dates);
-                $addr = array_filter([$item->end_logradouro, $item->end_numero, $item->end_bairro, $item->end_cidade, $item->end_estado, $item->end_compl_endereco]);
+
+                $addr = array_filter([
+                    $item->end_logradouro, $item->end_numero, $item->end_bairro,
+                    $item->end_cidade, $item->end_estado, $item->end_compl_endereco
+                ]);
                 $item->endereco = implode(', ', $addr);
                 $item->situacao_imovel = $item->situacao_imovel ?: 'Não Classificado';
+
                 return $item;
             });
 
-        return $this->render('relacao-bens-imoveis', null, $filtros, ['dadosAgrupados' => $dados->groupBy('situacao_imovel')]);
+        return $this->render('relacao-bens-imoveis', null, $filtros, [
+            'dadosAgrupados' => $dados->groupBy('situacao_imovel')
+        ]);
     }
 
     private function gerarDepreciacaoMensalImoveis($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('imo_imovel as imo')
+        $dados = BemImovel::query()->from('imo_imovel as imo')
             ->join('mat_planocontas as pc', 'imo.Id_planocontas', '=', 'pc.id')
             ->join('imo_depreciacao as d', 'imo.id', '=', 'd.Id_imovel')
             ->leftJoinSub($this->subObrasImoveis($d->fim), 'obras', 'imo.id', '=', 'obras.id_imovel')
-            ->where('imo.Id_situacao', 1)->where('d.item', '>', 1)->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
+            ->where('imo.Id_situacao', 1)
+            ->where('d.item', '>', 1)
+            ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->select('pc.codigo as conta_contabil', 'pc.titulo as descricao_subitem', 'imo.num_registro', 'imo.descricao as descricao_imovel', 'imo.inscricao_generica', DB::raw('(d.valor + IFNULL(obras.valor_obra, 0)) as valor_atual'), 'd.valor_residual', 'd.depreciacao_mensal', 'd.depreciacao_acumulada', DB::raw('(d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido'))
-            ->distinct()->orderBy('pc.codigo')->orderBy('imo.descricao')->get();
+            ->selectRaw("pc.codigo as conta_contabil, pc.titulo as descricao_subitem, imo.num_registro, imo.descricao as descricao_imovel, imo.inscricao_generica,
+                (d.valor + IFNULL(obras.valor_obra, 0)) as valor_atual, d.valor_residual, d.depreciacao_mensal, d.depreciacao_acumulada,
+                (d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido"
+            )
+            ->distinct()
+            ->orderBy('pc.codigo')
+            ->orderBy('imo.descricao')
+            ->toBase()
+            ->get();
 
         return $this->render('depreciacao-mensal-imoveis', $dados, $filtros);
     }
@@ -715,69 +1113,125 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('imo_imovel as imo')
+        $subRea = Reavaliacao::query()->from('imo_reavaliacao')
+            ->whereRaw("DATE_FORMAT(data_reavaliacao,'%Y-%m') = DATE_FORMAT(DATE_ADD(?, INTERVAL -1 MONTH),'%Y-%m')", [$d->fimDate])
+            ->selectRaw('Id_imovel, IFNULL(valor_reavaliacao, 0) as valor_reavaliacao');
+
+        $subDepAnt = DepreciacaoImovel::query()->from('imo_depreciacao')
+            ->whereRaw("DATE_FORMAT(data_calculo,'%Y-%m') = DATE_FORMAT(DATE_ADD(?, INTERVAL -2 MONTH),'%Y-%m')", [$d->fimDate])
+            ->selectRaw('Id_imovel, MAX(depreciacao_acumulada) as depreciacao_acumulada')
+            ->groupBy('Id_imovel');
+
+        $dados = BemImovel::query()->from('imo_imovel as imo')
             ->join('mat_planocontas as pc', 'imo.Id_planocontas', '=', 'pc.id')
+            ->join('mat_produtos as prod', 'imo.id_elementodespesa', '=', 'prod.id')
             ->join('imo_depreciacao as d', 'imo.id', '=', 'd.Id_imovel')
-            ->join('mat_setores as s', 'imo.Id_Setores', '=', 's.id')
-            ->join('cad_centrocusto as cc', 's.centrocusto', '=', 'cc.codigo')
+            ->join('mat_setores as sec', 'imo.Id_Setores', '=', 'sec.id')
+            ->join('cad_centrocusto as cc', 'sec.centrocusto', '=', 'cc.codigo')
+            ->leftJoinSub($subRea, 'rea', 'imo.id', '=', 'rea.Id_imovel')
+            ->leftJoinSub($subDepAnt, 'dep_ant', 'imo.id', '=', 'dep_ant.Id_imovel')
             ->leftJoinSub($this->subObrasImoveis($d->fim), 'obras', 'imo.id', '=', 'obras.id_imovel')
-            ->where('imo.Id_situacao', 1)->where('d.item', '>', 1)->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
+            ->where('imo.Id_situacao', 1)
+            ->where('d.item', '>', 1)
+            ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
             ->when($filtros['centro_custo'] ?? null, fn($q, $v) => $q->where('cc.codigo', $v))
-            ->select('cc.codigo as cc_codigo', 'cc.descricao as cc_descricao', 'pc.codigo as conta_contabil', 'pc.titulo as descricao_subitem', 'imo.num_registro', 'imo.descricao as descricao_imovel', 'imo.inscricao_generica', DB::raw('(d.valor + IFNULL(obras.valor_obra, 0)) as valor_atual'), 'd.valor_residual', 'd.depreciacao_mensal', 'd.depreciacao_acumulada', DB::raw('(d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido'))
-            ->distinct()->orderBy('cc.codigo')->orderBy('pc.codigo')->orderBy('imo.descricao')->get();
+            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao,pc.codigo as conta_contabil, pc.titulo as descricao_subitem,
+                prod.CodigodaClasse as cod_nat_despesa, prod.item_patrimonial,imo.num_registro, imo.descricao as descricao_imovel, imo.inscricao_generica,
+                (d.valor + IFNULL(obras.valor_obra, 0)) as valor_atual, d.valor_residual, d.depreciacao_mensal, d.depreciacao_acumulada,
+                (d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido,
+                IF(IFNULL(rea.valor_reavaliacao, 0) > 0, IFNULL(dep_ant.depreciacao_acumulada, 0), 0) as dep_acumulada_reavaliacao"
+            )
+            ->distinct()
+            ->orderBy('cc.codigo')
+            ->orderBy('pc.codigo')
+            ->orderBy('imo.descricao')
+            ->toBase()
+            ->get();
 
-        return $this->render('depreciacao-mensal-imoveis-cc', null, $filtros, ['dadosAgrupados' => $dados->groupBy(fn($i) => $i->cc_codigo . ' ' . $i->cc_descricao)]);
+        return $this->render('depreciacao-mensal-imoveis-cc', null, $filtros, [
+            'dadosAgrupados' => $dados->groupBy(fn($i) => $i->cc_codigo . ' - ' . $i->cc_descricao),
+            'todosDados'     => $dados
+        ]);
     }
 
     private function gerarInventarioBensImoveis($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('imo_imovel as p')
+        $dados = BemImovel::query()->from('imo_imovel as p')
             ->join('mat_planocontas as pla', 'p.Id_planocontas', '=', 'pla.id')
             ->leftJoinSub($this->subDepreciacaoImoveis($d->mesRef), 'dep', 'p.id', '=', 'dep.Id_imovel')
             ->leftJoinSub($this->subObrasImoveis($d->fimDate), 'obras', 'p.id', '=', 'obras.id_imovel')
             ->where(fn($q) => $q->whereNull('p.data_baixa')->orWhere('p.data_baixa', '0000-00-00 00:00:00'))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.Id_planocontas', null))
-            ->select('pla.codigo as conta_codigo', 'pla.titulo as conta_titulo', 'p.num_registro as patrimonio', 'p.descricao', 'p.inscricao_generica', 'p.inscricao_imobiliaria', 'p.data_incorporacao as data_aquisicao', 'p.end_logradouro', 'p.end_numero', 'p.end_bairro', 'p.end_cidade', 'p.end_estado', 'p.valor_reavaliado as imo_val_reavaliado', 'obras.valor_obra', 'dep.depreciacao_acumulada as dep_acumulada', 'p.depreciacao_acumulada as imo_dep_acumulada', 'dep.valor_liquido_contabil as dep_val_liquido', 'p.valor_liquido_contabil as imo_val_liquido')
-            ->orderBy('pla.codigo')->orderBy('pla.titulo')->orderBy('p.num_registro')->get()
+            ->selectRaw("pla.codigo as conta_codigo, pla.titulo as conta_titulo, p.num_registro as patrimonio, p.descricao, p.inscricao_generica, p.inscricao_imobiliaria,
+                p.data_incorporacao as data_aquisicao, p.end_logradouro, p.end_numero, p.end_bairro, p.end_cidade, p.end_estado, p.valor_reavaliado as imo_val_reavaliado,
+                obras.valor_obra, dep.depreciacao_acumulada as dep_acumulada, p.depreciacao_acumulada as imo_dep_acumulada, dep.valor_liquido_contabil as dep_val_liquido,
+                p.valor_liquido_contabil as imo_val_liquido"
+            )
+            ->orderBy('pla.codigo')
+            ->orderBy('pla.titulo')
+            ->orderBy('p.num_registro')
+            ->toBase()
+            ->get()
             ->map(function ($item) {
                 $valReavaliadoCalc = ($item->imo_val_reavaliado ?? 0) + ($item->valor_obra ?? 0);
                 $item->valor_historico = $valReavaliadoCalc;
                 $item->depreciacao = $item->dep_acumulada ?? $item->imo_dep_acumulada ?? 0;
+
                 $baseLiquido = $item->imo_val_liquido > 0 ? $item->imo_val_liquido : $valReavaliadoCalc;
                 $item->valor_contabil = ($item->dep_val_liquido ?? $baseLiquido) + ($item->valor_obra ?? 0);
-                
+
                 $num = ($item->end_numero && strtolower($item->end_numero) != 'null') ? $item->end_numero : 's/n';
                 $bairro = ($item->end_bairro && strtolower($item->end_bairro) != 'null') ? $item->end_bairro : 'Centro';
                 $item->localizacao = implode(', ', array_filter([$item->end_logradouro, $num, $bairro, $item->end_cidade, $item->end_estado]));
+
                 return $item;
             });
 
-        return $this->render('inventario-bens-imoveis', null, $filtros, ['dadosAgrupados' => $dados->groupBy(fn($i) => $i->conta_codigo . ' - ' . $i->conta_titulo), 'ano' => $d->ano]);
+        return $this->render('inventario-bens-imoveis', null, $filtros, [
+            'dadosAgrupados' => $dados->groupBy(fn($i) => $i->conta_codigo . ' - ' . $i->conta_titulo),
+            'ano' => $d->ano
+        ]);
     }
 
     private function gerarAjustesReavaliacaoImoveis($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $subDep = DB::connection('egap')->table('imo_depreciacao')->select('Id_imovel', 'valor', 'depreciacao_acumulada', 'valor_liquido_contabil')
-            ->whereRaw("DATE_FORMAT(data_calculo, '%Y-%m') = ?", [$d->mesAnt])->where('depreciacao_acumulada', '>', 0);
+        $subDep = DepreciacaoImovel::query()->from('imo_depreciacao')
+            ->select('Id_imovel', 'valor', 'depreciacao_acumulada', 'valor_liquido_contabil')
+            ->whereRaw("DATE_FORMAT(data_calculo, '%Y-%m') = ?", [$d->mesAnt])
+            ->where('depreciacao_acumulada', '>', 0);
 
-        $dados = DB::connection('egap')->table('imo_reavaliacao as rea')
+        $dados = Reavaliacao::query()->from('imo_reavaliacao as rea')
             ->join('imo_imovel as imo', 'rea.Id_imovel', '=', 'imo.id')
             ->join('mat_planocontas as pc', 'imo.Id_planocontas', '=', 'pc.id')
             ->leftJoinSub($subDep, 'dep', 'imo.id', '=', 'dep.Id_imovel')
-            ->where('imo.Id_situacao', 1)->whereBetween('rea.data_reavaliacao', [$d->ini, $d->fim])
+            ->where('imo.Id_situacao', 1)
+            ->whereBetween('rea.data_reavaliacao', [$d->ini, $d->fim])
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->select('pc.codigo as conta_contabil', 'pc.titulo as descricao_subitem', 'imo.id as imovel_id', 'imo.inscricao_generica', 'imo.num_registro', 'imo.descricao as descricao_imovel', 'imo.valor_historico_1a_avaliacao', 'dep.valor as dep_valor', DB::raw('IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada'), DB::raw('IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido_contabil'), 'rea.data_reavaliacao', 'rea.valor_reavaliacao as valor_atual', 'rea.ajuste_contabil')
-            ->orderBy('pc.codigo')->orderBy('imo.descricao')->get()
+            ->selectRaw("pc.codigo as conta_contabil, pc.titulo as descricao_subitem, imo.id as imovel_id, imo.inscricao_generica, imo.num_registro,
+                imo.descricao as descricao_imovel, imo.valor_historico_1a_avaliacao, dep.valor as dep_valor, IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada,
+                IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido_contabil, rea.data_reavaliacao, rea.valor_reavaliacao as valor_atual, rea.ajuste_contabil"
+            )
+            ->orderBy('pc.codigo')
+            ->orderBy('imo.descricao')
+            ->toBase()
+            ->get()
             ->map(function ($item) {
-                $valorBrutoReavaliacao = DB::connection('egap')->table('imo_reavaliacao')->where('Id_imovel', $item->imovel_id)->orderByDesc('data_reavaliacao')->skip(1)->take(1)->value('valor_reavaliacao');
+                $valorBrutoReavaliacao = Reavaliacao::query()->from('imo_reavaliacao')
+                    ->where('Id_imovel', $item->imovel_id)
+                    ->orderByDesc('data_reavaliacao')
+                    ->skip(2)
+                    ->take(1)
+                    ->value('valor_reavaliacao');
+
                 $valBruto = $item->valor_historico_1a_avaliacao;
                 if ($valorBrutoReavaliacao > 0) $valBruto = $valorBrutoReavaliacao;
                 if ($item->dep_valor > 0) $valBruto = $item->dep_valor;
+
                 $item->valor_bruto = $valBruto;
                 return $item;
             });
@@ -789,20 +1243,37 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $reavaliacoes = DB::connection('egap')->table('imo_reavaliacao')->where('data_reavaliacao', '<=', $d->fim)->orderBy('data_reavaliacao', 'asc')->get()->groupBy('Id_imovel');
-        $obras = DB::connection('egap')->table('imo_obras')->where('data', '<=', $d->fim)->get()->groupBy('id_imovel');
+        $reavaliacoes = Reavaliacao::query()->from('imo_reavaliacao')
+            ->where('data_reavaliacao', '<=', $d->fim)
+            ->orderBy('data_reavaliacao', 'asc')
+            ->toBase()
+            ->get()
+            ->groupBy('Id_imovel');
 
-        $dados = DB::connection('egap')->table('imo_imovel as imo')
-            ->join('imo_situacao as sit', 'imo.Id_situacao', '=', 'sit.id')->where('imo.Id_situacao', 1)
+        $obras = Obra::query()->from('imo_obras')
+            ->where('data', '<=', $d->fim)
+            ->get()
+            ->groupBy('id_imovel');
+
+        $dados = BemImovel::query()->from('imo_imovel as imo')
+            ->join('imo_situacao as sit', 'imo.Id_situacao', '=', 'sit.id')
+            ->where('imo.Id_situacao', 1)
             ->where(fn ($q) => $q->whereNull('imo.data_aquisicao')->orWhere('imo.data_aquisicao', '<=', $d->fim))
             ->where(fn ($q) => $q->where('imo.data_situacao', '0000-00-00 00:00:00')->orWhereNull('imo.data_situacao')->orWhere('imo.data_situacao', '<=', $d->fim))
             ->where(fn ($q) => $q->where('imo.data_baixa', '>=', $d->fim)->orWhere('imo.data_baixa', '0000-00-00 00:00:00')->orWhereNull('imo.data_baixa'))
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->select('imo.id', 'imo.descricao', 'imo.data_aquisicao', 'imo.valor_historico_1a_avaliacao as valor_historico', 'imo.data_baixa', 'imo.data_situacao', 'sit.Descricao as situacao_descricao')
-            ->orderBy('imo.id')->get()
+            ->selectRaw("imo.id, imo.descricao, imo.data_aquisicao, imo.valor_historico_1a_avaliacao as valor_historico, imo.data_baixa, imo.data_situacao,
+                sit.Descricao as situacao_descricao"
+            )
+            ->orderBy('imo.id')
+            ->toBase()
+            ->get()
             ->map(function ($imo) use ($reavaliacoes, $obras, $d) {
                 $ultRea = collect($reavaliacoes->get($imo->id))->last();
-                $reaData = null; $valReavaliacao = 0; $ajusteEntrada = 0; $ajusteSaida = 0;
+                $reaData = null;
+                $valReavaliacao = 0;
+                $ajusteEntrada = 0;
+                $ajusteSaida = 0;
 
                 if ($ultRea && $ultRea->data_reavaliacao >= $d->ini && $ultRea->data_reavaliacao <= $d->fim) {
                     $reaData = $ultRea->data_reavaliacao;
@@ -830,31 +1301,26 @@ class ReportRelatoriosGeraisController extends Controller
                 return $imo;
             });
 
-        return $this->render('saldo-anterior-imoveis', $dados, $filtros, ['inicioRaw' => $d->ini, 'terminoRaw' => $d->fim]);
+        return $this->render('saldo-anterior-imoveis', $dados, $filtros, [
+            'inicioRaw' => $d->ini,
+            'terminoRaw' => $d->fim
+        ]);
     }
 
     private function gerarInventarioBensIntangiveis($filtros)
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('int_intangivel as p')
+        $dados = BemIntangivel::query()->from('int_intangivel as p')
             ->join('mat_planocontas as pla', 'p.id_planocontas', '=', 'pla.id')
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pla.id', null))
-            ->select(
-                'pla.codigo as conta_codigo',
-                'pla.titulo as conta_titulo',
-                'p.inscricao_generica',
-                'p.nome as descricao',
-                'p.data_aquisicao',
-                'p.quantidade',
-                'p.valor_aquisicao',
-                'p.amortizacao_acumulada',
-                'p.valor_liquido_contabil',
-                'p.vida_util_remanescente'
+            ->selectRaw("pla.codigo as conta_codigo,pla.titulo as conta_titulo,p.inscricao_generica,p.nome as descricao, p.data_aquisicao,p.quantidade,
+                p.valor_aquisicao, p.amortizacao_acumulada, p.valor_liquido_contabil, p.vida_util_remanescente"
             )
             ->orderBy('pla.codigo')
             ->orderBy('pla.titulo')
             ->orderBy('p.inscricao_generica')
+            ->toBase()
             ->get();
 
         $dadosAgrupados = $dados->groupBy(function($item) {
@@ -871,30 +1337,20 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('alm_notafiscal as nf')
+        $dados = NotaFiscal::query()->from('alm_notafiscal as nf')
             ->leftJoin('mat_fornecedor as fnd', 'nf.fornecedor', '=', 'fnd.id')
             ->leftJoin('alm_itens_notafiscal as inf', 'nf.id', '=', 'inf.id_notafiscal')
             ->leftJoin('mat_descricaodetalhada as dd', 'inf.id_material', '=', 'dd.id')
             ->leftJoin('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->leftJoin('mat_produtos as el', 'dr.id_produto', '=', 'el.id')
             ->whereBetween('nf.date_time', [$d->ini, $d->fim])
-            ->select(
-                'fnd.id as id_fornecedor', 
-                'fnd.NomeFornecedor as fornecedor', 
-                DB::raw('IFNULL(fnd.CNPJ, "0") as cnpj'),
-                'nf.id as id_notafiscal', 
-                'nf.num_documento', 
-                'nf.data_documento', 
-                'nf.tipo_documento',
-                DB::raw('ROUND(inf.quantidade, 0) as quantidade'), 
-                'inf.preco_unitario', 
-                'inf.total_item as valor_total',
-                'dd.descricao_detalhada', 
-                'dr.Descricao as descricao_resumida',
-                'el.CodigodaClasse as elemento_codigo'
+            ->selectRaw("fnd.id as id_fornecedor, fnd.NomeFornecedor as fornecedor, IFNULL(fnd.CNPJ, '0') as cnpj, nf.id as id_notafiscal, nf.num_documento,
+                nf.data_documento, nf.tipo_documento,ROUND(inf.quantidade, 0) as quantidade, inf.preco_unitario, inf.total_item as valor_total,dd.descricao_detalhada,
+                dr.Descricao as descricao_resumida,el.CodigodaClasse as elemento_codigo"
             )
             ->orderBy('fnd.CNPJ')
             ->orderBy('nf.num_documento')
+            ->toBase()
             ->get()
             ->map(function($item) {
                 $v = preg_replace('/\D/', '', $item->cnpj);
@@ -905,9 +1361,9 @@ class ReportRelatoriosGeraisController extends Controller
                 } else {
                     $item->cnpj_formatado = $item->cnpj ?: '0';
                 }
-                
+
                 $item->tipo_doc_desc = $item->tipo_documento == 1 ? 'Nota Fiscal' : 'Nota Fiscal/Doação';
-                $item->data_doc_formatada = $item->data_documento ? Carbon::parse($item->data_documento)->format('d/m/Y') : '';
+                $item->data_doc_formatada = $item->data_documento ? \Carbon\Carbon::parse($item->data_documento)->format('d/m/Y') : '';
                 return $item;
             });
 
@@ -926,76 +1382,109 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $subSa = DB::connection('egap')->table('alm_estoque as est')
+        $materiaisQuery = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
+            ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
+            ->join('mat_produtos as el', 'dr.id_produto', '=', 'el.id')
+            ->whereIn('dr.id_tipo_material', ['C', 'D', 'P'])
+            ->when(
+                $filtros['conta_contabil'] ?? null,
+                fn($q, $v) => $q->where('dr.ContaContabil', $v)
+            )
+            ->select('dd.id as material_id', 'dd.descricao_detalhada', 'dr.id_tipo_material', 'el.CodigodaClasse as elemento')
+            ->toBase()
+            ->get();
+
+        if ($materiaisQuery->isEmpty()) {
+            return $this->render('balancete-contabil-analitico', null, $filtros, [
+                'dadosAgrupados' => collect(),
+            ]);
+        }
+
+        $materiaisIds = $materiaisQuery->pluck('material_id')->all();
+
+        $subSaldoAnterior = MovimentacaoEstoque::query()->from('alm_estoque as est')
+            ->select('est.material', 'est.quantidade_estoque as sa_qtd', 'est.valor_total_estoque as sa_valor')
             ->joinSub(
-                DB::connection('egap')->table('alm_estoque')
-                    ->select('material', DB::raw('MAX(id) as max_id'))
+                MovimentacaoEstoque::query()->from('alm_estoque')
+                    ->selectRaw('material, MAX(id) as max_id')
+                    ->whereIn('material', $materiaisIds)
                     ->where('date_time', '<', $d->iniDate)
                     ->groupBy('material'),
                 'ult', 'est.id', '=', 'ult.max_id'
             )
-            ->select('est.material', 'est.quantidade_estoque', 'est.valor_total_estoque');
+            ->whereIn('est.material', $materiaisIds)
+            ->where('est.quantidade_estoque', '>', 0);
 
-        $subEntradas = DB::connection('egap')->table('alm_estoque')
-            ->select('material', DB::raw('SUM(quantidade) as qtd'), DB::raw('SUM(valor_total) as valor'))
-            ->where('tipo_movimentacao', 1)
-            ->whereBetween('date_time', [$d->ini, $d->fim])
-            ->groupBy('material');
-
-        $subSaidas = DB::connection('egap')->table('alm_estoque')
-            ->select('material', DB::raw('SUM(quantidade) as qtd'), DB::raw('SUM(valor_total) as valor'))
-            ->where('tipo_movimentacao', 2)
-            ->whereBetween('date_time', [$d->ini, $d->fim])
-            ->groupBy('material');
-
-        $dados = DB::connection('egap')->table('mat_descricaodetalhada as dd')
-            ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
-            ->join('mat_produtos as el', 'dr.id_produto', '=', 'el.id')
-            ->leftJoinSub($subSa, 'sa', 'dd.id', '=', 'sa.material')
-            ->leftJoinSub($subEntradas, 'ent', 'dd.id', '=', 'ent.material')
-            ->leftJoinSub($subSaidas, 'sai', 'dd.id', '=', 'sai.material')
-            ->where(function($q) {
-                $q->where('sa.quantidade_estoque', '>', 0)
-                  ->orWhere('ent.qtd', '>', 0)
-                  ->orWhere('sai.qtd', '>', 0);
-            })
-            ->whereIn('dr.id_tipo_material', ['C', 'D', 'P'])
-            ->when($filtros['conta_contabil'] ?? null, fn($q, $v) => $q->where('dr.ContaContabil', $v))
-            ->select(
-                'dd.descricao_detalhada',
-                'dr.id_tipo_material',
-                'el.CodigodaClasse as elemento',
-                DB::raw('IFNULL(sa.quantidade_estoque, 0) as sa_qtd'),
-                DB::raw('IFNULL(sa.valor_total_estoque, 0) as sa_valor'),
-                DB::raw('IFNULL(ent.qtd, 0) as ent_qtd'),
-                DB::raw('IFNULL(ent.valor, 0) as ent_valor'),
-                DB::raw('IFNULL(sai.qtd, 0) as sai_qtd'),
-                DB::raw('IFNULL(sai.valor, 0) as sai_valor')
+        $subMovimentos = MovimentacaoEstoque::query()->from('alm_estoque')
+            ->selectRaw("material, SUM(IF(tipo_movimentacao = 1, quantidade,  0)) as ent_qtd, SUM(IF(tipo_movimentacao = 1, valor_total, 0)) as ent_valor,
+                SUM(IF(tipo_movimentacao = 2, quantidade,  0)) as sai_qtd, SUM(IF(tipo_movimentacao = 2, valor_total, 0)) as sai_valor"
             )
-            ->orderBy('dr.id_tipo_material')
-            ->orderBy('dd.descricao_detalhada')
-            ->get()
-            ->map(function($item) {
-                if ($item->id_tipo_material === 'C') {
-                    $item->tipo_desc = 'Consumo';
-                    $item->ordem = 1;
-                } elseif ($item->id_tipo_material === 'D') {
-                    $item->tipo_desc = 'Consumo Durável';
-                    $item->ordem = 2;
-                } else {
-                    $item->tipo_desc = 'Permanente';
-                    $item->ordem = 3;
-                }
+            ->whereIn('material', $materiaisIds)
+            ->whereIn('tipo_movimentacao', [1, 2])
+            ->whereBetween('date_time', [$d->ini, $d->fim])
+            ->groupBy('material');
 
-                $item->atual_qtd = $item->sa_qtd + $item->ent_qtd - $item->sai_qtd;
-                $item->atual_valor = $item->sa_valor + $item->ent_valor - $item->sai_valor;
-                return $item;
+        $estoqueMap = DB::connection('egap')->table(DB::raw("({$subSaldoAnterior->toSql()}) as sa"))
+            ->mergeBindings($subSaldoAnterior->getQuery())
+            ->select('sa.material', 'sa.sa_qtd', 'sa.sa_valor')
+            ->get()
+            ->keyBy('material');
+
+        $movimentosMap = $subMovimentos->toBase()->get()->keyBy('material');
+
+        $dados = $materiaisQuery
+            ->filter(fn($item) =>
+                isset($estoqueMap[$item->material_id]) || isset($movimentosMap[$item->material_id])
+            )
+            ->map(function ($item) use ($estoqueMap, $movimentosMap) {
+                $sa  = $estoqueMap[$item->material_id]  ?? null;
+                $mov = $movimentosMap[$item->material_id] ?? null;
+
+                $sa_qtd   = $sa->sa_qtd    ?? 0;
+                $sa_valor = $sa->sa_valor  ?? 0;
+                $ent_qtd  = $mov->ent_qtd  ?? 0;
+                $ent_valor= $mov->ent_valor ?? 0;
+                $sai_qtd  = $mov->sai_qtd  ?? 0;
+                $sai_valor= $mov->sai_valor ?? 0;
+
+                return (object) [
+                    'id'                => $item->material_id,
+                    'descricao_detalhada' => $item->descricao_detalhada,
+                    'id_tipo_material'  => $item->id_tipo_material,
+                    'elemento'          => $item->elemento,
+                    'sa_qtd'            => $sa_qtd,
+                    'sa_valor'          => $sa_valor,
+                    'ent_qtd'           => $ent_qtd,
+                    'ent_valor'         => $ent_valor,
+                    'sai_qtd'           => $sai_qtd,
+                    'sai_valor'         => $sai_valor,
+                    'atual_qtd'         => $sa_qtd  + $ent_qtd  - $sai_qtd,
+                    'atual_valor'       => $sa_valor + $ent_valor - $sai_valor,
+                    'tipo_desc'         => match($item->id_tipo_material) {
+                        'C' => 'Consumo',
+                        'D' => 'Consumo Durável',
+                        default => 'Permanente',
+                    },
+                    'ordem'             => match($item->id_tipo_material) {
+                        'C' => 1,
+                        'D' => 2,
+                        default => 3,
+                    },
+                ];
             });
 
-        $dadosAgrupados = $dados->sortBy('ordem')->groupBy('tipo_desc');
+        if ($dados->isEmpty()) {
+            return $this->render('balancete-contabil-analitico', null, $filtros, [
+                'dadosAgrupados' => collect(),
+            ]);
+        }
+
+        $dadosAgrupados = $dados
+            ->sortBy([['ordem', 'asc'], ['descricao_detalhada', 'asc']])
+            ->groupBy('tipo_desc');
 
         return $this->render('balancete-contabil-analitico', null, $filtros, [
-            'dadosAgrupados' => $dadosAgrupados
+            'dadosAgrupados' => $dadosAgrupados,
         ]);
     }
 
@@ -1005,38 +1494,38 @@ class ReportRelatoriosGeraisController extends Controller
 
         $dias = $d->objIni->diffInDays($d->objFim);
         $meses = floor($dias / 30) + (($dias % 30 > 20) ? 1 : 0);
-        $mesesCalc = $meses == 0 ? 1 : $meses;
 
-        $subConsumo = DB::connection('egap')->table('alm_estoque')
-            ->select('material', DB::raw('SUM(quantidade) as qtd_consumida'))
+        $subConsumo = MovimentacaoEstoque::query()->from('alm_estoque')
+            ->selectRaw('material, SUM(quantidade) as qtd_consumida')
             ->where('tipo_movimentacao', 2)
             ->whereBetween('date_time', [$d->ini, $d->fim])
             ->groupBy('material');
 
-        $subAtual = DB::connection('egap')->table('alm_estoque as e1')
+        $subAtual = MovimentacaoEstoque::query()->from('alm_estoque as e1')
             ->joinSub(
-                DB::connection('egap')->table('alm_estoque')->select('material', DB::raw('MAX(id) as max_id'))->groupBy('material'),
+                MovimentacaoEstoque::query()->from('alm_estoque')
+                    ->selectRaw('material, MAX(id) as max_id')
+                    ->where('tipo_movimentacao', 2)
+                    ->groupBy('material'),
                 'e2', 'e1.id', '=', 'e2.max_id'
             )
             ->select('e1.material', 'e1.quantidade_estoque');
 
-        $dados = DB::connection('egap')->table('mat_descricaodetalhada as dd')
+        $dados = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
             ->joinSub($subAtual, 'est', 'dd.id', '=', 'est.material')
             ->leftJoinSub($subConsumo, 'con', 'dd.id', '=', 'con.material')
             ->where('dd.item_estoque', 1)
             ->when(!empty($filtros['materiais']), function($q) use ($filtros) {
                 $q->whereIn('dd.id', $filtros['materiais']);
             })
-            ->select(
-                'dd.id',
-                'dd.descricao_detalhada',
-                DB::raw('IFNULL(est.quantidade_estoque, 0) as qtde_atual'),
-                DB::raw('IFNULL(con.qtd_consumida, 0) as qtde_consumida')
-            )
+            ->selectRaw("dd.id, dd.descricao_detalhada, IFNULL(est.quantidade_estoque, 0) as qtde_atual, IFNULL(con.qtd_consumida, 0) as qtde_consumida")
             ->orderBy('dd.descricao_detalhada')
+            ->toBase()
             ->get()
-            ->map(function($item) use ($mesesCalc, $meses, $dias) {
-                $item->consumo_medio = $item->qtde_consumida / $mesesCalc;
+            ->map(function($item) use ($meses, $dias) {
+
+                $item->consumo_medio = $meses == 0 ? 0 : ($item->qtde_consumida / $meses);
+
                 $item->meses = $meses;
                 $item->dias = $dias;
                 return $item;
@@ -1049,7 +1538,7 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('ped_pedidos as ped')
+        $dados = Pedidos::query()->from('ped_pedidos as ped')
             ->leftJoin('jos_users as usr', 'ped.Solicitante', '=', 'usr.id')
             ->leftJoin('mat_setores as se', 'ped.Setor', '=', 'se.id')
             ->join('ped_itempedido as iped', 'ped.id', '=', 'iped.idPedido')
@@ -1059,25 +1548,17 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_unidades as un', 'dd.unidade_medida', '=', 'un.id')
             ->leftJoin('alm_estoque as est', function($join) {
                 $join->on('iped.idPedido', '=', 'est.id_pedido')
-                     ->on('dd.id', '=', 'est.material');
+                    ->on('dd.id', '=', 'est.material');
             })
             ->where('ped.setor_responsavel', 799)
             ->where('ped.idSituacao', 7)
             ->whereBetween('ped.date_time', [$d->ini, $d->fim])
-            ->select(
-                'ped.id as pedido_id',
-                'se.Setor as setor',
-                'usr.name as solicitante',
-                'dr.Descricao as descricao_resumida',
-                'dd.descricao_detalhada',
-                'el.CodigodaClasse as elemento',
-                'un.Sigla as sigla',
-                'un.Unidade as unidade',
-                'iped.QuantidadeMaterial as qtde_solicitada',
-                'iped.QuantidadeMaterialAtendida as qtde_atendida',
-                DB::raw('ROUND(IFNULL(est.preco_medio_estoque, 0), 4) as valor_medio')
+            ->selectRaw("ped.id as pedido_id, se.Setor as setor, usr.name as solicitante, dr.Descricao as descricao_resumida, dd.descricao_detalhada,
+                el.CodigodaClasse as elemento, un.Sigla as sigla, un.Unidade as unidade, iped.QuantidadeMaterial as qtde_solicitada,
+                iped.QuantidadeMaterialAtendida as qtde_atendida, ROUND(IFNULL(est.preco_medio_estoque, 0), 4) as valor_medio"
             )
             ->orderBy('ped.id')
+            ->toBase()
             ->get()
             ->map(function($item) {
                 $item->numero_formatado = str_pad($item->pedido_id, 8, '0', STR_PAD_LEFT);
@@ -1096,7 +1577,7 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('alm_estoque as est')
+        $dados = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->join('mat_produtos as pla', 'dr.id_produto', '=', 'pla.id')
@@ -1105,15 +1586,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('dd.item_estoque', 1)
             ->where('est.tipo_movimentacao', 2)
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'dr.ContaContabil', null))
-            ->select(
-                DB::raw('CONCAT(pla.CodigodaClasse, " - ", pla.DescricaodaClasse) as elemento_despesa'),
-                DB::raw('CONCAT(dd.descricao_detalhada, " (", un.Sigla, ")") as material'),
-                DB::raw('SUM(est.quantidade) as qtde'),
-                DB::raw('SUM(est.valor_total) as valor')
+            ->selectRaw("CONCAT(pla.CodigodaClasse, ' - ', pla.DescricaodaClasse) as elemento_despesa, CONCAT(dd.descricao_detalhada, ' (', un.Sigla, ')') as material,
+                SUM(est.quantidade) as qtde,SUM(est.valor_total) as valor"
             )
             ->groupBy('pla.CodigodaClasse', 'pla.DescricaodaClasse', 'dd.descricao_detalhada', 'un.Sigla')
             ->orderBy('elemento_despesa')
             ->orderBy('material')
+            ->toBase()
             ->get();
 
         $dadosAgrupados = $dados->groupBy('elemento_despesa');
@@ -1127,35 +1606,31 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $subConsumo = DB::connection('egap')->table('alm_estoque')
-            ->select('material', DB::raw('SUM(quantidade) as qtde_consumida'))
+        $subConsumo = MovimentacaoEstoque::query()->from('alm_estoque')
+            ->selectRaw('material, SUM(quantidade) as qtde_consumida')
             ->where('tipo_movimentacao', 2)
             ->whereBetween('date_time', [$d->ini, $d->fim])
             ->groupBy('material');
 
-        $subUltimoPreco = DB::connection('egap')->table('alm_estoque as e')
+        $subUltimoPreco = MovimentacaoEstoque::query()->from('alm_estoque as e')
             ->joinSub(
-                DB::connection('egap')->table('alm_estoque')->select('material', DB::raw('MAX(id) as max_id'))->groupBy('material'),
+                MovimentacaoEstoque::query()->from('alm_estoque')->selectRaw('material, MAX(id) as max_id')->groupBy('material'),
                 'ult', 'e.id', '=', 'ult.max_id'
             )
             ->select('e.material', 'e.preco_unitario as ultimo_preco');
 
-        $dados = DB::connection('egap')->table('mat_descricaodetalhada as dd')
+        $dados = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->join('mat_produtos as el', 'dr.id_produto', '=', 'el.id')
             ->joinSub($subConsumo, 'con', 'dd.id', '=', 'con.material')
             ->leftJoinSub($subUltimoPreco, 'preco', 'dd.id', '=', 'preco.material')
             ->where('dd.item_estoque', 1)
             ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'dr.ContaContabil', null))
-            ->select(
-                'el.CodigodaClasse as subelemento',
-                'dd.id as id_descricao',
-                'dd.descricao_detalhada',
-                'con.qtde_consumida',
-                DB::raw('IFNULL(preco.ultimo_preco, 0) as ultimo_preco')
+            ->selectRaw("el.CodigodaClasse as subelemento, dd.id as id_descricao, dd.descricao_detalhada, con.qtde_consumida, IFNULL(preco.ultimo_preco, 0) as ultimo_preco"
             )
             ->orderBy('el.CodigodaClasse')
             ->orderBy('dd.descricao_detalhada')
+            ->toBase()
             ->get()
             ->map(function ($item) {
                 $str = preg_replace('/\D/', '', $item->subelemento);
@@ -1164,7 +1639,7 @@ class ReportRelatoriosGeraisController extends Controller
                 } else {
                     $item->subelemento_formatado = $item->subelemento;
                 }
-                
+
                 $item->subtotal = $item->qtde_consumida * $item->ultimo_preco;
                 return $item;
             });
@@ -1183,9 +1658,12 @@ class ReportRelatoriosGeraisController extends Controller
 
         $ccFiltro = $filtros['centro_custo'] ?? null;
 
-        $subSa = DB::connection('egap')->table('alm_estoque as est')
+        $subSa = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->joinSub(
-                DB::connection('egap')->table('alm_estoque')->select('material', DB::raw('MAX(id) as max_id'))->where('date_time', '<', $d->iniDate)->groupBy('material'),
+                MovimentacaoEstoque::query()->from('alm_estoque')
+                    ->selectRaw('material, MAX(id) as max_id')
+                    ->where('date_time', '<', $d->iniDate)
+                    ->groupBy('material'),
                 'ult', 'est.id', '=', 'ult.max_id'
             )
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
@@ -1196,11 +1674,14 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('cad_centrocusto as cc', 's.centrocusto', '=', 'cc.codigo')
             ->where('dr.id_tipo_material', '<>', 'P')
             ->when($ccFiltro, fn($q, $v) => $q->where('cc.codigo', $v))
-            ->select('cc.codigo as cc_codigo', 'cc.descricao as cc_descricao', 'pc.codigo as conta_contabil', 'pr.CodigodaClasse as produto', 'pr.item_patrimonial', 'pr.DescricaodaClasse as descricao', DB::raw('SUM(est.valor_total_estoque) as sa'))
+            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, pr.CodigodaClasse as produto, pr.item_patrimonial,
+                pr.DescricaodaClasse as descricao, SUM(est.valor_total_estoque) as sa"
+            )
             ->groupBy('cc.codigo', 'cc.descricao', 'pc.codigo', 'pr.CodigodaClasse', 'pr.item_patrimonial', 'pr.DescricaodaClasse')
+            ->toBase()
             ->get();
 
-        $subMov = DB::connection('egap')->table('alm_estoque as est')
+        $subMov = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->join('mat_planocontas as pc', 'dr.ContaContabil', '=', 'pc.id')
@@ -1210,11 +1691,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('dr.id_tipo_material', '<>', 'P')
             ->when($ccFiltro, fn($q, $v) => $q->where('cc.codigo', $v))
             ->whereBetween('est.date_time', [$inicioano, $d->fim])
-            ->select('cc.codigo as cc_codigo', 'cc.descricao as cc_descricao', 'pc.codigo as conta_contabil', 'pr.CodigodaClasse as produto', 'pr.item_patrimonial', 'pr.DescricaodaClasse as descricao')
-            ->selectRaw("SUM(CASE WHEN tipo_movimentacao = 1 AND date_time BETWEEN ? AND ? THEN valor_total ELSE 0 END) as entradas", [$d->ini, $d->fim])
-            ->selectRaw("SUM(CASE WHEN tipo_movimentacao = 2 AND date_time BETWEEN ? AND ? THEN valor_total ELSE 0 END) as saidas", [$d->ini, $d->fim])
-            ->selectRaw("SUM(CASE WHEN tipo_movimentacao = 2 AND date_time >= ? AND date_time < ? THEN valor_total ELSE 0 END) as saidas_acum", [$inicioano, $d->ini])
+            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, pr.CodigodaClasse as produto, pr.item_patrimonial,
+                pr.DescricaodaClasse as descricao, SUM(CASE WHEN est.tipo_movimentacao = 1 AND est.date_time BETWEEN ? AND ? THEN est.valor_total ELSE 0 END) as entradas,
+                SUM(CASE WHEN est.tipo_movimentacao = 2 AND est.date_time BETWEEN ? AND ? THEN est.valor_total ELSE 0 END) as saidas,
+                SUM(CASE WHEN est.tipo_movimentacao = 2 AND est.date_time >= ? AND est.date_time < ? THEN est.valor_total ELSE 0 END) as saidas_acum",
+                [$d->ini, $d->fim, $d->ini, $d->fim, $inicioano, $d->ini])
             ->groupBy('cc.codigo', 'cc.descricao', 'pc.codigo', 'pr.CodigodaClasse', 'pr.item_patrimonial', 'pr.DescricaodaClasse')
+            ->toBase()
             ->get();
 
         $map = [];
@@ -1245,18 +1728,18 @@ class ReportRelatoriosGeraisController extends Controller
 
         return $this->render('resumo-inventario-almoxarifado-cc', $dados, $filtros);
     }
-
-    private function gerarPedidosBensPermanentes($filtros) 
+    //
+    private function gerarPedidosBensPermanentes($filtros)
     {
         return $this->processarRelatorioPedidosBase($filtros, 1);
     }
 
-    private function gerarPedidosBensPermanentesValidados($filtros) 
+    private function gerarPedidosBensPermanentesValidados($filtros)
     {
         return $this->processarRelatorioPedidosBase($filtros, 2);
     }
 
-    private function gerarPedidosBensConsumoDuravel($filtros) 
+    private function gerarPedidosBensConsumoDuravel($filtros)
     {
         return $this->processarRelatorioPedidosBase($filtros, 3);
     }
@@ -1293,7 +1776,7 @@ class ReportRelatoriosGeraisController extends Controller
                 $q->where('item.situacao', $v);
                 if ($v == 7) {
                     $q->where(fn($sq) => $sq->whereNull('item.QuantidadeMaterialAtendida')->orWhereRaw('IFNULL(item.quantidade_validada, 0) <= item.QuantidadeMaterial'))
-                      ->whereRaw('IFNULL(item.quantidade_validada, 0) <> 0');
+                        ->whereRaw('IFNULL(item.quantidade_validada, 0) <> 0');
                 }
             })
             ->select(
@@ -1360,7 +1843,7 @@ class ReportRelatoriosGeraisController extends Controller
                     ->from('mat_patrimonio as p')
                     ->join('mat_transferencia as t', 'p.id', '=', 't.NumPatrimonio')
                     ->join('mat_arquivodigital as a', 't.Termo', '=', 'a.termo')
-                    ->where('a.situacao', 1) 
+                    ->where('a.situacao', 1)
                     ->whereIn('p.SituacaoBem', [1, 7]);
             })
             ->select(
@@ -1389,7 +1872,7 @@ class ReportRelatoriosGeraisController extends Controller
 
         return $this->render('bens-sem-tr-validos', $dados, $filtros);
     }
- 
+
     private function gerarDiferencaContabil($filtros)
     {
         $totalAtivos = DB::connection('egap')->table('mat_patrimonio')
@@ -1400,7 +1883,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_situacao as sit', 'pat.SituacaoBem', '=', 'sit.id')
             ->where(function ($q) {
                 $q->whereColumn('pat.ValorAquisicao', '<', 'pat.ValordaReavaliacao')
-                  ->orWhere('sit.id', 8);
+                    ->orWhere('sit.id', 8);
             })
             ->whereNotIn('sit.id', [8, 9])
             ->where('pat.ValorAquisicao', '<', 20)
@@ -1495,8 +1978,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_setores as se', 'ped.Setor', '=', 'se.id')
             ->where('ped.setor_responsavel', 799)
             ->select(
-                'se.UnidadeOrganizacional', 
-                'se.Setor', 
+                'se.UnidadeOrganizacional',
+                'se.Setor',
                 'dd.descricao_detalhada',
                 DB::raw('SUM(iped.QuantidadeMaterial) as solicitado'),
                 DB::raw('SUM(iped.QuantidadeMaterialAtendida) as atendido')
@@ -1539,7 +2022,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('ped.setor_responsavel', 799)
             ->where(function($q) {
                 $q->whereIn('dd.descricao_resumida', [400, 425])
-                  ->orWhere('dd.descricao_detalhada', 'LIKE', '%PAPEL A4%');
+                    ->orWhere('dd.descricao_detalhada', 'LIKE', '%PAPEL A4%');
             })
             ->whereBetween('ped.date_time', [$d->ini, $d->fim])
             ->select(
@@ -1583,8 +2066,8 @@ class ReportRelatoriosGeraisController extends Controller
             'porUO' => $porUO,
             'resumoGeralMaterial' => $resumoGeralMaterial,
             'resumoGeralUnidade' => $resumoGeralUnidade,
-            'periodoStr' => $d->iniDate != $d->fimDate 
-                ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y') 
+            'periodoStr' => $d->iniDate != $d->fimDate
+                ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y')
                 : $d->objIni->format('d/m/Y')
         ]);
     }
@@ -1597,7 +2080,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->select('id', 'Setor', 'CodigodaUO')
             ->orderBy('CodigodaUO')->orderBy('Setor')
             ->get();
-            
+
         $listaUnidades = [];
         foreach ($setoresRaw as $s) {
             $tipo = ($s->id == $s->CodigodaUO) ? 'U' : 'S';
@@ -1612,7 +2095,7 @@ class ReportRelatoriosGeraisController extends Controller
         }
 
         $d = $this->getPeriodo($filtros);
-        
+
         $unidadeSelecionada = $filtros['unidade_selecionada'] ?? null;
         $unidDescricao = '';
 
@@ -1633,13 +2116,13 @@ class ReportRelatoriosGeraisController extends Controller
                 if (count($parts) == 2) {
                     $id = $parts[0];
                     $tipo = $parts[1];
-                    
+
                     if ($tipo == 'U') {
                         $q->where('se.CodigodaUO', $id);
                     } else {
                         $q->where('se.id', $id);
                     }
-                    
+
                     $unidDescricao = $listaUnidades[$v] ?? '';
                 }
             })
@@ -1686,8 +2169,8 @@ class ReportRelatoriosGeraisController extends Controller
             'porUO' => $porUO,
             'resumoGeralMaterial' => $resumoGeralMaterial,
             'resumoGeralUnidade' => $resumoGeralUnidade,
-            'periodoStr' => $d->iniDate != $d->fimDate 
-                ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y') 
+            'periodoStr' => $d->iniDate != $d->fimDate
+                ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y')
                 : $d->objIni->format('d/m/Y')
         ]);
     }
@@ -1731,12 +2214,12 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         $mesesNome = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        
+
         $dadosAgrupados = $dados->groupBy('mesano')->map(function($itens, $mesano) use ($mesesNome) {
             $ano = substr($mesano, 0, 4);
             $mes = (int) substr($mesano, -2);
             $nomeAgrupamento = $mesesNome[$mes] . '/' . $ano;
-            
+
             return (object) [
                 'nome' => $nomeAgrupamento,
                 'itens' => $itens
@@ -1776,8 +2259,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('nf.situacao', 3)
             ->where(function($q) {
                 $q->where('dd.item_estoque', 1)
-                  ->orWhere('dd.visibilidade', '<>', 0)
-                  ->orWhereNotNull('dd.visibilidade');
+                    ->orWhere('dd.visibilidade', '<>', 0)
+                    ->orWhereNotNull('dd.visibilidade');
             })
             ->whereBetween('nf.data_documento', [$d->ini, $d->fim])
             ->when(!empty($materiaisIds), function($q) use ($materiaisIds) {
@@ -1797,12 +2280,12 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         $mesesNome = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        
+
         $dadosAgrupados = $dados->groupBy('mesano')->map(function($itens, $mesano) use ($mesesNome) {
             $ano = substr($mesano, 0, 4);
             $mes = (int) substr($mesano, -2);
             $nomeAgrupamento = $mesesNome[$mes] . '/' . $ano;
-            
+
             return (object) [
                 'nome' => $nomeAgrupamento,
                 'itens' => $itens
@@ -1817,7 +2300,7 @@ class ReportRelatoriosGeraisController extends Controller
             'periodoStr' => \Carbon\Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . \Carbon\Carbon::parse($d->fimDate)->format('d/m/Y')
         ]);
     }
-    
+
     private function gerarEstatisticoConsumoAlmoxarifadoMeta($filtros)
     {
         $ano = $filtros['ano'] ?? null;
@@ -1843,7 +2326,7 @@ class ReportRelatoriosGeraisController extends Controller
         $anoAnt = $ano - 1;
         $unidadeSelecionada = $filtros['unidade'] ?? '-1|T';
         $apenasForaMeta = isset($filtros['meta']) && $filtros['meta'] == 'S';
-        
+
         $tipoFiltro = '';
         $codigoFiltro = '';
         $comarcas = [];
@@ -1875,8 +2358,8 @@ class ReportRelatoriosGeraisController extends Controller
                 ->leftJoin('ped_itempedido as iped', 'dd.id', '=', 'iped.DescricaoDetalhada')
                 ->leftJoin('ped_pedidos as ped', function($join) use ($ano, $anoAnt) {
                     $join->on('iped.idPedido', '=', 'ped.id')
-                         ->where('ped.setor_responsavel', 799)
-                         ->whereIn(DB::raw('YEAR(ped.date_time)'), [$ano, $anoAnt]);
+                        ->where('ped.setor_responsavel', 799)
+                        ->whereIn(DB::raw('YEAR(ped.date_time)'), [$ano, $anoAnt]);
                 })
                 ->leftJoin('mat_setores as se', 'ped.Setor', '=', 'se.id')
                 ->where('dd.item_estoque', 1)
@@ -1900,9 +2383,9 @@ class ReportRelatoriosGeraisController extends Controller
                 DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (7,8,9) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q3"),
                 DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (10,11,12) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q4")
             )
-            ->groupBy('dd.id', 'dd.descricao_detalhada')
-            ->orderBy('dd.descricao_detalhada')
-            ->get();
+                ->groupBy('dd.id', 'dd.descricao_detalhada')
+                ->orderBy('dd.descricao_detalhada')
+                ->get();
 
             $linhas = [];
             foreach ($dados as $dado) {
@@ -1955,8 +2438,8 @@ class ReportRelatoriosGeraisController extends Controller
         if (isset($filtros['excel']) && $filtros['excel'] == 'S') {
             $filename = "relatorio_meta_069_" . date('Ymd') . ".xls";
             $payload = array_merge(['dados' => null, 'filtros' => $filtros, 'data_emissao' => now()->format('d/m/Y')], $dadosView);
-            
-            return response()->view('reports.egap.estatistico-consumo-almoxarifado-meta', $payload)
+
+            return response()->view('reports.estatistico-consumo-almoxarifado-meta', $payload)
                 ->header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         }

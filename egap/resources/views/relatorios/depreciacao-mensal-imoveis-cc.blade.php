@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Depreciação Mensal Imóveis- Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 10px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 5px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 8px; text-transform: uppercase; font-family: Verdana, sans-serif; }
 
         @media print {
@@ -68,20 +68,20 @@
                     <th width="9%">VALOR LÍQUIDO CONTÁBIL</th>
                 </tr>
 
-                @php 
+                @php
                     $tValAtual = 0; $tValResidual = 0; $tDepMensal = 0; $tDepAcumulada = 0; $tValLiquido = 0;
                 @endphp
 
                 @foreach ($itens as $linha)
-                    @php 
+                    @php
                         $tValAtual += $linha->valor_atual;
                         $tValResidual += $linha->valor_residual;
                         $tDepMensal += $linha->depreciacao_mensal;
                         $tDepAcumulada += $linha->depreciacao_acumulada;
                         $tValLiquido += $linha->valor_liquido;
-                        
+
                         // Fake Item Patrimonial para o layout, o legado forçava isso baseado na subquery que removemos.
-                        $itemPatrimonial = '3305'; 
+                        $itemPatrimonial = '3305';
                         if(str_contains($linha->conta_contabil, '1.2.3.2.1.01.02')) $itemPatrimonial = '3306';
                     @endphp
                     <tr>

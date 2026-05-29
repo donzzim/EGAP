@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Ajustes após Reavaliação dos Imóveis- Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 10px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 5px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 8px; text-transform: uppercase; font-family: Verdana, sans-serif; }
     </style>
 
@@ -51,16 +51,16 @@
             <th width="6%">AJUSTE CONTÁBIL</th>
         </tr>
 
-        @php 
-            $tValBruto = 0; 
-            $tDepAcumulada = 0; 
-            $tValLiq = 0; 
-            $tValAtual = 0; 
+        @php
+            $tValBruto = 0;
+            $tDepAcumulada = 0;
+            $tValLiq = 0;
+            $tValAtual = 0;
             $tAjusteContabil = 0;
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $tValBruto += $linha->valor_bruto;
                 $tDepAcumulada += $linha->depreciacao_acumulada;
                 $tValLiq += $linha->valor_liquido_contabil;

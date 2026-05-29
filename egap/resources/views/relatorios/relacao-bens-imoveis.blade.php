@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório dos Bens Imóveis')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-top: 15px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 4px; text-align: center; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; font-size: 9px; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 6px; text-transform: uppercase; font-family: Verdana, sans-serif; margin-bottom: 20px;}
 
         @media print {
@@ -48,13 +48,13 @@
                     <th width="7%">VALOR<br>ATUALIZADO</th>
                 </tr>
 
-                @php 
-                    $tValHistorico = 0; 
-                    $tValAtualizado = 0; 
+                @php
+                    $tValHistorico = 0;
+                    $tValAtualizado = 0;
                 @endphp
 
                 @foreach ($itens as $linha)
-                    @php 
+                    @php
                         $tValHistorico += $linha->valor_historico_1a_avaliacao;
                         $tValAtualizado += $linha->valor_atualizado;
                     @endphp

@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Baixa por Processo - Bens Patrimoniais')
 
@@ -7,7 +7,7 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 12px; margin-top: 5px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 6px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 8px; text-transform: uppercase; font-family: Verdana, sans-serif; }
     </style>
 
@@ -23,14 +23,14 @@
             <th width="25%">VALOR REAVALIADO</th>
         </tr>
 
-        @php 
-            $totQtd = 0; 
-            $totAq = 0; 
+        @php
+            $totQtd = 0;
+            $totAq = 0;
             $totReav = 0;
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $totQtd += $linha->quantidade;
                 $totAq += $linha->valor_aquisicao;
                 $totReav += $linha->valor_reavaliado;

@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Bens Patrimoniais')
 
@@ -47,15 +47,15 @@
             <th width="13%">LOCALIZAÇÃO ATUAL</th>
         </tr>
 
-        @php 
-            $seq = 1; 
-            $tValAquisicao = 0; 
-            $tValAjustado = 0; 
-            $tValAtual = 0; 
+        @php
+            $seq = 1;
+            $tValAquisicao = 0;
+            $tValAjustado = 0;
+            $tValAtual = 0;
         @endphp
 
         @forelse ($dados as $linha)
-            @php 
+            @php
                 $tValAquisicao += $linha->valor_aquisicao;
                 $tValAjustado += $linha->valor_ajustado;
                 $tValAtual += $linha->valor_atual;

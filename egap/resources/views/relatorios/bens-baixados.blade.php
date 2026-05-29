@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de Bens Baixados - Bens Patrimoniais')
 
@@ -10,13 +10,13 @@
         .linha-conta td { border-bottom: 1px solid #000 !important; padding: 8px 4px; font-weight: bold; }
         .linha-subtotal td { border-bottom: 1px solid #000 !important; padding: 8px 4px; font-weight: bold; }
         .linha-item td { border-bottom: 1px solid #ccc !important; padding: 6px 4px; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 6px; text-transform: uppercase; font-family: Verdana, sans-serif; }
         .caixa-info { border: 1px solid #000 !important; padding: 4px 6px; font-family: Verdana, sans-serif; font-size: 11px; }
-        
+
         .tabela-extrato { border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 11px; width: 50%; margin-top: 10px; }
         .tabela-extrato th, .tabela-extrato td { border: 1px solid #000 !important; padding: 4px; }
-        
+
         @media print {
             .nova-pagina { page-break-before: always; }
         }
@@ -29,14 +29,14 @@
     @php $isFirst = true; @endphp
 
     @foreach($agrupadoPorProcesso as $processo => $itensBase)
-        
-        @php 
-            $itensPorConta = $itensBase->groupBy('conta_contabil'); 
+
+        @php
+            $itensPorConta = $itensBase->groupBy('conta_contabil');
             $info = $itensBase->first();
         @endphp
 
         <div class="{{ $isFirst ? '' : 'nova-pagina' }}" style="{{ $isFirst ? '' : 'margin-top: 40px;' }}">
-            
+
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
                 <tr><td class="caixa-titulo">RELATÓRIO DE BAIXA DOS BENS PATRIMONIAIS</td></tr>
             </table>
@@ -94,22 +94,22 @@
                     <th width="12%" style="text-align: center;">TIPO DA BAIXA</th>
                 </tr>
 
-                @php 
-                    $seq = 1; 
+                @php
+                    $seq = 1;
                     $totBrutoProc = 0; $totLiqProc = 0; $totDepProc = 0;
                     $extrato = []; // Para guardar o resumo no fim do processo
                 @endphp
 
                 @foreach($itensPorConta as $conta => $itens)
                     <tr class="linha-conta"><td colspan="7">{{ $conta }}</td></tr>
-                    
+
                     @php $subBruto = 0; $subLiq = 0; $subDep = 0; @endphp
 
                     @foreach($itens as $linha)
                         @php
                             $marca = $linha->marca ? '/' . $linha->marca : '';
                             $modelo = $linha->modelo ? '/' . $linha->modelo : '';
-                            
+
                             $subBruto += $linha->valor_bruto;
                             $subLiq += $linha->valor_liquido;
                             $subDep += $linha->depreciacao_acumulada;
@@ -128,7 +128,7 @@
                     @php
                         // Salva para o extrato final
                         $extrato[$conta] = ['bruto' => $subBruto, 'liq' => $subLiq, 'dep' => $subDep];
-                        
+
                         $totBrutoProc += $subBruto;
                         $totLiqProc += $subLiq;
                         $totDepProc += $subDep;

@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Relatório de pedido validado pelo setor')
 
@@ -7,10 +7,10 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 10px; margin-bottom: 30px; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000 !important; padding: 6px; }
         .linha-cabecalho th { font-weight: bold; text-transform: uppercase; text-align: center; font-size: 10px; }
-        
+
         .caixa-titulo { border: 1px solid #000 !important; text-align: center; font-weight: bold; font-size: 14px; padding: 6px; font-family: Verdana, sans-serif; margin-bottom: 15px;}
         .pedido-header td { font-weight: bold; font-size: 12px; text-align: left; }
-        
+
         @media print {
             .nova-pagina { page-break-before: always; }
         }
@@ -42,10 +42,10 @@
     @endif
 
     @foreach($dadosAgrupados as $pedidoId => $itens)
-        @php 
-            $primeiroItem = $itens->first(); 
+        @php
+            $primeiroItem = $itens->first();
         @endphp
-        
+
         <table class="tabela-grid">
             <tr class="pedido-header">
                 <td colspan="7">

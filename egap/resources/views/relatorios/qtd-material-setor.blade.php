@@ -1,4 +1,4 @@
-@extends('egap.relatorios.layout-tce')
+@extends('relatorios.layout-tce')
 
 @section('titulo_pagina', 'Quantidade de Materiais por Unidade Judiciária')
 
@@ -6,41 +6,41 @@
     <style>
         /* Esconder o cabeçalho clássico com o brasão do layout base */
         table[width="100%"] { display: none; }
-        
-        .relatorio-container { 
-            display: block !important; 
-            width: 100%; 
-            font-family: Arial, Helvetica, sans-serif; 
+
+        .relatorio-container {
+            display: block !important;
+            width: 100%;
+            font-family: Arial, Helvetica, sans-serif;
         }
-        
+
         h1 { font-size: 22px; font-weight: bold; margin-bottom: 20px; color: #333; }
         h3 { font-size: 15px; font-weight: bold; margin-top: 35px; margin-bottom: 10px; text-transform: uppercase; color: #000; }
-        
-        .tabela-limpa { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 12px; 
+
+        .tabela-limpa {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
             margin-bottom: 20px;
         }
-        .tabela-limpa th { 
-            border-bottom: 2px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
-            font-weight: bold; 
+        .tabela-limpa th {
+            border-bottom: 2px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
             color: #333;
         }
-        .tabela-limpa td { 
-            border-top: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
+        .tabela-limpa td {
+            border-top: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
             color: #555;
         }
-        
+
         /* Efeito zebrado tipo Bootstrap */
-        .tabela-limpa tbody tr:nth-child(odd) { 
-            background-color: #f9f9f9; 
+        .tabela-limpa tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
         }
-        
+
         .text-center { text-align: center !important; }
     </style>
 
