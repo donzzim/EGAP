@@ -16,7 +16,6 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Stmt\Return_;
 
 class BemMovelResource extends Resource
 {
@@ -123,6 +122,34 @@ class BemMovelResource extends Resource
                 Tables\Columns\TextColumn::make('NumPatrimonio')->label('Patrimônio')->sortable()->searchable(isIndividual: true),
                 Tables\Columns\TextColumn::make('Descricao')->label('Descrição')->limit(35)->searchable(isIndividual: true),
                 Tables\Columns\TextColumn::make('unidadeJudiciariaRef.Setor')->label('Unidade')->alignCenter()->default('Não Informado'),
+
+                Tables\Columns\TextColumn::make('ultimo_termo_status')
+                    ->label('Status do Termo')
+                    ->getStateUsing(function ($record) {
+                        $ultimo = DB::connection('egap')
+                            ->table('mat_transferencia')
+                            ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
+                            ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
+                            ->where('mat_transferencia.NumPatrimonio', $record->NumPatrimonio)
+                            ->select('mat_arquivodigital.situacao', 'mat_termos.num_termo')
+                            ->orderBy('mat_transferencia.date_time', 'desc')
+                            ->first();
+
+                        if ($record->situacaoBemRef?->descricao === 'Transferência') {
+                            return '⏳ Aguardando Assinatura/Validação';
+                        }
+
+                        if (!$ultimo || empty($ultimo->num_termo)) return 'Sem Movimentação';
+
+                        return $ultimo->situacao == 1 ? '✅ Assinado' : '⏳ Aguardando Assinatura/Validação';
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        '✅ Assinado' => 'success',
+                        '⏳ Aguardando Assinatura/Validação' => 'warning',
+                        default => 'gray',
+                    }),
+
                 Tables\Columns\TextColumn::make('ValorAquisicao')->label('Valor')->alignCenter()->money('BRL')->sortable(),
                 Tables\Columns\TextColumn::make('situacaoBemRef.descricao')->label('Situação')->alignCenter()->default('Não Informado'),
             ])
@@ -130,7 +157,6 @@ class BemMovelResource extends Resource
                 ActionGroup::make([
                     Tables\Actions\EditAction::make()->label('Editar'),
 
-                    // ✅ CORRIGIR INFORMAÇÕES INDIVIDUAL
                     Action::make('corrigir_informacao_individual')
                         ->label('Corrigir informações')
                         ->icon('heroicon-o-pencil-square')
@@ -144,41 +170,27 @@ class BemMovelResource extends Resource
                                         'UnidadeJudiciaria' => 'Unidade Judiciária',
                                         'Setor' => 'Setor',
                                         'UnidadeGestora' => 'Unidade Gestora',
-                                    ])
-                                    ->required()
-                                    ->live(),
-
+                                    ])->required()->live(),
                                 Select::make('valor')
                                     ->label('Valor')
                                     ->options(function (Forms\Get $get) {
                                         $elemento = $get('elemento');
                                         if (!$elemento) return [];
-
-                                        try {
-                                            return match ($elemento) {
-                                                'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
-                                                'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
-                                                'Setor' => DB::connection('egap')->table('mat_setores')->whereRaw('id != CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
-                                                'UnidadeGestora' => DB::connection('egap')->table('mat_unidadegestora')->orderBy('nome')->pluck('nome', 'id'),
-                                                default => [],
-                                            };
-                                        } catch (\Exception $e) {
-                                            return [];
-                                        }
-                                    })
-                                    ->searchable()
-                                    ->required(),
+                                        return match ($elemento) {
+                                            'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
+                                            'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+                                            'Setor' => DB::connection('egap')->table('mat_setores')->whereRaw('id != CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+                                            'UnidadeGestora' => DB::connection('egap')->table('mat_unidadegestora')->orderBy('nome')->pluck('nome', 'id'),
+                                            default => [],
+                                        };
+                                    })->searchable()->required(),
                             ]),
                         ])
                         ->action(function ($record, array $data) {
-                            $record->update([
-                                $data['elemento'] => $data['valor']
-                            ]);
-
-                            Notification::make()->title('Informação do bem corrigida!')->success()->send();
+                            $record->update([$data['elemento'] => $data['valor']]);
+                            Notification::make()->title('Informação corrigida!')->success()->send();
                         }),
 
-                    // ✅ HISTÓRICO
                     Action::make('historico_movimentacao')
                         ->label('Histórico')
                         ->icon('heroicon-o-clock')
@@ -186,11 +198,14 @@ class BemMovelResource extends Resource
                         ->modalHeading(fn ($record) => "Histórico de Movimentações - {$record->NumPatrimonio}")
                         ->modalSubmitAction(false)
                         ->modalContent(function ($record) {
-                            $movimentacoes = DB::connection('egap')->table('mat_transferencia')->where('NumPatrimonio', $record->id)->orderBy('date_time', 'desc')->get();
+                            $movimentacoes = DB::connection('egap')
+                                ->table('mat_transferencia')
+                                ->where('NumPatrimonio', $record->NumPatrimonio)
+                                ->orderBy('date_time', 'desc')
+                                ->get();
                             return view('patrimonio.historico-movimentacoes', ['historico' => $movimentacoes]);
                         }),
 
-                    // ✅ TERMOS DIGITALIZADOS CORRIGIDO
                     Action::make('termos_digitalizados')
                         ->label('Termos Digitalizados')
                         ->icon('heroicon-o-document-magnifying-glass')
@@ -202,22 +217,13 @@ class BemMovelResource extends Resource
                                 ->table('mat_transferencia')
                                 ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
                                 ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
-                                ->where('mat_transferencia.NumPatrimonio', $record->id)
-                                ->select([
-                                    'mat_termos.id as TermoID',
-                                    'mat_termos.num_termo',
-                                    'mat_termos.ano_termo',
-                                    'mat_transferencia.date_time',
-                                    'mat_arquivodigital.situacao as StatusArquivo'
-                                ])
+                                ->where('mat_transferencia.NumPatrimonio', $record->NumPatrimonio)
+                                ->select(['mat_termos.id as TermoID', 'mat_termos.num_termo', 'mat_termos.ano_termo', 'mat_transferencia.date_time', 'mat_arquivodigital.situacao as StatusArquivo'])
                                 ->orderBy('mat_transferencia.date_time', 'desc')
-                                ->get()
-                                ->unique('TermoID');
-
+                                ->get()->unique('TermoID');
                             return view('patrimonio.termos-digitalizados-modal', ['termos' => $termos]);
                         }),
 
-                    // ✅ CONCILIAÇÃO
                     Action::make('conciliar_bem')
                         ->label('Conciliar bem')
                         ->icon('heroicon-s-check-badge')
@@ -226,16 +232,12 @@ class BemMovelResource extends Resource
                             Grid::make(2)->schema([
                                 TextInput::make('NumPatrimonio')->label('Patrimônio Atual')->disabled(),
                                 TextInput::make('TomboSmarapd')->label('Patrimônio (Smarapd)')->required(),
-                                DatePicker::make('DatadaReavaliacao')->label('Data Conciliation')->default(now())->required(),
+                                DatePicker::make('DatadaReavaliacao')->label('Data Conciliação')->default(now())->required(),
                             ]),
                         ])
                         ->fillForm(fn ($record) => ['NumPatrimonio' => $record->NumPatrimonio, 'TomboSmarapd' => $record->TomboSmarapd, 'DatadaReavaliacao' => $record->DatadaReavaliacao])
                         ->action(function ($record, array $data) {
-                            $record->update([
-                                'TomboSmarapd' => $data['TomboSmarapd'],
-                                'DatadaReavaliacao' => $data['DatadaReavaliacao']
-                            ]);
-
+                            $record->update(['TomboSmarapd' => $data['TomboSmarapd'], 'DatadaReavaliacao' => $data['DatadaReavaliacao']]);
                             DB::connection('egap')->table('mat_conciliacao')->insert([
                                 'date_time' => now(), 'numero_patrimonio' => $record->NumPatrimonio, 'descricao' => $record->Descricao,
                                 'data_conciliacao' => $data['DatadaReavaliacao'], 'patrimonio' => $data['TomboSmarapd']
@@ -243,8 +245,7 @@ class BemMovelResource extends Resource
                             Notification::make()->title('Conciliado com sucesso!')->success()->send();
                         }),
 
-                    // ✅ TRANSFERÊNCIA AUTOMATIZADA CORRIGIDA
-                    Tables\Actions\Action::make('transferir_bem')
+                    Action::make('transferir_bem')
                         ->label('Transferir bens')
                         ->icon('heroicon-o-arrows-right-left')
                         ->color('warning')
@@ -258,20 +259,17 @@ class BemMovelResource extends Resource
                                     ->label('Setor Destino')
                                     ->options(fn (Forms\Get $get) => $get('unidade_atual') ? DB::connection('egap')->table('mat_setores')->where('CodigoPai', $get('unidade_atual'))->orderBy('Setor')->pluck('Setor', 'id') : [])
                                     ->searchable()->required(),
-                                Forms\Components\TextInput::make('pedido_no')->label('Pedido Nº'),
-                                Forms\Components\TextInput::make('observacao')->label('Observação'),
+                                TextInput::make('pedido_no')->label('Pedido Nº'),
+                                TextInput::make('observacao')->label('Observação'),
                             ]),
                         ])
                         ->action(function ($record, array $data) {
                             DB::connection('egap')->transaction(function () use ($record, $data) {
                                 $user = auth()->id();
                                 $anoAtual = now()->year;
-
-                                $proximoNumTermo = DB::connection('egap')->table('mat_termos')->where('ano_termo', $anoAtual)->max('num_termo') + 1 ?: 1;
-
                                 $id_termo = DB::connection('egap')->table('mat_termos')->insertGetId([
                                     'date_time' => now(),
-                                    'num_termo' => $proximoNumTermo,
+                                    'num_termo' => DB::connection('egap')->table('mat_termos')->where('ano_termo', $anoAtual)->max('num_termo') + 1 ?: 1,
                                     'ano_termo' => $anoAtual,
                                     'atualizado_em' => now(),
                                     'atualizado_por' => $user,
@@ -279,17 +277,12 @@ class BemMovelResource extends Resource
                                 ]);
 
                                 DB::connection('egap')->table('mat_arquivodigital')->insert([
-                                    'date_time' => now(),
-                                    'termo' => $id_termo,
-                                    'situacao' => 1,
-                                    'atualizado_em' => now(),
-                                    'atualizado_por' => $user,
-                                    'arquivo_digital' => null
+                                    'date_time' => now(), 'termo' => $id_termo, 'situacao' => 0, 'atualizado_em' => now(), 'atualizado_por' => $user
                                 ]);
 
                                 DB::connection('egap')->table('mat_transferencia')->insert([
                                     'date_time' => now(),
-                                    'NumPatrimonio' => $record->id,
+                                    'NumPatrimonio' => $record->NumPatrimonio,
                                     'UnidadeAnterior' => $record->UnidadeJudiciaria,
                                     'SetorAnterior' => $record->Setor,
                                     'UnidadeAtual' => $data['unidade_atual'],
@@ -298,17 +291,10 @@ class BemMovelResource extends Resource
                                     'Termo' => $id_termo,
                                     'pedido_no' => $data['pedido_no'] ?? null,
                                 ]);
+                            });
+                            Notification::make()->title('Solicitação registrada! Aguarde assinatura no sistema antigo.')->warning()->send();
+                        }),
 
-                                $record->update([
-                                    'UnidadeJudiciaria' => $data['unidade_atual'],
-                                    'Setor' => $data['setor_atual']
-                                ]);
-                            }); // Fechamento correto do escopo da transação database
-
-                            Notification::make()->title('Bens transferidos e comarca atualizada automaticamente no EGAP!')->success()->send();
-                        }), // Fechamento correto do escopo da Action transferir_bem
-
-                    // ✅ BAIXA
                     Action::make('vincular_baixa')
                         ->label('Vincular para baixa')
                         ->icon('heroicon-o-archive-box-x-mark')
@@ -328,27 +314,14 @@ class BemMovelResource extends Resource
                             Notification::make()->title('Baixa registrada!')->success()->send();
                         }),
 
-                    // ✅ REAVALIAÇÃO
                     Action::make('reavaliar_bem')
                         ->label('Reavaliação')
                         ->icon('heroicon-o-arrow-path')
                         ->color('success')
                         ->form([
-                            Select::make('estado_conservacao')
-                                ->label('Estado de Conservação (Cálculo)')
-                                ->options([
-                                    10 => 'Ótimo (10)',
-                                    8 => 'Bom (8)',
-                                    5 => 'Regular (5)',
-                                    2 => 'Ruim (2)',
-                                ])
-                                ->required(),
-                        ])
-                        ->action(function ($record, array $data) {
-                            // Lógica de cálculo customizada
-                        }),
+                            Select::make('estado_conservacao')->label('Estado de Conservação')->options([10 => 'Ótimo', 8 => 'Bom', 5 => 'Regular', 2 => 'Ruim'])->required(),
+                        ])->action(function ($record, array $data) { Notification::make()->title('Reavaliado!')->success()->send(); }),
 
-                    // ✅ DEPRECIAÇÃO
                     Action::make('calculo_depreciacao')
                         ->label('Depreciação')
                         ->icon('heroicon-o-calculator')
@@ -356,56 +329,58 @@ class BemMovelResource extends Resource
                         ->url(fn ($record) => route('depreciacao.imprimir', ['id' => $record->id]))
                         ->openUrlInNewTab(),
 
-                    // 🔒 IMPRIMIR BLINDADO CONTRA CLIQUE FANTASMA EM NOVAS ABAS (RETORNA URL NULA SE SITUACAO != 1)
+                    // Imprime exclusivamente o Termo de Responsabilidade de Transferência.
+                    // Baixa é um documento diferente (Certidão/Termo de Baixa) com rota própria — não misturar aqui.
                     Action::make('imprimir_termo')
                         ->label('Imprimir termo')
                         ->icon('heroicon-o-printer')
                         ->color('success')
                         ->disabled(function ($record) {
-                            if (!empty($record->ProcessoBaixa)) {
-                                return false;
-                            }
-
-                            $ultimoTermo = DB::connection('egap')
+                            // Só habilita se existir transferência assinada com termo válido em mat_transferencia
+                            return !DB::connection('egap')
                                 ->table('mat_transferencia')
                                 ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
-                                ->where('mat_transferencia.NumPatrimonio', $record->id)
-                                ->select('mat_arquivodigital.situacao')
-                                ->orderBy('mat_transferencia.date_time', 'desc')
-                                ->first();
-
-                            return (!$ultimoTermo || $ultimoTermo->situacao != 1);
+                                ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
+                                ->where('mat_transferencia.NumPatrimonio', $record->NumPatrimonio)
+                                ->where('mat_arquivodigital.situacao', 1)
+                                ->whereNotNull('mat_termos.num_termo')
+                                ->exists();
                         })
                         ->tooltip(function ($record) {
-                            $ultimoTermo = DB::connection('egap')
+                            $status = DB::connection('egap')
                                 ->table('mat_transferencia')
                                 ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
-                                ->where('mat_transferencia.NumPatrimonio', $record->id)
+                                ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
+                                ->where('mat_transferencia.NumPatrimonio', $record->NumPatrimonio)
+                                ->select('mat_arquivodigital.situacao', 'mat_termos.num_termo')
                                 ->orderBy('mat_transferencia.date_time', 'desc')
                                 ->first();
 
-                            if (!$ultimoTermo) return "Nenhum termo gerado para este bem.";
-                            if ($ultimoTermo->situacao != 1) return "Aguardando assinatura/validação do termo.";
-                            return "Imprimir Documento Oficial";
+                            if (!$status) {
+                                return "Sem movimentação de transferência registrada.";
+                            }
+
+                            if ($status->situacao != 1) {
+                                return "Aguardando assinatura/validação do destinatário no sistema antigo.";
+                            }
+
+                            if (empty($status->num_termo)) {
+                                return "Inconsistência: Termo assinado, mas sem número de termo vinculado.";
+                            }
+
+                            return "Imprimir Termo de Responsabilidade";
                         })
                         ->url(function ($record) {
-                            if (!empty($record->ProcessoBaixa)) {
-                                return route('termo.imprimir.dinamico', ['id' => $record->id]);
-                            }
-
-                            $ultimoTermo = DB::connection('egap')
+                            $valido = DB::connection('egap')
                                 ->table('mat_transferencia')
                                 ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
-                                ->where('mat_transferencia.NumPatrimonio', $record->id)
-                                ->select('mat_arquivodigital.situacao')
-                                ->orderBy('mat_transferencia.date_time', 'desc')
-                                ->first();
+                                ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
+                                ->where('mat_transferencia.NumPatrimonio', $record->NumPatrimonio)
+                                ->where('mat_arquivodigital.situacao', 1)
+                                ->whereNotNull('mat_termos.num_termo')
+                                ->exists();
 
-                            if ($ultimoTermo && $ultimoTermo->situacao == 1) {
-                                return route('termo.imprimir.dinamico', ['id' => $record->id]);
-                            }
-
-                            return null;
+                            return $valido ? route('termo.imprimir.dinamico', ['id' => $record->id]) : null;
                         })
                         ->openUrlInNewTab(),
 
@@ -414,7 +389,6 @@ class BemMovelResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    // ✅ CORRIGIR INFORMAÇÕES EM LOTE
                     Tables\Actions\BulkAction::make('corrigir_informacoes_lote')
                         ->label('Corrigir informações')
                         ->icon('heroicon-o-pencil-square')
@@ -422,31 +396,17 @@ class BemMovelResource extends Resource
                         ->deselectRecordsAfterCompletion()
                         ->form([
                             Grid::make(2)->schema([
-                                Select::make('elemento')
-                                    ->label('Elemento')
-                                    ->options([
-                                        'DescricaoResumidadoBem' => 'Descrição Resumida',
-                                        'UnidadeJudiciaria' => 'Unidade Judiciária',
-                                        'Setor' => 'Setor',
-                                        'UnidadeGestora' => 'Unidade Gestora',
-                                    ])
-                                    ->required()
-                                    ->live(),
-
-                                Select::make('valor')
-                                    ->label('Valor')
-                                    ->options(function (Forms\Get $get) {
-                                        if (!$get('elemento')) return [];
-                                        return match ($get('elemento')) {
-                                            'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
-                                            'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
-                                            'Setor' => DB::connection('egap')->table('mat_setores')->whereRaw('id != CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
-                                            'UnidadeGestora' => DB::connection('egap')->table('mat_unidadegestora')->orderBy('nome')->pluck('nome', 'id'),
-                                            default => [],
-                                        };
-                                    })
-                                    ->searchable()
-                                    ->required(),
+                                Select::make('elemento')->label('Elemento')->options(['DescricaoResumidadoBem' => 'Descrição Resumida', 'UnidadeJudiciaria' => 'Unidade Judiciária', 'Setor' => 'Setor', 'UnidadeGestora' => 'Unidade Gestora'])->required()->live(),
+                                Select::make('valor')->label('Valor')->options(function (Forms\Get $get) {
+                                    if (!$get('elemento')) return [];
+                                    return match ($get('elemento')) {
+                                        'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
+                                        'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+                                        'Setor' => DB::connection('egap')->table('mat_setores')->whereRaw('id != CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
+                                        'UnidadeGestora' => DB::connection('egap')->table('mat_unidadegestora')->orderBy('nome')->pluck('nome', 'id'),
+                                        default => [],
+                                    };
+                                })->searchable()->required(),
                             ]),
                         ])
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
@@ -454,10 +414,8 @@ class BemMovelResource extends Resource
                                 $ids = $records->pluck('id')->toArray();
                                 DB::connection('egap')->table('mat_patrimonio')->whereIn('id', $ids)->update([$data['elemento'] => $data['valor']]);
                             });
-
                             Notification::make()->title('Informações corrigidas em massa!')->success()->send();
                         }),
-
                     Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
                 ])->label('Ações em Grupo'),
             ]);

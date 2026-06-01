@@ -6,14 +6,12 @@
                     Termo Nº: {{ $termo->num_termo }}/{{ $termo->ano_termo }}
                 </span>
 
-                {{-- 🚀 CONDICIONAL INTELIGENTE DE EXIBIÇÃO --}}
                 @if($termo->StatusArquivo == 1)
-                    {{-- 🌟 O link deve apontar para o ID do Termo, não do histórico --}}
-                    <a href="{{ route('termo.imprimir.dinamico', ['id' => $termo->TermoID]) }}"
-                       target="_blank"
-                       class="text-sm text-primary-600 font-bold underline">
-                        Visualizar Termo
-                    </a>
+                <a href="{{ route('termo.imprimir.dinamico', ['id' => $termo->TermoID]) }}"
+                target="_blank"
+                class="text-sm text-primary-600 font-bold underline">
+                    Visualizar Termo
+                </a>
                 @else
                     <span class="inline-flex items-center text-xs font-semibold text-amber-600 gap-1 bg-amber-50 px-2 py-1 rounded">
                         ⚠️ — ainda não validado/assinado
