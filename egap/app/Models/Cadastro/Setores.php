@@ -2,7 +2,9 @@
 
 namespace App\Models\Cadastro;
 
+use App\Models\Admin\Lotacao;
 use App\Models\UserEgap;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -53,6 +55,30 @@ class Setores extends Model
     public function filhos(): HasMany
     {
         return $this->hasMany(Setores::class, 'CodigoPai');
+    }
+
+    public function lotacoesComoUnidadeJudiciaria(): HasMany
+    {
+        return $this->hasMany(Lotacao::class, 'unidade_judiciaria', 'id');
+    }
+
+    public function lotacoesComoSetor(): HasMany
+    {
+        return $this->hasMany(Lotacao::class, 'setor', 'id');
+    }
+
+    public function scopeUnidadesRaiz(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): void {
+            $query
+                ->whereNull('CodigoPai')
+                ->orWhereColumn('CodigoPai', 'id');
+        });
+    }
+
+    public function scopeFilhosDe(Builder $query, int $unidadeId): Builder
+    {
+        return $query->where('CodigoPai', $unidadeId);
     }
 
     /*

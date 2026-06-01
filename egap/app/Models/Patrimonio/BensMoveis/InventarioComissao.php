@@ -16,6 +16,10 @@ class InventarioComissao extends Model
         'date_time', 'id_inventario', 'comissao', 'nome', 'funcao'
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+    ];
+
     public function inventario(): BelongsTo
     {
         return $this->belongsTo(Inventario::class, 'id_inventario', 'id');

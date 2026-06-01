@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
-use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -41,7 +40,6 @@ class InventarioUnidadeResource extends Resource
             ->schema([
                 Tabs::make('Tabs')
                     ->tabs([
-                        // ✅ ABA 1: UNIDADES INVENTARIADAS (Conforme image_ac9dc3.png)
                         Tabs\Tab::make('Unidades Inventariadas')
                             ->icon('heroicon-m-building-office')
                             ->schema([
@@ -52,19 +50,19 @@ class InventarioUnidadeResource extends Resource
                                         ->required()
                                         ->columnSpanFull(),
 
-                                    Select::make('id_unidade')
+                                    Select::make('unidades')
                                         ->label('Unidades')
-                                        ->relationship('unidadeRel', 'Setor')
+                                        ->relationship('unidade', 'Setor')
                                         ->searchable()
                                         ->required()
                                         ->columnSpanFull(),
 
-                                    DatePicker::make('inicio')
+                                    DatePicker::make('data_inicio')
                                         ->label('Data Início')
                                         ->live()
                                         ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDias($get, $set)),
 
-                                    DatePicker::make('termino')
+                                    DatePicker::make('data_termino')
                                         ->label('Data Término')
                                         ->live()
                                         ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDias($get, $set)),
@@ -86,7 +84,6 @@ class InventarioUnidadeResource extends Resource
                                 ]),
                             ]),
 
-                        // ✅ ABA 2: EQUIPES DE CAMPO (Conforme image_ac9de1.png)
                         Tabs\Tab::make('Equipes de Campo')
                             ->icon('heroicon-m-users')
                             ->schema([
@@ -94,10 +91,9 @@ class InventarioUnidadeResource extends Resource
                                     ->relationship('equipes')
                                     ->schema([
                                         Grid::make(3)->schema([
-                                            /** ✅ Nota: No seu print aparece 'Inventário No' também na equipe */
                                             Select::make('id_inventario')
                                                 ->label('Inventário No')
-                                                ->relationship('unidadeAtividade.inventario', 'num_inventario')
+                                                ->relationship('unidadeInventariada.inventario', 'num_inventario')
                                                 ->required(),
 
                                             Select::make('funcao')
@@ -118,11 +114,10 @@ class InventarioUnidadeResource extends Resource
             ]);
     }
 
-    /** ✅ LÓGICA DE CÁLCULO DE DIAS */
     public static function calcularDias(Forms\Get $get, Forms\Set $set): void
     {
-        $inicio = $get('inicio');
-        $termino = $get('termino');
+        $inicio = $get('data_inicio');
+        $termino = $get('data_termino');
 
         if ($inicio && $termino) {
             $diff = Carbon::parse($inicio)->diffInDays(Carbon::parse($termino));
@@ -134,16 +129,16 @@ class InventarioUnidadeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('unidadeRel.Setor')
+                Tables\Columns\TextColumn::make('unidade.Setor')
                     ->label('Unidade')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('inicio')
+                Tables\Columns\TextColumn::make('data_inicio')
                     ->label('Data Início')
                     ->date('d/m/Y'),
 
-                Tables\Columns\TextColumn::make('termino')
+                Tables\Columns\TextColumn::make('data_termino')
                     ->label('Data Término')
                     ->date('d/m/Y'),
 

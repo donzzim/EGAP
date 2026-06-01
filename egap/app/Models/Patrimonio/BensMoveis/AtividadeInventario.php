@@ -3,8 +3,10 @@
 namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\Cadastro\Setores;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AtividadeInventario extends Model
 {
@@ -26,6 +28,13 @@ class AtividadeInventario extends Model
         'qtde_inventariada'
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+        'inicio' => 'datetime',
+        'termino' => 'datetime',
+        'qtde_inventariada' => 'integer',
+    ];
+
     /** ✅ RELAÇÃO: Qual o inventário "pai"? */
     public function inventario(): BelongsTo
     {
@@ -42,5 +51,32 @@ class AtividadeInventario extends Model
     public function setorRel(): BelongsTo
     {
         return $this->belongsTo(Setores::class, 'setor', 'id');
+    }
+
+    public function equipes(): HasMany
+    {
+        return $this->hasMany(InventarioEquipe::class, 'unidade', 'id');
+    }
+
+    public function scopeDoInventario(Builder $query, Inventario|int $inventario): Builder
+    {
+        $inventarioId = $inventario instanceof Inventario ? $inventario->getKey() : $inventario;
+
+        return $query->where('id_inventario', $inventarioId);
+    }
+
+    public function scopeDoSetor(Builder $query, int $unidadeJudiciaria, int $setor): Builder
+    {
+        return $query
+            ->where('id_unidade', $unidadeJudiciaria)
+            ->where('setor', $setor);
+    }
+
+    public function estaFinalizada(): bool
+    {
+        return in_array(strtolower(trim((string) $this->situacao)), [
+            'finalizado',
+            'carga efetuada',
+        ], true);
     }
 }

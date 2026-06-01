@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Admin\InfoUser;
 use App\Models\Admin\Lotacao;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use JsonSerializable;
 
@@ -106,6 +107,36 @@ class UserMobile extends Model implements Arrayable, JsonSerializable
         return $this->plainTextToken;
     }
 
+    public function can($abilities, $arguments = []): bool
+    {
+        return $this->baseUser()?->can($abilities, $arguments) ?? false;
+    }
+
+    public function hasRole(...$roles): bool
+    {
+        return $this->baseUser()?->hasRole(...$roles) ?? false;
+    }
+
+    public function hasAnyRole(...$roles): bool
+    {
+        return $this->baseUser()?->hasAnyRole(...$roles) ?? false;
+    }
+
+    public function hasAllRoles(...$roles): bool
+    {
+        return $this->baseUser()?->hasAllRoles(...$roles) ?? false;
+    }
+
+    public function getRoleNames()
+    {
+        return $this->baseUser()?->getRoleNames() ?? collect();
+    }
+
+    public function permissions(): EloquentCollection
+    {
+        return $this->baseUser()?->getAllPermissions() ?? new EloquentCollection;
+    }
+
     public function toArray(): array
     {
         return [
@@ -118,6 +149,8 @@ class UserMobile extends Model implements Arrayable, JsonSerializable
             'unidade_judiciaria_nome' => $this->unidadeJudiciariaNome(),
             'setor' => $this->setor(),
             'setor_nome' => $this->setorNome(),
+            'roles' => $this->roleNames(),
+            'permissions' => $this->permissionNames(),
             'token' => $this->token(),
         ];
     }
@@ -153,6 +186,35 @@ class UserMobile extends Model implements Arrayable, JsonSerializable
             ->first();
 
         return $this->infoUserMobile;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function roleNames(): array
+    {
+        if (! $this->baseUser || ! method_exists($this->baseUser, 'getRoleNames')) {
+            return [];
+        }
+
+        return $this->baseUser->getRoleNames()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function permissionNames(): array
+    {
+        if (! $this->baseUser || ! method_exists($this->baseUser, 'getAllPermissions')) {
+            return [];
+        }
+
+        return $this->baseUser->getAllPermissions()
+            ->pluck('name')
+            ->values()
+            ->all();
     }
 
     private function lotacaoMobile(): ?Lotacao

@@ -16,8 +16,17 @@ class InventarioEquipe extends Model
         'date_time', 'id_inventario', 'unidade', 'funcao', 'integrante'
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+    ];
+
+    public function inventario(): BelongsTo
+    {
+        return $this->belongsTo(Inventario::class, 'id_inventario', 'id');
+    }
+
     /** ✅ RELAÇÃO COM A ATIVIDADE/UNIDADE */
-    public function unidadeAtividade(): BelongsTo
+    public function unidadeInventariada(): BelongsTo
     {
         return $this->belongsTo(InventarioUnidade::class, 'unidade', 'id');
     }

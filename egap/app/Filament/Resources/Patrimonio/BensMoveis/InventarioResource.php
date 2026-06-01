@@ -33,7 +33,6 @@ class InventarioResource extends Resource
             ->schema([
                 Tabs::make('Abas do Inventário')
                     ->tabs([
-                        // --- ABA 1: GESTÃO ---
                         Tabs\Tab::make('Gestão do Inventário')
                             ->icon('heroicon-m-adjustments-horizontal')
                             ->schema([
@@ -56,7 +55,6 @@ class InventarioResource extends Resource
                                 ]),
                             ]),
 
-                        // --- ABA 2: COMISSÕES ---
                         Tabs\Tab::make('Comissões')
                             ->icon('heroicon-m-users')
                             ->schema([
@@ -69,7 +67,6 @@ class InventarioResource extends Resource
                                     ])->columns(3)->createItemButtonLabel('Adicionar Membro à Comissão')
                             ]),
 
-                        // --- ABA 3: MATERIAIS ---
                         Tabs\Tab::make('Materiais Inventariados')
                             ->icon('heroicon-m-archive-box')
                             ->schema([
@@ -104,7 +101,6 @@ class InventarioResource extends Resource
                     ->label('Ano')
                     ->alignCenter(),
 
-                /** ✅ CAMPOS SOLICITADOS: Início e Término */
                 Tables\Columns\TextColumn::make('inicio_inventario')
                     ->label('Início')
                     ->date('d/m/Y')

@@ -3,9 +3,10 @@
 namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\Cadastro\Setores;
-use App\Models\Patrimonio\Marcas;
-use App\Models\Patrimonio\Modelos;
+use App\Models\Cadastro\Marcas;
+use App\Models\Cadastro\Modelos;
 use App\Models\UserEgap;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,6 +27,11 @@ class ItemInventario extends Model
         'id_complementosetor', 'transferido_em', 'conciliado_patrimonio', 'imagem_enviada'
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+        'transferido_em' => 'datetime',
+    ];
+
     /** ✅ RELAÇÕES PARA OS SELECTS */
     public function bem(): BelongsTo { return $this->belongsTo(BemMovel::class, 'id_bem', 'id'); }
     public function inventario(): BelongsTo { return $this->belongsTo(Inventario::class, 'id_inventario', 'id'); }
@@ -41,6 +47,18 @@ class ItemInventario extends Model
     public function setorLocalizadoRef(): BelongsTo { return $this->belongsTo(Setores::class, 'setor_localizado', 'id'); }
 
     public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id'); }
+
+    public function scopeDoInventario(Builder $query, Inventario|int $inventario): Builder
+    {
+        $inventarioId = $inventario instanceof Inventario ? $inventario->getKey() : $inventario;
+
+        return $query->where('id_inventario', $inventarioId);
+    }
+
+    public function scopeDoSetor(Builder $query, int $setor): Builder
+    {
+        return $query->where('setor', $setor);
+    }
 
     protected static function booted()
     {
