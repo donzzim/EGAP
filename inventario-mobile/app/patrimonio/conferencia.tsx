@@ -35,6 +35,7 @@ import {
   type ConferenciaStatus,
   type ResultadoLeitura,
 } from '@/src/api/conferencia';
+import { useThemeStyles } from '@/src/theme/useThemeStyles';
 
 const CONFERENCIA_BENS_PER_PAGE = 30;
 
@@ -118,24 +119,8 @@ function getStatusLabel(bem: BemConferencia): string {
   return bem.conferencia?.status_label ?? 'Pendente';
 }
 
-function getStatusColor(status: ConferenciaStatus): string {
-  switch (status) {
-    case 'localizado':
-      return '#2F855A';
-    case 'pendente':
-    case 'cadastrado_manualmente':
-      return '#B7791F';
-    case 'nao_localizado':
-      return '#C53030';
-    case 'divergente':
-    case 'em_transferencia':
-      return '#1E4E79';
-    default:
-      return '#627D98';
-  }
-}
-
 export default function ConferenciaScreen() {
+  const themed = useThemeStyles();
   const [user, setUser] = useState<MobileUser | null>(null);
   const [info, setInfo] = useState<ConferenciaInfo | null>(null);
   const [bens, setBens] = useState<BemConferencia[]>([]);
@@ -165,6 +150,23 @@ export default function ConferenciaScreen() {
   const [justificativa, setJustificativa] = useState('');
   const [camposDivergentes, setCamposDivergentes] = useState('');
   const [observacaoDivergencia, setObservacaoDivergencia] = useState('');
+
+  const getThemedStatusColor = useCallback((status: ConferenciaStatus): string => {
+    switch (status) {
+      case 'localizado':
+        return themed.colors.success;
+      case 'pendente':
+      case 'cadastrado_manualmente':
+        return themed.colors.warning;
+      case 'nao_localizado':
+        return themed.colors.danger;
+      case 'divergente':
+      case 'em_transferencia':
+        return themed.colors.info;
+      default:
+        return themed.colors.textMuted;
+    }
+  }, [themed.colors]);
 
   const loadConferencia = useCallback(async ({
     pageToLoad = 1,
@@ -606,10 +608,10 @@ export default function ConferenciaScreen() {
     );
   }
 
-  const renderMetric = (label: string, value: number, color = '#1E4E79') => (
-    <View style={styles.metricItem} key={label}>
+  const renderMetric = (label: string, value: number, color = themed.colors.primary) => (
+    <View style={[styles.metricItem, themed.surface]} key={label}>
       <Text style={[styles.metricValue, { color }]}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={[styles.metricLabel, themed.mutedText]}>{label}</Text>
     </View>
   );
 
@@ -619,7 +621,13 @@ export default function ConferenciaScreen() {
       style={[
         styles.toast,
         isModalToast ? styles.modalToast : styles.screenToast,
-        notification.tone === 'success' ? styles.toastSuccess : notification.tone === 'error' ? styles.toastError : styles.toastInfo,
+        {
+          backgroundColor: notification.tone === 'success'
+            ? themed.colors.success
+            : notification.tone === 'error'
+              ? themed.colors.danger
+              : themed.colors.info,
+        },
         {
           opacity: toastOpacity,
           transform: [{ translateY: toastTranslateY }],
@@ -628,15 +636,15 @@ export default function ConferenciaScreen() {
       <MaterialIcons
         name={notification.tone === 'success' ? 'check-circle' : notification.tone === 'error' ? 'error-outline' : 'info-outline'}
         size={20}
-        color="#FFFFFF"
+        color={themed.colors.primaryText}
       />
-      <Text style={styles.toastText}>{notification.message}</Text>
+      <Text style={[styles.toastText, themed.onPrimaryText]}>{notification.message}</Text>
     </Animated.View>
   ) : null;
 
   const renderBemRow = (bem: BemConferencia) => {
     const status = getStatus(bem);
-    const statusColor = getStatusColor(status);
+    const statusColor = getThemedStatusColor(status);
     const canLocalizarBem = canEdit && ['pendente', 'cadastrado_manualmente'].includes(status);
     const canNaoLocalizadoBem = canEdit && status === 'pendente';
 
@@ -644,44 +652,50 @@ export default function ConferenciaScreen() {
       <Pressable
         key={`${bem.id}-${getBemCodigo(bem)}`}
         onPress={() => setSelectedBem(bem)}
-        style={({ pressed }) => [styles.assetRow, pressed && styles.pressed]}>
-        <View style={styles.assetIcon}>
-          <MaterialIcons name="inventory-2" size={20} color="#1E4E79" />
+        style={({ pressed }) => [
+          styles.assetRow,
+          themed.mutedSurface,
+          pressed && styles.pressed,
+        ]}>
+        <View style={[styles.assetIcon, themed.primarySurface]}>
+          <MaterialIcons name="inventory-2" size={20} color={themed.colors.primary} />
         </View>
 
         <View style={styles.assetInfo}>
           <View style={styles.assetTitleRow}>
-            <Text style={styles.assetCode}>{getBemCodigo(bem)}</Text>
+            <Text style={[styles.assetCode, themed.text]}>{getBemCodigo(bem)}</Text>
             <View style={[styles.statusBadge, { backgroundColor: `${statusColor}18` }]}>
               <Text style={[styles.statusBadgeText, { color: statusColor }]} numberOfLines={1}>
                 {getStatusLabel(bem)}
               </Text>
             </View>
           </View>
-          <Text style={styles.assetDescription} numberOfLines={2}>{getBemDescricao(bem)}</Text>
-          <Text style={styles.assetMeta} numberOfLines={1}>
+          <Text style={[styles.assetDescription, themed.mutedText]} numberOfLines={2}>{getBemDescricao(bem)}</Text>
+          <Text style={[styles.assetMeta, themed.subtleText]} numberOfLines={1}>
             {displayValue(bem.marca)} | {displayValue(bem.modelo)}
           </Text>
 
           {canEdit ? (
-            <View style={styles.inlineActions}>
+            <View style={[styles.inlineActions, { borderTopColor: themed.colors.border }]}>
               {canLocalizarBem ? (
-                <Pressable onPress={() => handleLocalizar(bem)} style={styles.inlineActionPrimary}>
-                  <MaterialIcons name="check" size={17} color="#FFFFFF" />
-                  <Text style={styles.inlineActionPrimaryText}>Localizar</Text>
+                <Pressable
+                  onPress={() => handleLocalizar(bem)}
+                  style={[styles.inlineActionPrimary, { backgroundColor: themed.colors.success }]}>
+                  <MaterialIcons name="check" size={17} color={themed.colors.primaryText} />
+                  <Text style={[styles.inlineActionPrimaryText, themed.onPrimaryText]}>Localizar</Text>
                 </Pressable>
               ) : null}
               {canNaoLocalizadoBem ? (
                 <Pressable
                   onPress={() => setNaoLocalizadoBem(bem)}
-                  style={[styles.inlineActionSecondary, styles.inlineActionDanger]}>
-                  <MaterialIcons name="block" size={17} color="#C53030" />
-                  <Text style={styles.inlineActionDangerText}>Não localizado</Text>
+                  style={[styles.inlineActionSecondary, themed.dangerSurface]}>
+                  <MaterialIcons name="block" size={17} color={themed.colors.danger} />
+                  <Text style={[styles.inlineActionDangerText, { color: themed.colors.danger }]}>Não localizado</Text>
                 </Pressable>
               ) : null}
-              <Pressable onPress={() => openDivergencia(bem)} style={styles.inlineActionSecondary}>
-                <MaterialIcons name="report-problem" size={17} color="#1E4E79" />
-                <Text style={styles.inlineActionSecondaryText}>Divergência</Text>
+              <Pressable onPress={() => openDivergencia(bem)} style={[styles.inlineActionSecondary, themed.primarySurface]}>
+                <MaterialIcons name="report-problem" size={17} color={themed.colors.primary} />
+                <Text style={[styles.inlineActionSecondaryText, themed.primaryText]}>Divergência</Text>
               </Pressable>
             </View>
           ) : null}
@@ -692,45 +706,45 @@ export default function ConferenciaScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, themed.screen]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#1E4E79" />
-          <Text style={styles.loadingText}>Carregando conferência</Text>
+          <ActivityIndicator color={themed.colors.primary} />
+          <Text style={[styles.loadingText, themed.mutedText]}>Carregando conferência</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, themed.screen]}>
       <Modal transparent animationType="fade" visible={selectedBem !== null} onRequestClose={() => setSelectedBem(null)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalPanel}>
-            <View style={styles.modalHeader}>
+        <View style={[styles.modalOverlay, themed.overlay]}>
+          <View style={[styles.modalPanel, { backgroundColor: themed.colors.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themed.colors.border }]}>
               <View style={styles.modalHeaderText}>
-                <Text style={styles.modalEyebrow}>Patrimônio</Text>
-                <Text style={styles.modalTitle}>{selectedBem ? getBemCodigo(selectedBem) : '-'}</Text>
+                <Text style={[styles.modalEyebrow, themed.mutedText]}>Patrimônio</Text>
+                <Text style={[styles.modalTitle, themed.text]}>{selectedBem ? getBemCodigo(selectedBem) : '-'}</Text>
               </View>
-              <Pressable onPress={() => setSelectedBem(null)} style={styles.iconButton}>
-                <MaterialIcons name="close" size={22} color="#1E4E79" />
+              <Pressable onPress={() => setSelectedBem(null)} style={[styles.iconButton, themed.primarySurface]}>
+                <MaterialIcons name="close" size={22} color={themed.colors.primary} />
               </Pressable>
             </View>
             {selectedBem ? (
               <ScrollView contentContainerStyle={styles.modalContent}>
-                <Text style={styles.modalDescription}>{getBemDescricao(selectedBem)}</Text>
-                <View style={styles.detailGrid}>
-                  <Text style={styles.detailLabel}>Status</Text>
-                  <Text style={styles.detailValue}>{getStatusLabel(selectedBem)}</Text>
-                  <Text style={styles.detailLabel}>Setor</Text>
-                  <Text style={styles.detailValue}>{getReferenciaNome(selectedBem.setor)}</Text>
-                  <Text style={styles.detailLabel}>Complemento</Text>
-                  <Text style={styles.detailValue}>{getReferenciaNome(selectedBem.complemento_setor)}</Text>
-                  <Text style={styles.detailLabel}>Série</Text>
-                  <Text style={styles.detailValue}>{displayValue(selectedBem.numero_serie)}</Text>
-                  <Text style={styles.detailLabel}>Conservação</Text>
-                  <Text style={styles.detailValue}>{displayValue(selectedBem.estado_conservacao)}</Text>
-                  <Text style={styles.detailLabel}>Observação</Text>
-                  <Text style={styles.detailValue}>{displayValue(selectedBem.conferencia?.observacao_item ?? selectedBem.observacao)}</Text>
+                <Text style={[styles.modalDescription, themed.mutedText]}>{getBemDescricao(selectedBem)}</Text>
+                <View style={[styles.detailGrid, themed.mutedSurface]}>
+                  <Text style={[styles.detailLabel, themed.mutedText]}>Status</Text>
+                  <Text style={[styles.detailValue, themed.text]}>{getStatusLabel(selectedBem)}</Text>
+                  <Text style={[styles.detailLabel, themed.mutedText]}>Setor</Text>
+                  <Text style={[styles.detailValue, themed.text]}>{getReferenciaNome(selectedBem.setor)}</Text>
+                  <Text style={[styles.detailLabel, themed.mutedText]}>Complemento</Text>
+                  <Text style={[styles.detailValue, themed.text]}>{getReferenciaNome(selectedBem.complemento_setor)}</Text>
+                  <Text style={[styles.detailLabel, themed.mutedText]}>Série</Text>
+                  <Text style={[styles.detailValue, themed.text]}>{displayValue(selectedBem.numero_serie)}</Text>
+                  <Text style={[styles.detailLabel, themed.mutedText]}>Conservação</Text>
+                  <Text style={[styles.detailValue, themed.text]}>{displayValue(selectedBem.estado_conservacao)}</Text>
+                  <Text style={[styles.detailLabel, themed.mutedText]}>Observação</Text>
+                  <Text style={[styles.detailValue, themed.text]}>{displayValue(selectedBem.conferencia?.observacao_item ?? selectedBem.observacao)}</Text>
                 </View>
               </ScrollView>
             ) : null}
@@ -740,25 +754,29 @@ export default function ConferenciaScreen() {
       </Modal>
 
       <Modal transparent animationType="fade" visible={naoLocalizadoBem !== null} onRequestClose={() => setNaoLocalizadoBem(null)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.formModal}>
-            <Text style={styles.modalTitle}>Bem não localizado</Text>
-            <Text style={styles.formModalText}>{naoLocalizadoBem ? getBemCodigo(naoLocalizadoBem) : '-'}</Text>
+        <View style={[styles.modalOverlay, themed.overlay]}>
+          <View style={[styles.formModal, { backgroundColor: themed.colors.surface }]}>
+            <Text style={[styles.modalTitle, themed.text]}>Bem não localizado</Text>
+            <Text style={[styles.formModalText, themed.mutedText]}>{naoLocalizadoBem ? getBemCodigo(naoLocalizadoBem) : '-'}</Text>
             <TextInput
               placeholder="Justificativa"
-              placeholderTextColor="#829AB1"
+              placeholderTextColor={themed.colors.textSubtle}
               multiline
               value={justificativa}
               onChangeText={setJustificativa}
-              style={styles.textArea}
+              style={[styles.textArea, themed.input]}
             />
             <View style={styles.modalActions}>
-              <Pressable onPress={() => setNaoLocalizadoBem(null)} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Cancelar</Text>
+              <Pressable onPress={() => setNaoLocalizadoBem(null)} style={[styles.secondaryButton, themed.surface]}>
+                <Text style={[styles.secondaryButtonText, themed.primaryText]}>Cancelar</Text>
               </Pressable>
-              <Pressable onPress={handleRegistrarNaoLocalizado} style={styles.dangerButton}>
-                {actionLoading === 'nao-localizado' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="block" size={19} color="#FFFFFF" />}
-                <Text style={styles.primaryButtonText}>Registrar</Text>
+              <Pressable onPress={handleRegistrarNaoLocalizado} style={[styles.dangerButton, { backgroundColor: themed.colors.danger }]}>
+                {actionLoading === 'nao-localizado' ? (
+                  <ActivityIndicator color={themed.colors.primaryText} />
+                ) : (
+                  <MaterialIcons name="block" size={19} color={themed.colors.primaryText} />
+                )}
+                <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>Registrar</Text>
               </Pressable>
             </View>
           </View>
@@ -767,34 +785,38 @@ export default function ConferenciaScreen() {
       </Modal>
 
       <Modal transparent animationType="fade" visible={divergenciaTarget !== null} onRequestClose={closeDivergencia}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.formModal}>
-            <Text style={styles.modalTitle}>Divergência</Text>
-            <Text style={styles.formModalText}>
+        <View style={[styles.modalOverlay, themed.overlay]}>
+          <View style={[styles.formModal, { backgroundColor: themed.colors.surface }]}>
+            <Text style={[styles.modalTitle, themed.text]}>Divergência</Text>
+            <Text style={[styles.formModalText, themed.mutedText]}>
               {divergenciaTarget?.bem ? getBemCodigo(divergenciaTarget.bem) : displayValue(divergenciaTarget?.codigo)}
             </Text>
             <TextInput
               placeholder="Campos divergentes"
-              placeholderTextColor="#829AB1"
+              placeholderTextColor={themed.colors.textSubtle}
               value={camposDivergentes}
               onChangeText={setCamposDivergentes}
-              style={styles.input}
+              style={[styles.input, themed.input]}
             />
             <TextInput
               placeholder="Observação"
-              placeholderTextColor="#829AB1"
+              placeholderTextColor={themed.colors.textSubtle}
               multiline
               value={observacaoDivergencia}
               onChangeText={setObservacaoDivergencia}
-              style={styles.textArea}
+              style={[styles.textArea, themed.input]}
             />
             <View style={styles.modalActions}>
-              <Pressable onPress={closeDivergencia} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Cancelar</Text>
+              <Pressable onPress={closeDivergencia} style={[styles.secondaryButton, themed.surface]}>
+                <Text style={[styles.secondaryButtonText, themed.primaryText]}>Cancelar</Text>
               </Pressable>
-              <Pressable onPress={handleRegistrarDivergencia} style={styles.primaryButton}>
-                {actionLoading === 'divergencia' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="save" size={19} color="#FFFFFF" />}
-                <Text style={styles.primaryButtonText}>Salvar</Text>
+              <Pressable onPress={handleRegistrarDivergencia} style={[styles.primaryButton, { backgroundColor: themed.colors.primary }]}>
+                {actionLoading === 'divergencia' ? (
+                  <ActivityIndicator color={themed.colors.primaryText} />
+                ) : (
+                  <MaterialIcons name="save" size={19} color={themed.colors.primaryText} />
+                )}
+                <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>Salvar</Text>
               </Pressable>
             </View>
           </View>
@@ -810,28 +832,41 @@ export default function ConferenciaScreen() {
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.35}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        refreshControl={(
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={themed.colors.primary}
+            colors={[themed.colors.primary]}
+          />
+        )}
         ListHeaderComponent={(
           <View style={styles.headerContent}>
         <View style={styles.header}>
           <AppMenuButton />
           <View style={styles.headerTextGroup}>
-            <Text style={styles.eyebrow}>Conferência de bens</Text>
-            <Text style={styles.title}>Inventário</Text>
+            <Text style={[styles.eyebrow, themed.mutedText]}>Conferência de bens</Text>
+            <Text style={[styles.title, themed.text]}>Inventário</Text>
           </View>
         </View>
 
-        <View style={styles.contextPanel}>
-          <View style={styles.contextIcon}>
-            <MaterialIcons name="apartment" size={23} color="#1E4E79" />
+        <View style={[styles.contextPanel, themed.surface]}>
+          <View style={[styles.contextIcon, themed.primarySurface]}>
+            <MaterialIcons name="apartment" size={23} color={themed.colors.primary} />
           </View>
           <View style={styles.contextText}>
-            <Text style={styles.contextName}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
-            <Text style={styles.contextMeta}>Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}</Text>
-            <Text style={styles.contextMeta}>Atividade: {info?.atividade.situacao ?? '-'}</Text>
+            <Text style={[styles.contextName, themed.text]}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
+            <Text style={[styles.contextMeta, themed.mutedText]}>Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}</Text>
+            <Text style={[styles.contextMeta, themed.mutedText]}>Atividade: {info?.atividade.situacao ?? '-'}</Text>
           </View>
-          <View style={[styles.lockBadge, canEdit ? styles.editableBadge : styles.blockedBadge]}>
-            <Text style={[styles.lockBadgeText, canEdit ? styles.editableBadgeText : styles.blockedBadgeText]}>
+          <View style={[
+            styles.lockBadge,
+            { backgroundColor: canEdit ? themed.colors.successSoft : themed.colors.surfaceAccent },
+          ]}>
+            <Text style={[
+              styles.lockBadgeText,
+              { color: canEdit ? themed.colors.success : themed.colors.textMuted },
+            ]}>
               {canEdit ? 'Aberta' : 'Bloqueada'}
             </Text>
           </View>
@@ -839,19 +874,19 @@ export default function ConferenciaScreen() {
 
         <View style={styles.metricsPanel}>
           {renderMetric('Total', info?.resumo.total ?? 0)}
-          {renderMetric('Localizados', info?.resumo.localizados ?? 0, '#2F855A')}
-          {renderMetric('Pendentes', info?.resumo.pendentes ?? 0, '#B7791F')}
-          {renderMetric('Não localizados', info?.resumo.nao_localizados ?? 0, '#C53030')}
-          {renderMetric('Divergentes', info?.resumo.divergentes ?? 0, '#1E4E79')}
-          {renderMetric('Transferência', info?.resumo.em_transferencia ?? 0, '#1E4E79')}
-          {renderMetric('Manuais', info?.resumo.cadastrados_manualmente ?? 0, '#B7791F')}
+          {renderMetric('Localizados', info?.resumo.localizados ?? 0, themed.colors.success)}
+          {renderMetric('Pendentes', info?.resumo.pendentes ?? 0, themed.colors.warning)}
+          {renderMetric('Não localizados', info?.resumo.nao_localizados ?? 0, themed.colors.danger)}
+          {renderMetric('Divergentes', info?.resumo.divergentes ?? 0, themed.colors.info)}
+          {renderMetric('Transferência', info?.resumo.em_transferencia ?? 0, themed.colors.info)}
+          {renderMetric('Manuais', info?.resumo.cadastrados_manualmente ?? 0, themed.colors.warning)}
         </View>
 
-        <View style={styles.scanPanel}>
+        <View style={[styles.scanPanel, themed.surface]}>
           <View style={styles.panelHeader}>
-            <Text style={styles.sectionTitle}>Leitura patrimonial</Text>
-            <Pressable onPress={handleStartScanner} style={styles.iconActionButton}>
-              <MaterialIcons name={isScannerActive ? 'close' : 'qr-code-scanner'} size={22} color="#1E4E79" />
+            <Text style={[styles.sectionTitle, themed.text]}>Leitura patrimonial</Text>
+            <Pressable onPress={handleStartScanner} style={[styles.iconActionButton, themed.primarySurface]}>
+              <MaterialIcons name={isScannerActive ? 'close' : 'qr-code-scanner'} size={22} color={themed.colors.primary} />
             </Pressable>
           </View>
 
@@ -863,40 +898,48 @@ export default function ConferenciaScreen() {
                 barcodeScannerSettings={{ barcodeTypes: BARCODE_TYPES }}
                 onBarcodeScanned={hasScannedBarcode ? undefined : handleBarcodeScanned}
               />
-              <View style={styles.scanLine} />
+              <View style={[styles.scanLine, { backgroundColor: themed.colors.success }]} />
             </View>
           ) : null}
 
-          <View style={styles.manualEntry}>
-            <MaterialIcons name="pin" size={20} color="#627D98" />
+          <View style={[styles.manualEntry, themed.input]}>
+            <MaterialIcons name="pin" size={20} color={themed.colors.textMuted} />
             <TextInput
               placeholder="Patrimônio"
-              placeholderTextColor="#829AB1"
+              placeholderTextColor={themed.colors.textSubtle}
               keyboardType="number-pad"
               inputMode="numeric"
               autoCorrect={false}
               value={manualCode}
               onChangeText={(value) => setManualCode(onlyDigits(value))}
               onSubmitEditing={() => validateCode(manualCode)}
-              style={styles.manualEntryInput}
+              style={[styles.manualEntryInput, themed.text]}
             />
           </View>
 
           <Pressable
             disabled={isValidating}
             onPress={() => validateCode(manualCode)}
-            style={({ pressed }) => [styles.primaryButtonFull, pressed && styles.pressed]}>
-            {isValidating ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="search" size={20} color="#FFFFFF" />}
-            <Text style={styles.primaryButtonText}>{isValidating ? 'Validando' : 'Validar leitura'}</Text>
+            style={({ pressed }) => [
+              styles.primaryButtonFull,
+              { backgroundColor: themed.colors.primary },
+              pressed && styles.pressed,
+            ]}>
+            {isValidating ? (
+              <ActivityIndicator color={themed.colors.primaryText} />
+            ) : (
+              <MaterialIcons name="search" size={20} color={themed.colors.primaryText} />
+            )}
+            <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>{isValidating ? 'Validando' : 'Validar leitura'}</Text>
           </Pressable>
 
           {resultadoLeitura ? (
-            <View style={styles.readResultPanel}>
-              <Text style={styles.readResultStatus}>{resultadoLeitura.message}</Text>
+            <View style={[styles.readResultPanel, themed.mutedSurface]}>
+              <Text style={[styles.readResultStatus, themed.primaryText]}>{resultadoLeitura.message}</Text>
               {lastReadBem ? (
                 <>
-                  <Text style={styles.readResultCode}>{getBemCodigo(lastReadBem)}</Text>
-                  <Text style={styles.readResultDescription}>{getBemDescricao(lastReadBem)}</Text>
+                  <Text style={[styles.readResultCode, themed.text]}>{getBemCodigo(lastReadBem)}</Text>
+                  <Text style={[styles.readResultDescription, themed.mutedText]}>{getBemDescricao(lastReadBem)}</Text>
                 </>
               ) : null}
               {canEdit && (
@@ -905,14 +948,18 @@ export default function ConferenciaScreen() {
               ) ? (
                 <View style={styles.readResultActions}>
                   {resultadoLeitura.pode_localizar ? (
-                    <Pressable onPress={() => handleLocalizar()} style={styles.confirmButton}>
-                      {actionLoading === 'localizar' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="check-circle" size={20} color="#FFFFFF" />}
-                      <Text style={styles.primaryButtonText}>Localizado</Text>
+                    <Pressable onPress={() => handleLocalizar()} style={[styles.confirmButton, { backgroundColor: themed.colors.success }]}>
+                      {actionLoading === 'localizar' ? (
+                        <ActivityIndicator color={themed.colors.primaryText} />
+                      ) : (
+                        <MaterialIcons name="check-circle" size={20} color={themed.colors.primaryText} />
+                      )}
+                      <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>Localizado</Text>
                     </Pressable>
                   ) : null}
-                  <Pressable onPress={handleDivergenciaLeitura} style={styles.divergenceButton}>
-                    <MaterialIcons name="report-problem" size={20} color="#1E4E79" />
-                    <Text style={styles.divergenceButtonText}>
+                  <Pressable onPress={handleDivergenciaLeitura} style={[styles.divergenceButton, themed.primarySurface]}>
+                    <MaterialIcons name="report-problem" size={20} color={themed.colors.primary} />
+                    <Text style={[styles.divergenceButtonText, themed.primaryText]}>
                       {resultadoLeitura.pode_localizar ? 'Divergência' : 'Declarar divergência'}
                     </Text>
                   </Pressable>
@@ -931,29 +978,38 @@ export default function ConferenciaScreen() {
                 <Pressable
                   key={filter.key}
                   onPress={() => setFilterStatus(filter.key)}
-                  style={[styles.filterButton, isActive && styles.filterButtonActive]}>
-                  <Text style={[styles.filterButtonText, isActive && styles.filterButtonTextActive]}>{filter.label}</Text>
+                  style={[
+                    styles.filterButton,
+                    themed.surface,
+                    isActive && themed.primarySurface,
+                    isActive && { borderColor: themed.colors.primary },
+                  ]}>
+                  <Text style={[
+                    styles.filterButtonText,
+                    themed.mutedText,
+                    isActive && themed.primaryText,
+                  ]}>{filter.label}</Text>
                 </Pressable>
               );
             })}
           </ScrollView>
         </View>
 
-        <View style={styles.assetsPanel}>
+        <View style={[styles.assetsPanel, themed.surface]}>
           <View style={styles.panelHeader}>
-            <Text style={styles.sectionTitle}>Bens do setor</Text>
-            <Text style={styles.panelMeta}>{totalBensListados}</Text>
+            <Text style={[styles.sectionTitle, themed.text]}>Bens do setor</Text>
+            <Text style={[styles.panelMeta, themed.mutedText]}>{totalBensListados}</Text>
           </View>
 
           {isLoadingList ? (
-            <View style={styles.emptyPanel}>
-              <ActivityIndicator color="#1E4E79" />
-              <Text style={styles.emptyTitle}>Carregando bens</Text>
+            <View style={[styles.emptyPanel, themed.mutedSurface]}>
+              <ActivityIndicator color={themed.colors.primary} />
+              <Text style={[styles.emptyTitle, themed.mutedText]}>Carregando bens</Text>
             </View>
           ) : filteredBens.length === 0 ? (
-            <View style={styles.emptyPanel}>
-              <MaterialIcons name="inventory" size={28} color="#627D98" />
-              <Text style={styles.emptyTitle}>Nenhum bem neste filtro</Text>
+            <View style={[styles.emptyPanel, themed.mutedSurface]}>
+              <MaterialIcons name="inventory" size={28} color={themed.colors.textMuted} />
+              <Text style={[styles.emptyTitle, themed.mutedText]}>Nenhum bem neste filtro</Text>
             </View>
           ) : null}
         </View>
@@ -966,13 +1022,13 @@ export default function ConferenciaScreen() {
               <View style={styles.listFooter}>
                 {isLoadingMore ? (
                   <>
-                    <ActivityIndicator color="#1E4E79" />
-                    <Text style={styles.listFooterText}>Carregando mais bens</Text>
+                    <ActivityIndicator color={themed.colors.primary} />
+                    <Text style={[styles.listFooterText, themed.mutedText]}>Carregando mais bens</Text>
                   </>
                 ) : hasMore ? (
-                  <Text style={styles.listFooterText}>Role para carregar mais</Text>
+                  <Text style={[styles.listFooterText, themed.mutedText]}>Role para carregar mais</Text>
                 ) : (
-                  <Text style={styles.listFooterText}>Todos os bens foram carregados</Text>
+                  <Text style={[styles.listFooterText, themed.mutedText]}>Todos os bens foram carregados</Text>
                 )}
               </View>
             ) : null}
@@ -982,11 +1038,16 @@ export default function ConferenciaScreen() {
           onPress={handleFinalizar}
           style={({ pressed }) => [
             styles.finalizeButton,
-            (!info?.atividade.pode_finalizar || actionLoading === 'finalizar') && styles.finalizeButtonDisabled,
+            { backgroundColor: themed.colors.success },
+            (!info?.atividade.pode_finalizar || actionLoading === 'finalizar') && { backgroundColor: themed.colors.textSubtle },
             pressed && styles.pressed,
           ]}>
-          {actionLoading === 'finalizar' ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="task-alt" size={21} color="#FFFFFF" />}
-          <Text style={styles.primaryButtonText}>Finalizar conferência</Text>
+          {actionLoading === 'finalizar' ? (
+            <ActivityIndicator color={themed.colors.primaryText} />
+          ) : (
+            <MaterialIcons name="task-alt" size={21} color={themed.colors.primaryText} />
+          )}
+          <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>Finalizar conferência</Text>
         </Pressable>
           </View>
         )}

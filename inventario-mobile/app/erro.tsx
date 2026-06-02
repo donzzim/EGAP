@@ -2,12 +2,14 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, type Href, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeStyles } from '@/src/theme/useThemeStyles';
 
 function getParamValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
 export default function AppErrorScreen() {
+  const themed = useThemeStyles();
   const params = useLocalSearchParams<{
     kind?: string;
     title?: string;
@@ -32,33 +34,43 @@ export default function AppErrorScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, themed.screen]}>
       <View style={styles.content}>
-        <View style={styles.iconShell}>
+        <View style={[styles.iconShell, themed.dangerSurface]}>
           <MaterialIcons
             name={isNetworkError ? 'wifi-off' : 'cloud-off'}
             size={38}
-            color="#C53030"
+            color={themed.colors.danger}
           />
         </View>
 
         <View style={styles.textGroup}>
-          <Text style={styles.eyebrow}>{isNetworkError ? 'Conexão indisponível' : 'Falha na aplicação'}</Text>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
-          {status ? <Text style={styles.status}>Código HTTP {status}</Text> : null}
+          <Text style={[styles.eyebrow, themed.mutedText]}>{isNetworkError ? 'Conexão indisponível' : 'Falha na aplicação'}</Text>
+          <Text style={[styles.title, themed.text]}>{title}</Text>
+          <Text style={[styles.message, themed.mutedText]}>{message}</Text>
+          {status ? <Text style={[styles.status, { color: themed.colors.danger }]}>Código HTTP {status}</Text> : null}
         </View>
 
         <View style={styles.actions}>
-          <Pressable onPress={handleBack} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
-            <MaterialIcons name="arrow-back" size={20} color="#1E4E79" />
-            <Text style={styles.secondaryButtonText}>Voltar</Text>
+          <Pressable
+            onPress={handleBack}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              themed.surface,
+              pressed && styles.pressed,
+            ]}>
+            <MaterialIcons name="arrow-back" size={20} color={themed.colors.primary} />
+            <Text style={[styles.secondaryButtonText, themed.primaryText]}>Voltar</Text>
           </Pressable>
           <Pressable
             onPress={() => router.replace('/' as Href)}
-            style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
-            <MaterialIcons name="home" size={20} color="#FFFFFF" />
-            <Text style={styles.primaryButtonText}>Início</Text>
+            style={({ pressed }) => [
+              styles.primaryButton,
+              { backgroundColor: themed.colors.primary },
+              pressed && styles.pressed,
+            ]}>
+            <MaterialIcons name="home" size={20} color={themed.colors.primaryText} />
+            <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>Início</Text>
           </Pressable>
         </View>
       </View>

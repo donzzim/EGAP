@@ -6,8 +6,8 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { subscribeAppError, type AppErrorEvent } from '@/src/errors/appErrorEvents';
+import { AppThemeProvider, useAppTheme } from '@/src/theme/appTheme';
 
 function buildErrorHref(event: AppErrorEvent): Href {
   const params = new URLSearchParams();
@@ -23,8 +23,8 @@ function buildErrorHref(event: AppErrorEvent): Href {
   return `/erro?${params.toString()}` as Href;
 }
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function RootNavigator() {
+  const { isDark } = useAppTheme();
   const lastErrorRef = useRef<{ signature: string; notifiedAt: number } | null>(null);
 
   useEffect(() => {
@@ -45,16 +45,25 @@ export default function RootLayout() {
   }, []);
 
   return (
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="erro" options={{ headerShown: false }} />
+        <Stack.Screen name="patrimonio" options={{ headerShown: false }} />
+        <Stack.Screen name="pedidos" options={{ headerShown: false }} />
+        <Stack.Screen name="configuracoes" options={{ headerShown: false }} />
+      </Stack>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <GestureHandlerRootView style={styles.root}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="erro" options={{ headerShown: false }} />
-          <Stack.Screen name="patrimonio" options={{ headerShown: false }} />
-          <Stack.Screen name="pedidos" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <AppThemeProvider>
+        <RootNavigator />
+      </AppThemeProvider>
     </GestureHandlerRootView>
   );
 }

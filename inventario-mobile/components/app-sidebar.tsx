@@ -17,6 +17,7 @@ import {
   setPatrimonioNavigationDirectionFromRoutes,
   type PatrimonioRoute,
 } from '@/src/navigation/patrimonioNavigation';
+import { useAppTheme } from '@/src/theme/appTheme';
 
 const SIDEBAR_MAX_WIDTH = 360;
 const SIDEBAR_MIN_WIDTH = 280;
@@ -28,7 +29,8 @@ type AppRoute =
   | '/patrimonio/bens'
   | '/patrimonio/conferencia'
   | '/pedidos/consumo'
-  | '/pedidos/permanentes';
+  | '/pedidos/permanentes'
+  | '/configuracoes/tema';
 
 interface SidebarItem {
   href: AppRoute;
@@ -78,23 +80,23 @@ const PEDIDOS_ITEMS: SidebarItem[] = [
   },
 ];
 
-const FUTURE_GROUPS = [
+const CONFIGURACOES_ITEMS: SidebarItem[] = [
   {
-    label: 'Processos',
-    icon: 'assignment' as keyof typeof MaterialIcons.glyphMap,
-  },
-  {
-    label: 'Relatórios',
-    icon: 'bar-chart' as keyof typeof MaterialIcons.glyphMap,
+    href: '/configuracoes/tema',
+    label: 'Tema',
+    description: 'Alternar entre modo claro e escuro',
+    icon: 'palette',
   },
 ];
 
 export function AppSidebar({ visible, onClose }: AppSidebarProps) {
+  const { colors } = useAppTheme();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const [isPatrimonioOpen, setIsPatrimonioOpen] = useState(true);
   const [isPedidosOpen, setIsPedidosOpen] = useState(true);
+  const [isConfiguracoesOpen, setIsConfiguracoesOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const sidebarWidth = Math.min(
     SIDEBAR_MAX_WIDTH,
@@ -161,22 +163,37 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
               onPress={() => handleNavigate(item.href)}
               style={({ pressed }) => [
                 styles.item,
-                isActive && styles.itemActive,
-                pressed && !isActive && styles.itemPressed,
+                { backgroundColor: colors.surfaceMuted },
+                isActive && { backgroundColor: colors.primary },
+                pressed && !isActive && { backgroundColor: colors.primarySoft },
               ]}>
-              <View style={[styles.itemIcon, isActive && styles.itemIconActive]}>
+              <View
+                style={[
+                  styles.itemIcon,
+                  { backgroundColor: colors.primarySoft },
+                  isActive && styles.itemIconActive,
+                ]}>
                 <MaterialIcons
                   name={item.icon}
                   size={19}
-                  color={isActive ? '#FFFFFF' : '#1E4E79'}
+                  color={isActive ? colors.primaryText : colors.primary}
                 />
               </View>
               <View style={styles.itemText}>
-                <Text style={[styles.itemTitle, isActive && styles.itemTitleActive]}>
+                <Text
+                  style={[
+                    styles.itemTitle,
+                    { color: colors.text },
+                    isActive && { color: colors.primaryText },
+                  ]}>
                   {item.label}
                 </Text>
                 <Text
-                  style={[styles.itemDescription, isActive && styles.itemDescriptionActive]}
+                  style={[
+                    styles.itemDescription,
+                    { color: colors.textMuted },
+                    isActive && { color: colors.primaryText },
+                  ]}
                   numberOfLines={2}>
                   {item.description}
                 </Text>
@@ -195,27 +212,36 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
       visible={visible}
       statusBarTranslucent
       onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View
           style={[
             styles.sidebar,
             {
+              backgroundColor: colors.surface,
               width: sidebarWidth,
               paddingTop: insets.top,
               paddingBottom: insets.bottom,
             },
           ]}>
-          <View style={styles.header}>
-            <View style={styles.brandIcon}>
-              <MaterialIcons name="apps" size={22} color="#1E4E79" />
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
+            <View style={[styles.brandIcon, { backgroundColor: colors.primarySoft }]}>
+              <MaterialIcons name="apps" size={22} color={colors.primary} />
             </View>
             <View style={styles.headerText}>
-              <Text style={styles.headerLabel}>EGap Mobile</Text>
-              <Text style={styles.headerTitle}>Menu</Text>
+              <Text style={[styles.headerLabel, { color: colors.textMuted }]}>EGap Mobile</Text>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>Menu</Text>
             </View>
-            <Pressable onPress={onClose} style={styles.iconButton}>
-              <MaterialIcons name="close" size={21} color="#1E4E79" />
+            <Pressable
+              onPress={onClose}
+              style={[
+                styles.iconButton,
+                {
+                  backgroundColor: colors.primarySoft,
+                  borderColor: colors.borderAccent,
+                },
+              ]}>
+              <MaterialIcons name="close" size={21} color={colors.primary} />
             </Pressable>
           </View>
 
@@ -224,19 +250,28 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}>
             <View style={styles.group}>
-              <View style={styles.groupHeader}>
+              <View
+                style={[
+                  styles.groupHeader,
+                  {
+                    backgroundColor: colors.surfaceMuted,
+                    borderColor: colors.border,
+                  },
+                ]}>
                 <Pressable
                   onPress={handleOpenPatrimonio}
                   style={({ pressed }) => [
                     styles.groupMain,
                     pressed && styles.pressed,
                   ]}>
-                  <View style={styles.groupIcon}>
-                    <MaterialIcons name="account-balance" size={21} color="#1E4E79" />
+                  <View style={[styles.groupIcon, { backgroundColor: colors.primarySoft }]}>
+                    <MaterialIcons name="account-balance" size={21} color={colors.primary} />
                   </View>
                   <View style={styles.groupText}>
-                    <Text style={styles.groupTitle}>Patrimônio</Text>
-                    <Text style={styles.groupMeta}>{PATRIMONIO_ITEMS.length} funcionalidades</Text>
+                    <Text style={[styles.groupTitle, { color: colors.text }]}>Patrimônio</Text>
+                    <Text style={[styles.groupMeta, { color: colors.textMuted }]}>
+                      {PATRIMONIO_ITEMS.length} funcionalidades
+                    </Text>
                   </View>
                 </Pressable>
                 <Pressable
@@ -248,7 +283,7 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
                   <MaterialIcons
                     name={isPatrimonioOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                     size={23}
-                    color="#627D98"
+                    color={colors.textMuted}
                   />
                 </Pressable>
               </View>
@@ -259,19 +294,28 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
             </View>
 
             <View style={styles.group}>
-              <View style={styles.groupHeader}>
+              <View
+                style={[
+                  styles.groupHeader,
+                  {
+                    backgroundColor: colors.surfaceMuted,
+                    borderColor: colors.border,
+                  },
+                ]}>
                 <Pressable
                   onPress={handleOpenPedidos}
                   style={({ pressed }) => [
                     styles.groupMain,
                     pressed && styles.pressed,
                   ]}>
-                  <View style={styles.groupIcon}>
-                    <MaterialIcons name="shopping-cart" size={21} color="#1E4E79" />
+                  <View style={[styles.groupIcon, { backgroundColor: colors.primarySoft }]}>
+                    <MaterialIcons name="shopping-cart" size={21} color={colors.primary} />
                   </View>
                   <View style={styles.groupText}>
-                    <Text style={styles.groupTitle}>Pedidos</Text>
-                    <Text style={styles.groupMeta}>{PEDIDOS_ITEMS.length} funcionalidades</Text>
+                    <Text style={[styles.groupTitle, { color: colors.text }]}>Pedidos</Text>
+                    <Text style={[styles.groupMeta, { color: colors.textMuted }]}>
+                      {PEDIDOS_ITEMS.length} funcionalidades
+                    </Text>
                   </View>
                 </Pressable>
                 <Pressable
@@ -283,7 +327,7 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
                   <MaterialIcons
                     name={isPedidosOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                     size={23}
-                    color="#627D98"
+                    color={colors.textMuted}
                   />
                 </Pressable>
               </View>
@@ -291,34 +335,66 @@ export function AppSidebar({ visible, onClose }: AppSidebarProps) {
               {isPedidosOpen ? renderItems(PEDIDOS_ITEMS) : null}
             </View>
 
-            <View style={styles.futureGroup}>
-              <Text style={styles.futureTitle}>Próximos grupos</Text>
-              {FUTURE_GROUPS.map((group) => (
-                <View style={styles.futureItem} key={group.label}>
-                  <MaterialIcons name={group.icon} size={19} color="#9FB3C8" />
-                  <Text style={styles.futureItemText}>{group.label}</Text>
-                  <Text style={styles.futureBadge}>Em breve</Text>
-                </View>
-              ))}
+            <View style={styles.group}>
+              <View
+                style={[
+                  styles.groupHeader,
+                  {
+                    backgroundColor: colors.surfaceMuted,
+                    borderColor: colors.border,
+                  },
+                ]}>
+                <Pressable
+                  onPress={() => setIsConfiguracoesOpen((currentValue) => !currentValue)}
+                  style={({ pressed }) => [
+                    styles.groupMain,
+                    pressed && styles.pressed,
+                  ]}>
+                  <View style={[styles.groupIcon, { backgroundColor: colors.primarySoft }]}>
+                    <MaterialIcons name="settings" size={21} color={colors.primary} />
+                  </View>
+                  <View style={styles.groupText}>
+                    <Text style={[styles.groupTitle, { color: colors.text }]}>Configurações</Text>
+                    <Text style={[styles.groupMeta, { color: colors.textMuted }]}>
+                      {CONFIGURACOES_ITEMS.length} funcionalidades
+                    </Text>
+                  </View>
+                </Pressable>
+                <Pressable
+                  onPress={() => setIsConfiguracoesOpen((currentValue) => !currentValue)}
+                  style={({ pressed }) => [
+                    styles.collapseButton,
+                    pressed && styles.pressed,
+                  ]}>
+                  <MaterialIcons
+                    name={isConfiguracoesOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                    size={23}
+                    color={colors.textMuted}
+                  />
+                </Pressable>
+              </View>
+
+              {isConfiguracoesOpen ? renderItems(CONFIGURACOES_ITEMS) : null}
             </View>
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
             <Pressable
               disabled={isLoggingOut}
               onPress={handleLogout}
               style={({ pressed }) => [
                 styles.logoutButton,
-                (pressed || isLoggingOut) && styles.logoutButtonPressed,
+                { backgroundColor: colors.dangerSoft },
+                (pressed || isLoggingOut) && { backgroundColor: colors.dangerPressed },
               ]}>
-              <View style={styles.logoutIcon}>
+              <View style={[styles.logoutIcon, { backgroundColor: colors.dangerPressed }]}>
                 {isLoggingOut ? (
-                  <ActivityIndicator color="#C53030" />
+                  <ActivityIndicator color={colors.danger} />
                 ) : (
-                  <MaterialIcons name="logout" size={20} color="#C53030" />
+                  <MaterialIcons name="logout" size={20} color={colors.danger} />
                 )}
               </View>
-              <Text style={styles.logoutText}>Sair</Text>
+              <Text style={[styles.logoutText, { color: colors.danger }]}>Sair</Text>
             </Pressable>
           </View>
         </View>
@@ -491,38 +567,6 @@ const styles = StyleSheet.create({
   },
   itemDescriptionActive: {
     color: '#D9E8F5',
-  },
-  futureGroup: {
-    gap: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E5EAF0',
-    paddingTop: 14,
-  },
-  futureTitle: {
-    color: '#627D98',
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
-  futureItem: {
-    minHeight: 42,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-    borderRadius: 8,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 10,
-  },
-  futureItemText: {
-    flex: 1,
-    color: '#9FB3C8',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  futureBadge: {
-    color: '#9FB3C8',
-    fontSize: 11,
-    fontWeight: '800',
   },
   pressed: {
     opacity: 0.72,

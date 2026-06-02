@@ -5,6 +5,7 @@ import {
   setPatrimonioNavigationDirectionFromRoutes,
   type PatrimonioRoute,
 } from '@/src/navigation/patrimonioNavigation';
+import { useAppTheme } from '@/src/theme/appTheme';
 
 interface BottomBarItem {
   href: PatrimonioRoute;
@@ -31,6 +32,7 @@ const ITEMS: BottomBarItem[] = [
 ];
 
 export function BottomBar() {
+  const { colors } = useAppTheme();
   const pathname = usePathname();
 
   function handleNavigate(href: BottomBarItem['href']) {
@@ -43,7 +45,14 @@ export function BottomBar() {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+      ]}>
       {ITEMS.map((item) => {
         const isActive = pathname === item.href;
 
@@ -53,15 +62,20 @@ export function BottomBar() {
             onPress={() => handleNavigate(item.href)}
             style={({ pressed }) => [
               styles.item,
-              isActive && styles.itemActive,
-              pressed && !isActive && styles.itemPressed,
+              isActive && { backgroundColor: colors.primary },
+              pressed && !isActive && { backgroundColor: colors.primarySoft },
             ]}>
             <MaterialIcons
               name={item.icon}
               size={22}
-              color={isActive ? '#FFFFFF' : '#1E4E79'}
+              color={isActive ? colors.primaryText : colors.primary}
             />
-            <Text style={[styles.label, isActive && styles.labelActive]}>
+            <Text
+              style={[
+                styles.label,
+                { color: colors.primary },
+                isActive && { color: colors.primaryText },
+              ]}>
               {item.label}
             </Text>
           </Pressable>

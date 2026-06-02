@@ -21,6 +21,7 @@ import {
   type PedidoTipo,
   type TipoAtendimentoPermanente,
 } from '@/src/api/pedidos';
+import { useThemeStyles } from '@/src/theme/useThemeStyles';
 
 type PedidoRoute = '/pedidos/consumo' | '/pedidos/permanentes';
 type NotificationTone = 'success' | 'error' | 'info';
@@ -97,6 +98,8 @@ export function PedidosCarrinhoScreen({
   summaryTitle,
   helperText,
 }: PedidosCarrinhoScreenProps) {
+  const themed = useThemeStyles();
+  const accent = accentColor === '#2F855A' ? themed.colors.success : themed.colors.primary;
   const [materials, setMaterials] = useState<MaterialPedido[]>([]);
   const [complementos, setComplementos] = useState<ComplementoSetorPedido[]>([]);
   const [selectedComplementoId, setSelectedComplementoId] = useState<number | null>(null);
@@ -384,18 +387,20 @@ export function PedidosCarrinhoScreen({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, themed.screen]}>
       <Modal
         animationType="fade"
         transparent
         visible={isComplementoModalVisible}
         onRequestClose={() => setIsComplementoModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalPanel}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Complemento do setor</Text>
-              <Pressable onPress={() => setIsComplementoModalVisible(false)} style={styles.modalCloseButton}>
-                <MaterialIcons name="close" size={21} color="#1E4E79" />
+        <View style={[styles.modalOverlay, themed.overlay]}>
+          <View style={[styles.modalPanel, { backgroundColor: themed.colors.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: themed.colors.border }]}>
+              <Text style={[styles.modalTitle, themed.text]}>Complemento do setor</Text>
+              <Pressable
+                onPress={() => setIsComplementoModalVisible(false)}
+                style={[styles.modalCloseButton, themed.primarySurface]}>
+                <MaterialIcons name="close" size={21} color={themed.colors.primary} />
               </Pressable>
             </View>
             <ScrollView contentContainerStyle={styles.modalContent}>
@@ -411,13 +416,19 @@ export function PedidosCarrinhoScreen({
                     }}
                     style={({ pressed }) => [
                       styles.complementoOption,
-                      isActive && styles.complementoOptionActive,
+                      themed.mutedSurface,
+                      isActive && { backgroundColor: themed.colors.primary },
                       pressed && styles.pressed,
                     ]}>
-                    <Text style={[styles.complementoOptionText, isActive && styles.complementoOptionTextActive]}>
+                    <Text
+                      style={[
+                        styles.complementoOptionText,
+                        themed.text,
+                        isActive && themed.onPrimaryText,
+                      ]}>
                       {complemento.descricao}
                     </Text>
-                    {isActive ? <MaterialIcons name="check" size={20} color="#FFFFFF" /> : null}
+                    {isActive ? <MaterialIcons name="check" size={20} color={themed.colors.primaryText} /> : null}
                   </Pressable>
                 );
               })}
@@ -434,20 +445,22 @@ export function PedidosCarrinhoScreen({
         {notification ? (
           <View style={[
             styles.notification,
-            notification.tone === 'success'
-              ? styles.notificationSuccess
-              : notification.tone === 'error'
-                ? styles.notificationError
-                : styles.notificationInfo,
+            {
+              backgroundColor: notification.tone === 'success'
+                ? themed.colors.success
+                : notification.tone === 'error'
+                  ? themed.colors.danger
+                  : themed.colors.info,
+            },
           ]}>
             <MaterialIcons
               name={notification.tone === 'success' ? 'check-circle' : notification.tone === 'error' ? 'error-outline' : 'info-outline'}
               size={20}
-              color="#FFFFFF"
+              color={themed.colors.primaryText}
             />
-            <Text style={styles.notificationText}>{notification.message}</Text>
+            <Text style={[styles.notificationText, themed.onPrimaryText]}>{notification.message}</Text>
             <Pressable onPress={() => setNotification(null)}>
-              <MaterialIcons name="close" size={18} color="#FFFFFF" />
+              <MaterialIcons name="close" size={18} color={themed.colors.primaryText} />
             </Pressable>
           </View>
         ) : null}
@@ -455,16 +468,16 @@ export function PedidosCarrinhoScreen({
         <View style={styles.header}>
           <AppMenuButton />
           <View style={styles.headerTextGroup}>
-            <Text style={styles.eyebrow}>Pedidos</Text>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
+            <Text style={[styles.eyebrow, themed.mutedText]}>Pedidos</Text>
+            <Text style={[styles.title, themed.text]}>{title}</Text>
+            <Text style={[styles.subtitle, themed.mutedText]}>{subtitle}</Text>
           </View>
-          <View style={[styles.headerIcon, { backgroundColor: `${accentColor}18` }]}>
-            <MaterialIcons name={icon} size={24} color={accentColor} />
+          <View style={[styles.headerIcon, { backgroundColor: `${accent}22` }]}>
+            <MaterialIcons name={icon} size={24} color={accent} />
           </View>
         </View>
 
-        <View style={styles.tabs}>
+        <View style={[styles.tabs, themed.surface]}>
           {TABS.map((tab) => {
             const isActive = tab.href === currentRoute;
 
@@ -474,15 +487,15 @@ export function PedidosCarrinhoScreen({
                 onPress={() => router.replace(tab.href as Href)}
                 style={({ pressed }) => [
                   styles.tab,
-                  isActive && { backgroundColor: accentColor },
+                  isActive && { backgroundColor: accent },
                   pressed && !isActive && styles.pressed,
                 ]}>
                 <MaterialIcons
                   name={tab.icon}
                   size={18}
-                  color={isActive ? '#FFFFFF' : '#1E4E79'}
+                  color={isActive ? themed.colors.primaryText : themed.colors.primary}
                 />
-                <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                <Text style={[styles.tabText, themed.primaryText, isActive && themed.onPrimaryText]}>
                   {tab.label}
                 </Text>
               </Pressable>
@@ -490,93 +503,94 @@ export function PedidosCarrinhoScreen({
           })}
         </View>
 
-        <View style={styles.contextPanel}>
-          <View style={styles.contextIcon}>
-            <MaterialIcons name="storefront" size={22} color="#1E4E79" />
+        <View style={[styles.contextPanel, themed.surface]}>
+          <View style={[styles.contextIcon, themed.primarySurface]}>
+            <MaterialIcons name="storefront" size={22} color={themed.colors.primary} />
           </View>
           <View style={styles.contextText}>
-            <Text style={styles.contextTitle}>Pedido em rascunho</Text>
-            <Text style={styles.contextMeta}>{helperText}</Text>
+            <Text style={[styles.contextTitle, themed.text]}>Pedido em rascunho</Text>
+            <Text style={[styles.contextMeta, themed.mutedText]}>{helperText}</Text>
           </View>
         </View>
 
-        <View style={styles.searchPanel}>
-          <MaterialIcons name="search" size={21} color="#627D98" />
+        <View style={[styles.searchPanel, themed.input]}>
+          <MaterialIcons name="search" size={21} color={themed.colors.textMuted} />
           <TextInput
             placeholder="Buscar material"
-            placeholderTextColor="#829AB1"
+            placeholderTextColor={themed.colors.textSubtle}
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={handleSearch}
             autoCorrect={false}
-            style={styles.searchInput}
+            style={[styles.searchInput, themed.text]}
           />
-          <Pressable onPress={handleSearch} style={styles.filterButton}>
-            <MaterialIcons name="arrow-forward" size={20} color="#1E4E79" />
+          <Pressable onPress={handleSearch} style={[styles.filterButton, themed.primarySurface]}>
+            <MaterialIcons name="arrow-forward" size={20} color={themed.colors.primary} />
           </Pressable>
         </View>
 
         <View style={styles.contentGrid}>
           <View
-            style={styles.materialsPanel}
+            style={[styles.materialsPanel, themed.surface]}
             onLayout={(event) => {
               materialsPanelYRef.current = event.nativeEvent.layout.y;
             }}>
             <View style={styles.sectionHeader}>
               <View>
-                <Text style={styles.sectionTitle}>Materiais</Text>
-                <Text style={styles.sectionMeta}>
+                <Text style={[styles.sectionTitle, themed.text]}>Materiais</Text>
+                <Text style={[styles.sectionMeta, themed.mutedText]}>
                   {materialsCounterText}
                 </Text>
               </View>
-              <View style={styles.countBadge}>
-                <Text style={styles.countBadgeText}>{selectedQuantity}</Text>
+              <View style={[styles.countBadge, themed.primarySurface]}>
+                <Text style={[styles.countBadgeText, themed.primaryText]}>{selectedQuantity}</Text>
               </View>
             </View>
 
             {isLoading ? (
-              <View style={styles.centerState}>
-                <ActivityIndicator color="#1E4E79" />
-                <Text style={styles.centerStateText}>Carregando materiais</Text>
+              <View style={[styles.centerState, themed.mutedSurface]}>
+                <ActivityIndicator color={themed.colors.primary} />
+                <Text style={[styles.centerStateText, themed.mutedText]}>Carregando materiais</Text>
               </View>
             ) : materials.length === 0 ? (
-              <View style={styles.centerState}>
-                <MaterialIcons name="inventory" size={28} color="#627D98" />
-                <Text style={styles.centerStateText}>Nenhum material encontrado</Text>
+              <View style={[styles.centerState, themed.mutedSurface]}>
+                <MaterialIcons name="inventory" size={28} color={themed.colors.textMuted} />
+                <Text style={[styles.centerStateText, themed.mutedText]}>Nenhum material encontrado</Text>
               </View>
             ) : (
               materials.map((material) => {
                 const itemState = cart[material.id] ?? emptyCartState();
 
                 return (
-                  <View style={styles.materialCard} key={material.id}>
-                    <View style={styles.materialThumb}>
-                      <MaterialIcons name={icon} size={24} color={accentColor} />
+                  <View style={[styles.materialCard, themed.mutedSurface]} key={material.id}>
+                    <View style={[styles.materialThumb, { backgroundColor: themed.colors.surface }]}>
+                      <MaterialIcons name={icon} size={24} color={accent} />
                     </View>
                     <View style={styles.materialInfo}>
-                      <Text style={styles.materialName}>{material.descricao}</Text>
-                      <Text style={styles.materialDetail}>
+                      <Text style={[styles.materialName, themed.text]}>{material.descricao}</Text>
+                      <Text style={[styles.materialDetail, themed.mutedText]}>
                         {tipo === 'consumo'
                           ? `${material.unidade} | estoque ${material.quantidade_estoque ?? 0}`
                           : 'Material permanente'}
                       </Text>
                       <View style={styles.materialMetaRow}>
-                        <Text style={styles.materialMeta}>{material.unidade}</Text>
-                        <Text style={styles.materialPrice}>{formatMoney(material.preco_medio)}</Text>
+                        <Text style={[styles.materialMeta, themed.subtleText]}>{material.unidade}</Text>
+                        <Text style={[styles.materialPrice, themed.text]}>{formatMoney(material.preco_medio)}</Text>
                       </View>
 
                       {tipo === 'permanente' && itemState.quantity > 0 ? (
                         <View style={styles.permanentFields}>
-                          <View style={styles.segmented}>
+                          <View style={[styles.segmented, { backgroundColor: themed.colors.surfaceAccent }]}>
                             <Pressable
                               onPress={() => setTipoAtendimento(material.id, 'adicao')}
                               style={[
                                 styles.segmentButton,
-                                itemState.tipoAtendimento === 'adicao' && { backgroundColor: accentColor },
+                                itemState.tipoAtendimento === 'adicao' && { backgroundColor: accent },
                               ]}>
                               <Text style={[
                                 styles.segmentText,
-                                itemState.tipoAtendimento === 'adicao' && styles.segmentTextActive,
+                                themed.primaryText,
+                                itemState.tipoAtendimento === 'adicao' && themed.onPrimaryText,
                               ]}>
                                 Adicao
                               </Text>
@@ -585,11 +599,12 @@ export function PedidosCarrinhoScreen({
                               onPress={() => setTipoAtendimento(material.id, 'substituicao')}
                               style={[
                                 styles.segmentButton,
-                                itemState.tipoAtendimento === 'substituicao' && { backgroundColor: accentColor },
+                                itemState.tipoAtendimento === 'substituicao' && { backgroundColor: accent },
                               ]}>
                               <Text style={[
                                 styles.segmentText,
-                                itemState.tipoAtendimento === 'substituicao' && styles.segmentTextActive,
+                                themed.primaryText,
+                                itemState.tipoAtendimento === 'substituicao' && themed.onPrimaryText,
                               ]}>
                                 Substituição
                               </Text>
@@ -599,20 +614,20 @@ export function PedidosCarrinhoScreen({
                           {itemState.tipoAtendimento === 'substituicao' ? (
                             <TextInput
                               placeholder="No. patrimonio substituido"
-                              placeholderTextColor="#829AB1"
+                              placeholderTextColor={themed.colors.textSubtle}
                               value={itemState.patrimonioSubstituido}
                               onChangeText={(value) => setItemText(material.id, 'patrimonioSubstituido', value)}
-                              style={styles.inlineInput}
+                              style={[styles.inlineInput, themed.input]}
                             />
                           ) : null}
 
                           <TextInput
                             placeholder="Justificativa do item"
-                            placeholderTextColor="#829AB1"
+                            placeholderTextColor={themed.colors.textSubtle}
                             value={itemState.justificativa}
                             onChangeText={(value) => setItemText(material.id, 'justificativa', value)}
                             multiline
-                            style={styles.inlineTextarea}
+                            style={[styles.inlineTextarea, themed.input]}
                           />
                         </View>
                       ) : null}
@@ -621,15 +636,21 @@ export function PedidosCarrinhoScreen({
                       <Pressable
                         accessibilityLabel={`Adicionar ${material.descricao}`}
                         onPress={() => incrementMaterial(material)}
-                        style={[styles.quantityButton, styles.quantityButtonAdd]}>
-                        <MaterialIcons name="add" size={18} color="#2F855A" />
+                        style={[
+                          styles.quantityButton,
+                          { backgroundColor: themed.colors.successSoft },
+                        ]}>
+                        <MaterialIcons name="add" size={18} color={themed.colors.success} />
                       </Pressable>
-                      <Text style={styles.quantityText}>{itemState.quantity}</Text>
+                      <Text style={[styles.quantityText, themed.text]}>{itemState.quantity}</Text>
                       <Pressable
                         accessibilityLabel={`Remover ${material.descricao}`}
                         onPress={() => decrementMaterial(material)}
-                        style={[styles.quantityButton, styles.quantityButtonRemove]}>
-                        <MaterialIcons name="remove" size={18} color="#C53030" />
+                        style={[
+                          styles.quantityButton,
+                          { backgroundColor: themed.colors.dangerSoft },
+                        ]}>
+                        <MaterialIcons name="remove" size={18} color={themed.colors.danger} />
                       </Pressable>
                     </View>
                   </View>
@@ -638,27 +659,32 @@ export function PedidosCarrinhoScreen({
             )}
 
             {!isLoading && totalMaterials > PER_PAGE ? (
-              <View style={styles.paginationFooter}>
+              <View style={[styles.paginationFooter, { borderTopColor: themed.colors.border }]}>
                 <Pressable
                   disabled={!hasPreviousPage || isLoading}
                   onPress={() => handlePageChange(currentPage - 1)}
                   style={({ pressed }) => [
                     styles.paginationButton,
-                    (!hasPreviousPage || isLoading) && styles.paginationButtonDisabled,
+                    themed.primarySurface,
+                    (!hasPreviousPage || isLoading) && themed.mutedSurface,
                     pressed && hasPreviousPage && styles.pressed,
                   ]}>
-                  <MaterialIcons name="chevron-left" size={21} color={hasPreviousPage ? '#1E4E79' : '#9FB3C8'} />
+                  <MaterialIcons
+                    name="chevron-left"
+                    size={21}
+                    color={hasPreviousPage ? themed.colors.primary : themed.colors.textSubtle}
+                  />
                   <Text style={[
                     styles.paginationButtonText,
-                    !hasPreviousPage && styles.paginationButtonTextDisabled,
+                    hasPreviousPage ? themed.primaryText : themed.subtleText,
                   ]}>
                     Voltar
                   </Text>
                 </Pressable>
 
                 <View style={styles.paginationMeta}>
-                  <Text style={styles.paginationPageText}>Página {currentPage} de {lastPage}</Text>
-                  <Text style={styles.paginationRangeText}>{PER_PAGE} por página</Text>
+                  <Text style={[styles.paginationPageText, themed.text]}>Página {currentPage} de {lastPage}</Text>
+                  <Text style={[styles.paginationRangeText, themed.mutedText]}>{PER_PAGE} por página</Text>
                 </View>
 
                 <Pressable
@@ -666,41 +692,46 @@ export function PedidosCarrinhoScreen({
                   onPress={() => handlePageChange(currentPage + 1)}
                   style={({ pressed }) => [
                     styles.paginationButton,
-                    (!hasNextPage || isLoading) && styles.paginationButtonDisabled,
+                    themed.primarySurface,
+                    (!hasNextPage || isLoading) && themed.mutedSurface,
                     pressed && hasNextPage && styles.pressed,
                   ]}>
                   <Text style={[
                     styles.paginationButtonText,
-                    !hasNextPage && styles.paginationButtonTextDisabled,
+                    hasNextPage ? themed.primaryText : themed.subtleText,
                   ]}>
                     Avançar
                   </Text>
-                  <MaterialIcons name="chevron-right" size={21} color={hasNextPage ? '#1E4E79' : '#9FB3C8'} />
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={21}
+                    color={hasNextPage ? themed.colors.primary : themed.colors.textSubtle}
+                  />
                 </Pressable>
               </View>
             ) : null}
           </View>
 
-          <View style={styles.cartPanel}>
+          <View style={[styles.cartPanel, themed.surface]}>
             <View style={styles.sectionHeader}>
               <View>
-                <Text style={styles.sectionTitle}>{summaryTitle}</Text>
-                <Text style={styles.sectionMeta}>{selectedQuantity} item(ns) selecionado(s)</Text>
+                <Text style={[styles.sectionTitle, themed.text]}>{summaryTitle}</Text>
+                <Text style={[styles.sectionMeta, themed.mutedText]}>{selectedQuantity} item(ns) selecionado(s)</Text>
               </View>
-              <View style={[styles.cartIcon, { backgroundColor: `${accentColor}18` }]}>
-                <MaterialIcons name="shopping-cart" size={22} color={accentColor} />
+              <View style={[styles.cartIcon, { backgroundColor: `${accent}22` }]}>
+                <MaterialIcons name="shopping-cart" size={22} color={accent} />
               </View>
             </View>
 
             {selectedItems.length > 0 ? (
               selectedItems.map(({ material, state }) => (
-                <View style={styles.cartRow} key={material.id}>
-                  <View style={styles.cartQuantity}>
-                    <Text style={styles.cartQuantityText}>{state.quantity}</Text>
+                <View style={[styles.cartRow, themed.mutedSurface]} key={material.id}>
+                  <View style={[styles.cartQuantity, themed.primarySurface]}>
+                    <Text style={[styles.cartQuantityText, themed.primaryText]}>{state.quantity}</Text>
                   </View>
                   <View style={styles.cartInfo}>
-                    <Text style={styles.cartName}>{material.descricao}</Text>
-                    <Text style={styles.cartDetail}>
+                    <Text style={[styles.cartName, themed.text]}>{material.descricao}</Text>
+                    <Text style={[styles.cartDetail, themed.mutedText]}>
                       {tipo === 'permanente'
                         ? state.tipoAtendimento === 'substituicao' ? 'Substituição' : 'Adição'
                         : material.unidade}
@@ -709,47 +740,62 @@ export function PedidosCarrinhoScreen({
                 </View>
               ))
             ) : (
-              <View style={styles.emptyCart}>
-                <MaterialIcons name="shopping-cart" size={26} color="#627D98" />
-                <Text style={styles.emptyCartText}>Nenhum material adicionado</Text>
+              <View style={[styles.emptyCart, themed.mutedSurface]}>
+                <MaterialIcons name="shopping-cart" size={26} color={themed.colors.textMuted} />
+                <Text style={[styles.emptyCartText, themed.mutedText]}>Nenhum material adicionado</Text>
               </View>
             )}
 
-            <View style={styles.formPreview}>
-              <Text style={styles.formLabel}>Complemento do setor</Text>
-              <Pressable onPress={() => setIsComplementoModalVisible(true)} style={styles.fakeInput}>
-                <Text style={selectedComplemento ? styles.fakeInputValue : styles.fakeInputText}>
+            <View style={[styles.formPreview, { borderTopColor: themed.colors.border }]}>
+              <Text style={[styles.formLabel, themed.mutedText]}>Complemento do setor</Text>
+              <Pressable
+                onPress={() => setIsComplementoModalVisible(true)}
+                style={[styles.fakeInput, themed.input]}>
+                <Text
+                  style={[
+                    selectedComplemento ? styles.fakeInputValue : styles.fakeInputText,
+                    selectedComplemento ? themed.text : themed.subtleText,
+                  ]}>
                   {selectedComplemento?.descricao ?? 'Selecionar destino'}
                 </Text>
-                <MaterialIcons name="keyboard-arrow-down" size={22} color="#627D98" />
+                <MaterialIcons name="keyboard-arrow-down" size={22} color={themed.colors.textMuted} />
               </Pressable>
 
-              <Text style={styles.formLabel}>
+              <Text style={[styles.formLabel, themed.mutedText]}>
                 {tipo === 'consumo' ? 'Justificativa' : 'Observação geral'}
               </Text>
               <TextInput
                 placeholder={tipo === 'consumo'
                   ? 'Descrever necessidade do pedido'
                   : 'Opcional para o cabecalho do pedido'}
-                placeholderTextColor="#829AB1"
+                placeholderTextColor={themed.colors.textSubtle}
                 value={justificativaGeral}
                 onChangeText={setJustificativaGeral}
                 multiline
-                style={styles.fakeTextarea}
+                style={[styles.fakeTextarea, themed.input]}
               />
             </View>
 
             <View style={styles.cartActions}>
-              <Pressable disabled={isSubmitting} onPress={clearCart} style={styles.secondaryButton}>
-                <MaterialIcons name="delete-outline" size={20} color="#C53030" />
-                <Text style={styles.secondaryButtonText}>Limpar</Text>
+              <Pressable
+                disabled={isSubmitting}
+                onPress={clearCart}
+                style={[styles.secondaryButton, themed.dangerSurface]}>
+                <MaterialIcons name="delete-outline" size={20} color={themed.colors.danger} />
+                <Text style={[styles.secondaryButtonText, { color: themed.colors.danger }]}>Limpar</Text>
               </Pressable>
               <Pressable
                 disabled={isSubmitting}
                 onPress={submitPedido}
-                style={[styles.primaryButton, { backgroundColor: accentColor }, isSubmitting && styles.disabledButton]}>
-                {isSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <MaterialIcons name="send" size={20} color="#FFFFFF" />}
-                <Text style={styles.primaryButtonText}>{isSubmitting ? 'Enviando' : 'Enviar'}</Text>
+                style={[styles.primaryButton, { backgroundColor: accent }, isSubmitting && styles.disabledButton]}>
+                {isSubmitting ? (
+                  <ActivityIndicator color={themed.colors.primaryText} />
+                ) : (
+                  <MaterialIcons name="send" size={20} color={themed.colors.primaryText} />
+                )}
+                <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>
+                  {isSubmitting ? 'Enviando' : 'Enviar'}
+                </Text>
               </Pressable>
             </View>
           </View>

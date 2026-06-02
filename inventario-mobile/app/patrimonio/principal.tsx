@@ -6,7 +6,7 @@ import {
   type BarcodeType,
 } from 'expo-camera';
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -29,6 +29,7 @@ import { type ConferenciaInfo, type ConferenciaResumo } from '@/src/api/conferen
 import { dashboardApi } from '@/src/api/dashboard';
 import { ApiError, NetworkError } from '@/src/api/errors';
 import { recentBensStorage, type RecentBem } from '@/src/storage/recentBens';
+import { useAppTheme } from '@/src/theme/appTheme';
 
 const BARCODE_TYPES: BarcodeType[] = [
   'ean13',
@@ -285,27 +286,6 @@ function getRequestErrorMessage(error: unknown): string {
   return 'Não foi possível consultar o patrimônio.';
 }
 
-function getRecentBemStatusColor(situacao: string): string {
-  const normalizedSituacao = situacao
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-
-  if (normalizedSituacao.includes('pendente')) {
-    return '#B7791F';
-  }
-
-  if (normalizedSituacao.includes('divergente') || normalizedSituacao.includes('outro')) {
-    return '#1E4E79';
-  }
-
-  if (normalizedSituacao.includes('baixa') || normalizedSituacao.includes('erro')) {
-    return '#C53030';
-  }
-
-  return '#2F855A';
-}
-
 function formatRecentConsultedAt(value: string): string {
   const consultedAt = new Date(value);
 
@@ -320,6 +300,7 @@ function formatRecentConsultedAt(value: string): string {
 }
 
 export default function PrincipalScreen() {
+  const { colors } = useAppTheme();
   const [user, setUser] = useState<MobileUser | null>(null);
   const [sessionDetails, setSessionDetails] = useState<MobileUser | null>(null);
   const [isSessionModalVisible, setIsSessionModalVisible] = useState(false);
@@ -342,6 +323,13 @@ export default function PrincipalScreen() {
     isLoading: true,
   });
   const notificationProgress = useRef(new Animated.Value(0)).current;
+  const semanticColors = useMemo(() => ({
+    success: colors.success,
+    warning: colors.warning,
+    info: colors.info,
+    danger: colors.danger,
+    purple: colors.purple,
+  }), [colors]);
 
   const loadRecentBens = useCallback(async (userId: number | string) => {
     try {
@@ -629,10 +617,10 @@ export default function PrincipalScreen() {
 
   if (isLoadingSession) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.screen }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#1E4E79" />
-          <Text style={styles.loadingText}>Carregando sessão</Text>
+          <ActivityIndicator color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textMuted }]}>Carregando sessão</Text>
         </View>
       </SafeAreaView>
     );
@@ -640,15 +628,15 @@ export default function PrincipalScreen() {
 
   const renderDetailRow = (label: string, value: unknown) => (
     <View style={styles.modalDetailRow} key={label}>
-      <Text style={styles.modalDetailLabel}>{label}</Text>
-      <Text style={styles.modalDetailValue}>{displayValue(value)}</Text>
+      <Text style={[styles.modalDetailLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.modalDetailValue, { color: colors.text }]}>{displayValue(value)}</Text>
     </View>
   );
 
   const renderSessionRow = (label: string, value: unknown) => (
-    <View style={styles.sessionDetailRow} key={label}>
-      <Text style={styles.sessionDetailLabel}>{label}</Text>
-      <Text style={styles.sessionDetailValue}>{displayValue(value)}</Text>
+    <View style={[styles.sessionDetailRow, { backgroundColor: colors.surfaceMuted }]} key={label}>
+      <Text style={[styles.sessionDetailLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.sessionDetailValue, { color: colors.text }]}>{displayValue(value)}</Text>
     </View>
   );
 
@@ -687,12 +675,33 @@ export default function PrincipalScreen() {
     >;
     color: string;
   }[] = [
-    { label: 'Localizados', value: 'localizados', color: '#2F855A' },
-    { label: 'Pendentes', value: 'pendentes', color: '#B7791F' },
-    { label: 'Divergentes', value: 'divergentes', color: '#1E4E79' },
-    { label: 'Não localizados', value: 'nao_localizados', color: '#C53030' },
-    { label: 'Transferência', value: 'em_transferencia', color: '#805AD5' },
+    { label: 'Localizados', value: 'localizados', color: semanticColors.success },
+    { label: 'Pendentes', value: 'pendentes', color: semanticColors.warning },
+    { label: 'Divergentes', value: 'divergentes', color: semanticColors.info },
+    { label: 'Não localizados', value: 'nao_localizados', color: semanticColors.danger },
+    { label: 'Transferência', value: 'em_transferencia', color: semanticColors.purple },
   ];
+
+  const getThemedRecentBemStatusColor = (situacao: string): string => {
+    const normalizedSituacao = situacao
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    if (normalizedSituacao.includes('pendente')) {
+      return semanticColors.warning;
+    }
+
+    if (normalizedSituacao.includes('divergente') || normalizedSituacao.includes('outro')) {
+      return semanticColors.info;
+    }
+
+    if (normalizedSituacao.includes('baixa') || normalizedSituacao.includes('erro')) {
+      return semanticColors.danger;
+    }
+
+    return semanticColors.success;
+  };
 
   const renderMetricCard = (
     label: string,
@@ -701,13 +710,23 @@ export default function PrincipalScreen() {
     color: string,
     helper: string,
   ) => (
-    <View style={styles.metricCard} key={label}>
+    <View
+      style={[
+        styles.metricCard,
+        {
+          backgroundColor: colors.surfaceMuted,
+          borderColor: colors.border,
+        },
+      ]}
+      key={label}>
       <View style={[styles.metricIcon, { backgroundColor: `${color}18` }]}>
         <MaterialIcons name={icon} size={20} color={color} />
       </View>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricHelper} numberOfLines={1}>{helper}</Text>
+      <Text style={[styles.metricValue, { color: colors.text }]}>{value}</Text>
+      <Text style={[styles.metricLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.metricHelper, { color: colors.textSubtle }]} numberOfLines={1}>
+        {helper}
+      </Text>
     </View>
   );
 
@@ -722,10 +741,10 @@ export default function PrincipalScreen() {
     return (
       <View style={styles.statusChartRow} key={label}>
         <View style={styles.statusChartHeader}>
-          <Text style={styles.statusChartLabel}>{label}</Text>
-          <Text style={styles.statusChartValue}>{formatCompactNumber(value)}</Text>
+          <Text style={[styles.statusChartLabel, { color: colors.textMuted }]}>{label}</Text>
+          <Text style={[styles.statusChartValue, { color: colors.text }]}>{formatCompactNumber(value)}</Text>
         </View>
-        <View style={styles.statusChartTrack}>
+        <View style={[styles.statusChartTrack, { backgroundColor: colors.track }]}>
           <View style={[styles.statusChartFill, { width, backgroundColor: color }]} />
         </View>
       </View>
@@ -733,24 +752,28 @@ export default function PrincipalScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.screen }]}>
       {notification ? (
         <Animated.View
           style={[
             styles.notificationPopup,
             notificationAnimatedStyle,
-            notification.tone === 'success'
-              ? styles.notificationSuccess
-              : notification.tone === 'error'
-                ? styles.notificationError
-                : styles.notificationInfo,
+            {
+              backgroundColor: notification.tone === 'success'
+                ? semanticColors.success
+                : notification.tone === 'error'
+                  ? semanticColors.danger
+                  : semanticColors.info,
+            },
           ]}>
           <MaterialIcons
             name={notification.tone === 'success' ? 'check-circle' : notification.tone === 'error' ? 'error-outline' : 'info-outline'}
             size={21}
-            color="#FFFFFF"
+            color={colors.primaryText}
           />
-          <Text style={styles.notificationText}>{notification.message}</Text>
+          <Text style={[styles.notificationText, { color: colors.primaryText }]}>
+            {notification.message}
+          </Text>
         </Animated.View>
       ) : null}
 
@@ -759,36 +782,56 @@ export default function PrincipalScreen() {
         transparent
         visible={isPatrimonioModalVisible}
         onRequestClose={() => setIsPatrimonioModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.patrimonioModal}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderIcon}>
-                <MaterialIcons name="inventory-2" size={24} color="#1E4E79" />
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.patrimonioModal, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalHeaderIcon, { backgroundColor: colors.primarySoft }]}>
+                <MaterialIcons name="inventory-2" size={24} color={colors.primary} />
               </View>
               <View style={styles.modalHeaderText}>
-                <Text style={styles.modalEyebrow}>Patrimônio consultado</Text>
-                <Text style={styles.modalTitle}>{consultedBem ? getBemCodigo(consultedBem) : '-'}</Text>
+                <Text style={[styles.modalEyebrow, { color: colors.textMuted }]}>Patrimônio consultado</Text>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{consultedBem ? getBemCodigo(consultedBem) : '-'}</Text>
               </View>
               <Pressable
                 onPress={() => setIsPatrimonioModalVisible(false)}
-                style={styles.modalCloseButton}>
-                <MaterialIcons name="close" size={22} color="#1E4E79" />
+                style={[
+                  styles.modalCloseButton,
+                  {
+                    backgroundColor: colors.primarySoft,
+                    borderColor: colors.borderAccent,
+                  },
+                ]}>
+                <MaterialIcons name="close" size={22} color={colors.primary} />
               </Pressable>
             </View>
 
             {consultedBem ? (
               <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Identificação</Text>
-                  <Text style={styles.modalDescription}>{getBemDescricao(consultedBem)}</Text>
+                <View
+                  style={[
+                    styles.modalSection,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}>
+                  <Text style={[styles.modalSectionTitle, { color: colors.text }]}>Identificação</Text>
+                  <Text style={[styles.modalDescription, { color: colors.textMuted }]}>{getBemDescricao(consultedBem)}</Text>
                   {renderDetailRow('Situação', consultedBem.situacao ?? consultedBem.estado)}
                   {renderDetailRow('Tipo do bem', consultedBem.tipo_bem)}
                   {renderDetailRow('Estado de conservação', consultedBem.estado_conservacao)}
                   {renderDetailRow('Patrimônio anterior', consultedBem.patrimonio_anterior)}
                 </View>
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Características</Text>
+                <View
+                  style={[
+                    styles.modalSection,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}>
+                  <Text style={[styles.modalSectionTitle, { color: colors.text }]}>Características</Text>
                   {renderDetailRow('Marca', consultedBem.marca)}
                   {renderDetailRow('Modelo', consultedBem.modelo)}
                   {renderDetailRow('Número de série', consultedBem.numero_serie ?? consultedBem.serie)}
@@ -797,16 +840,30 @@ export default function PrincipalScreen() {
                   {renderDetailRow('Num. tombo SMARAPD', consultedBem.num_tombo_smarapd)}
                 </View>
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Localização</Text>
+                <View
+                  style={[
+                    styles.modalSection,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}>
+                  <Text style={[styles.modalSectionTitle, { color: colors.text }]}>Localização</Text>
                   {renderDetailRow('Unidade Judiciária', getReferenciaNome(consultedBem.unidade_judiciaria))}
                   {renderDetailRow('Setor', getReferenciaNome(consultedBem.setor))}
                   {renderDetailRow('Complemento', getReferenciaNome(consultedBem.complemento_setor))}
                   {renderDetailRow('Andar', consultedBem.andar_setor)}
                 </View>
 
-                <View style={styles.modalSection}>
-                  <Text style={styles.modalSectionTitle}>Valores e documentos</Text>
+                <View
+                  style={[
+                    styles.modalSection,
+                    {
+                      backgroundColor: colors.surfaceMuted,
+                      borderColor: colors.border,
+                    },
+                  ]}>
+                  <Text style={[styles.modalSectionTitle, { color: colors.text }]}>Valores e documentos</Text>
                   {renderDetailRow('Valor de aquisição', formatMoney(consultedBem.valor_aquisicao))}
                   {renderDetailRow('Valor atual', formatMoney(consultedBem.valor))}
                   {renderDetailRow('Data de incorporação', formatDateTime(consultedBem.data_incorporacao))}
@@ -818,17 +875,31 @@ export default function PrincipalScreen() {
                 </View>
 
                 {consultedBem.data_baixa || consultedBem.processo_baixa ? (
-                  <View style={styles.modalSection}>
-                    <Text style={styles.modalSectionTitle}>Baixa</Text>
+                  <View
+                    style={[
+                      styles.modalSection,
+                      {
+                        backgroundColor: colors.surfaceMuted,
+                        borderColor: colors.border,
+                      },
+                    ]}>
+                    <Text style={[styles.modalSectionTitle, { color: colors.text }]}>Baixa</Text>
                     {renderDetailRow('Data da baixa', formatDateTime(consultedBem.data_baixa))}
                     {renderDetailRow('Processo de baixa', consultedBem.processo_baixa)}
                   </View>
                 ) : null}
 
                 {consultedBem.observacao ? (
-                  <View style={styles.modalSection}>
-                    <Text style={styles.modalSectionTitle}>Observação</Text>
-                    <Text style={styles.modalObservation}>{consultedBem.observacao}</Text>
+                  <View
+                    style={[
+                      styles.modalSection,
+                      {
+                        backgroundColor: colors.surfaceMuted,
+                        borderColor: colors.border,
+                      },
+                    ]}>
+                    <Text style={[styles.modalSectionTitle, { color: colors.text }]}>Observação</Text>
+                    <Text style={[styles.modalObservation, { color: colors.textMuted }]}>{consultedBem.observacao}</Text>
                   </View>
                 ) : null}
               </ScrollView>
@@ -842,30 +913,36 @@ export default function PrincipalScreen() {
         transparent
         visible={isSessionModalVisible}
         onRequestClose={() => setIsSessionModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.sessionModal}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderIcon}>
-                <MaterialIcons name="person" size={24} color="#1E4E79" />
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.sessionModal, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <View style={[styles.modalHeaderIcon, { backgroundColor: colors.primarySoft }]}>
+                <MaterialIcons name="person" size={24} color={colors.primary} />
               </View>
               <View style={styles.modalHeaderText}>
-                <Text style={styles.modalEyebrow}>Sessão ativa</Text>
-                <Text style={styles.modalTitle}>
+                <Text style={[styles.modalEyebrow, { color: colors.textMuted }]}>Sessão ativa</Text>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
                   {sessionDetails?.name ?? sessionDetails?.login ?? user?.name ?? 'Usuário mobile'}
                 </Text>
               </View>
               <Pressable
                 onPress={() => setIsSessionModalVisible(false)}
-                style={styles.modalCloseButton}>
-                <MaterialIcons name="close" size={22} color="#1E4E79" />
+                style={[
+                  styles.modalCloseButton,
+                  {
+                    backgroundColor: colors.primarySoft,
+                    borderColor: colors.borderAccent,
+                  },
+                ]}>
+                <MaterialIcons name="close" size={22} color={colors.primary} />
               </Pressable>
             </View>
 
             <View style={styles.sessionModalContent}>
               {isLoadingSessionDetails ? (
-                <View style={styles.sessionLoadingPanel}>
-                  <ActivityIndicator color="#1E4E79" />
-                  <Text style={styles.sessionLoadingText}>Carregando dados da sessão</Text>
+                <View style={[styles.sessionLoadingPanel, { backgroundColor: colors.surfaceMuted }]}>
+                  <ActivityIndicator color={colors.primary} />
+                  <Text style={[styles.sessionLoadingText, { color: colors.textMuted }]}>Carregando dados da sessão</Text>
                 </View>
               ) : (
                 <>
@@ -899,19 +976,26 @@ export default function PrincipalScreen() {
         <View style={styles.header}>
           <AppMenuButton />
           <View style={styles.headerTextGroup}>
-            <Text style={styles.eyebrow}>EGap Mobile</Text>
-            <Text style={styles.title}>Seção Patrimonial</Text>
+            <Text style={[styles.eyebrow, { color: colors.textMuted }]}>EGap Mobile</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Seção Patrimonial</Text>
           </View>
         </View>
 
-        <View style={styles.sectorPanel}>
-          <View style={styles.panelIcon}>
-            <MaterialIcons name="apartment" size={24} color="#1E4E79" />
+        <View
+          style={[
+            styles.sectorPanel,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}>
+          <View style={[styles.panelIcon, { backgroundColor: colors.primarySoft }]}>
+            <MaterialIcons name="apartment" size={24} color={colors.primary} />
           </View>
           <View style={styles.sectorInfo}>
-            <Text style={styles.panelLabel}>Sessão ativa</Text>
-            <Text style={styles.sectorName}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
-            <Text style={styles.sectorMeta}>
+            <Text style={[styles.panelLabel, { color: colors.textMuted }]}>Sessão ativa</Text>
+            <Text style={[styles.sectorName, { color: colors.text }]}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
+            <Text style={[styles.sectorMeta, { color: colors.textMuted }]}>
               Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}
             </Text>
           </View>
@@ -919,23 +1003,34 @@ export default function PrincipalScreen() {
             onPress={handleOpenSessionModal}
             style={({ pressed }) => [
               styles.sessionInfoButton,
+              {
+                backgroundColor: colors.primarySoft,
+                borderColor: colors.borderAccent,
+              },
               pressed && styles.actionButtonPressed,
             ]}>
-            <MaterialIcons name="info-outline" size={21} color="#1E4E79" />
+            <MaterialIcons name="info-outline" size={21} color={colors.primary} />
           </Pressable>
         </View>
 
-        <View style={styles.dashboardPanel}>
+        <View
+          style={[
+            styles.dashboardPanel,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}>
           <View style={styles.panelHeaderRow}>
             <View>
-              <Text style={styles.sectionTitle}>Painel do setor</Text>
-              <Text style={styles.sectionDescription}>Resumo operacional do patrimônio.</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Painel do setor</Text>
+              <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>Resumo operacional do patrimônio.</Text>
             </View>
             {dashboard.isLoading ? (
-              <ActivityIndicator color="#1E4E79" />
+              <ActivityIndicator color={colors.primary} />
             ) : (
-              <View style={styles.modeBadge}>
-                <MaterialIcons name="check" size={16} color="#1E4E79" />
+              <View style={[styles.modeBadge, { backgroundColor: colors.infoSoft }]}>
+                <MaterialIcons name="check" size={16} color={colors.primary} />
               </View>
             )}
           </View>
@@ -945,64 +1040,83 @@ export default function PrincipalScreen() {
               'Bens do setor',
               formatCompactNumber(dashboard.totalBens),
               'inventory-2',
-              '#1E4E79',
+              semanticColors.info,
               'Base vinculada',
             )}
             {renderMetricCard(
               'Consultas hoje',
               formatCompactNumber(consultasHoje),
               'history',
-              '#2F855A',
+              semanticColors.success,
               'Neste aparelho',
             )}
             {renderMetricCard(
               'Conferidos',
               formatCompactNumber(totalConferidos),
               'task-alt',
-              '#6B46C1',
+              semanticColors.purple,
               `${progressoConferencia}% da atividade`,
             )}
             {renderMetricCard(
               'Pendências',
               formatCompactNumber(pendenciasConferencia),
               'report-problem',
-              '#B7791F',
+              semanticColors.warning,
               'Acompanhar',
             )}
           </View>
 
-          <View style={styles.progressPanel}>
+          <View style={[styles.progressPanel, { backgroundColor: colors.surfaceAccent }]}>
             <View style={styles.progressHeader}>
               <View>
-                <Text style={styles.progressTitle}>Progresso da conferência</Text>
-                <Text style={styles.progressMeta}>
+                <Text style={[styles.progressTitle, { color: colors.text }]}>Progresso da conferência</Text>
+                <Text style={[styles.progressMeta, { color: colors.textMuted }]}>
                   {formatCompactNumber(totalConferidos)} de {formatCompactNumber(totalConferencia)} bens tratados
                 </Text>
               </View>
-              <Text style={styles.progressPercent}>{progressoConferencia}%</Text>
+              <Text style={[styles.progressPercent, { color: colors.primary }]}>{progressoConferencia}%</Text>
             </View>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${progressoConferencia}%` }]} />
+            <View style={[styles.progressTrack, { backgroundColor: colors.track }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${progressoConferencia}%`,
+                    backgroundColor: semanticColors.success,
+                  },
+                ]}
+              />
             </View>
           </View>
         </View>
 
-        <View style={styles.insightsPanel}>
+        <View
+          style={[
+            styles.insightsPanel,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}>
           <View style={styles.panelHeaderRow}>
-            <Text style={styles.sectionTitle}>Estatísticas</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Estatísticas</Text>
             <Pressable
               onPress={() => router.push('/patrimonio/conferencia' as Href)}
               style={({ pressed }) => [
                 styles.headerActionButton,
+                {
+                  backgroundColor: colors.primarySoft,
+                  borderColor: colors.borderAccent,
+                },
                 pressed && styles.actionButtonPressed,
               ]}>
-              <MaterialIcons name="open-in-new" size={17} color="#1E4E79" />
-              <Text style={styles.headerActionText}>Abrir</Text>
+              <MaterialIcons name="open-in-new" size={17} color={colors.primary} />
+              <Text style={[styles.headerActionText, { color: colors.primary }]}>Abrir</Text>
             </Pressable>
           </View>
 
-          <View style={styles.statusChartPanel}>
-            <Text style={styles.chartGroupTitle}>Conferência</Text>
+          <View style={[styles.statusChartPanel, { backgroundColor: colors.surfaceMuted }]}>
+            <Text style={[styles.chartGroupTitle, { color: colors.text }]}>Conferência</Text>
             {statusRows.map((row) => renderStatusBar(
               row.label,
               conferenciaResumo?.[row.value] ?? 0,
@@ -1012,45 +1126,64 @@ export default function PrincipalScreen() {
           </View>
 
           {dashboard.situacoes.length > 0 ? (
-            <View style={styles.statusChartPanel}>
-              <Text style={styles.chartGroupTitle}>Situação patrimonial</Text>
+            <View style={[styles.statusChartPanel, { backgroundColor: colors.surfaceMuted }]}>
+              <Text style={[styles.chartGroupTitle, { color: colors.text }]}>Situação patrimonial</Text>
               {dashboard.situacoes.slice(0, 4).map((situacao, index) => renderStatusBar(
                 situacao.label,
                 situacao.total,
                 dashboard.totalBens ?? 0,
-                ['#1E4E79', '#2F855A', '#B7791F', '#805AD5'][index] ?? '#627D98',
+                [
+                  semanticColors.info,
+                  semanticColors.success,
+                  semanticColors.warning,
+                  semanticColors.purple,
+                ][index] ?? colors.textMuted,
               ))}
             </View>
           ) : null}
         </View>
 
-        <View style={styles.financePanel}>
+        <View
+          style={[
+            styles.financePanel,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}>
           <View style={styles.panelHeaderRow}>
             <View>
-              <Text style={styles.sectionTitle}>Valores patrimoniais</Text>
-              <Text style={styles.sectionDescription}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Valores patrimoniais</Text>
+              <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
                 Total de {formatCompactNumber(dashboard.financeiro.avaliados)} bens avaliados.
               </Text>
             </View>
           </View>
 
           <View style={styles.financeGrid}>
-            <View style={styles.financeCard}>
-              <Text style={styles.financeLabel}>Aquisição</Text>
-              <Text style={styles.financeValue}>{formatCompactMoney(dashboard.financeiro.aquisicao)}</Text>
+            <View style={[styles.financeCard, { backgroundColor: colors.surfaceMuted }]}>
+              <Text style={[styles.financeLabel, { color: colors.textMuted }]}>Aquisição</Text>
+              <Text style={[styles.financeValue, { color: colors.text }]}>{formatCompactMoney(dashboard.financeiro.aquisicao)}</Text>
             </View>
-            <View style={styles.financeCard}>
-              <Text style={styles.financeLabel}>Valor atual</Text>
-              <Text style={styles.financeValue}>{formatCompactMoney(dashboard.financeiro.atual)}</Text>
+            <View style={[styles.financeCard, { backgroundColor: colors.surfaceMuted }]}>
+              <Text style={[styles.financeLabel, { color: colors.textMuted }]}>Valor atual</Text>
+              <Text style={[styles.financeValue, { color: colors.text }]}>{formatCompactMoney(dashboard.financeiro.atual)}</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.scanPanel}>
+        <View
+          style={[
+            styles.scanPanel,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}>
           <View style={styles.scanHeader}>
             <View>
-              <Text style={styles.sectionTitle}>Leitura patrimonial</Text>
-              <Text style={styles.sectionDescription}>Câmera configurada apenas para código de barras.</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Leitura patrimonial</Text>
+              <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>Câmera configurada apenas para código de barras.</Text>
             </View>
           </View>
 
@@ -1059,7 +1192,15 @@ export default function PrincipalScreen() {
             onPress={handleStartScanner}
             style={({ pressed }) => [
               styles.scannerMock,
+              {
+                backgroundColor: colors.surfaceMuted,
+                borderColor: colors.borderAccent,
+              },
               pressed && styles.scannerMockPressed,
+              pressed && {
+                backgroundColor: colors.primarySoft,
+                borderColor: colors.primary,
+              },
             ]}>
             {isScannerActive && cameraPermission?.granted ? (
               <CameraView
@@ -1069,33 +1210,42 @@ export default function PrincipalScreen() {
                 onBarcodeScanned={hasScannedBarcode ? undefined : handleBarcodeScanned}
               />
             ) : null}
-            <View style={styles.scanCornerTopLeft} />
-            <View style={styles.scanCornerTopRight} />
+            <View style={[styles.scanCornerTopLeft, { borderColor: colors.primary }]} />
+            <View style={[styles.scanCornerTopRight, { borderColor: colors.primary }]} />
             {!isScannerActive ? (
               <>
-                <MaterialIcons name="center-focus-strong" size={56} color="#1E4E79" />
-                <Text style={styles.scannerText}>Toque para abrir a câmera</Text>
+                <MaterialIcons name="center-focus-strong" size={56} color={colors.primary} />
+                <Text style={[styles.scannerText, { color: colors.textMuted }]}>Toque para abrir a câmera</Text>
               </>
             ) : null}
             {isScannerActive ? (
-              <Text style={styles.cameraHint}>Aponte para o código de barras da plaqueta</Text>
+              <Text style={[styles.cameraHint, { backgroundColor: colors.overlay }]}>Aponte para o código de barras da plaqueta</Text>
             ) : null}
             {isScannerActive ? (
-              <Pressable onPress={handleCloseScanner} style={styles.closeCameraButton}>
-                <MaterialIcons name="close" size={20} color="#FFFFFF" />
-                <Text style={styles.closeCameraButtonText}>Fechar câmera</Text>
+              <Pressable
+                onPress={handleCloseScanner}
+                style={[styles.closeCameraButton, { backgroundColor: colors.overlay }]}>
+                <MaterialIcons name="close" size={20} color={colors.text} />
+                <Text style={[styles.closeCameraButtonText, { color: colors.text }]}>Fechar câmera</Text>
               </Pressable>
             ) : null}
-            <View style={styles.scanLine} />
-            <View style={styles.scanCornerBottomLeft} />
-            <View style={styles.scanCornerBottomRight} />
+            <View style={[styles.scanLine, { backgroundColor: semanticColors.success }]} />
+            <View style={[styles.scanCornerBottomLeft, { borderColor: colors.primary }]} />
+            <View style={[styles.scanCornerBottomRight, { borderColor: colors.primary }]} />
           </Pressable>
 
-          <View style={styles.manualEntry}>
-            <MaterialIcons name="pin" size={20} color="#627D98" />
+          <View
+            style={[
+              styles.manualEntry,
+              {
+                backgroundColor: colors.input,
+                borderColor: colors.border,
+              },
+            ]}>
+            <MaterialIcons name="pin" size={20} color={colors.textMuted} />
             <TextInput
               placeholder="Digite ou leia o código patrimonial"
-              placeholderTextColor="#829AB1"
+              placeholderTextColor={colors.textSubtle}
               autoCorrect={false}
               keyboardType="number-pad"
               inputMode="numeric"
@@ -1105,7 +1255,7 @@ export default function PrincipalScreen() {
                 setConsultedBem(null);
               }}
               onSubmitEditing={handleConsultPatrimonio}
-              style={styles.manualEntryInput}
+              style={[styles.manualEntryInput, { color: colors.text }]}
             />
           </View>
           <Pressable
@@ -1113,28 +1263,36 @@ export default function PrincipalScreen() {
             onPress={handleConsultPatrimonio}
             style={({ pressed }) => [
               styles.consultButton,
+              { backgroundColor: colors.primary },
               (pressed || isConsultingPatrimonio) && styles.actionButtonPressed,
             ]}>
             {isConsultingPatrimonio ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={colors.primaryText} />
             ) : (
-              <MaterialIcons name="search" size={21} color="#FFFFFF" />
+              <MaterialIcons name="search" size={21} color={colors.primaryText} />
             )}
-            <Text style={styles.consultButtonText}>
+            <Text style={[styles.consultButtonText, { color: colors.primaryText }]}>
               {isConsultingPatrimonio ? 'Consultando' : 'Consultar patrimônio'}
             </Text>
           </Pressable>
 
         </View>
 
-        <View style={styles.assetsPanel}>
+        <View
+          style={[
+            styles.assetsPanel,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}>
           <View style={styles.panelHeaderRow}>
-            <Text style={styles.sectionTitle}>Últimas leituras</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Últimas leituras</Text>
           </View>
 
           {recentBens.length > 0 ? (
             recentBens.map((asset) => {
-              const statusColor = getRecentBemStatusColor(asset.situacao);
+              const statusColor = getThemedRecentBemStatusColor(asset.situacao);
 
               return (
                 <Pressable
@@ -1142,17 +1300,18 @@ export default function PrincipalScreen() {
                   onPress={() => handleOpenRecentBem(asset)}
                   style={({ pressed }) => [
                     styles.assetRow,
+                    { backgroundColor: colors.surfaceMuted },
                     pressed && styles.assetRowPressed,
                   ]}>
-                  <View style={styles.assetIcon}>
-                    <MaterialIcons name="inventory-2" size={20} color="#1E4E79" />
+                  <View style={[styles.assetIcon, { backgroundColor: colors.primarySoft }]}>
+                    <MaterialIcons name="inventory-2" size={20} color={colors.primary} />
                   </View>
                   <View style={styles.assetInfo}>
                     <View style={styles.assetTitleRow}>
-                      <Text style={styles.assetCode}>{asset.codigo}</Text>
-                      <Text style={styles.assetTime}>{formatRecentConsultedAt(asset.consultedAt)}</Text>
+                      <Text style={[styles.assetCode, { color: colors.text }]}>{asset.codigo}</Text>
+                      <Text style={[styles.assetTime, { color: colors.textMuted }]}>{formatRecentConsultedAt(asset.consultedAt)}</Text>
                     </View>
-                    <Text style={styles.assetDescription} numberOfLines={2}>
+                    <Text style={[styles.assetDescription, { color: colors.textMuted }]} numberOfLines={2}>
                       {asset.descricao}
                     </Text>
                   </View>
@@ -1165,10 +1324,10 @@ export default function PrincipalScreen() {
               );
             })
           ) : (
-            <View style={styles.emptyRecentPanel}>
-              <MaterialIcons name="history" size={26} color="#627D98" />
-              <Text style={styles.emptyRecentTitle}>Nenhuma consulta recente</Text>
-              <Text style={styles.emptyRecentText}>
+            <View style={[styles.emptyRecentPanel, { backgroundColor: colors.surfaceMuted }]}>
+              <MaterialIcons name="history" size={26} color={colors.textMuted} />
+              <Text style={[styles.emptyRecentTitle, { color: colors.text }]}>Nenhuma consulta recente</Text>
+              <Text style={[styles.emptyRecentText, { color: colors.textMuted }]}>
                 Os últimos 5 patrimônios consultados aparecerão aqui.
               </Text>
             </View>

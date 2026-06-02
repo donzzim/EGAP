@@ -1,9 +1,11 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
+import { useAppTheme } from '@/src/theme/appTheme';
 import { AppSidebar } from './app-sidebar';
 
 export function AppMenuButton() {
+  const { colors } = useAppTheme();
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   return (
@@ -16,9 +18,13 @@ export function AppMenuButton() {
         onPress={() => setIsSidebarVisible(true)}
         style={({ pressed }) => [
           styles.button,
+          {
+            backgroundColor: colors.primarySoft,
+            borderColor: colors.borderAccent,
+          },
           pressed && styles.buttonPressed,
         ]}>
-        <MaterialIcons name="menu" size={23} color="#1E4E79" />
+        <MaterialIcons name="menu" size={23} color={colors.primary} />
       </Pressable>
     </>
   );

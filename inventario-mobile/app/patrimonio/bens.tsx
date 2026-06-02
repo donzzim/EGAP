@@ -17,6 +17,7 @@ import { BottomBar } from '@/components/bottom-bar';
 import { authApi, type MobileUser } from '@/src/api/auth';
 import { bensApi, type BemPatrimonial } from '@/src/api/bens';
 import { ApiError, NetworkError } from '@/src/api/errors';
+import { useThemeStyles } from '@/src/theme/useThemeStyles';
 
 const BENS_PER_PAGE = 30;
 
@@ -58,6 +59,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export default function BensScreen() {
+  const themed = useThemeStyles();
   const [user, setUser] = useState<MobileUser | null>(null);
   const [bens, setBens] = useState<BemPatrimonial[]>([]);
   const [total, setTotal] = useState(0);
@@ -179,70 +181,70 @@ export default function BensScreen() {
 
   function renderBem({ item }: { item: BemPatrimonial }) {
     return (
-      <View style={styles.bemRow}>
-        <View style={styles.bemIcon}>
-          <MaterialIcons name="inventory-2" size={21} color="#1E4E79" />
+      <View style={[styles.bemRow, themed.surface]}>
+        <View style={[styles.bemIcon, themed.primarySurface]}>
+          <MaterialIcons name="inventory-2" size={21} color={themed.colors.primary} />
         </View>
         <View style={styles.bemInfo}>
-          <Text style={styles.bemCodigo}>{getBemCodigo(item)}</Text>
-          <Text style={styles.bemDescricao} numberOfLines={2}>
+          <Text style={[styles.bemCodigo, themed.text]}>{getBemCodigo(item)}</Text>
+          <Text style={[styles.bemDescricao, themed.mutedText]} numberOfLines={2}>
             {getBemDescricao(item)}
           </Text>
           <View style={styles.bemMetaRow}>
-            <Text style={styles.bemMeta}>Marca: {displayValue(item.marca)}</Text>
-            <Text style={styles.bemMeta}>Modelo: {displayValue(item.modelo)}</Text>
-            <Text style={styles.bemMeta}>Série: {displayValue(item.numero_serie ?? item.serie)}</Text>
+            <Text style={[styles.bemMeta, themed.subtleText]}>Marca: {displayValue(item.marca)}</Text>
+            <Text style={[styles.bemMeta, themed.subtleText]}>Modelo: {displayValue(item.modelo)}</Text>
+            <Text style={[styles.bemMeta, themed.subtleText]}>Série: {displayValue(item.numero_serie ?? item.serie)}</Text>
           </View>
         </View>
-        <View style={styles.statusBadge}>
-          <Text style={styles.statusBadgeText}>{getBemSituacao(item)}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: themed.colors.successSoft }]}>
+          <Text style={[styles.statusBadgeText, { color: themed.colors.success }]}>{getBemSituacao(item)}</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, themed.screen]}>
       <View style={styles.header}>
         <AppMenuButton />
         <View style={styles.headerTextGroup}>
-          <Text style={styles.eyebrow}>Bens do setor</Text>
-          <Text style={styles.title}>Patrimônio localizado</Text>
+          <Text style={[styles.eyebrow, themed.mutedText]}>Bens do setor</Text>
+          <Text style={[styles.title, themed.text]}>Patrimônio localizado</Text>
         </View>
       </View>
 
-      <View style={styles.contextPanel}>
-        <View style={styles.contextIcon}>
-          <MaterialIcons name="apartment" size={23} color="#1E4E79" />
+      <View style={[styles.contextPanel, themed.surface]}>
+        <View style={[styles.contextIcon, themed.primarySurface]}>
+          <MaterialIcons name="apartment" size={23} color={themed.colors.primary} />
         </View>
         <View style={styles.contextText}>
-          <Text style={styles.contextLabel}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
-          <Text style={styles.contextMeta}>
+          <Text style={[styles.contextLabel, themed.text]}>{user?.name ?? user?.login ?? 'Usuário mobile'}</Text>
+          <Text style={[styles.contextMeta, themed.mutedText]}>
             Unidade {user?.unidade_judiciaria ?? '-'} | Setor {user?.setor ?? '-'}
           </Text>
         </View>
-        <View style={styles.totalBadge}>
-          <Text style={styles.totalValue}>{total}</Text>
-          <Text style={styles.totalLabel}>bens</Text>
+        <View style={[styles.totalBadge, themed.primarySurface]}>
+          <Text style={[styles.totalValue, themed.primaryText]}>{total}</Text>
+          <Text style={[styles.totalLabel, themed.mutedText]}>bens</Text>
         </View>
       </View>
 
       <View style={styles.searchPanel}>
-        <View style={styles.searchInputWrapper}>
-          <MaterialIcons name="search" size={21} color="#627D98" />
+        <View style={[styles.searchInputWrapper, themed.input]}>
+          <MaterialIcons name="search" size={21} color={themed.colors.textMuted} />
           <TextInput
             placeholder="Buscar por patrimônio, descrição, marca ou série"
-            placeholderTextColor="#829AB1"
+            placeholderTextColor={themed.colors.textSubtle}
             autoCorrect={false}
             returnKeyType="search"
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={handleSearch}
-            style={styles.searchInput}
+            style={[styles.searchInput, themed.text]}
           />
           {search ? (
-            <Pressable onPress={handleClearSearch} style={styles.clearSearchButton}>
-              <MaterialIcons name="close" size={18} color="#1E4E79" />
+            <Pressable onPress={handleClearSearch} style={[styles.clearSearchButton, themed.primarySurface]}>
+              <MaterialIcons name="close" size={18} color={themed.colors.primary} />
             </Pressable>
           ) : null}
         </View>
@@ -251,25 +253,28 @@ export default function BensScreen() {
           onPress={handleSearch}
           style={({ pressed }) => [
             styles.searchButton,
+            { backgroundColor: themed.colors.primary },
             (pressed || isLoading) && styles.searchButtonPressed,
           ]}>
-          <Text style={styles.searchButtonText}>Buscar</Text>
+          <Text style={[styles.searchButtonText, themed.onPrimaryText]}>Buscar</Text>
         </Pressable>
       </View>
 
       {isLoading ? (
         <View style={styles.centerState}>
-          <ActivityIndicator color="#1E4E79" />
-          <Text style={styles.centerStateText}>Carregando bens do setor</Text>
+          <ActivityIndicator color={themed.colors.primary} />
+          <Text style={[styles.centerStateText, themed.mutedText]}>Carregando bens do setor</Text>
         </View>
       ) : errorMessage ? (
         <View style={styles.centerState}>
-          <MaterialIcons name="error-outline" size={30} color="#C53030" />
-          <Text style={styles.errorTitle}>Falha ao carregar</Text>
-          <Text style={styles.centerStateText}>{errorMessage}</Text>
-          <Pressable onPress={() => loadBens({ pageToLoad: 1 })} style={styles.retryButton}>
-            <MaterialIcons name="refresh" size={20} color="#FFFFFF" />
-            <Text style={styles.retryButtonText}>Tentar novamente</Text>
+          <MaterialIcons name="error-outline" size={30} color={themed.colors.danger} />
+          <Text style={[styles.errorTitle, { color: themed.colors.danger }]}>Falha ao carregar</Text>
+          <Text style={[styles.centerStateText, themed.mutedText]}>{errorMessage}</Text>
+          <Pressable
+            onPress={() => loadBens({ pageToLoad: 1 })}
+            style={[styles.retryButton, { backgroundColor: themed.colors.primary }]}>
+            <MaterialIcons name="refresh" size={20} color={themed.colors.primaryText} />
+            <Text style={[styles.retryButtonText, themed.onPrimaryText]}>Tentar novamente</Text>
           </Pressable>
         </View>
       ) : (
@@ -284,8 +289,8 @@ export default function BensScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#1E4E79"
-              colors={['#1E4E79']}
+              tintColor={themed.colors.primary}
+              colors={[themed.colors.primary]}
             />
           }
           ListFooterComponent={
@@ -293,22 +298,22 @@ export default function BensScreen() {
               <View style={styles.listFooter}>
                 {isLoadingMore ? (
                   <>
-                    <ActivityIndicator color="#1E4E79" />
-                    <Text style={styles.listFooterText}>Carregando mais bens</Text>
+                    <ActivityIndicator color={themed.colors.primary} />
+                    <Text style={[styles.listFooterText, themed.mutedText]}>Carregando mais bens</Text>
                   </>
                 ) : hasMore ? (
-                  <Text style={styles.listFooterText}>Role para carregar mais</Text>
+                  <Text style={[styles.listFooterText, themed.mutedText]}>Role para carregar mais</Text>
                 ) : (
-                  <Text style={styles.listFooterText}>Todos os bens foram carregados</Text>
+                  <Text style={[styles.listFooterText, themed.mutedText]}>Todos os bens foram carregados</Text>
                 )}
               </View>
             ) : null
           }
           ListEmptyComponent={
-            <View style={styles.emptyPanel}>
-              <MaterialIcons name="inventory" size={32} color="#627D98" />
-              <Text style={styles.emptyTitle}>Nenhum bem encontrado</Text>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyPanel, themed.surface]}>
+              <MaterialIcons name="inventory" size={32} color={themed.colors.textMuted} />
+              <Text style={[styles.emptyTitle, themed.text]}>Nenhum bem encontrado</Text>
+              <Text style={[styles.emptyText, themed.mutedText]}>
                 A API não retornou bens para o setor vinculado ao seu usuário.
               </Text>
             </View>

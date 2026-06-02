@@ -15,8 +15,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ApiError, NetworkError } from '@/src/api/errors';
 import { authApi } from '@/src/api/auth';
+import { useThemeStyles } from '@/src/theme/useThemeStyles';
 
 export default function LoginScreen() {
+  const themed = useThemeStyles();
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -75,7 +77,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, themed.screen]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardContainer}>
@@ -84,55 +86,55 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <View style={styles.brandHeader}>
-            <View style={styles.logoMark}>
-              <MaterialIcons name="inventory-2" size={30} color="#FFFFFF" />
+            <View style={[styles.logoMark, { backgroundColor: themed.colors.primary }]}>
+              <MaterialIcons name="inventory-2" size={30} color={themed.colors.primaryText} />
             </View>
             <View style={styles.brandTextGroup}>
-              <Text style={styles.eyebrow}>Conferência patrimonial</Text>
-              <Text style={styles.title}>E-Gap Mobile</Text>
+              <Text style={[styles.eyebrow, themed.mutedText]}>Conferência patrimonial</Text>
+              <Text style={[styles.title, themed.text]}>E-Gap Mobile</Text>
             </View>
           </View>
 
-          <View style={styles.formCard}>
+          <View style={[styles.formCard, themed.surface]}>
             <View style={styles.formHeader}>
-              <Text style={styles.formTitle}>Acesso ao sistema</Text>
-              <Text style={styles.formDescription}>
+              <Text style={[styles.formTitle, themed.text]}>Acesso ao sistema</Text>
+              <Text style={[styles.formDescription, themed.mutedText]}>
                 Informe suas credenciais para acessar a rotina mobile de inventário.
               </Text>
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Usuário</Text>
-              <View style={styles.inputWrapper}>
-                <MaterialIcons name="person-outline" size={22} color="#627D98" />
+              <Text style={[styles.label, themed.mutedText]}>Usuário</Text>
+              <View style={[styles.inputWrapper, themed.input]}>
+                <MaterialIcons name="person-outline" size={22} color={themed.colors.textMuted} />
                 <TextInput
                   placeholder="Digite seu usuário"
-                  placeholderTextColor="#829AB1"
+                  placeholderTextColor={themed.colors.textSubtle}
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!isSubmitting && !isCheckingSession}
                   returnKeyType="next"
                   value={login}
                   onChangeText={setLogin}
-                  style={styles.input}
+                  style={[styles.input, themed.text]}
                 />
               </View>
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Senha</Text>
-              <View style={styles.inputWrapper}>
-                <MaterialIcons name="lock-outline" size={22} color="#627D98" />
+              <Text style={[styles.label, themed.mutedText]}>Senha</Text>
+              <View style={[styles.inputWrapper, themed.input]}>
+                <MaterialIcons name="lock-outline" size={22} color={themed.colors.textMuted} />
                 <TextInput
                   placeholder="Digite sua senha"
-                  placeholderTextColor="#829AB1"
+                  placeholderTextColor={themed.colors.textSubtle}
                   secureTextEntry={!isPasswordVisible}
                   editable={!isSubmitting && !isCheckingSession}
                   returnKeyType="done"
                   value={password}
                   onChangeText={setPassword}
                   onSubmitEditing={handleLogin}
-                  style={styles.input}
+                  style={[styles.input, themed.text]}
                 />
                 <Pressable
                   accessibilityLabel={isPasswordVisible ? 'Ocultar senha' : 'Visualizar senha'}
@@ -142,21 +144,21 @@ export default function LoginScreen() {
                   onPress={() => setIsPasswordVisible((currentValue) => !currentValue)}
                   style={({ pressed }) => [
                     styles.passwordVisibilityButton,
-                    pressed && styles.passwordVisibilityButtonPressed,
+                    pressed && { backgroundColor: themed.colors.primarySoft },
                   ]}>
                   <MaterialIcons
                     name={isPasswordVisible ? 'visibility-off' : 'visibility'}
                     size={22}
-                    color="#627D98"
+                    color={themed.colors.textMuted}
                   />
                 </Pressable>
               </View>
             </View>
 
             {errorMessage ? (
-              <View style={styles.errorPanel}>
-                <MaterialIcons name="error-outline" size={20} color="#C53030" />
-                <Text style={styles.errorText}>{errorMessage}</Text>
+              <View style={[styles.errorPanel, themed.dangerSurface]}>
+                <MaterialIcons name="error-outline" size={20} color={themed.colors.danger} />
+                <Text style={[styles.errorText, { color: themed.colors.danger }]}>{errorMessage}</Text>
               </View>
             ) : null}
 
@@ -166,21 +168,22 @@ export default function LoginScreen() {
               style={({ pressed }) => [
                 styles.primaryButton,
                 (pressed || isSubmitting || isCheckingSession) && styles.primaryButtonPressed,
+                { backgroundColor: themed.colors.primary },
               ]}>
               {isSubmitting || isCheckingSession ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={themed.colors.primaryText} />
               ) : (
-                <MaterialIcons name="login" size={21} color="#FFFFFF" />
+                <MaterialIcons name="login" size={21} color={themed.colors.primaryText} />
               )}
-              <Text style={styles.primaryButtonText}>
+              <Text style={[styles.primaryButtonText, themed.onPrimaryText]}>
                 {isCheckingSession ? 'Verificando acesso' : isSubmitting ? 'Entrando' : 'Entrar'}
               </Text>
             </Pressable>
           </View>
 
-          <View style={styles.footerPanel}>
-            <MaterialIcons name="verified-user" size={20} color="#1E4E79" />
-            <Text style={styles.footerText}>
+          <View style={[styles.footerPanel, themed.primarySurface]}>
+            <MaterialIcons name="verified-user" size={20} color={themed.colors.primary} />
+            <Text style={[styles.footerText, themed.mutedText]}>
               Ambiente preparado para acesso institucional ao controle de bens do setor.
             </Text>
           </View>
