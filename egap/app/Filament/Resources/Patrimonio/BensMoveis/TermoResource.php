@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
+use App\Models\Agendamento\Materiais;
+use App\Models\Agendamento\Solicitacao;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Filament\Clusters\PatrimonioCluster;
 use Filament\Forms;
@@ -33,7 +35,6 @@ class TermoResource extends Resource
     {
         return $form
             ->schema([
-                // SEÇÃO 1: Cabeçalho do Termo (image_e6a9f6.png)
                 Section::make('Termos de Responsabilidade')
                     ->columns(3)
                     ->schema([
@@ -56,14 +57,12 @@ class TermoResource extends Resource
                                 ->content(fn ($record) => $record?->atualizado_por ?? 'Sistema'),
                         ]),
 
-                        // PEDIDO NO: Mantendo a conexão 'egap' para evitar Erro 500
                         Select::make('pedido_no')
                             ->label('Pedido No')
                             ->placeholder('Por favor selecione')
                             ->searchable()
                             ->options(function () {
-                                return DB::connection('egap')->table('age_solicitacao')
-                                    ->select('id', 'date_time')
+                                return Solicitacao::select('id', 'date_time')
                                     ->limit(50)
                                     ->get()
                                     ->mapWithKeys(function ($item) {
@@ -72,15 +71,14 @@ class TermoResource extends Resource
                                     });
                             })
                             ->getSearchResultsUsing(fn (string $search): array =>
-                                DB::connection('egap')->table('age_solicitacao')
-                                    ->where('id', 'like', "%{$search}%")
-                                    ->limit(50)
-                                    ->get()
-                                    ->mapWithKeys(function ($item) {
-                                        $ano = Carbon::parse($item->date_time)->format('Y');
-                                        return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
-                                    })
-                                    ->toArray()
+                            Solicitacao::where('id', 'like', "%{$search}%")
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(function ($item) {
+                                    $ano = Carbon::parse($item->date_time)->format('Y');
+                                    return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
+                                })
+                                ->toArray()
                             ),
 
                         Select::make('situacao_entrega')
@@ -94,7 +92,6 @@ class TermoResource extends Resource
                             ->native(false),
                     ]),
 
-                // SEÇÃO 2: Anexos e Observações
                 Section::make('Anexos do Termo')
                     ->schema([
                         Grid::make(4)->schema([
@@ -128,6 +125,7 @@ class TermoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withCount('transferencias'))
             ->columns([
                 Tables\Columns\TextColumn::make('termo_completo')
                     ->label('Termo')
@@ -158,17 +156,86 @@ class TermoResource extends Resource
                         'Entregue' => 'success',
                         default => 'warning',
                     }),
+
+                Tables\Columns\TextColumn::make('transferencias_count')
+                    ->label('Materiais')
+                    ->getStateUsing(fn ($record) => "📊 ({$record->transferencias_count}) Materiais")
+                    ->color('info')
+                    ->weight('bold')
+                    ->alignCenter()
+                    ->disabledClick(false)
+                    ->action(
+                        Action::make('ver_materiais_coluna')
+                            ->modalHeading(fn ($record) => "Materiais Vinculados ao Termo: {$record->termo_completo}")
+                            ->modalWidth(\Filament\Support\Enums\MaxWidth::ExtraLarge)
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Fechar')
+                            ->infolist([
+                                \Filament\Infolists\Components\RepeatableEntry::make('transferencias')
+                                    ->label('')
+                                    ->schema([
+                                        \Filament\Infolists\Components\Grid::make(4)->schema([
+                                            \Filament\Infolists\Components\TextEntry::make('NumPatrimonio')
+                                                ->label('Nº Patrimônio')
+                                                ->weight('bold')
+                                                ->color('primary'),
+                                            \Filament\Infolists\Components\TextEntry::make('MaterialDescricao')
+                                                ->label('Descrição do Bem')
+                                                ->columnSpan(3),
+                                            \Filament\Infolists\Components\TextEntry::make('UnidadeJudiciariaAtual')
+                                                ->label('Unidade Judiciária'),
+                                            \Filament\Infolists\Components\TextEntry::make('SetorAtual')
+                                                ->label('Setor'),
+                                            \Filament\Infolists\Components\TextEntry::make('ComplementoAtual')
+                                                ->label('Complemento')
+                                                ->default('-'),
+                                            \Filament\Infolists\Components\TextEntry::make('date_time')
+                                                ->label('Movimentado em')
+                                                ->dateTime('d/m/Y H:i'),
+                                        ]),
+                                    ])->grid(1)
+                            ])
+                    ),
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()->label('Visualizar Detalhes'),
                     Tables\Actions\EditAction::make()->label('Editar Termo'),
 
-                    // ✅ AÇÃO ADICIONADA: Imprimir conforme o print image_dbd397.png
+                    Action::make('ver_materiais_menu')
+                        ->label('Ver materiais')
+                        ->icon('heroicon-o-rectangle-stack')
+                        ->color('info')
+                        ->modalHeading(fn ($record) => "Materiais do Termo: {$record->termo_completo}")
+                        ->modalWidth(\Filament\Support\Enums\MaxWidth::ExtraLarge)
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel('Fechar')
+                        ->infolist([
+                            \Filament\Infolists\Components\RepeatableEntry::make('transferencias')
+                                ->label('')
+                                ->schema([
+                                    \Filament\Infolists\Components\Grid::make(4)->schema([
+                                        \Filament\Infolists\Components\TextEntry::make('NumPatrimonio')
+                                            ->label('Nº Patrimônio')
+                                            ->weight('bold'),
+                                        \Filament\Infolists\Components\TextEntry::make('MaterialDescricao')
+                                            ->label('Descrição')
+                                            ->columnSpan(3),
+                                        \Filament\Infolists\Components\TextEntry::make('UnidadeJudiciariaAtual')
+                                            ->label('Comarca/Unidade'),
+                                        \Filament\Infolists\Components\TextEntry::make('SetorAtual')
+                                            ->label('Setor'),
+                                        \Filament\Infolists\Components\TextEntry::make('date_time')
+                                            ->label('Data')
+                                            ->dateTime('d/m/Y H:i'),
+                                    ]),
+                                ])
+                        ]),
+
                     Action::make('imprimir')
                         ->label('Imprimir termo')
                         ->icon('heroicon-o-printer')
-                        ->color('info')
+                        ->color('success')
                         ->url(fn ($record) => route('termo.imprimir.dinamico', ['id' => $record->id]))
                         ->openUrlInNewTab(),
 
@@ -184,7 +251,7 @@ class TermoResource extends Resource
                         ])
                         ->action(function (Termo $record, array $data) {
                             DB::connection('egap')->transaction(function () use ($record, $data) {
-                                $idSolicitacao = DB::connection('egap')->table('age_solicitacao')->insertGetId([
+                                $idSolicitacao = Solicitacao::insertGetId([
                                     'date_time' => now(),
                                     'id_user' => auth()->id(),
                                     'tipo' => 2,
@@ -193,7 +260,7 @@ class TermoResource extends Resource
                                     'local_saida' => 'Seção de Patrimônio'
                                 ]);
 
-                                DB::connection('egap')->table('age_materiais')->insert([
+                                Materiais::insert([
                                     'date_time' => now(),
                                     'id_user' => auth()->id(),
                                     'id_termo' => $record->id,
@@ -211,6 +278,11 @@ class TermoResource extends Resource
                 ])->label('Opções')->button(),
             ])
             ->defaultSort('id', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array

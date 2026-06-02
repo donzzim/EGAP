@@ -37,10 +37,8 @@ class RelatoriosGerais extends Page implements HasForms
     public ?array $data = [];
 
     const SEM_FILTROS = [
-        'bens_sem_tr_validos', 'diferenca_contabil', 'estatico_acuracia_documental',
-        'estoque_atual', 'qtd_material_setor', 'qtd_insumos_impressao',
-        'qtd_material_consumo_unidade', 'aquisicao_materiais_comarca',
-        'aquisicao_materiais_estoque_visivel', 'estatistico_consumo_almoxarifado_meta',
+        'bens_sem_tr_validos', 'diferenca_contabil', 'estatico_acuracia_documental','estoque_atual', 'qtd_material_setor', 'qtd_insumos_impressao',
+        'qtd_material_consumo_unidade', 'aquisicao_materiais_comarca','aquisicao_materiais_estoque_visivel', 'estatistico_consumo_almoxarifado_meta',
     ];
 
     const FILTROS_EXTRAS = [

@@ -3,81 +3,86 @@
 namespace App\Http\Controllers;
 
 use App\Models\Patrimonio\BensMoveis\Termo;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class TermosPrintController extends Controller
 {
     /**
-     * ✅ MÉTODO: imprimir
-     * Este nome deve ser exatamente igual ao que está no seu routes/web.php
+     * Metodo usado pela rota de impressao do termo.
      */
     public function imprimir($id)
     {
-        // 1. Busca o Termo principal ou falha se não existir
-        $termo = Termo::findOrFail($id);
+        $termo = Termo::query()
+            ->with([
+                'arquivoDigital',
+                'ultimaTransferencia.setorAtualRel',
+                'ultimaTransferencia.complementoAtualRel',
+                'ultimaTransferencia.usuarioRef.infoUser',
+                'transferencias' => fn ($query) => $query
+                    ->select(['id', 'Termo', 'NumPatrimonio'])
+                    ->orderBy('id'),
+                'transferencias.bem' => fn ($query) => $query
+                    ->select([
+                        'id',
+                        'NumPatrimonio',
+                        'Descricao',
+                        'Marca',
+                        'Modelo',
+                        'EstadodeConservacao',
+                        'ValorAquisicao',
+                        'ValordaReavaliacao',
+                        'DatadeIncorporacao',
+                    ]),
+                'transferencias.bem.marcaRef:id,Descricao',
+                'transferencias.bem.modeloRef:id,descricao',
+            ])
+            ->findOrFail($id);
 
-        // 2. Busca dados de situação do anexo (tabela mat_arquivodigital)
-        $arquivoDigital = DB::connection('egap')
-            ->table('mat_arquivodigital')
-            ->where('termo', $id)
-            ->first();
+        $arquivoDigital = $termo->arquivoDigital;
+        $ultimaTransferencia = $termo->ultimaTransferencia;
+        $setorAtual = $ultimaTransferencia?->setorAtualRel;
+        $complementoAtual = $ultimaTransferencia?->complementoAtualRel;
+        $usuarioEmitente = $ultimaTransferencia?->usuarioRef;
+        $infoEmitente = $usuarioEmitente?->infoUser;
 
-        // 3. Busca dados de localização e emitente (Baseado na última transferência)
-        $termoData = DB::connection('egap')
-            ->table('mat_transferencia as t')
-            ->leftJoin('mat_setores as s', 't.SetorAtual', '=', 's.id')
-            ->leftJoin('mat_complementosetor as c', 't.ComplementoAtual', '=', 'c.id')
-            ->join('jos_users as u', 't.Usuario', '=', 'u.id')
-            ->leftJoin('mat_infousers as info', 'info.usuario_id', '=', 'u.id')
-            ->where('t.Termo', $id)
-            ->select(
-                's.UnidadeOrganizacional as UnidadeJudiciaria',
-                's.Setor',
-                'c.descricao as ComplementoSetor',
-                'u.name as emitido_por',
-                'info.cargo',
-                'info.cpf'
-            )->first();
+        $bens = $termo->transferencias
+            ->map(function ($transferencia) {
+                $bem = $transferencia->bem;
 
-        // 4. Busca os Bens com a regra de valor de 2015 que o seu Blade pede
-        $bens = DB::connection('egap')
-            ->table('mat_patrimonio as p')
-            ->join('mat_transferencia as t', 'p.id', '=', 't.NumPatrimonio')
-            ->leftJoin('mat_marca as ma', 'p.Marca', '=', 'ma.id')
-            ->leftJoin('mat_modelo as mo', 'p.Modelo', '=', 'mo.id')
-            ->where('t.Termo', $id)
-            ->select(
-                'p.NumPatrimonio',
-                'p.Descricao',
-                'ma.Descricao as marca_desc',
-                'mo.descricao as modelo_desc',
-                'p.EstadodeConservacao',
-                'p.ValorAquisicao',
-                'p.ValordaReavaliacao',
-                'p.DatadeIncorporacao',
-                // Criamos o campo ValorCalculado para o Blade não dar erro
-                DB::raw("IF(p.DatadeIncorporacao < '2015-01-01 00:00:00', p.ValordaReavaliacao, p.ValorAquisicao) as ValorCalculado")
-            )->get();
+                if (! $bem) {
+                    return null;
+                }
 
-        // 5. Formatação do CPF do Emitente
+                $bem->setAttribute('marca_desc', $bem->marcaRef?->Descricao);
+                $bem->setAttribute('modelo_desc', $bem->modeloRef?->descricao);
+                $bem->setAttribute(
+                    'ValorCalculado',
+                    optional($bem->DatadeIncorporacao)->lt('2015-01-01')
+                        ? $bem->ValordaReavaliacao
+                        : $bem->ValorAquisicao
+                );
+
+                return $bem;
+            })
+            ->filter()
+            ->values();
+
         $cpfEmitente = '';
-        if (isset($termoData->cpf)) {
-            $nbr_cpf = str_pad(preg_replace('/[^0-9]/', '', $termoData->cpf), 11, '0', STR_PAD_LEFT);
+        if (isset($infoEmitente->cpf)) {
+            $nbr_cpf = str_pad(preg_replace('/[^0-9]/', '', $infoEmitente->cpf), 11, '0', STR_PAD_LEFT);
             $cpfEmitente = substr($nbr_cpf, 0, 3) . '.' . substr($nbr_cpf, 3, 3) . '.' . substr($nbr_cpf, 6, 3) . '-' . substr($nbr_cpf, 9, 2);
         }
 
-        // 6. Retorna a View com as variáveis que o seu Blade original utiliza
         return view('patrimonio.termo_impresso', [
             'termo' => $termo,
             'arquivoDigital' => $arquivoDigital,
             'bens' => $bens,
-            'unidade' => $termoData->UnidadeJudiciaria ?? 'TRIBUNAL DE JUSTIÇA DO ESPÍRITO SANTO',
-            'setor' => $termoData->Setor ?? 'NÃO INFORMADO',
-            'complemento' => $termoData->ComplementoSetor ?? 'NÃO INFORMADO',
-            'usuarioEmitente' => $termoData->emitido_por ?? Auth::user()->name ?? 'NÃO INFORMADO',
-            'cargoEmitente' => $termoData->cargo ?? 'SERVIDOR',
-            'cpfEmitente' => $cpfEmitente
+            'unidade' => $setorAtual?->UnidadeOrganizacional ?? 'TRIBUNAL DE JUSTIÇA DO ESPÍRITO SANTO',
+            'setor' => $setorAtual?->Setor ?? 'NÃO INFORMADO',
+            'complemento' => $complementoAtual?->descricao ?? 'NÃO INFORMADO',
+            'usuarioEmitente' => $usuarioEmitente?->name ?? Auth::user()?->name ?? 'NÃO INFORMADO',
+            'cargoEmitente' => $infoEmitente?->cargo ?? 'SERVIDOR',
+            'cpfEmitente' => $cpfEmitente,
         ]);
     }
 }

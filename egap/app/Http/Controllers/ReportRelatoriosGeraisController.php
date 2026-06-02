@@ -18,6 +18,10 @@ use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Patrimonio\BensIntangiveis\BemIntangivel;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Almoxarifado\Pedidos;
+use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
+use App\Models\Cadastro\Setores;
+
 
 class ReportRelatoriosGeraisController extends Controller
 {
@@ -606,8 +610,6 @@ class ReportRelatoriosGeraisController extends Controller
             ['conta_contabil', 'asc'],
             ['cod_nat_despesa', 'asc']
         ])->values();
-
-        return $this->render('tce-tabela-17', $dados, $filtros);
 
         return $this->render('tce-tabela-17', $dados, $filtros);
     }
@@ -1728,7 +1730,7 @@ class ReportRelatoriosGeraisController extends Controller
 
         return $this->render('resumo-inventario-almoxarifado-cc', $dados, $filtros);
     }
-    //
+
     private function gerarPedidosBensPermanentes($filtros)
     {
         return $this->processarRelatorioPedidosBase($filtros, 1);
@@ -1748,7 +1750,7 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $d = $this->getPeriodo($filtros);
 
-        $dados = DB::connection('egap')->table('ped_pedidos as ped')
+        $dados = Pedidos::query()->from('ped_pedidos as ped')
             ->leftJoin('ped_itempedido as item', 'ped.id', '=', 'item.idPedido')
             ->leftJoin('mat_descricaoresumida as de', 'item.material', '=', 'de.id')
             ->leftJoin('mat_descricaodetalhada as dd', 'item.DescricaoDetalhada', '=', 'dd.id')
@@ -1767,7 +1769,7 @@ class ReportRelatoriosGeraisController extends Controller
             })
             ->when($filtros['unidade_judiciaria'] ?? null, function($q, $v) use ($filtros) {
                 if (empty($filtros['setor_pedido'])) {
-                    $q->where(fn($sq) => $sq->where('s.CodigoPai', $v)->orWhere('s.id', $v));
+                    $q->where(fn($sq) => $sq->where('unid.CodigoPai', $v)->orWhere('unid.id', $v));
                 }
             })
             ->when($filtros['setor_pedido'] ?? null, fn($q, $v) => $q->where('ped.Setor', $v))
@@ -1779,37 +1781,26 @@ class ReportRelatoriosGeraisController extends Controller
                         ->whereRaw('IFNULL(item.quantidade_validada, 0) <> 0');
                 }
             })
-            ->select(
-                'ped.id as pedido_id',
-                'item.id as item_id',
-                'ped.date_time',
-                'ped.num_protocolo',
-                'unid.Setor as unidade_nome',
-                'se.Setor as setor_nome',
-                'de.Descricao as desc_resumida',
-                'dd.descricao_detalhada as desc_detalhada',
-                'item.justificativa',
-                'item.QuantidadeMaterial as qtde_solicitada',
-                'item.quantidade_validada',
-                'item.QuantidadeMaterialAtendida as qtde_atendida',
-                'ped.Observacao as obs_pedido',
-                'item.ObservacaoItem as obs_item',
-                'item.data_validacao',
-                DB::raw('IFNULL(sit.Descricao, "Em análise") as situacao_desc')
+            ->select('ped.id as pedido_id','item.id as item_id','ped.date_time','ped.num_protocolo','unid.Setor as unidade_nome','se.Setor as setor_nome',
+                'de.Descricao as desc_resumida','dd.descricao_detalhada as desc_detalhada','item.justificativa','item.QuantidadeMaterial as qtde_solicitada',
+                'item.quantidade_validada','item.QuantidadeMaterialAtendida as qtde_atendida','ped.Observacao as obs_pedido','item.ObservacaoItem as obs_item',
+                'item.data_validacao', DB::raw('IFNULL(sit.Descricao, "Em análise") as situacao_desc')
             )
             ->orderBy('unid.Setor')
             ->orderBy('se.Setor')
             ->orderBy('de.Descricao')
             ->get()
             ->map(function($i) {
-                $i->pedido_formatado = $i->pedido_id . '/' . \Carbon\Carbon::parse($i->date_time)->format('Y');
-                $i->data_pedido_fmt = \Carbon\Carbon::parse($i->date_time)->format('d/m/Y');
-
+                $i->data_protocolo_formatada = \Carbon\Carbon::parse($i->date_time)->format('d/m/Y');
+                $i->validado_em_formatada = ($i->data_validacao && $i->data_validacao != '0000-00-00 00:00:00')
+                    ? \Carbon\Carbon::parse($i->data_validacao)->format('d/m/Y')
+                    : '';
                 $qtdValidada = ($i->quantidade_validada === null || $i->quantidade_validada === '') ? $i->qtde_solicitada : $i->quantidade_validada;
-                $i->qtde_validada_calc = $qtdValidada;
-                $i->resta = $qtdValidada - $i->qtde_atendida;
+                $i->qtde_validada = $qtdValidada;
+                $i->qtde_a_ser_atendida = $qtdValidada - $i->qtde_atendida;
+                $i->descricao_material = $i->desc_resumida;
+                $i->observacao = $i->obs_item ?? $i->obs_pedido;
 
-                $i->data_validacao_fmt = ($i->data_validacao && $i->data_validacao != '0000-00-00 00:00:00') ? \Carbon\Carbon::parse($i->data_validacao)->format('d/m/Y') : '';
                 return $i;
             });
 
@@ -1818,18 +1809,20 @@ class ReportRelatoriosGeraisController extends Controller
             'setorResponsavel' => $tipoRelatorio == 3 ? 'Seção de Materiais de Consumo' : 'Seção de Patrimônio'
         ]);
     }
-
+    //
     private function gerarBensSemTrValidos($filtros)
     {
-        $subMaxTransfer = DB::connection('egap')->table('mat_transferencia')
-            ->select('NumPatrimonio', DB::raw('MAX(id) as max_id'))
+        $d = $this->getPeriodo($filtros);
+
+        $subMaxTransfer = TransferenciaBemMovel::query()
+            ->selectRaw('NumPatrimonio, MAX(id) as max_id')
             ->groupBy('NumPatrimonio');
 
-        $subMaxArq = DB::connection('egap')->table('mat_arquivodigital')
-            ->select('termo', DB::raw('MAX(id) as max_id'))
+        $subMaxArq = ArquivoDigital::query()
+            ->selectRaw('termo, MAX(id) as max_id')
             ->groupBy('termo');
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as pat')
+        $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->join('mat_descricaoresumida as dr', 'pat.DescricaoResumidadoBem', '=', 'dr.id')
             ->leftJoinSub($subMaxTransfer, 'um', 'um.NumPatrimonio', '=', 'pat.id')
             ->leftJoin('mat_transferencia as t', 't.id', '=', 'um.max_id')
@@ -1846,16 +1839,9 @@ class ReportRelatoriosGeraisController extends Controller
                     ->where('a.situacao', 1)
                     ->whereIn('p.SituacaoBem', [1, 7]);
             })
-            ->select(
-                'pat.NumPatrimonio as patrimonio',
-                'dr.Descricao as descricao',
-                's.UnidadeOrganizacional as unidade',
-                's.Setor as setor',
-                'ter.num_termo',
-                'ter.ano_termo',
-                'arq.observacao',
-                'arq.situacao as situacao_id'
-            )
+            ->selectRaw("pat.NumPatrimonio as patrimonio, dr.Descricao as descricao, s.UnidadeOrganizacional as unidade,
+                s.Setor as setor, ter.num_termo, ter.ano_termo, arq.observacao, arq.situacao as situacao_id
+            ")
             ->orderBy('dr.Descricao')
             ->orderBy('pat.NumPatrimonio')
             ->get()
@@ -1875,11 +1861,11 @@ class ReportRelatoriosGeraisController extends Controller
 
     private function gerarDiferencaContabil($filtros)
     {
-        $totalAtivos = DB::connection('egap')->table('mat_patrimonio')
+        $totalAtivos = BemMovel::query()
             ->whereIn('SituacaoBem', [1, 7])
             ->count();
 
-        $dados = DB::connection('egap')->table('mat_patrimonio as pat')
+        $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->leftJoin('mat_situacao as sit', 'pat.SituacaoBem', '=', 'sit.id')
             ->where(function ($q) {
                 $q->whereColumn('pat.ValorAquisicao', '<', 'pat.ValordaReavaliacao')
@@ -1887,13 +1873,13 @@ class ReportRelatoriosGeraisController extends Controller
             })
             ->whereNotIn('sit.id', [8, 9])
             ->where('pat.ValorAquisicao', '<', 20)
-            ->select(
-                'sit.descricao as situacao',
-                DB::raw('COUNT(*) as qtde'),
-                DB::raw('SUM(pat.ValordaReavaliacao) as reavaliacao'),
-                DB::raw('SUM(pat.ValorAquisicao) as aquisicao'),
-                DB::raw('SUM(pat.ValordaReavaliacao - pat.ValorAquisicao) as diferenca')
-            )
+            ->selectRaw("
+                sit.descricao as situacao,
+                COUNT(*) as qtde,
+                SUM(pat.ValordaReavaliacao) as reavaliacao,
+                SUM(pat.ValorAquisicao) as aquisicao,
+                SUM(pat.ValordaReavaliacao - pat.ValorAquisicao) as diferenca
+            ")
             ->groupBy('sit.descricao')
             ->orderBy('sit.descricao')
             ->get();
@@ -1905,11 +1891,11 @@ class ReportRelatoriosGeraisController extends Controller
 
     private function gerarEstaticoAcuraciaDocumental($filtros)
     {
-        $totalAtivo = DB::connection('egap')->table('mat_patrimonio')
+        $totalAtivo = BemMovel::query()
             ->whereIn('SituacaoBem', [1, 7])
             ->count();
 
-        $totalValidos = DB::connection('egap')->table('mat_patrimonio as p')
+        $totalValidos = BemMovel::query()->from('mat_patrimonio as p')
             ->join('mat_transferencia as t', 'p.id', '=', 't.NumPatrimonio')
             ->join('mat_arquivodigital as a', 't.Termo', '=', 'a.termo')
             ->where('a.situacao', 1)
@@ -1933,25 +1919,22 @@ class ReportRelatoriosGeraisController extends Controller
 
     private function gerarEstoqueAtual($filtros)
     {
-        $subUltimoRegistro = DB::connection('egap')->table('alm_estoque')
-            ->select(DB::raw('MAX(id) as max_id'), 'material')
+        $d = $this->getPeriodo($filtros);
+
+        $subUltimoRegistro = MovimentacaoEstoque::query()
+            ->selectRaw('MAX(id) as max_id, material')
+            ->where('date_time', '<=', $d->fim)
             ->groupBy('material');
 
-        $dados = DB::connection('egap')->table('alm_estoque as est')
+        $dados = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->leftJoin('mat_unidades as u', 'dd.unidade_medida', '=', 'u.id')
             ->joinSub($subUltimoRegistro, 'ult', 'est.id', '=', 'ult.max_id')
             ->where('dr.id_tipo_material', '<>', 'P')
             ->where('dd.item_estoque', 1)
-            ->select(
-                'dr.id_tipo_material',
-                'dd.descricao_detalhada',
-                'u.Sigla as sigla',
-                'est.quantidade_estoque',
-                'est.preco_medio_estoque',
-                'est.valor_total_estoque',
-                'est.date_time as atualizado_em'
+            ->selectRaw("dr.id_tipo_material, dd.descricao_detalhada, u.Sigla as sigla, est.quantidade_estoque,
+            est.preco_medio_estoque, est.valor_total_estoque, est.date_time as atualizado_em"
             )
             ->orderBy('dr.id_tipo_material')
             ->orderBy('dd.descricao_detalhada')
@@ -1962,38 +1945,34 @@ class ReportRelatoriosGeraisController extends Controller
                 return $item;
             });
 
-        $dadosAgrupados = $dados->groupBy('grupo_desc');
-
         return $this->render('estoque-atual', null, $filtros, [
-            'dadosAgrupados' => $dadosAgrupados,
+            'dadosAgrupados' => $dados->groupBy('grupo_desc'),
             'totalGeral'     => $dados->sum('valor_total_estoque')
         ]);
     }
 
     private function gerarQtdMaterialSetor($filtros)
     {
-        $dados = DB::connection('egap')->table('ped_pedidos as ped')
+        $dados = Pedidos::query()->from('ped_pedidos as ped')
             ->join('ped_itempedido as iped', 'ped.id', '=', 'iped.idPedido')
             ->join('mat_descricaodetalhada as dd', 'iped.DescricaoDetalhada', '=', 'dd.id')
             ->join('mat_setores as se', 'ped.Setor', '=', 'se.id')
             ->where('ped.setor_responsavel', 799)
-            ->select(
-                'se.UnidadeOrganizacional',
-                'se.Setor',
-                'dd.descricao_detalhada',
-                DB::raw('SUM(iped.QuantidadeMaterial) as solicitado'),
-                DB::raw('SUM(iped.QuantidadeMaterialAtendida) as atendido')
-            )
+            ->selectRaw("
+                se.UnidadeOrganizacional,
+                se.Setor,
+                dd.descricao_detalhada,
+                SUM(iped.QuantidadeMaterial) as solicitado,
+                SUM(iped.QuantidadeMaterialAtendida) as atendido
+            ")
             ->groupBy('se.UnidadeOrganizacional', 'se.Setor', 'dd.descricao_detalhada')
             ->orderBy('se.UnidadeOrganizacional')
             ->orderBy('se.Setor')
             ->orderBy('dd.descricao_detalhada')
             ->get();
 
-        $dadosAgrupados = $dados->groupBy('UnidadeOrganizacional');
-
         return $this->render('qtd-material-setor', null, $filtros, [
-            'dadosAgrupados' => $dadosAgrupados
+            'dadosAgrupados' => $dados->groupBy('UnidadeOrganizacional')
         ]);
     }
 
@@ -2002,18 +1981,16 @@ class ReportRelatoriosGeraisController extends Controller
         $temDatas = !empty($filtros['data_inicio']) && !empty($filtros['data_termino']);
 
         if (!$temDatas) {
-            return $this->render('qtd-insumos-impressao', collect(), $filtros, [
-                'mostrarDados' => false
-            ]);
+            return $this->render('qtd-insumos-impressao', collect(), $filtros, ['mostrarDados' => false]);
         }
 
         $d = $this->getPeriodo($filtros);
 
-        $subPreco = DB::connection('egap')->table('alm_estoque')
-            ->select('material as id_material', DB::raw('MAX(preco_unitario) as valor'))
+        $subPreco = MovimentacaoEstoque::query()
+            ->selectRaw('material as id_material, MAX(preco_unitario) as valor')
             ->groupBy('material');
 
-        $dados = DB::connection('egap')->table('ped_pedidos as ped')
+        $dados = Pedidos::query()->from('ped_pedidos as ped')
             ->join('ped_itempedido as iped', 'ped.id', '=', 'iped.idPedido')
             ->join('mat_descricaodetalhada as dd', 'iped.DescricaoDetalhada', '=', 'dd.id')
             ->join('mat_setores as se', 'ped.Setor', '=', 'se.id')
@@ -2025,15 +2002,15 @@ class ReportRelatoriosGeraisController extends Controller
                     ->orWhere('dd.descricao_detalhada', 'LIKE', '%PAPEL A4%');
             })
             ->whereBetween('ped.date_time', [$d->ini, $d->fim])
-            ->select(
-                'se.CodigodaUO',
-                'unid.UnidadeOrganizacional',
-                'se.Setor',
-                'dd.id as material_id',
-                'dd.descricao_detalhada',
-                DB::raw('IFNULL(compra.valor, 0) as valor_unitario'),
-                DB::raw('SUM(iped.QuantidadeMaterialAtendida) as atendido')
-            )
+            ->selectRaw("
+                se.CodigodaUO,
+                unid.UnidadeOrganizacional,
+                se.Setor,
+                dd.id as material_id,
+                dd.descricao_detalhada,
+                IFNULL(compra.valor, 0) as valor_unitario,
+                SUM(iped.QuantidadeMaterialAtendida) as atendido
+            ")
             ->groupBy('se.CodigodaUO', 'unid.UnidadeOrganizacional', 'se.Setor', 'dd.id', 'dd.descricao_detalhada', 'compra.valor')
             ->havingRaw('SUM(iped.QuantidadeMaterialAtendida) > 0')
             ->orderBy('unid.UnidadeOrganizacional')
@@ -2042,8 +2019,6 @@ class ReportRelatoriosGeraisController extends Controller
                 $i->total = $i->atendido * $i->valor_unitario;
                 return $i;
             });
-
-        $porUO = $dados->groupBy('UnidadeOrganizacional');
 
         $resumoGeralMaterial = $dados->groupBy('descricao_detalhada')->map(function($itens, $desc) {
             return (object)[
@@ -2063,12 +2038,10 @@ class ReportRelatoriosGeraisController extends Controller
 
         return $this->render('qtd-insumos-impressao', null, $filtros, [
             'mostrarDados' => true,
-            'porUO' => $porUO,
+            'porUO' => $dados->groupBy('UnidadeOrganizacional'),
             'resumoGeralMaterial' => $resumoGeralMaterial,
             'resumoGeralUnidade' => $resumoGeralUnidade,
-            'periodoStr' => $d->iniDate != $d->fimDate
-                ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y')
-                : $d->objIni->format('d/m/Y')
+            'periodoStr' => $d->iniDate != $d->fimDate ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y') : $d->objIni->format('d/m/Y')
         ]);
     }
 
@@ -2076,7 +2049,7 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $temDatas = !empty($filtros['data_inicio']) && !empty($filtros['data_termino']);
 
-        $setoresRaw = DB::connection('egap')->table('mat_setores')
+        $setoresRaw = Setores::query()
             ->select('id', 'Setor', 'CodigodaUO')
             ->orderBy('CodigodaUO')->orderBy('Setor')
             ->get();
@@ -2095,15 +2068,14 @@ class ReportRelatoriosGeraisController extends Controller
         }
 
         $d = $this->getPeriodo($filtros);
-
         $unidadeSelecionada = $filtros['unidade_selecionada'] ?? null;
         $unidDescricao = '';
 
-        $subPreco = DB::connection('egap')->table('alm_estoque')
-            ->select('material as id_material', DB::raw('MAX(preco_unitario) as valor'))
+        $subPreco = MovimentacaoEstoque::query()
+            ->selectRaw('material as id_material, MAX(preco_unitario) as valor')
             ->groupBy('material');
 
-        $dados = DB::connection('egap')->table('ped_pedidos as ped')
+        $dados = Pedidos::query()->from('ped_pedidos as ped')
             ->join('ped_itempedido as iped', 'ped.id', '=', 'iped.idPedido')
             ->join('mat_descricaodetalhada as dd', 'iped.DescricaoDetalhada', '=', 'dd.id')
             ->join('mat_setores as se', 'ped.Setor', '=', 'se.id')
@@ -2122,19 +2094,18 @@ class ReportRelatoriosGeraisController extends Controller
                     } else {
                         $q->where('se.id', $id);
                     }
-
                     $unidDescricao = $listaUnidades[$v] ?? '';
                 }
             })
-            ->select(
-                'se.CodigodaUO',
-                'unid.UnidadeOrganizacional',
-                'se.Setor',
-                'dd.id as material_id',
-                'dd.descricao_detalhada',
-                DB::raw('IFNULL(compra.valor, 0) as valor_unitario'),
-                DB::raw('SUM(iped.QuantidadeMaterialAtendida) as atendido')
-            )
+            ->selectRaw("
+                se.CodigodaUO,
+                unid.UnidadeOrganizacional,
+                se.Setor,
+                dd.id as material_id,
+                dd.descricao_detalhada,
+                IFNULL(compra.valor, 0) as valor_unitario,
+                SUM(iped.QuantidadeMaterialAtendida) as atendido
+            ")
             ->groupBy('se.CodigodaUO', 'unid.UnidadeOrganizacional', 'se.Setor', 'dd.id', 'dd.descricao_detalhada', 'compra.valor')
             ->havingRaw('SUM(iped.QuantidadeMaterialAtendida) > 0')
             ->orderBy('unid.UnidadeOrganizacional')
@@ -2143,8 +2114,6 @@ class ReportRelatoriosGeraisController extends Controller
                 $i->total = $i->atendido * $i->valor_unitario;
                 return $i;
             });
-
-        $porUO = $dados->groupBy('UnidadeOrganizacional');
 
         $resumoGeralMaterial = $dados->groupBy('descricao_detalhada')->map(function($itens, $desc) {
             return (object)[
@@ -2166,12 +2135,10 @@ class ReportRelatoriosGeraisController extends Controller
             'mostrarDados' => true,
             'listaUnidades' => $listaUnidades,
             'unidDescricao' => $unidDescricao,
-            'porUO' => $porUO,
+            'porUO' => $dados->groupBy('UnidadeOrganizacional'),
             'resumoGeralMaterial' => $resumoGeralMaterial,
             'resumoGeralUnidade' => $resumoGeralUnidade,
-            'periodoStr' => $d->iniDate != $d->fimDate
-                ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y')
-                : $d->objIni->format('d/m/Y')
+            'periodoStr' => $d->iniDate != $d->fimDate ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y') : $d->objIni->format('d/m/Y')
         ]);
     }
 
@@ -2188,10 +2155,9 @@ class ReportRelatoriosGeraisController extends Controller
         }
 
         $d = $this->getPeriodo($filtros);
-
         $materiaisIds = $filtros['materiais'] ?? [];
 
-        $dados = DB::connection('egap')->table('alm_notafiscal as nf')
+        $dados = NotaFiscal::query()->from('alm_notafiscal as nf')
             ->join('alm_itens_notafiscal as inf', 'nf.id', '=', 'inf.id_notafiscal')
             ->leftJoin('mat_descricaodetalhada as dd', 'inf.id_material', '=', 'dd.id')
             ->where('nf.unidade_judiciaria', 766)
@@ -2200,14 +2166,14 @@ class ReportRelatoriosGeraisController extends Controller
             ->when(!empty($materiaisIds), function($q) use ($materiaisIds) {
                 $q->whereIn('dd.id', $materiaisIds);
             })
-            ->select(
-                DB::raw("DATE_FORMAT(nf.data_documento, '%Y%m') as mesano"),
-                'dd.id as id_descricao_detalhada',
-                'dd.descricao_detalhada',
-                DB::raw('SUM(ROUND(inf.quantidade, 0)) as quantidade'),
-                DB::raw('SUM(inf.preco_unitario) as preco_unitario'),
-                DB::raw('SUM(inf.total_item) as valor_total')
-            )
+            ->selectRaw("
+                DATE_FORMAT(nf.data_documento, '%Y%m') as mesano,
+                dd.id as id_descricao_detalhada,
+                dd.descricao_detalhada,
+                SUM(ROUND(inf.quantidade, 0)) as quantidade,
+                SUM(inf.preco_unitario) as preco_unitario,
+                SUM(inf.total_item) as valor_total
+            ")
             ->groupBy(DB::raw("DATE_FORMAT(nf.data_documento, '%Y%m')"), 'dd.id', 'dd.descricao_detalhada')
             ->orderBy(DB::raw("DATE_FORMAT(nf.data_documento, '%Y%m')"))
             ->orderBy('dd.descricao_detalhada')
@@ -2218,10 +2184,8 @@ class ReportRelatoriosGeraisController extends Controller
         $dadosAgrupados = $dados->groupBy('mesano')->map(function($itens, $mesano) use ($mesesNome) {
             $ano = substr($mesano, 0, 4);
             $mes = (int) substr($mesano, -2);
-            $nomeAgrupamento = $mesesNome[$mes] . '/' . $ano;
-
             return (object) [
-                'nome' => $nomeAgrupamento,
+                'nome' => $mesesNome[$mes] . '/' . $ano,
                 'itens' => $itens
             ];
         });
@@ -2248,10 +2212,9 @@ class ReportRelatoriosGeraisController extends Controller
         }
 
         $d = $this->getPeriodo($filtros);
-
         $materiaisIds = $filtros['materiais'] ?? [];
 
-        $dados = DB::connection('egap')->table('alm_notafiscal as nf')
+        $dados = NotaFiscal::query()->from('alm_notafiscal as nf')
             ->join('alm_itens_notafiscal as inf', 'nf.id', '=', 'inf.id_notafiscal')
             ->leftJoin('mat_descricaodetalhada as dd', 'inf.id_material', '=', 'dd.id')
             ->leftJoin('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
@@ -2266,14 +2229,14 @@ class ReportRelatoriosGeraisController extends Controller
             ->when(!empty($materiaisIds), function($q) use ($materiaisIds) {
                 $q->whereIn('dd.id', $materiaisIds);
             })
-            ->select(
-                DB::raw("DATE_FORMAT(nf.data_documento, '%Y%m') as mesano"),
-                'dd.id as id_descricao_detalhada',
-                'dd.descricao_detalhada',
-                DB::raw('SUM(ROUND(inf.quantidade, 0)) as quantidade'),
-                DB::raw('SUM(inf.preco_unitario) as preco_unitario'),
-                DB::raw('SUM(inf.total_item) as valor_total')
-            )
+            ->selectRaw("
+                DATE_FORMAT(nf.data_documento, '%Y%m') as mesano,
+                dd.id as id_descricao_detalhada,
+                dd.descricao_detalhada,
+                SUM(ROUND(inf.quantidade, 0)) as quantidade,
+                SUM(inf.preco_unitario) as preco_unitario,
+                SUM(inf.total_item) as valor_total
+            ")
             ->groupBy(DB::raw("DATE_FORMAT(nf.data_documento, '%Y%m')"), 'dd.id', 'dd.descricao_detalhada')
             ->orderBy(DB::raw("DATE_FORMAT(nf.data_documento, '%Y%m')"))
             ->orderBy('dd.descricao_detalhada')
@@ -2284,10 +2247,8 @@ class ReportRelatoriosGeraisController extends Controller
         $dadosAgrupados = $dados->groupBy('mesano')->map(function($itens, $mesano) use ($mesesNome) {
             $ano = substr($mesano, 0, 4);
             $mes = (int) substr($mesano, -2);
-            $nomeAgrupamento = $mesesNome[$mes] . '/' . $ano;
-
             return (object) [
-                'nome' => $nomeAgrupamento,
+                'nome' => $mesesNome[$mes] . '/' . $ano,
                 'itens' => $itens
             ];
         });
@@ -2305,7 +2266,7 @@ class ReportRelatoriosGeraisController extends Controller
     {
         $ano = $filtros['ano'] ?? null;
 
-        $setoresRaw = DB::connection('egap')->table('mat_setores')->orderBy('CodigodaUO')->orderBy('Setor')->get();
+        $setoresRaw = Setores::query()->orderBy('CodigodaUO')->orderBy('Setor')->get();
         $listaSetores = [];
         $arrSetores = [];
 
@@ -2354,7 +2315,7 @@ class ReportRelatoriosGeraisController extends Controller
         $relatorioFinal = [];
 
         foreach ($comarcas as $cod => $nomeUnidade) {
-            $query = DB::connection('egap')->table('mat_descricaodetalhada as dd')
+            $dados = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
                 ->leftJoin('ped_itempedido as iped', 'dd.id', '=', 'iped.DescricaoDetalhada')
                 ->leftJoin('ped_pedidos as ped', function($join) use ($ano, $anoAnt) {
                     $join->on('iped.idPedido', '=', 'ped.id')
@@ -2370,19 +2331,17 @@ class ReportRelatoriosGeraisController extends Controller
                     } else {
                         $q->orWhere('se.CodigodaUO', $cod);
                     }
-                });
-
-            $dados = $query->select(
-                'dd.id', 'dd.descricao_detalhada',
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (1,2,3) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q1"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (4,5,6) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q2"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (7,8,9) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q3"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (10,11,12) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q4"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (1,2,3) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q1"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (4,5,6) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q2"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (7,8,9) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q3"),
-                DB::raw("SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (10,11,12) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q4")
-            )
+                })
+                ->selectRaw("dd.id, dd.descricao_detalhada,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (1,2,3) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q1,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (4,5,6) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q2,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (7,8,9) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q3,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$anoAnt} AND MONTH(ped.date_time) IN (10,11,12) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as ant_q4,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (1,2,3) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q1,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (4,5,6) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q2,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (7,8,9) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q3,
+                    SUM(CASE WHEN YEAR(ped.date_time) = {$ano} AND MONTH(ped.date_time) IN (10,11,12) THEN iped.QuantidadeMaterialAtendida ELSE 0 END) as atu_q4
+                ")
                 ->groupBy('dd.id', 'dd.descricao_detalhada')
                 ->orderBy('dd.descricao_detalhada')
                 ->get();
