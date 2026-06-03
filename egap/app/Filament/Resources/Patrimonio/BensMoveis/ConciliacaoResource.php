@@ -107,6 +107,7 @@ class ConciliacaoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('numero_patrimonio')->label('Patrimônio')->searchable()->sortable()->weight('bold'),
                 Tables\Columns\TextColumn::make('descricao')->label('Descrição')->limit(40),

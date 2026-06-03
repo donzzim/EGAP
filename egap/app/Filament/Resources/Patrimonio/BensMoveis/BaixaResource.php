@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
 use App\Models\Patrimonio\BensMoveis\Baixa;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensMoveis\ItemBaixa;
 use Filament\Forms;
 use Filament\Forms\Components\{DatePicker, Grid, Repeater, Section, Select, Textarea, TextInput};
 use Filament\Forms\Form;
@@ -79,40 +80,59 @@ class BaixaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
-                Tables\Columns\TextColumn::make('NumeroProcesso')->label('Processo Nº')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('DataBaixa')->label('Data')->date('d/m/Y')->sortable(),
-                Tables\Columns\TextColumn::make('Requisitante')->label('Requisitante')->limit(30),
-                Tables\Columns\TextColumn::make('itens_count')->counts('itens')->label('Qtd. Materiais'),
+                Tables\Columns\TextColumn::make('NumeroProcesso')
+                    ->label('Processo Nº')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('DataBaixa')
+                    ->label('Data')
+                    ->date('d/m/Y')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('Requisitante')
+                    ->label('Requisitante')
+                    ->limit(30),
+                Tables\Columns\TextColumn::make('itens_count')
+                    ->alignCenter()
+                    ->counts('itens')
+                    ->label('Qtd. Materiais'),
             ])
             ->actions([
-                ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->hiddenLabel()
+                    ->tooltip('Editar'),
+                Tables\Actions\ViewAction::make()
+                    ->hiddenLabel()
+                    ->tooltip('Visualizar'),
+                Tables\Actions\DeleteAction::make()
+                    ->hiddenLabel()
+                    ->tooltip('Excluir'),
+                Action::make('baixar_bens_processo')
+                    ->hiddenLabel()
+                    ->tooltip('Baixar bens do processo')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        DB::connection('egap')->transaction(function () use ($record) {
+                            $itens = ItemBaixa::where('id_baixa', $record->id)->get();
+                            foreach ($itens as $item) {
+                                BemMovel::where('id', $item->id_bem)
+                                    ->update(['SituacaoBem' => $item->id_situacao, 'DataBaixa' => $record->DataBaixa]);
+                            }
+                        });
+                        Notification::make()->title('Bens baixados definitivamente!')->success()->send();
+                    }),
 
-                    Action::make('baixar_bens_processo')
-                        ->label('Baixar bens do processo')
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->action(function ($record) {
-                            DB::connection('egap')->transaction(function () use ($record) {
-                                $itens = DB::connection('egap')->table('mat_itembaixa')->where('id_baixa', $record->id)->get();
-                                foreach ($itens as $item) {
-                                    DB::connection('egap')->table('mat_patrimonio')->where('id', $item->id_bem)
-                                        ->update(['SituacaoBem' => $item->id_situacao, 'DataBaixa' => $record->DataBaixa]);
-                                }
-                            });
-                            Notification::make()->title('Bens baixados definitivamente!')->success()->send();
-                        }),
-
-                    Action::make('imprimir_bens_baixa')
-                        ->label('Imprimir bens para baixa')
-                        ->icon('heroicon-o-printer')
-                        ->color('success')
-                        ->disabled(fn ($record) => !DB::connection('egap')->table('mat_itembaixa')->where('id_baixa', $record->id)->exists())
-                        ->url(fn ($record) => route('termo.baixa.imprimir', ['id' => $record->id]))
-                        ->openUrlInNewTab(),
-                ])->label('Opções')->button(),
+                Action::make('imprimir_bens_baixa')
+                    ->hiddenLabel()
+                    ->tooltip('Imprimir')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->disabled(fn ($record) => !ItemBaixa::where('id_baixa', $record->id)->exists())
+                    ->url(fn ($record) => route('termo.baixa.imprimir', ['id' => $record->id]))
+                    ->openUrlInNewTab(),
             ]);
     }
 

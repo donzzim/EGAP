@@ -34,22 +34,21 @@ class UnidadesDeMedidaResource extends Resource
                                     ->label('Sigla')
                                     ->required()
                                     ->maxLength(2),
-//                                    ->columnSpan(1),
 
                                 Forms\Components\TextInput::make('Unidade')
                                     ->label('Descrição da Unidade')
                                     ->required()
                                     ->maxLength(100),
-//                                    ->columnSpan(1),
                             ]),
                     ])
-                    ->columns(2),
+                    ->columns(),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('Sigla')
                     ->searchable()
@@ -66,24 +65,26 @@ class UnidadesDeMedidaResource extends Resource
 
                 Tables\Columns\TextColumn::make('atualizado_por.name')
                     ->label('Atualizado por')
-                    ->sortable()
-                    ->toggleable(),
+                    ->sortable(),
             ])
             ->defaultSort('Sigla')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [];
     }
 
     public static function getPages(): array

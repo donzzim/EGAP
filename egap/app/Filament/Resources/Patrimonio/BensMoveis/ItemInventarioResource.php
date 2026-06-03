@@ -122,6 +122,7 @@ class ItemInventarioResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->emptyStateHeading('Por favor, selecione ao menos um filtro.')
             ->columns([
                 Tables\Columns\TextColumn::make('num_patrimonio')->label('Patrimônio Nº')->searchable()->sortable(),

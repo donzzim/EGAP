@@ -88,6 +88,7 @@ class DescricaoDetalhadaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('descricao_resumida_text.Descricao')
                     ->label('Descrição Resumida')
@@ -126,6 +127,8 @@ class DescricaoDetalhadaResource extends Resource
                                 return 'Tribunal';
                             case 3:
                                 return 'Todos';
+                            default:
+                                return 'Nenhuma';
                         }
                     })
                     ->alignCenter(),
@@ -142,7 +145,15 @@ class DescricaoDetalhadaResource extends Resource
             ])
             ->defaultSort('id')
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

@@ -116,6 +116,7 @@ class BemMovelResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->deferLoading()
             ->poll(null)
             ->columns([
@@ -380,7 +381,7 @@ class BemMovelResource extends Resource
                                 ->whereNotNull('mat_termos.num_termo')
                                 ->exists();
 
-                            return $valido ? route('termo.imprimir.dinamico', ['id' => $record->id]) : null;
+                            return $valido ? route('termo.imprimir', ['id' => $record->id]) : null;
                         })
                         ->openUrlInNewTab(),
 

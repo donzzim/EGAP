@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Processo;
 use App\Filament\Resources\Processo\TipoProcessoResource\Pages;
 use App\Models\Processo\MatTipoProcesso;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -22,36 +23,29 @@ class TipoProcessoResource extends Resource
     protected static ?string $pluralModelLabel = 'Tipos de Processo';
     protected static ?string $slug = 'processos/tipos-processos';
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return false;
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return false;
-    }
-
     public static function form(Form $form): Form
     {
-        return $form->schema([]);
+        return $form->schema([
+            TextInput::make('descricao')
+                ->required()
+                ->maxLength(255)
+                ->label('Descrição')
+                ->columnSpanFull()
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('id')
+                    ->label('#')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
+                    ->alignCenter()
                     ->searchable()
                     ->sortable(),
             ])
@@ -59,7 +53,16 @@ class TipoProcessoResource extends Resource
                 //
             ])
             ->actions([
-                //
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([]),
@@ -74,6 +77,8 @@ class TipoProcessoResource extends Resource
     {
         return [
             'index' => Pages\ListTipoProcessos::route('/'),
+            'create' => Pages\CreateTipoProcesso::route('/create'),
+            'edit' => Pages\EditTipoProcesso::route('/{record}/edit'),
         ];
     }
 }

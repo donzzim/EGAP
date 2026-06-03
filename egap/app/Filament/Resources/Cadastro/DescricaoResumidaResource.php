@@ -91,6 +91,7 @@ class DescricaoResumidaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('Descricao')
                     ->label('Descrição')
@@ -127,6 +128,8 @@ class DescricaoResumidaResource extends Resource
                                 return 'Tribunal';
                             case 3:
                                 return 'Todos';
+                            default:
+                                return 'Nenhuma';
                         }
                     })
                     ->alignCenter(),
@@ -134,7 +137,15 @@ class DescricaoResumidaResource extends Resource
             ->defaultSort('id', 'desc')
 //            ->filters()
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

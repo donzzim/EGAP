@@ -97,6 +97,7 @@ class FrotaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
@@ -157,7 +158,16 @@ class FrotaResource extends Resource
                     ->label('Ativo'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

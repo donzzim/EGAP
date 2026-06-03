@@ -39,10 +39,7 @@ class LotacaoResource extends Resource
                     ->description('Defina o usuário e a estrutura organizacional da lotação.')
                     ->icon('heroicon-o-link')
                     ->schema([
-                        Grid::make([
-                            'default' => 1,
-                            'md' => 6,
-                        ])
+                        Grid::make()
                             ->schema([
                                 Select::make('id_user')
                                     ->label('Usuário')
@@ -60,7 +57,7 @@ class LotacaoResource extends Resource
                                         ->toArray()),
 
                                 Select::make('UnidadeJudiciaria')
-                                    ->label('Unidade judiciária')
+                                    ->label('Unidade Judiciária')
                                     ->required()
                                     ->searchable()
                                     ->preload()
@@ -68,10 +65,7 @@ class LotacaoResource extends Resource
                                     ->native(false)
                                     ->prefixIcon('heroicon-m-building-office-2')
                                     ->placeholder('Selecione a unidade')
-                                    ->columnSpan([
-                                        'default' => 1,
-                                        'md' => 3,
-                                    ])
+                                    ->columnSpan(1)
                                     ->options(fn (): array => Setores::query()
                                         ->whereColumn('id', 'CodigodaUO')
                                         ->orderBy('UnidadeOrganizacional')
@@ -87,10 +81,7 @@ class LotacaoResource extends Resource
                                     ->native(false)
                                     ->prefixIcon('heroicon-m-squares-2x2')
                                     ->placeholder('Selecione o setor')
-                                    ->columnSpan([
-                                        'default' => 1,
-                                        'md' => 3,
-                                    ])
+                                    ->columnSpan(1)
                                     ->options(fn (Get $get): array => Setores::query()
                                         ->when(
                                             $get('UnidadeJudiciaria'),
@@ -109,6 +100,7 @@ class LotacaoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->defaultSort('date_time', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
@@ -130,49 +122,47 @@ class LotacaoResource extends Resource
                 Tables\Columns\TextColumn::make('setorRef.UnidadeOrganizacional')
                     ->label('Unidade Organizacional')
                     ->searchable()
-                    ->toggleable()
                     ->wrap(),
                 Tables\Columns\TextColumn::make('usuarioRef.name')
                     ->label('Atualizado por')
-                    ->toggleable()
                     ->placeholder('-'),
                 Tables\Columns\TextColumn::make('date_time')
                     ->label('Atualizado em')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('unidade_judiciaria')
-                    ->label('Unidade Judiciaria')
-                    ->relationship('unidadeJudiciaria', 'Setor')
+                    ->label('Unidade Judiciária')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->options(fn () => Setores::query()
+                        ->whereColumn('id', 'CodigodaUO')
+                        ->orderBy('UnidadeOrganizacional')
+                        ->pluck('UnidadeOrganizacional', 'CodigoPai')
+                        ->toArray()
+                    ),
                 Tables\Filters\SelectFilter::make('setor')
                     ->label('Setor')
-                    ->relationship('setorRef', 'Setor')
                     ->searchable()
-                    ->preload(),
-                Tables\Filters\SelectFilter::make('unidade_organizacional')
-                    ->label('Unidade Organizacional')
-                    ->options(static::getUnidadeOrganizacionalFilterOptions())
-                    ->searchable()
-                    ->query(function (Builder $query, array $data): Builder {
-                        $value = $data['value'] ?? null;
-
-                        if (blank($value)) {
-                            return $query;
-                        }
-
-                        return $query->whereHas(
-                            'setorRef',
-                            fn (Builder $setorQuery): Builder => $setorQuery->where('UnidadeOrganizacional', $value)
-                        );
-                    }),
+                    ->preload()
+                    ->options(fn () => Setores::query()
+                        ->orderBy('Setor')
+                        ->pluck('Setor', 'id')
+                        ->toArray()
+                    ),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

@@ -291,6 +291,7 @@ class TransporteResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->striped()
             ->paginated([10, 25, 50, 100])
             ->defaultPaginationPageOption(25)
@@ -407,11 +408,16 @@ class TransporteResource extends Resource
             ])
             ->filtersFormColumns(3)
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->label('Visualizar'),
-
                 Tables\Actions\EditAction::make()
-                    ->label('Editar'),
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

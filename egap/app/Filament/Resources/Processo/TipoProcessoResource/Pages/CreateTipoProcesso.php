@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Processo\TipoProcessoResource\Pages;
 
-use App\Filament\Resources\Processo\TipoProcessoResource\TipoProcessoResource;
+use App\Filament\Resources\Processo\TipoProcessoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 

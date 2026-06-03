@@ -125,6 +125,7 @@ class TermoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withCount('transferencias'))
             ->columns([
                 Tables\Columns\TextColumn::make('termo_completo')
@@ -143,7 +144,7 @@ class TermoResource extends Resource
                     ->getStateUsing(fn ($record) => $record->situacao_entrega === 'Validado' ? "termo_{$record->num_termo}.html" : "-")
                     ->color('primary')
                     ->weight('bold')
-                    ->url(fn ($record) => $record->situacao_entrega === 'Validado' ? route('termo.imprimir.dinamico', ['id' => $record->id]) : null)
+                    ->url(fn ($record) => $record->situacao_entrega === 'Validado' ? route('termo.imprimir', ['id' => $record->id]) : null)
                     ->openUrlInNewTab(),
 
                 Tables\Columns\TextColumn::make('situacao_entrega')
@@ -236,7 +237,7 @@ class TermoResource extends Resource
                         ->label('Imprimir termo')
                         ->icon('heroicon-o-printer')
                         ->color('success')
-                        ->url(fn ($record) => route('termo.imprimir.dinamico', ['id' => $record->id]))
+                        ->url(fn ($record) => route('termo.imprimir', ['id' => $record->id]))
                         ->openUrlInNewTab(),
 
                     Action::make('encaminhar')

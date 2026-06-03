@@ -123,6 +123,7 @@ class ProcessosAdmResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('num_processo')
                     ->label(new HtmlString('Nº Processo<br>TJES'))
@@ -133,6 +134,8 @@ class ProcessosAdmResource extends Resource
                 Tables\Columns\TextColumn::make('no_processo_sei')
                     ->label('No Processo SEI')
                     ->sortable()
+                    ->default('-')
+                    ->alignCenter()
                     ->searchable()
                     ->wrap()
                     ->width('60px'),
@@ -141,6 +144,8 @@ class ProcessosAdmResource extends Resource
                 Tables\Columns\TextColumn::make('tipoProcessoRelacaoRef.descricao')
                     ->label('Tipo de Processo')
                     ->sortable()
+                    ->default('-')
+                    ->alignCenter()
                     ->width('100px')
                     ->wrap(),
 
@@ -190,151 +195,146 @@ class ProcessosAdmResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\ActionGroup::make([
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
 
-                    Tables\Actions\EditAction::make()
-                        ->label('Editar')
-                        ->color('warning')
-                        ->icon('heroicon-o-pencil-square'),
+                Tables\Actions\EditAction::make('materiais')
+                    ->hiddenLabel()
+                    ->tooltip('Materiais')
+                    ->icon('heroicon-o-cube')
+                    ->color('info')
+                    ->modalHeading(fn (Processo $record) => "Processos Administrativos - Materiais - " . ($record->no_processo_sei ?? $record->num_processo))
+                    ->modalSubmitActionLabel('Salvar alterações')
+                    ->modalWidth('7xl')
+                    ->form([
+                        Forms\Components\Repeater::make('materiais')
+                            ->relationship('materiaisRelacaoRef')
+                            ->label('')
+                            ->collapsible()
+                            ->collapsed()
+                            ->itemLabel(fn (array $state) => $state['material'] ? \Illuminate\Support\Facades\DB::connection('egap')->table('mat_descricaodetalhada')->where('id', $state['material'])->value('descricao_detalhada') : 'Novo Material')
+                            ->schema([
+                                Forms\Components\Select::make('processo')
+                                    ->label('Processo')
+                                    ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')
+                                        ->table('mat_processos')
+                                        ->selectRaw("id, IFNULL(no_processo_sei, num_processo) as proc_label")
+                                        ->pluck('proc_label', 'id')
+                                    )
+                                    ->searchable()
+                                    ->default(fn ($livewire) => $livewire->mountedTableActionRecord)
+                                    ->columnSpanFull(),
 
-                    Tables\Actions\ViewAction::make()
-                        ->label('Visualizar')
-                        ->icon('heroicon-o-eye'),
+                                Forms\Components\Select::make('material')
+                                    ->label('Material')
+                                    ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')
+                                        ->table('mat_descricaodetalhada as dd')
+                                        ->leftJoin('mat_descricaoresumida as dr', 'dr.id', '=', 'dd.descricao_resumida')
+                                        ->leftJoin('mat_produtos as el', 'el.id', '=', 'dr.id_produto')
+                                        ->selectRaw("dd.id, CONCAT(IFNULL(el.CodigodaClasse, ''), ' - ', IFNULL(dr.Descricao, ''), ' - ', IFNULL(dd.descricao_detalhada, '')) as full_name")
+                                        ->pluck('full_name', 'id')
+                                    )
+                                    ->searchable()
+                                    ->columnSpanFull(),
 
-                    Tables\Actions\DeleteAction::make()
-                        ->label('Excluir')
-                        ->color('danger')
-                        ->icon('heroicon-o-trash'),
+                                Forms\Components\TextInput::make('qtde_min')
+                                    ->label('Qtde Min')
+                                    ->numeric(),
 
-                    Tables\Actions\EditAction::make('materiais')
-                        ->label('Materiais')
-                        ->icon('heroicon-o-cube')
-                        ->color('info')
-                        ->modalHeading(fn (Processo $record) => "Processos Administrativos - Materiais - " . ($record->no_processo_sei ?? $record->num_processo))
-                        ->modalSubmitActionLabel('Salvar alterações')
-                        ->modalWidth('7xl')
-                        ->form([
-                            Forms\Components\Repeater::make('materiais')
-                                ->relationship('materiaisRelacaoRef')
-                                ->label('')
-                                ->collapsible()
-                                ->collapsed()
-                                ->itemLabel(fn (array $state) => $state['material'] ? \Illuminate\Support\Facades\DB::connection('egap')->table('mat_descricaodetalhada')->where('id', $state['material'])->value('descricao_detalhada') : 'Novo Material')
-                                ->schema([
-                                    Forms\Components\Select::make('processo')
-                                        ->label('Processo')
-                                        ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')
-                                            ->table('mat_processos')
-                                            ->selectRaw("id, IFNULL(no_processo_sei, num_processo) as proc_label")
-                                            ->pluck('proc_label', 'id')
-                                        )
-                                        ->searchable()
-                                        ->default(fn ($livewire) => $livewire->mountedTableActionRecord)
-                                        ->columnSpanFull(),
+                                Forms\Components\TextInput::make('qtde_max')
+                                    ->label('Qtde Máx')
+                                    ->numeric(),
 
-                                    Forms\Components\Select::make('material')
-                                        ->label('Material')
-                                        ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')
-                                            ->table('mat_descricaodetalhada as dd')
-                                            ->leftJoin('mat_descricaoresumida as dr', 'dr.id', '=', 'dd.descricao_resumida')
-                                            ->leftJoin('mat_produtos as el', 'el.id', '=', 'dr.id_produto')
-                                            ->selectRaw("dd.id, CONCAT(IFNULL(el.CodigodaClasse, ''), ' - ', IFNULL(dr.Descricao, ''), ' - ', IFNULL(dd.descricao_detalhada, '')) as full_name")
-                                            ->pluck('full_name', 'id')
-                                        )
-                                        ->searchable()
-                                        ->columnSpanFull(),
+                                Forms\Components\TextInput::make('preco')
+                                    ->label('Preço')
+                                    ->numeric()
+                                    ->prefix('R$'),
 
-                                    Forms\Components\TextInput::make('qtde_min')
-                                        ->label('Qtde Min')
-                                        ->numeric(),
+                                Forms\Components\TextInput::make('saldo_atual')
+                                    ->label('Saldo Atual')
+                                    ->numeric(),
 
-                                    Forms\Components\TextInput::make('qtde_max')
-                                        ->label('Qtde Máx')
-                                        ->numeric(),
+                                Forms\Components\TextInput::make('lote')
+                                    ->label('Lote'),
 
-                                    Forms\Components\TextInput::make('preco')
-                                        ->label('Preço')
-                                        ->numeric()
-                                        ->prefix('R$'),
+                                Forms\Components\Select::make('atualizado_por')
+                                    ->label('Atualizado por')
+                                    ->relationship('atualizadoPorRelacaoRef', 'name')
+                                    ->searchable()
+                                    ->default(fn () => auth()->id())
+                                    ->columnSpanFull(),
 
-                                    Forms\Components\TextInput::make('saldo_atual')
-                                        ->label('Saldo Atual')
-                                        ->numeric(),
+                                Forms\Components\Hidden::make('date_time')
+                                    ->default(now()),
+                            ])
+                            ->columns(5)
+                            ->defaultItems(0)
+                            ->addActionLabel('Adicionar novo material')
+                            ->columnSpanFull(),
+                    ]),
 
-                                    Forms\Components\TextInput::make('lote')
-                                        ->label('Lote'),
+                Tables\Actions\EditAction::make('documentos')
+                    ->hiddenLabel()
+                    ->tooltip('Documentos')
+                    ->icon('heroicon-o-paper-clip')
+                    ->color('info')
+                    ->modalHeading(fn (Processo $record) => "Anexos do Processo - " . ($record->no_processo_sei ?? $record->num_processo))
+                    ->modalSubmitActionLabel('Salvar alterações')
+                    ->modalWidth('7xl')
+                    ->form([
+                        Forms\Components\Repeater::make('documentacoes')
+                            ->relationship('documentacoesRelacaoRef')
+                            ->label('')
+                            ->collapsible()
+                            ->collapsed()
+                            ->itemLabel(fn (array $state) => ($state['num_documento'] ?? 'Novo Documento') . ($state['data'] ?? false ? ' - ' . date('d/m/Y', strtotime($state['data'])) : ''))
+                            ->schema([
+                                Forms\Components\Select::make('tipo_documento')
+                                    ->label('Tipo do Documento')
+                                    ->options(fn () => \App\Models\Processo\MatTipoDocumento::pluck('descricao', 'id'))
+                                    ->searchable(),
 
-                                    Forms\Components\Select::make('atualizado_por')
-                                        ->label('Atualizado por')
-                                        ->relationship('atualizadoPorRelacaoRef', 'name')
-                                        ->searchable()
-                                        ->default(fn () => auth()->id())
-                                        ->columnSpanFull(),
+                                Forms\Components\Select::make('material')
+                                    ->label('Material')
+                                    ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')->table('mat_descricaoresumida')->pluck('Descricao', 'id'))
+                                    ->searchable(),
 
-                                    Forms\Components\Hidden::make('date_time')
-                                        ->default(now()),
-                                ])
-                                ->columns(5)
-                                ->defaultItems(0)
-                                ->addActionLabel('Adicionar novo material')
-                                ->columnSpanFull(),
-                        ]),
+                                Forms\Components\DatePicker::make('data')
+                                    ->label('Data')
+                                    ->displayFormat('d/m/Y')
+                                    ->native(false),
 
-                    Tables\Actions\EditAction::make('documentos')
-                        ->label('Documentos')
-                        ->icon('heroicon-o-paper-clip')
-                        ->color('info')
-                        ->modalHeading(fn (Processo $record) => "Anexos do Processo - " . ($record->no_processo_sei ?? $record->num_processo))
-                        ->modalSubmitActionLabel('Salvar alterações')
-                        ->modalWidth('7xl')
-                        ->form([
-                            Forms\Components\Repeater::make('documentacoes')
-                                ->relationship('documentacoesRelacaoRef')
-                                ->label('')
-                                ->collapsible()
-                                ->collapsed()
-                                ->itemLabel(fn (array $state) => ($state['num_documento'] ?? 'Novo Documento') . ($state['data'] ?? false ? ' - ' . date('d/m/Y', strtotime($state['data'])) : ''))
-                                ->schema([
-                                    Forms\Components\Select::make('tipo_documento')
-                                        ->label('Tipo do Documento')
-                                        ->options(fn () => \App\Models\Processo\MatTipoDocumento::pluck('descricao', 'id'))
-                                        ->searchable(),
+                                Forms\Components\TextInput::make('num_documento')
+                                    ->label('Documento Nº'),
 
-                                    Forms\Components\Select::make('material')
-                                        ->label('Material')
-                                        ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')->table('mat_descricaoresumida')->pluck('Descricao', 'id'))
-                                        ->searchable(),
+                                Forms\Components\Placeholder::make('link_anexo')
+                                    ->label('Anexo')
+                                    ->content(function ($get) {
+                                        $file = $get('anexo_documento');
+                                        if (!$file) return 'Nenhum arquivo vinculado';
 
-                                    Forms\Components\DatePicker::make('data')
-                                        ->label('Data')
-                                        ->displayFormat('d/m/Y')
-                                        ->native(false),
+                                        $fileName = basename($file);
 
-                                    Forms\Components\TextInput::make('num_documento')
-                                        ->label('Documento Nº'),
+                                        return new HtmlString("<a href='https://sistemas.tjes.jus.br/patrimonio/images/processos/{$fileName}' target='_blank' style='color: #3b82f6; text-decoration: underline; word-break: break-all; max-width: 100%; display: inline-block;'>{$fileName}</a>");
+                                    }),
 
-                                    Forms\Components\Placeholder::make('link_anexo')
-                                        ->label('Anexo')
-                                        ->content(function ($get) {
-                                            $file = $get('anexo_documento');
-                                            if (!$file) return 'Nenhum arquivo vinculado';
+                                Forms\Components\Hidden::make('date_time')
+                                    ->default(now()),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0)
+                            ->addActionLabel('Adicionar nova documentação')
+                            ->columnSpanFull(),
+                    ]),
 
-                                            $fileName = basename($file);
-
-                                            return new HtmlString("<a href='https://sistemas.tjes.jus.br/patrimonio/images/processos/{$fileName}' target='_blank' style='color: #3b82f6; text-decoration: underline; word-break: break-all; max-width: 100%; display: inline-block;'>{$fileName}</a>");
-                                        }),
-
-                                    Forms\Components\Hidden::make('date_time')
-                                        ->default(now()),
-                                ])
-                                ->columns(3)
-                                ->defaultItems(0)
-                                ->addActionLabel('Adicionar nova documentação')
-                                ->columnSpanFull(),
-                        ]),
-                ])
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->tooltip('Opções')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

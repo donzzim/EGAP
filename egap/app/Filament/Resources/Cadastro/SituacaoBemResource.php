@@ -47,6 +47,7 @@ class SituacaoBemResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
@@ -76,7 +77,15 @@ class SituacaoBemResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -91,12 +100,6 @@ class SituacaoBemResource extends Resource
             'create' => \App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\CreateSituacaoBem::route('/create'),
             'edit' => \App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\EditSituacaoBem::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->with('atualizado_por');
     }
 
     public static function canViewAny(): bool

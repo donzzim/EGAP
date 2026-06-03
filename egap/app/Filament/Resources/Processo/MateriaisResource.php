@@ -142,6 +142,7 @@ class MateriaisResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'processoRelacaoRef',
                 'materialRelacaoRef',
@@ -245,88 +246,15 @@ class MateriaisResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->label('Visualizar')
-                        ->icon('heroicon-o-eye')
-                        ->modalHeading(fn (ProMaterial $record): string => 'Material do Processo - ' . static::formatProcessoLabel($record->processoRelacaoRef))
-                        ->modalWidth('5xl')
-                        ->modalSubmitAction(false)
-                        ->modalCancelActionLabel('Fechar')
-                        ->infolist([
-                            Infolists\Components\Section::make('Vinculo e rastreabilidade')
-                                ->schema([
-                                    Infolists\Components\Grid::make(2)
-                                        ->schema([
-                                            Infolists\Components\TextEntry::make('processo_visualizacao')
-                                                ->label('Processo')
-                                                ->getStateUsing(fn (ProMaterial $record): string => static::formatProcessoLabel($record->processoRelacaoRef)),
-
-                                            Infolists\Components\TextEntry::make('materialRelacaoRef.descricao_detalhada')
-                                                ->label('Material')
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('atualizadoPorRelacaoRef.name')
-                                                ->label('Atualizado por')
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('date_time')
-                                                ->label('Data da atualizacao')
-                                                ->dateTime('d/m/Y H:i'),
-                                        ]),
-                                ]),
-
-                            Infolists\Components\Section::make('Controle do material')
-                                ->schema([
-                                    Infolists\Components\Grid::make(4)
-                                        ->schema([
-                                            Infolists\Components\TextEntry::make('lote')
-                                                ->label('Lote')
-                                                ->badge()
-                                                ->color('gray')
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('preco')
-                                                ->label('Preco')
-                                                ->money('BRL', true)
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('qtde_min')
-                                                ->label('Quantidade minima')
-                                                ->numeric(decimalPlaces: 2)
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('qtde_max')
-                                                ->label('Quantidade maxima')
-                                                ->numeric(decimalPlaces: 2)
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('saldo_atual')
-                                                ->label('Saldo atual')
-                                                ->numeric(decimalPlaces: 2)
-                                                ->badge()
-                                                ->color(fn (ProMaterial $record): string => static::resolveSaldoColor($record))
-                                                ->placeholder('-'),
-
-                                            Infolists\Components\TextEntry::make('status_faixa')
-                                                ->label('Status da faixa')
-                                                ->columnSpan(3)
-                                                ->getStateUsing(fn (ProMaterial $record): string => static::buildFaixaStatus(
-                                                    $record->qtde_min,
-                                                    $record->qtde_max,
-                                                    $record->saldo_atual,
-                                                )),
-                                        ]),
-                                ]),
-                        ]),
-
-                    Tables\Actions\DeleteAction::make()
-                        ->label('Excluir')
-                        ->icon('heroicon-o-trash')
-                        ->color('danger'),
-                ])
-                    ->icon('heroicon-m-ellipsis-vertical')
-                    ->tooltip('Opções'),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

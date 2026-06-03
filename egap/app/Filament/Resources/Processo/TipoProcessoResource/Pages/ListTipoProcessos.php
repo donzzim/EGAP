@@ -13,7 +13,8 @@ class ListTipoProcessos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            //
+            Actions\CreateAction::make()
+                ->label('Novo')
         ];
     }
 }

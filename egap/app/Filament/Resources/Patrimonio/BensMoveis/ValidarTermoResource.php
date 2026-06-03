@@ -60,6 +60,7 @@ class ValidarTermoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
                 Tables\Columns\TextColumn::make('termo_completo')->label('Termo')->searchable(['num_termo', 'ano_termo'])->weight('bold'),
@@ -69,7 +70,7 @@ class ValidarTermoResource extends Resource
                     ->getStateUsing(fn ($record) => $record->situacao_entrega === 'Validado' ? 'Abrir Documento' : 'Pendente')
                     ->color(fn ($state) => $state === 'Abrir Documento' ? 'primary' : 'gray')
                     ->weight('bold')
-                    ->url(fn ($record) => $record->situacao_entrega === 'Validado' ? route('termo.imprimir.dinamico', ['id' => $record->id]) : null)
+                    ->url(fn ($record) => $record->situacao_entrega === 'Validado' ? route('termo.imprimir', ['id' => $record->id]) : null)
                     ->openUrlInNewTab(),
 
                 Tables\Columns\TextColumn::make('situacao_entrega')

@@ -7,7 +7,7 @@
                 </span>
 
                 @if($termo->StatusArquivo == 1)
-                <a href="{{ route('termo.imprimir.dinamico', ['id' => $termo->TermoID]) }}"
+                <a href="{{ route('termo.imprimir', ['id' => $termo->TermoID]) }}"
                 target="_blank"
                 class="text-sm text-primary-600 font-bold underline">
                     Visualizar Termo

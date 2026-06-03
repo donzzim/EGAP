@@ -25,7 +25,6 @@ class NotaFiscalResource extends Resource
     protected static ?string $modelLabel = 'Nota Fiscal';
     protected static ?string $pluralModelLabel = 'Notas Fiscais';
     protected static ?string $navigationLabel = 'Nota Fiscal';
-    //protected static ?string $navigationGroup = 'Almoxarifado';
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?int $navigationSort = 1;
 
@@ -35,7 +34,6 @@ class NotaFiscalResource extends Resource
             Tabs::make('TabsNotaFiscal')
                 ->columnSpanFull()
                 ->tabs([
-
                     Tabs\Tab::make('Dados Gerais')
                         ->icon('heroicon-m-information-circle')
                         ->schema([
@@ -145,12 +143,10 @@ class NotaFiscalResource extends Resource
                                 ->columns(12)
                                 ->live()
                                 ->schema([
-
                                     Forms\Components\Select::make('id_material')
                                         ->label('Material')
                                         ->relationship('material', 'descricao_detalhada')
                                         ->searchable()
-                                        ->preload()
                                         ->required()
                                         ->native(false)
                                         ->columnSpan(6),
@@ -281,6 +277,7 @@ class NotaFiscalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('num_documento')
                     ->label('Núm. documento')
@@ -350,9 +347,16 @@ class NotaFiscalResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make()->hiddenLabel(),
-                Tables\Actions\ViewAction::make()->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()->hiddenLabel(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

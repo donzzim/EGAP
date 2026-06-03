@@ -25,7 +25,6 @@ class SetoresResource extends Resource
     protected static ?string $pluralModelLabel = 'Setores';
     protected static ?string $navigationGroup = 'Cadastro';
     protected static ?int $navigationSort = 6;
-    protected static ?string $maxContentWidth = '6xl';
 
     public static function form(Form $form): Form
     {
@@ -100,6 +99,7 @@ class SetoresResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
@@ -133,7 +133,6 @@ class SetoresResource extends Resource
             ])
             ->groups([
                 Group::make('UnidadeOrganizacional')
-                    ->label('')
                     ->collapsible()
                     ->getTitleFromRecordUsing(fn ($record) => $record->UnidadeOrganizacional)
                     ->getTitleFromRecordUsing(fn ($record) =>
@@ -146,17 +145,20 @@ class SetoresResource extends Resource
             ->defaultGroup('UnidadeOrganizacional')
             ->defaultSort('UnidadeOrganizacional')
             ->actions([
-                Tables\Actions\EditAction::make()->label('Editar'),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
                     ->label('Excluir selecionados'),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [];
     }
 
     public static function getPages(): array

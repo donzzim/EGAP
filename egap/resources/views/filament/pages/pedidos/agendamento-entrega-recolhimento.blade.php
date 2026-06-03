@@ -5,7 +5,7 @@
                 Termos vinculados a entrega ou recolhimento
             </h2>
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Listagem baseada nas solicitacoes logisticas do tipo transporte de carga vinculadas aos termos com arquivo pendente ou invalidado.
+                Listagem baseada nas solicitações logísticas do tipo transporte de carga vinculadas aos termos com arquivo pendente ou invalidado.
             </p>
         </div>
 

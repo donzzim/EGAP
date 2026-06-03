@@ -39,14 +39,16 @@ class TipoDocumentoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('Id')
+                    ->label('#')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()
+                    ->alignCenter()
                     ->sortable(),
             ])
             ->filters([
@@ -54,19 +56,18 @@ class TipoDocumentoResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square'),
-
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
+                Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
             ])
             ->searchPlaceholder('Entre com a palavra-chave')
             ->paginated([10, 25, 50, 100])
@@ -79,8 +80,8 @@ class TipoDocumentoResource extends Resource
     {
         return [
             'index' => Pages\ListTipoDocumentos::route('/'),
-            // 'create' => Pages\CreateTipoDocumento::route('/create'), // Descomente para usar página separada
-            // 'edit' => Pages\EditTipoDocumento::route('/{record}/edit'), // Descomente para usar página separada
+            'create' => Pages\CreateTipoDocumento::route('/create'), // Descomente para usar página separada
+            'edit' => Pages\EditTipoDocumento::route('/{record}/edit'), // Descomente para usar página separada
         ];
     }
 }

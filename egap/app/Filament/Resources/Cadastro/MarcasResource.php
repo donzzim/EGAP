@@ -22,34 +22,30 @@ class MarcasResource extends Resource
     protected static ?string $navigationGroup = 'Cadastro';
     protected static ?int $navigationSort = 9;
 
-    public static function getFormfields(): array
-    {
-        return [
-            Forms\Components\TextInput::make('descricao')
-                ->label('Descrição')
-                ->required()
-                ->maxLength(255)
-                ->default(null)
-                ->columnSpanFull(),
-            Forms\Components\Select::make('tipobem')
-                ->label('Tipo do Bem')
-                ->options([
-                    '0' => 'Outros',
-                    '1' => 'Veículos',
-                ])
-                ->columnSpanFull(),
-        ];
-    }
-
     public static function form(Form $form): Form
     {
         return $form
-            ->schema(static::getFormFields());
+            ->schema([
+                Forms\Components\TextInput::make('descricao')
+                    ->label('Descrição')
+                    ->required()
+                    ->maxLength(255)
+                    ->default(null)
+                    ->columnSpanFull(),
+                Forms\Components\Select::make('tipobem')
+                    ->label('Tipo do Bem')
+                    ->options([
+                        '0' => 'Outros',
+                        '1' => 'Veículos',
+                    ])
+                    ->columnSpanFull(),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('descricao')
                     ->sortable()
@@ -74,9 +70,15 @@ class MarcasResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

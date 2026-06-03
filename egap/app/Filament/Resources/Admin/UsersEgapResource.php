@@ -106,6 +106,7 @@ class UsersEgapResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->defaultSort('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -133,9 +134,6 @@ class UsersEgapResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('lotacao')
                     ->color('gray')
                     ->label('Lotação')
@@ -347,6 +345,16 @@ class UsersEgapResource extends Resource
                                     ]),
                             ]),
                     ]),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

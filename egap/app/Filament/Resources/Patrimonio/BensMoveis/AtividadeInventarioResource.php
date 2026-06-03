@@ -99,6 +99,7 @@ class AtividadeInventarioResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('inventario.num_inventario')
                     ->label('Inventário No')
@@ -138,7 +139,12 @@ class AtividadeInventarioResource extends Resource
             ])
             ->defaultSort('id', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->hiddenLabel(),
             ]);
     }
 

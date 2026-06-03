@@ -18,7 +18,7 @@ class BemImovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemImovel::class;
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
@@ -209,120 +209,87 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('num_registro')
                     ->label('Núm. registro')
                     ->searchable()
                     ->sortable()
-                    ->toggleable()
-                    ->alignCenter()
-                    ->width('150px'),
+                    ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('setoresRelacaoRef.Setor')
                     ->label('Setores')
                     ->sortable()
-                    ->toggleable()
-                    ->width('250px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('responsavelRelacaoRef.descricao')
                     ->label('Responsável')
                     ->sortable()
-                    ->toggleable()
-                    ->width('250px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('num_processo_tj')
                     ->label('Processo TJ')
                     ->searchable()
-                    ->toggleable()
-                    ->width('300px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('num_processo_seger')
                     ->label('Processo SEGER')
                     ->searchable()
-                    ->toggleable()
-                    ->width('200px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('num_matricula')
                     ->label('Matrícula')
                     ->searchable()
-                    ->toggleable()
-                    ->width('150px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('end_cidade')
                     ->label('Cidade')
                     ->searchable()
                     ->sortable()
-                    ->toggleable()
-                    ->width('250px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('cidufRelacaoref.cd_uf')
                     ->label('Cidade/UF')
-                    ->toggleable()
-                    ->width('250px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()
-                    ->toggleable()
-                    ->width('800px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('tipoImovelRelacaoref.desc_tipo_imovel')
                     ->label('Tipo Imóvel')
-                    ->toggleable()
-                    ->width('200px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('denominacaoRelacaoref.denominacao')
                     ->label('Denominação')
-                    ->toggleable()
-                    ->width('200px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('tipoDeBemRelacaoref.Descricao')
-                    ->label('Tipo de bem')
-                    ->toggleable()
-                    ->width('200px'),
+                    ->label('Tipo de bem'),
 
                 Tables\Columns\TextColumn::make('data_aquisicao')
                     ->label('Data aquisição')
                     ->date('d/m/Y')
                     ->sortable()
-                    ->toggleable()
-                    ->width('150px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('valor_reavaliado')
                     ->label('Valor reavaliado')
                     ->money('BRL')
                     ->sortable()
-                    ->toggleable()
-                    ->width('180px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('situacaoRelacaoref.Descricao')
                     ->label('Conta')
-                    ->toggleable()
-                    ->width('200px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('condicaoUsoRelacaoref.descricao')
                     ->label('Condição de Uso/Forma de Aquisição')
-                    ->toggleable()
-                    ->width('250px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('estadoConservacaoRelacaoref.descEstadoConservacao')
                     ->label('Estado de conservação')
-                    ->toggleable()
-                    ->width('200px')
                     ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('id_entradasaida')
@@ -330,8 +297,6 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ->formatStateUsing(fn ($record) => $record->entradaSaidaRelacaoref
                         ? "{$record->entradaSaidaRelacaoref->tipo} - {$record->entradaSaidaRelacaoref->descricao}"
                         : null)
-                    ->toggleable()
-                    ->width('200px')
                     ->alignCenter(),
             ])
             ->actions([
@@ -595,8 +560,6 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 ]),
             ])
             ->selectCurrentPageOnly()
-            ->paginated([5, 10, 25, 100, 'all'])
-            ->defaultPaginationPageOption(5)
             ->striped()
             ->deferLoading()
             ->emptyStateHeading('Nenhum bem imóvel encontrado');

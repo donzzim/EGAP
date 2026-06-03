@@ -22,6 +22,7 @@ class TransferenciaRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('patrimonioRef.NumPatrimonio')

@@ -27,7 +27,6 @@ class PedidosResource extends Resource
     protected static ?string $modelLabel = 'Pedido';
     protected static ?string $pluralModelLabel = 'Pedidos';
     protected static ?string $navigationLabel = 'Requisição de Materiais';
-    //protected static ?string $navigationGroup = 'Almoxarifado';
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?int $navigationSort = 2;
 
@@ -37,11 +36,9 @@ class PedidosResource extends Resource
             Tabs::make('TabsPedido')
                 ->columnSpanFull()
                 ->tabs([
-
                     Tabs\Tab::make('Dados Gerais')
                         ->icon('heroicon-m-information-circle')
                         ->schema([
-
                             Forms\Components\Grid::make(3)
                                 ->schema([
                                     Forms\Components\TextInput::make('num_protocolo')
@@ -70,12 +67,10 @@ class PedidosResource extends Resource
                                         ->label('Solicitante')
                                         ->required()
                                         ->relationship('solicitante_get', 'name')
-//                                          Ver depois como que deixa o nome do usuário logado como default
-//                                        ->default(fn () => filament()->auth()->id())
+                                        ->default(fn () => filament()->auth()->id())
                                         ->searchable()
                                         ->preload()
                                         ->native(false),
-
                                     Forms\Components\Select::make('ResponsavelAtendimento')
                                         ->label('Responsável pelo Atendimento')
                                         ->relationship('responsavel_atendimento', 'name')
@@ -83,7 +78,6 @@ class PedidosResource extends Resource
                                         ->preload()
                                         ->native(false),
                                 ]),
-
                             Forms\Components\Grid::make(2)
                                 ->schema([
                                     Forms\Components\Select::make('UnidadeJudiciaria')
@@ -100,7 +94,6 @@ class PedidosResource extends Resource
                                             ->toArray()
                                         )
                                         ->afterStateUpdated(fn (Set $set) => $set('Setor', null)),
-
                                     Forms\Components\Select::make('Setor')
                                         ->label('Setor')
                                         ->required()
@@ -117,7 +110,6 @@ class PedidosResource extends Resource
                                         )
                                         ->disabled(fn (Get $get) => blank($get('UnidadeJudiciaria'))),
                                 ]),
-
                             Forms\Components\Grid::make(2)
                                 ->schema([
                                     Forms\Components\Select::make('setor_responsavel')
@@ -126,7 +118,6 @@ class PedidosResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->native(false),
-
                                     Forms\Components\Select::make('ComplementoSetor')
                                         ->label('Complemento Setor')
                                         ->relationship('complementoSetor', 'descricao')
@@ -134,14 +125,12 @@ class PedidosResource extends Resource
                                         ->preload()
                                         ->native(false),
                                 ]),
-
                             Forms\Components\FileUpload::make('arquivo')
                                 ->label('Arquivo')
                                 ->directory('pedidos')
                                 ->disk('public')
                                 ->visibility('public')
                                 ->columnSpanFull(),
-
                             Forms\Components\Textarea::make('Observacao')
                                 ->label('Observação')
                                 ->columnSpanFull()
@@ -152,11 +141,9 @@ class PedidosResource extends Resource
                                 ->columnSpanFull()
                                 ->rows(3),
                         ]),
-
                     Tabs\Tab::make('Itens do Pedido')
                         ->icon('heroicon-m-shopping-cart')
                         ->schema([
-
                             Forms\Components\TextInput::make('valor_total_pedido')
                                 ->label('Valor Total do Pedido')
                                 ->readOnly()
@@ -164,7 +151,6 @@ class PedidosResource extends Resource
                                 ->default(0)
                                 ->prefix('R$')
                                 ->extraInputAttributes(['class' => 'text-xl font-bold']),
-
                             Forms\Components\Repeater::make('itens')
                                 ->relationship('itens')
                                 ->label('Itens do Pedido')
@@ -172,7 +158,6 @@ class PedidosResource extends Resource
                                 ->columns(12)
                                 ->live()
                                 ->schema([
-
                                     Forms\Components\Select::make('material')
                                         ->label('Material')
                                         ->relationship('materialRel', 'Descricao')
@@ -181,20 +166,17 @@ class PedidosResource extends Resource
                                         ->required()
                                         ->native(false)
                                         ->columnSpan(6),
-
                                     Forms\Components\TextInput::make('QuantidadeMaterial')
                                         ->label('Quantidade Solicitada')
                                         ->required()
                                         ->numeric()
                                         ->live(onBlur: true)
                                         ->columnSpan(2),
-
                                     Forms\Components\TextInput::make('QuantidadeMaterialAtendida')
                                         ->label('Qtd. Atendida')
                                         ->numeric()
                                         ->live(onBlur: true)
                                         ->columnSpan(2),
-
                                     Forms\Components\TextInput::make('valor_material')
                                         ->label('Valor Material')
                                         ->numeric()
@@ -205,12 +187,10 @@ class PedidosResource extends Resource
                                             self::atualizarTotalPedido($get, $set);
                                         })
                                         ->columnSpan(2),
-
                                     Forms\Components\Textarea::make('ObservacaoItem')
                                         ->label('Observação do Item')
                                         ->rows(2)
                                         ->columnSpan(6),
-
                                     Forms\Components\Select::make('DescricaoDetalhada')
                                         ->label('Descrição Detalhada')
                                         ->relationship('descricaoDetalhadaRel', 'descricao_detalhada')
@@ -218,23 +198,19 @@ class PedidosResource extends Resource
                                         ->preload()
                                         ->native(false)
                                         ->columnSpan(4),
-
                                     Forms\Components\TextInput::make('situacao')
                                         ->label('Situação')
                                         ->numeric()
                                         ->columnSpan(2),
-
                                     Forms\Components\TextInput::make('quantidade_validada')
                                         ->label('Quantidade Validada')
                                         ->maxLength(255)
                                         ->columnSpan(3),
-
                                     Forms\Components\DatePicker::make('data_validacao')
                                         ->label('Data Validação')
                                         ->displayFormat('d/m/Y')
                                         ->native(false)
                                         ->columnSpan(3),
-
                                     Forms\Components\Select::make('validado_por')
                                         ->label('Validado Por')
                                         ->relationship('validadoPor', 'name')
@@ -242,7 +218,6 @@ class PedidosResource extends Resource
                                         ->preload()
                                         ->native(false)
                                         ->columnSpan(3),
-
                                     Forms\Components\Select::make('cancelado_por')
                                         ->label('Cancelado Por')
                                         ->relationship('canceladoPor', 'name')
@@ -250,7 +225,6 @@ class PedidosResource extends Resource
                                         ->preload()
                                         ->native(false)
                                         ->columnSpan(3),
-
                                     Forms\Components\DatePicker::make('data_cancelado')
                                         ->label('Data Cancelamento')
                                         ->displayFormat('d/m/Y')
@@ -332,6 +306,7 @@ class PedidosResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('Pedido Nº')

@@ -10,9 +10,8 @@ use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -26,7 +25,6 @@ class SituacaoNotaFiscalResource extends Resource
     protected static ?string $pluralLabel = 'Situações da Nota Fiscal';
     protected static ?string $pluralModelLabel = 'Situações da Nota Fiscal';
 
-    //protected static ?string $navigationGroup = 'Almoxarifado';
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 4;
@@ -38,6 +36,7 @@ class SituacaoNotaFiscalResource extends Resource
                 TextInput::make('descricao')
                     ->label('Descrição')
                     ->required()
+                    ->columnSpanFull()
                     ->maxLength(255),
             ]);
     }
@@ -45,6 +44,7 @@ class SituacaoNotaFiscalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 TextColumn::make('descricao')
                     ->label('Descrição')
@@ -67,13 +67,19 @@ class SituacaoNotaFiscalResource extends Resource
                 //
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->modalHeading('Excluir registro')
+                    ->hiddenLabel(),
             ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                DeleteBulkAction::make(),
             ]);
     }
 

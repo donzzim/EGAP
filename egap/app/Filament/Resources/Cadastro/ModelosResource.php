@@ -51,6 +51,7 @@ class ModelosResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('marca_ref.descricao')
                     ->label('Marca')
@@ -76,7 +77,15 @@ class ModelosResource extends Resource
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -91,11 +100,5 @@ class ModelosResource extends Resource
             'create' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\CreateModelos::route('/create'),
             'edit' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\EditModelos::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->with(['marca_ref', 'atualizado_por']);
     }
 }

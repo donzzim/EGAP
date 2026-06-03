@@ -43,6 +43,7 @@ class TransferenciaBemResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->deferLoading()
             ->columns([
                 Tables\Columns\TextColumn::make('bem.NumPatrimonio')
@@ -198,7 +199,7 @@ class TransferenciaBemResource extends Resource
                                 ->exists();
                         })
                         ->url(function ($record) {
-                            return $record->NumPatrimonio ? route('termo.imprimir.dinamico', ['id' => $record->NumPatrimonio]) : null;
+                            return $record->NumPatrimonio ? route('termo.imprimir', ['id' => $record->NumPatrimonio]) : null;
                         })
                         ->openUrlInNewTab(),
                 ])->label('Opções')->button(),

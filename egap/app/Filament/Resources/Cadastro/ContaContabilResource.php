@@ -58,45 +58,45 @@ class ContaContabilResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('codigo')
                     ->label('Código')
                     ->searchable()
-//                    ->width('150px')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('titulo')
                     ->label('Título')
                     ->searchable()
                     ->limit(50)
-//                    ->width('150px')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('funcao')
                     ->label('Função')
                     ->wrap()
-//                    ->width('250px')
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('date_time')
                     ->label('Atualizado em')
                     ->dateTime('d/m/Y H:i')
-//                    ->width('100px')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('atualizado_por.name')
                     ->label('Atualizado por')
                     ->sortable()
-//                    ->width('100px')
                     ->toggleable(),
             ])
             ->defaultSort('codigo')
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Editar'),
-
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                Tables\Actions\ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('Excluir'),
+                    ->tooltip('Excluir')
+                    ->hiddenLabel()
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()

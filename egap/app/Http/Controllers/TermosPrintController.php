@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TermosPrintController extends Controller
 {
-    /**
-     * Metodo usado pela rota de impressao do termo.
-     */
     public function imprimir($id)
     {
         $termo = Termo::query()
@@ -33,7 +30,7 @@ class TermosPrintController extends Controller
                         'ValordaReavaliacao',
                         'DatadeIncorporacao',
                     ]),
-                'transferencias.bem.marcaRef:id,Descricao',
+                'transferencias.bem.marcaRef:id,descricao',
                 'transferencias.bem.modeloRef:id,descricao',
             ])
             ->findOrFail($id);
@@ -53,7 +50,7 @@ class TermosPrintController extends Controller
                     return null;
                 }
 
-                $bem->setAttribute('marca_desc', $bem->marcaRef?->Descricao);
+                $bem->setAttribute('marca_desc', $bem->marcaRef?->descricao ?? $bem->marcaRef?->Descricao);
                 $bem->setAttribute('modelo_desc', $bem->modeloRef?->descricao);
                 $bem->setAttribute(
                     'ValorCalculado',
@@ -67,9 +64,12 @@ class TermosPrintController extends Controller
             ->filter()
             ->values();
 
+        $usuarioAutenticado = Auth::user();
+        $cpfRaw = $infoEmitente?->cpf ?? $usuarioAutenticado?->cpf;
+
         $cpfEmitente = '';
-        if (isset($infoEmitente->cpf)) {
-            $nbr_cpf = str_pad(preg_replace('/[^0-9]/', '', $infoEmitente->cpf), 11, '0', STR_PAD_LEFT);
+        if ($cpfRaw) {
+            $nbr_cpf = str_pad(preg_replace('/[^0-9]/', '', $cpfRaw), 11, '0', STR_PAD_LEFT);
             $cpfEmitente = substr($nbr_cpf, 0, 3) . '.' . substr($nbr_cpf, 3, 3) . '.' . substr($nbr_cpf, 6, 3) . '-' . substr($nbr_cpf, 9, 2);
         }
 
@@ -80,8 +80,8 @@ class TermosPrintController extends Controller
             'unidade' => $setorAtual?->UnidadeOrganizacional ?? 'TRIBUNAL DE JUSTIÇA DO ESPÍRITO SANTO',
             'setor' => $setorAtual?->Setor ?? 'NÃO INFORMADO',
             'complemento' => $complementoAtual?->descricao ?? 'NÃO INFORMADO',
-            'usuarioEmitente' => $usuarioEmitente?->name ?? Auth::user()?->name ?? 'NÃO INFORMADO',
-            'cargoEmitente' => $infoEmitente?->cargo ?? 'SERVIDOR',
+            'usuarioEmitente' => $usuarioEmitente?->name ?? $usuarioAutenticado?->name ?? 'NÃO INFORMADO',
+            'cargoEmitente' => $infoEmitente?->cargo ?? $usuarioAutenticado?->cargo ?? 'SERVIDOR',
             'cpfEmitente' => $cpfEmitente,
         ]);
     }
