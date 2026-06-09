@@ -4,6 +4,7 @@ namespace App\Models\Cadastro;
 
 use App\Models\Admin\Lotacao;
 use App\Models\UserEgap;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,7 @@ class Setores extends Model
         'CodigoPai',
         'UnidadeOrganizacional',
         'Setor',
+        'SetorDescricao',
         'Usuario',
         'CodigodaUO',
         'comarca',
@@ -32,6 +34,16 @@ class Setores extends Model
     ];
 
     public $timestamps = false;
+
+    protected $casts = [
+        'CodigoPai' => 'integer',
+        'Usuario' => 'integer',
+        'CodigodaUO' => 'integer',
+        'ordem' => 'integer',
+        'cd_orgao' => 'integer',
+        'date_time' => 'datetime',
+        'presidencia' => 'integer',
+    ];
 
     /*
     |--------------------------------------------------------------------------
@@ -49,6 +61,11 @@ class Setores extends Model
     public function pai(): BelongsTo
     {
         return $this->belongsTo(Setores::class, 'CodigoPai');
+    }
+
+    public function centroCustoRef() : BelongsTo
+    {
+        return $this->belongsTo(CentroCusto::class, 'centrocusto', 'id');
     }
 
     // Hierarquia (filhos)
@@ -76,9 +93,32 @@ class Setores extends Model
         });
     }
 
+    public function scopeUnidadesOrganizacionais(Builder $query): Builder
+    {
+        return $query->whereColumn('id', 'CodigodaUO');
+    }
+
     public function scopeFilhosDe(Builder $query, int $unidadeId): Builder
     {
         return $query->where('CodigoPai', $unidadeId);
+    }
+
+    public function nomeHierarquico(): string
+    {
+        return collect([
+            $this->Setor,
+            $this->SetorDescricao,
+            $this->UnidadeOrganizacional,
+        ])
+            ->filter()
+            ->join(' - ');
+    }
+
+    protected function presidencia(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value): int => (int) filter_var($value, FILTER_VALIDATE_BOOLEAN),
+        );
     }
 
     /*
@@ -87,10 +127,13 @@ class Setores extends Model
     |--------------------------------------------------------------------------
     */
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->Usuario = auth()->id();
+        static::saving(function (self $model): void {
+            if (auth()->id() !== null) {
+                $model->Usuario = auth()->id();
+            }
+
             $model->date_time = now();
         });
     }

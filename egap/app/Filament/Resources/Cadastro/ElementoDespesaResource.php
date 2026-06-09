@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\ElementoDespesa;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -58,58 +60,21 @@ class ElementoDespesaResource extends Resource
             ])
             ->columns(2);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('CodigodaClasse')
-                    ->label('Código')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('DescricaodaClasse')
-                    ->label('Descrição')
-                    ->sortable()
-                    ->searchable()
+                TableColumns::text('CodigodaClasse', 'Código', isFirstColumn: true),
+                TableColumns::text('DescricaodaClasse', 'Descrição')
                     ->limit(40),
-
-                Tables\Columns\TextColumn::make('Despesa')
-                    ->badge()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('VidaUtil')
-                    ->label('Vida Útil')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i'),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Usuário')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('ValorResidual')
-                    ->money('BRL', true)
-                    ->alignCenter(),
+                TableColumns::text('Despesa')
+                    ->badge(),
+                TableColumns::text('VidaUtil', 'Vida Útil'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizado_por.name', 'Usuário'),
+                TableColumns::money('ValorResidual')
             ])
-            ->defaultSort('CodigodaClasse')
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->defaultSort('CodigodaClasse');
     }
 
     public static function getPages(): array

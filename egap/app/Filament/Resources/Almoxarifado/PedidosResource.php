@@ -306,6 +306,7 @@ class PedidosResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
@@ -489,7 +490,7 @@ class PedidosResource extends Resource
                     ->color('danger')
                     ->hiddenLabel()
                     ->tooltip('Impressão')
-//                    ->url(fn (Pedidos $record): string => route('impressao_pedido', $record))
+                    ->url(fn (Pedidos $record): string => route('impressao_pedido', $record))
                     ->openUrlInNewTab(),
 
                 Tables\Actions\Action::make('anexar_requisicao')
@@ -521,23 +522,9 @@ class PedidosResource extends Resource
                     ->action(function (Pedidos $record): void {
                         $record->update(['idSituacao' => 6]);
                     }),
-
-//                Tables\Actions\EditAction::make()
-//                    ->hiddenLabel()
-//                    ->tooltip('Editar'),
-//
-//                Tables\Actions\DeleteAction::make()
-//                    ->hiddenLabel()
-//                    ->tooltip('Excluir'),
-            ])
-            ->bulkActions([
-//                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-//                ]),
             ])
             ->selectCurrentPageOnly()
-            ->paginated([50, 100, 150, 200, 'all'])
-            ->defaultPaginationPageOption(50)
+            ->paginated([25, 50, 100, 'all'])
             ->striped()
             ->deferLoading();
     }

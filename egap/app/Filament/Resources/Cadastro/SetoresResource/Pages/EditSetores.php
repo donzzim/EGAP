@@ -10,6 +10,11 @@ class EditSetores extends EditRecord
 {
     protected static string $resource = SetoresResource::class;
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return SetoresResource::normalizeUnidadeOrganizacionalData($data);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

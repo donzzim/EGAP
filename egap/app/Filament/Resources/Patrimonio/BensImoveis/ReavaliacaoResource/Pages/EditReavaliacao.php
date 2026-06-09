@@ -10,8 +10,6 @@ class EditReavaliacao extends EditRecord
 {
     protected static string $resource = ReavaliacaoResource::class;
 
-    protected ?string $heading = 'Editar Reavaliação';
-
     protected function getHeaderActions(): array
     {
         return [

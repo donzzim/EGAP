@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\RelationManagers;
 use App\Models\Patrimonio\BensImoveis\Cidades;
 use Filament\Forms;
@@ -34,41 +36,15 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ->default(null),
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('id')
-                    ->searchable()
-                    ->alignLeft()
-                    ->width('50px'),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Cidade')
-                    ->searchable()
-                    ->width('500px'),
+                TableColumns::text('id', '#', isFirstColumn: true),
+                TableColumns::text('descricao', 'Cidade')
             ])
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
             ]);
     }
 

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\TipoTributo;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -42,49 +44,24 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('descricao', 'Descrição', isFirstColumn: true),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Tipo de Tributo')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Tipo de Tributo encontrado');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTipoTributos::route('/'),
+            'create' => Pages\CreateTipoTributo::route('/create'),
+            'edit' => Pages\EditTipoTributo::route('/{record}/edit'),
         ];
     }
 }

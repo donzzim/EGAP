@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\RelationManagers;
 use App\Models\Cadastro\DescricaoDetalhada;
 use Filament\Forms;
@@ -84,41 +86,22 @@ class DescricaoDetalhadaResource extends Resource
 
         ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('descricao_resumida_text.Descricao')
-                    ->label('Descrição Resumida')
-                    ->wrap()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('descricao_detalhada')
-                    ->label('Descrição Detalhada')
-                    ->wrap()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('marca_text.descricao')
-                    ->label('Marca')
-                    ->wrap()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('modelo_text.descricao')
-                    ->label('Modelo')
-                    ->wrap()
-                    ->searchable(),
-
-
-                Tables\Columns\TextColumn::make('valor_mercado')
-                    ->money('BRL')
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('visibilidade')
-                    ->getStateUsing(function ($record){
-                        switch ($record->visibilidade){
+                TableColumns::text('descricao_resumida_text.Descricao', 'Descrição Resumida', isFirstColumn: true)
+                    ->wrap(),
+                TableColumns::text('descricao_detalhada', 'Descrição Detalhada')
+                    ->wrap(),
+                TableColumns::text('marca_text.descricao', 'Marca')
+                    ->wrap(),
+                TableColumns::text('modelo_text.descricao', 'Modelo')
+                    ->wrap(),
+                TableColumns::money('valor_mercado'),
+                TableColumns::text('visibilidade')
+                    ->getStateUsing(function ($record) {
+                        switch ($record->visibilidade) {
                             case 0:
                                 return 'Ninguém';
                             case 1:
@@ -130,34 +113,11 @@ class DescricaoDetalhadaResource extends Resource
                             default:
                                 return 'Nenhuma';
                         }
-                    })
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('atualizado_por_usuario.name')
-                    ->label('Atualizado por')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
+                    }),
+                TableColumns::text('atualizado_por_usuario.name', 'Atualizado por'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
             ])
-            ->defaultSort('id')
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->defaultSort('id');
     }
 
     public static function getPages(): array

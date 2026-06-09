@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\ContaContabilResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\ContaContabilResource\RelationManagers;
 use App\Models\Cadastro\ContaContabil;
 use Filament\Forms;
@@ -54,54 +56,19 @@ class ContaContabilResource extends Resource
                     ->compact(),
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('codigo')
-                    ->label('Código')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('titulo')
-                    ->label('Título')
-                    ->searchable()
-                    ->limit(50)
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('funcao')
-                    ->label('Função')
-                    ->wrap()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->sortable()
-                    ->toggleable(),
+                TableColumns::text('codigo', 'Código', isFirstColumn: true),
+                TableColumns::text('titulo', 'Título')
+                    ->limit(50),
+                TableColumns::text('funcao', 'Função')
+                    ->wrap(),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
             ])
-            ->defaultSort('codigo')
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()
-                    ->label('Excluir selecionados'),
-            ]);
+            ->defaultSort('codigo');
     }
 
     public static function getRelations(): array

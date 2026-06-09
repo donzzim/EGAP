@@ -9,5 +9,4 @@ class CreateReavaliacao extends CreateRecord
 {
     protected static string $resource = ReavaliacaoResource::class;
 
-    protected ?string $heading = 'Adicionar Reavaliação';
 }

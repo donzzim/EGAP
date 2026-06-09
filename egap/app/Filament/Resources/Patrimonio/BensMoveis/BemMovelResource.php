@@ -116,6 +116,7 @@ class BemMovelResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->deferLoading()
             ->poll(null)

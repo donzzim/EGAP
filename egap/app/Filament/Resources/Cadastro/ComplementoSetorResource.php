@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\ComplementoSetor;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -30,59 +32,26 @@ class ComplementoSetorResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('descricao')
+                Forms\Components\TextInput::make('descricao')
                     ->label('Descrição')
                     ->required()
-                    ->rows(4)
                     ->maxLength(255)
                     ->columnSpanFull(),
-                Forms\Components\Placeholder::make('date_time')
-                    ->label('Data de Atualização')
-                    ->content(fn ($record) => $record?->date_time?->format('d/m/Y H:i'))
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->searchable()
+                TableColumns::text('id', '#', isFirstColumn: true),
+                TableColumns::text('descricao', 'Descrição')
                     ->wrap(),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Data Atualização')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::dateTime('date_time', 'Data Atualização', 'd/m/Y H:i'),
             ])
             ->defaultSort('id', 'asc')
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 

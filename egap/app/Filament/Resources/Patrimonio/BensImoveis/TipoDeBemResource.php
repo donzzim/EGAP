@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\TipoDeBem;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -42,55 +44,26 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('Id')
-                    ->label('Id')
-                    ->sortable()
-                    ->searchable()
+                TableColumns::text('Id', 'Id', isFirstColumn: true)
                     ->width('80px'),
-
-                Tables\Columns\TextColumn::make('Descricao')
-                    ->label('Descricao')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('Descricao', 'Descricao'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Tipo de bem')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Tipo de bem encontrado');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTipoDeBems::route('/'),
+            'create' => Pages\CreateTipoDeBem::route('/create'),
+            'edit' => Pages\EditTipoDeBem::route('/{record}/edit'),
         ];
     }
 }

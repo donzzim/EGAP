@@ -4,11 +4,12 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Obra;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Pages\SubNavigationPosition;
 
@@ -16,7 +17,7 @@ class ObraResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Obra::class;
 
@@ -71,63 +72,25 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('imovelRelacaoref.descricao')
-                    ->label('Imóveis')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->limit(50)
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('data')
-                    ->label('Data')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('valor')
-                    ->label('Valor (R$)')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('imovelRelacaoref.descricao', 'Imóveis', isFirstColumn: true),
+                TableColumns::text('descricao', 'Descrição')
+                    ->limit(50),
+                TableColumns::date('data', 'Data'),
+                TableColumns::text('valor', 'Valor (R$)'),
             ])
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Obras e Ampliações')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhuma Obra e Ampliação encontrada');
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListObras::route('/'),
+            'create' => Pages\CreateObra::route('/create'),
+            'edit' => Pages\EditObra::route('/{record}/edit'),
         ];
     }
 }

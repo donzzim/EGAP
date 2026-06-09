@@ -22,6 +22,7 @@ class TransferenciaRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->recordTitleAttribute('id')
             ->columns([

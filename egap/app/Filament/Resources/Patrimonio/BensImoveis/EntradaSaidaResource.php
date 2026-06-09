@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\EntradaSaidaResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\EntradaSaida;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -60,65 +62,21 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
-public static function table(Table $table): Table
+    public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->searchable()
+                TableColumns::text('id', 'ID', isFirstColumn: true)
                     ->width('80px'),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Data')
-                    ->dateTime('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('usuario')
-                    ->label('Usuário')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('tipo')
-                    ->label('Tipo')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::dateTime('date_time', 'Data', 'd/m/Y'),
+                TableColumns::text('usuario', 'Usuário'),
+                TableColumns::text('descricao', 'Descrição'),
+                TableColumns::text('tipo', 'Tipo'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Entrada/Saída')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhuma Entrada/Saída encontrada');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array

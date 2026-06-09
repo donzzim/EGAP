@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\DescricaoResumida;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -20,6 +22,8 @@ class DescricaoResumidaResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Descrições Resumidas';
 
+    protected static ?string $modelLabel = 'Descrição Resumida';
+
     protected static ?string $navigationGroup = 'Cadastro';
 
     public static function form(Form $form): Form
@@ -29,28 +33,22 @@ class DescricaoResumidaResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('id_tipo_material')
                         ->label('Tipo Material')
+                        ->required()
                         ->options([
                             'P' => 'Material Permanente',
                             'C' => 'Material de Consumo',
                             'D' => 'Material de Consumo Durável',
-                        ]),
+                        ])
+                        ->columnSpanFull(),
 
                     Forms\Components\TextInput::make('Descricao')
                         ->label('Descrição')
                         ->required()
                         ->columnSpanFull(),
 
-                    Forms\Components\Select::make('CodigodaClasse')
-                        ->label('Código da Classe')
-                        ->relationship(
-                            name: 'codigo_da_classe',
-                            titleAttribute: 'CodigodaClasse'
-                        )
-                        ->searchable()
-                        ->preload(),
-
                     Forms\Components\Select::make('ContaContabil')
                         ->label('Conta Contábil')
+                        ->required()
                         ->relationship(
                             name: 'conta_contabil',
                             titleAttribute: 'titulo'
@@ -59,10 +57,11 @@ class DescricaoResumidaResource extends Resource
                         ->preload(),
 
                     Forms\Components\Select::make('id_produto')
-                        ->label('Produto')
+                        ->label('Elemento de Despesa')
+                        ->required()
                         ->relationship(
                             name: 'produto_id',
-                            titleAttribute: 'Descricao'
+                            titleAttribute: 'DescricaodaClasse'
                         )
                         ->searchable()
                         ->preload(),
@@ -74,7 +73,9 @@ class DescricaoResumidaResource extends Resource
                             '2' => 'Tribunal',
                             '3' => 'Todos',
                         ])
-                        ->native(false),
+                        ->required()
+                        ->native(false)
+                        ->columnSpanFull(),
                 ])
                 ->columns(2),
             Forms\Components\Section::make('Arquivos')
@@ -87,39 +88,20 @@ class DescricaoResumidaResource extends Resource
                 ->columns(1),
         ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('Descricao')
-                    ->label('Descrição')
-                    ->searchable()
+                TableColumns::text('Descricao', 'Descrição', isFirstColumn: true)
                     ->wrap()
                     ->limit(50),
-
-                Tables\Columns\TextColumn::make('codigo_da_classe.DescricaodaClasse')
-                    ->label('Classe')
-                    ->sortable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('conta_contabil.descricao')
-                    ->label('Conta Contábil')
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('visibilidade')
-                    ->getStateUsing(function ($record){
-                        switch ($record->visibilidade){
+                TableColumns::text('codigo_da_classe.DescricaodaClasse', 'Classe'),
+                TableColumns::text('conta_contabil.titulo', 'Conta Contábil'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::text('visibilidade')
+                    ->getStateUsing(function ($record) {
+                        switch ($record->visibilidade) {
                             case 0:
                                 return 'Ninguém';
                             case 1:
@@ -131,25 +113,9 @@ class DescricaoResumidaResource extends Resource
                             default:
                                 return 'Nenhuma';
                         }
-                    })
-                    ->alignCenter(),
+                    }),
             ])
-            ->defaultSort('id', 'desc')
-//            ->filters()
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->defaultSort('id', 'desc');
     }
 
     public static function getPages(): array

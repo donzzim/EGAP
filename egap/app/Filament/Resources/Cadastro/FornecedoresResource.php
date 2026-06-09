@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\FornecedoresResource\Pages;
-use App\Filament\Resources\Cadastro\FornecedoresResource\RelationManagers;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Fornecedores;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -26,85 +27,99 @@ class FornecedoresResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('NomeFornecedor')
-                    ->label('Nome do Fornecedor')
-                    ->required()
-                    ->maxLength(255),
+                Forms\Components\Section::make('Identificação do fornecedor')
+                    ->description('Cadastre os dados principais usados em pedidos, notas fiscais e consultas administrativas.')
+                    ->icon('heroicon-o-building-storefront')
+                    ->schema([
+                        Forms\Components\Grid::make(12)
+                            ->schema([
+                                Forms\Components\TextInput::make('NomeFornecedor')
+                                    ->label('Nome do Fornecedor')
+                                    ->placeholder('Ex.: Empresa Modelo Ltda')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->columnSpan(8),
 
-                Forms\Components\Select::make('Pessoa')
-                    ->options([
-                        'Física' => 'Física',
-                        'Jurídica' => 'Jurídica',
+                                Forms\Components\Select::make('Pessoa')
+                                    ->label('Tipo de Pessoa')
+                                    ->placeholder('Selecione o tipo')
+                                    ->native(false)
+                                    ->searchable(false)
+                                    ->options([
+                                        'Jurídica' => 'Jurídica',
+                                        'Física' => 'Física',
+                                    ])
+                                    ->required()
+                                    ->columnSpan(4),
+
+                                Forms\Components\TextInput::make('CNPJ')
+                                    ->label('CNPJ')
+                                    ->placeholder('00.000.000/0000-00')
+                                    ->mask('99.999.999/9999-99')
+                                    ->stripCharacters(['.', '/', '-'])
+                                    ->rule('digits:14')
+                                    ->unique(ignoreRecord: true)
+                                    ->required()
+                                    ->columnSpanFull(),
+                            ]),
                     ])
-                    ->required(),
-
-                Forms\Components\TextInput::make('CNPJ')
-                    ->label('CNPJ')
-                    ->mask('99.999.999/9999-99')
-                    ->stripCharacters(['.', '/', '-'])
-                    ->rule('digits:14')
-                    ->unique(ignoreRecord: true)
-                    ->columnSpanFull()
-                    ->required(),
+                    ->columns(1),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('NomeFornecedor')
-                    ->label('Nome')
-                    ->searchable()
-                    ->sortable(),
+                TableColumns::text('NomeFornecedor', 'Fornecedor', isFirstColumn: true)
+                    ->wrap(),
 
-                Tables\Columns\TextColumn::make('Pessoa')
+                TableColumns::text('Pessoa', 'Tipo')
                     ->badge()
-                    ->sortable(),
+                    ->color(fn (?string $state): string => match ($state) {
+                        'Jurídica' => 'info',
+                        'Física' => 'success',
+                        default => 'gray',
+                    }),
 
-                Tables\Columns\TextColumn::make('CNPJ')
-                    ->label('CNPJ')
-                    ->alignCenter()
-                    ->searchable()
-                    ->sortable(),
+                TableColumns::text('CNPJ', 'CNPJ')
+                    ->formatStateUsing(fn (?string $state): string => static::formatCnpj($state))
+                    ->copyable()
+                    ->copyMessage('CNPJ copiado'),
 
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->alignCenter()
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
 
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->sortable()
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
             ])
             ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+                Tables\Filters\SelectFilter::make('Pessoa')
+                    ->columnSpan(3)
+                    ->label('Tipo de Pessoa')
+                    ->options([
+                        'Jurídica' => 'Jurídica',
+                        'Física' => 'Física',
+                    ]),
+            ], Tables\Enums\FiltersLayout::AboveContent)
+            ->defaultSort('NomeFornecedor');
+    }
+
+    public static function formatCnpj(?string $value): string
+    {
+        $digits = preg_replace('/\D/', '', $value ?? '');
+
+        if (strlen($digits) !== 14) {
+            return $value ?: '-';
+        }
+
+        return preg_replace('/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/', '$1.$2.$3/$4-$5', $digits);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Cadastro\FornecedoresResource\Pages\ListFornecedores::route('/'),
-            'create' => \App\Filament\Resources\Cadastro\FornecedoresResource\Pages\CreateFornecedores::route('/create'),
-            'edit' => \App\Filament\Resources\Cadastro\FornecedoresResource\Pages\EditFornecedores::route('/{record}/edit'),
+            'index' => Pages\ListFornecedores::route('/'),
+            'create' => Pages\CreateFornecedores::route('/create'),
+            'edit' => Pages\EditFornecedores::route('/{record}/edit'),
         ];
     }
 }

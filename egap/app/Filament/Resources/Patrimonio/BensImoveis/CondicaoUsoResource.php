@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\CondicaoUso;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -41,49 +43,17 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('id')
-                    ->sortable()
-                    ->searchable()
-                    ->width('80px'),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('descricao')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('id', '#', isFirstColumn: true),
+                TableColumns::text('descricao', 'Descrição'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Condição de Uso / Forma de Aquisição')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhuma Condição de Uso encontrada');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array

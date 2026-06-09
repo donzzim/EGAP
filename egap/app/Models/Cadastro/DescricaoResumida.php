@@ -47,6 +47,6 @@ class DescricaoResumida extends Model
 
     public function codigo_da_classe(): BelongsTo
     {
-        return $this->belongsTo(ElementoDespesa::class, 'CodigodaClasse', 'CodigodaClasse');
+        return $this->belongsTo(ElementoDespesa::class, 'CodigodaClasse', 'id');
     }
 }

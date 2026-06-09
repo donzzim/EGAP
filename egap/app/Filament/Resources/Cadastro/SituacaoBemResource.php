@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
-use App\Filament\Resources\Cadastro\SituacaoBemResource\RelationManagers;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\SituacaoBem;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -43,54 +44,20 @@ class SituacaoBemResource extends Resource
                     ->columns(1),
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('situacao')
-                    ->label('Status')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('id', '#', isFirstColumn: true),
+                TableColumns::text('descricao', 'Descrição'),
+                TableColumns::text('situacao', 'Status'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('descricao');
+            ->defaultSort('id');
     }
 
     public static function getPages(): array

@@ -16,14 +16,4 @@ class EditUnidadesDeMedida extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
-
-    protected function getSaveFormActionLabel(): string
-    {
-        return 'Salvar Alterações';
-    }
-
-    protected function getCancelFormActionLabel(): string
-    {
-        return 'Cancelar';
-    }
 }

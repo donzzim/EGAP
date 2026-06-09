@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\Cedido;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,7 +18,7 @@ class CedidoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Cedido::class;
 
@@ -34,92 +36,142 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
             ->schema([
                 Forms\Components\Tabs::make('Tabs')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('1. Imóveis')
+                        Forms\Components\Tabs\Tab::make('Imóvel')
+                            ->icon('heroicon-o-building-office')
                             ->schema([
-                                Forms\Components\Select::make('id_imovel')
-                                    ->label('Imóvel')
-                                    ->relationship('imovelRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->preload(),
+                                Forms\Components\Section::make('Identificação')
+                                    ->icon('heroicon-o-building-office')
+                                    ->schema([
+                                        Forms\Components\Select::make('id_imovel')
+                                            ->label('Imóvel')
+                                            ->relationship('imovelRelacaoref', 'descricao')
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Selecione o imóvel')
+                                            ->columnSpanFull(),
 
-                                Forms\Components\Textarea::make('resumo')
-                                    ->label('Partes/Terceiros')
-                                    ->rows(4),
+                                        Forms\Components\TextInput::make('num_processo')
+                                            ->label('Nº do Processo')
+                                            ->placeholder('Informe o número do processo'),
 
-                                Forms\Components\Textarea::make('proprietario_responsavel')
-                                    ->label('Proprietário/Responsável')
-                                    ->rows(4),
+                                        Forms\Components\FileUpload::make('termo_digital')
+                                            ->label('Termo Digital')
+                                            ->helperText('Anexe o termo ou documento relacionado à ocupação.'),
+                                    ])
+                                    ->columns(2),
 
-                                Forms\Components\Textarea::make('condicao_uso')
-                                    ->label('Condição de Uso')
-                                    ->rows(4),
+                                Forms\Components\Section::make('Dados da Ocupação')
+                                    ->icon('heroicon-o-document-text')
+                                    ->schema([
+                                        Forms\Components\Textarea::make('resumo')
+                                            ->label('Partes/Terceiros')
+                                            ->placeholder('Informe as partes envolvidas ou terceiros ocupantes')
+                                            ->rows(4),
 
-                                Forms\Components\TextInput::make('num_processo')
-                                    ->label('Núm. Processo'),
+                                        Forms\Components\Textarea::make('proprietario_responsavel')
+                                            ->label('Proprietário/Responsável')
+                                            ->placeholder('Informe o proprietário ou responsável')
+                                            ->rows(4),
 
-                                Forms\Components\FileUpload::make('termo_digital')
-                                    ->label('Termo Digital'),
+                                        Forms\Components\Textarea::make('condicao_uso')
+                                            ->label('Condição de Uso')
+                                            ->placeholder('Descreva a condição de uso do espaço')
+                                            ->rows(4),
 
-                                Forms\Components\Textarea::make('objeto')
-                                    ->label('Objeto')
-                                    ->rows(4),
+                                        Forms\Components\Textarea::make('objeto')
+                                            ->label('Objeto')
+                                            ->placeholder('Descreva o objeto da cessão ou ocupação')
+                                            ->rows(4),
 
-                                Forms\Components\Textarea::make('fiscais')
-                                    ->label('Fiscais')
-                                    ->rows(4),
-                            ])->columns(2),
+                                        Forms\Components\Textarea::make('fiscais')
+                                            ->label('Fiscais')
+                                            ->placeholder('Informe os fiscais responsáveis')
+                                            ->columnSpanFull()
+                                            ->rows(3),
+                                    ])
+                                    ->columns(2),
+                            ]),
 
-                        Forms\Components\Tabs\Tab::make('2. Situação')
+                        Forms\Components\Tabs\Tab::make('Situação')
+                            ->icon('heroicon-o-check-circle')
                             ->schema([
-                                Forms\Components\Select::make('situacao')
-                                    ->label('Situação')
-                                    ->options([
-                                        'Vigente' => 'Vigente',
-                                    ]),
+                                Forms\Components\Section::make('Status e Controle')
+                                    ->icon('heroicon-o-check-circle')
+                                    ->schema([
+                                        Forms\Components\Select::make('situacao')
+                                            ->label('Situação')
+                                            ->options([
+                                                'Vigente' => 'Vigente',
+                                            ])
+                                            ->placeholder('Selecione a situação'),
 
-                                Forms\Components\Select::make('atualizado_por')
-                                    ->label('Atualizado por')
-                                    ->relationship('atualizadoPorRelacaoref', 'name')
-                                    ->searchable()
-                                    ->preload(),
+                                        Forms\Components\Select::make('atualizado_por')
+                                            ->label('Atualizado por')
+                                            ->relationship('atualizadoPorRelacaoref', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Selecione o usuário'),
 
-                                Forms\Components\Textarea::make('observacao')
-                                    ->label('Observação')
-                                    ->columnSpanFull()
-                                    ->rows(4),
-                            ])->columns(2),
+                                        Forms\Components\Textarea::make('observacao')
+                                            ->label('Observação')
+                                            ->placeholder('Registre informações complementares sobre a situação')
+                                            ->columnSpanFull()
+                                            ->rows(4),
+                                    ])
+                                    ->columns(2),
+                            ]),
 
-                        Forms\Components\Tabs\Tab::make('3. Publicações')
+                        Forms\Components\Tabs\Tab::make('Publicações')
+                            ->icon('heroicon-o-clipboard-document-list')
                             ->schema([
-                                Forms\Components\DatePicker::make('data_assinatura')
-                                    ->label('Data Assinatura')
-                                    ->displayFormat('d/m/Y'),
+                                Forms\Components\Section::make('Assinatura e Publicação')
+                                    ->icon('heroicon-o-clipboard-document-list')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('data_assinatura')
+                                            ->label('Data de Assinatura')
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false),
 
-                                Forms\Components\TextInput::make('ato_diario')
-                                    ->label('Ato Diário'),
+                                        Forms\Components\TextInput::make('ato_diario')
+                                            ->label('Ato Diário')
+                                            ->placeholder('Informe o ato diário'),
 
-                                Forms\Components\DatePicker::make('data_publicacao')
-                                    ->label('Data Publicação')
-                                    ->displayFormat('d/m/Y'),
-                            ])->columns(2),
+                                        Forms\Components\DatePicker::make('data_publicacao')
+                                            ->label('Data de Publicação')
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false),
+                                    ])
+                                    ->columns(3),
+                            ]),
 
-                        Forms\Components\Tabs\Tab::make('4. Vigência')
+                        Forms\Components\Tabs\Tab::make('Vigência')
+                            ->icon('heroicon-o-calendar-days')
                             ->schema([
-                                Forms\Components\DatePicker::make('vencimento')
-                                    ->label('Vencimento')
-                                    ->displayFormat('d/m/Y'),
+                                Forms\Components\Section::make('Prazos')
+                                    ->icon('heroicon-o-calendar-days')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('vencimento')
+                                            ->label('Vencimento')
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false),
 
-                                Forms\Components\TextInput::make('vigencia')
-                                    ->label('Vigência'),
+                                        Forms\Components\TextInput::make('vigencia')
+                                            ->label('Vigência')
+                                            ->placeholder('Ex: 12 meses'),
 
-                                Forms\Components\DatePicker::make('aditivo_vigencia')
-                                    ->label('Aditivo Data Vigência')
-                                    ->displayFormat('d/m/Y'),
-                            ])->columns(2),
+                                        Forms\Components\DatePicker::make('aditivo_vigencia')
+                                            ->label('Aditivo de Vigência')
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false),
+                                    ])
+                                    ->columns(3),
+                            ]),
 
-                        Forms\Components\Tabs\Tab::make('5. Ocupação do espaço')
+                        Forms\Components\Tabs\Tab::make('Ocupação do Espaço')
+                            ->icon('heroicon-o-currency-dollar')
                             ->schema([
-                                Forms\Components\Section::make()
+                                Forms\Components\Section::make('Condições Financeiras e Despesas')
+                                    ->icon('heroicon-o-currency-dollar')
                                     ->schema([
                                         Forms\Components\Radio::make('retribuicao')
                                             ->label('Retribuição')
@@ -142,135 +194,103 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                     ])->columns(2)
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('6. Gestores/Fiscais')
+                        Forms\Components\Tabs\Tab::make('Gestores/Fiscais')
+                            ->icon('heroicon-o-user-group')
                             ->schema([
-                                Forms\Components\Repeater::make('gestores')
-                                    ->relationship('gestores')
+                                Forms\Components\Section::make('Equipe Responsável')
+                                    ->icon('heroicon-o-user-group')
                                     ->schema([
-                                        Forms\Components\TextInput::make('ato_diario')
-                                            ->label('Ato Diário'),
+                                        Forms\Components\Repeater::make('gestores')
+                                            ->relationship('gestores')
+                                            ->schema([
+                                                Forms\Components\Select::make('gestor_fiscal')
+                                                    ->label('Perfil')
+                                                    ->options([
+                                                        'Gestor' => 'Gestor',
+                                                        'Fiscal' => 'Fiscal',
+                                                    ])
+                                                    ->placeholder('Selecione'),
 
-                                        Forms\Components\DatePicker::make('data_publicacao')
-                                            ->label('Data Publicação')
-                                            ->displayFormat('d/m/Y'),
+                                                Forms\Components\Select::make('nome')
+                                                    ->label('Nome')
+                                                    ->relationship('nomeRelacaoref', 'name')
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->placeholder('Selecione o responsável'),
 
-                                        Forms\Components\Select::make('gestor_fiscal')
-                                            ->label('Gestor/Fiscal')
-                                            ->options([
-                                                'Gestor' => 'Gestor',
-                                                'Fiscal' => 'Fiscal',
-                                            ]),
+                                                Forms\Components\TextInput::make('ato_diario')
+                                                    ->label('Ato Diário')
+                                                    ->placeholder('Informe o ato diário'),
 
-                                        Forms\Components\Select::make('nome')
-                                            ->label('Nome')
-                                            ->relationship('nomeRelacaoref', 'name')
-                                            ->searchable()
-                                            ->preload(),
+                                                Forms\Components\DatePicker::make('data_publicacao')
+                                                    ->label('Data de Publicação')
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false),
 
-                                        Forms\Components\DatePicker::make('data_encerramento')
-                                            ->label('Data encerramento')
-                                            ->displayFormat('d/m/Y'),
+                                                Forms\Components\DatePicker::make('data_encerramento')
+                                                    ->label('Data de Encerramento')
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false),
 
-                                        Forms\Components\Select::make('atualizado_por')
-                                            ->label('Atualizado por')
-                                            ->relationship('atualizadoPorRelacaoref', 'name')
-                                            ->searchable()
-                                            ->preload()
-                                            ->hidden(),
-                                    ])
-                                    ->columns(5)
-                                    ->defaultItems(0)
-                                    ->hiddenLabel()
-                                    ->addActionLabel('Adicionar gestores/fiscais')
+                                                Forms\Components\Select::make('atualizado_por')
+                                                    ->label('Atualizado por')
+                                                    ->relationship('atualizadoPorRelacaoref', 'name')
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->hidden(),
+                                            ])
+                                            ->columns(3)
+                                            ->defaultItems(0)
+                                            ->hiddenLabel()
+                                            ->addActionLabel('Adicionar gestor/fiscal'),
+                                    ]),
                             ]),
                     ])
                     ->columnSpanFull()
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('imovelRelacaoref.descricao')
-                    ->label('Imóvel')
-                    ->wrap()
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('resumo')
-                    ->label('Partes/Terceiros')
-                    ->wrap()
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('proprietario_responsavel')
-                    ->label('Proprietário/Responsável')
-                    ->wrap()
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('condicao_uso')
-                    ->label('Condição de Uso')
-                    ->wrap()
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('num_processo')
-                    ->label('Núm. Processo')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('data_assinatura')
-                    ->label('Data Assinatura')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('vencimento')
-                    ->label('Vencimento')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('vigencia')
-                    ->label('Vigência')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('imovelRelacaoref.descricao', 'Imóvel', isFirstColumn: true)
+                    ->limit(45)
+                    ->tooltip(fn ($record): ?string => $record->imovelRelacaoref?->descricao),
+                TableColumns::text('resumo', 'Partes/Terceiros')
+                    ->limit(40)
+                    ->tooltip(fn ($record): ?string => $record->resumo),
+                TableColumns::text('proprietario_responsavel', 'Proprietário/Responsável')
+                    ->limit(35)
+                    ->tooltip(fn ($record): ?string => $record->proprietario_responsavel),
+                TableColumns::text('condicao_uso', 'Condição de Uso')
+                    ->limit(35)
+                    ->tooltip(fn ($record): ?string => $record->condicao_uso),
+                TableColumns::text('num_processo', 'Nº Processo')
+                    ->badge()
+                    ->placeholder('-'),
+                TableColumns::text('situacao', 'Situação')
+                    ->badge()
+                    ->placeholder('-'),
+                TableColumns::date('data_assinatura', 'Assinatura'),
+                TableColumns::date('vencimento', 'Vencimento'),
+                TableColumns::text('vigencia', 'Vigência')
+                    ->badge()
+                    ->placeholder('-'),
+                TableColumns::text('retribuicao', 'Retribuição')
+                    ->badge()
+                    ->placeholder('-'),
             ])
             ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square'),
 
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Imóvel Ocupado por Terceiros encontrado');
+            ], layout: Tables\Enums\FiltersLayout::AboveContent);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListCedidos::route('/'),
-            //'create' => Pages\CreateCedido::route('/create'),
-            //'edit' => Pages\EditCedido::route('/{record}/edit'),
+            'create' => Pages\CreateCedido::route('/create'),
+            'edit' => Pages\EditCedido::route('/{record}/edit'),
         ];
     }
 }

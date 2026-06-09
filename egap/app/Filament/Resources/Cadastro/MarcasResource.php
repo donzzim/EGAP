@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\MarcasResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\MarcasResource\RelationManagers;
 use App\Models\Cadastro\Marcas;
 use Filament\Forms;
@@ -41,55 +43,14 @@ class MarcasResource extends Resource
                     ->columnSpanFull(),
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('descricao')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->alignCenter()
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tipobem')
-                    ->alignCenter()
-                    ->label('Tipo do Bem')
-                    ->sortable()
-                    ->searchable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
-             ->selectCurrentPageOnly()
-            ->paginated([50, 100, 150, 200, 'all'])
-            ->defaultPaginationPageOption(50)
-            ->striped()
-            ->deferLoading();
+                TableColumns::text('descricao', 'Descrição', isFirstColumn: true),
+                TableColumns::dateTime('date_time', 'Atualizado em'),
+                TableColumns::text('atualizado_por.name', 'Atualizado por')
+            ]);
     }
 
     public static function getRelations(): array

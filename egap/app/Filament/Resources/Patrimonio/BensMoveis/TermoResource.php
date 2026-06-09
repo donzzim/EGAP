@@ -125,6 +125,7 @@ class TermoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withCount('transferencias'))
             ->columns([

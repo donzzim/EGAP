@@ -106,6 +106,7 @@ class UsersEgapResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->defaultSort('name')
             ->columns([

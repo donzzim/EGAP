@@ -228,6 +228,7 @@ class AgendamentoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->striped()
             ->paginated([10, 25, 50, 100])

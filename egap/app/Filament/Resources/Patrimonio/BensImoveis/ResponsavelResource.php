@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ResponsavelResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\Responsavel;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -47,60 +49,27 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('id')
-                    ->sortable()
-                    ->searchable()
+                TableColumns::text('id', 'id', isFirstColumn: true)
                     ->width('80px'),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('descricao')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('proprietario')
-                    ->label('proprietario')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('descricao', 'descricao'),
+                TableColumns::text('proprietario', 'proprietario'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Responsável')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Responsável encontrado');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListResponsavels::route('/'),
+            'create' => Pages\CreateResponsavel::route('/create'),
+            'edit' => Pages\EditResponsavel::route('/{record}/edit'),
         ];
     }
 }

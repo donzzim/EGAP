@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\TipoImovel;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -42,55 +44,26 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('Id')
-                    ->label('Id')
-                    ->sortable()
-                    ->searchable()
+                TableColumns::text('Id', 'Id', isFirstColumn: true)
                     ->width('80px'),
-
-                Tables\Columns\TextColumn::make('desc_tipo_imovel')
-                    ->label('desc tipo imovel')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('desc_tipo_imovel', 'desc tipo imovel'),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Tipo de Imóvel')
-                    ->modalWidth('md'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Tipo de Imóvel encontrado');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTipoImovels::route('/'),
+            'create' => Pages\CreateTipoImovel::route('/create'),
+            'edit' => Pages\EditTipoImovel::route('/{record}/edit'),
         ];
     }
 }

@@ -17,9 +17,4 @@ class ListUnidadesDeMedida extends ListRecords
                 ->label('Novo')
         ];
     }
-
-    protected function getCreateButtonLabel(): string
-    {
-        return 'Cadastrar';
-    }
 }

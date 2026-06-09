@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\RelationManagers;
 use App\Models\Cadastro\UnidadesDeMedida;
 use Filament\Forms;
@@ -44,46 +46,18 @@ class UnidadesDeMedidaResource extends Resource
                     ->columns(),
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('Sigla')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('Unidade')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->sortable(),
+                TableColumns::text('Sigla', isFirstColumn: true),
+                TableColumns::text('Unidade'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
             ])
             ->defaultSort('Sigla')
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 

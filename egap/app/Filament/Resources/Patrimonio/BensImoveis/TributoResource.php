@@ -4,11 +4,12 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TributoResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Tributo;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Pages\SubNavigationPosition;
 
@@ -35,73 +36,152 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 Forms\Components\Tabs::make('Tabs')
                     ->tabs([
                         Forms\Components\Tabs\Tab::make('Tributos')
+                            ->icon('heroicon-o-banknotes')
                             ->schema([
-                                Forms\Components\Select::make('Id_imovel')
-                                    ->label('Imóvel')
-                                    ->relationship('imovelRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->preload(),
+                                Forms\Components\Section::make('IdentificaÃ§Ã£o')
+                                    ->description('Vincule o tributo ao imÃ³vel e informe a natureza da cobranÃ§a.')
+                                    ->icon('heroicon-o-home-modern')
+                                    ->schema([
+                                        Forms\Components\Select::make('Id_imovel')
+                                            ->label('ImÃ³vel')
+                                            ->relationship('imovelRelacaoref', 'descricao')
+                                            ->required()
+                                            ->searchable()
+                                            ->preload()
+                                            ->native(false)
+                                            ->placeholder('Selecione o imÃ³vel')
+                                            ->columnSpan(7),
 
-                                Forms\Components\Select::make('tipo_tributo')
-                                    ->label('Tipo do tributo')
-                                    ->relationship('tipoTributoRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->preload(),
+                                        Forms\Components\Select::make('tipo_tributo')
+                                            ->label('Tipo do tributo')
+                                            ->relationship('tipoTributoRelacaoref', 'descricao')
+                                            ->required()
+                                            ->searchable()
+                                            ->preload()
+                                            ->native(false)
+                                            ->placeholder('Selecione o tipo')
+                                            ->columnSpan(5),
+                                    ])
+                                    ->columns(12),
 
-                                Forms\Components\DatePicker::make('vencimento')
-                                    ->label('Vencimento')
-                                    ->displayFormat('d/m/Y'),
+                                Forms\Components\Section::make('Valores e vencimento')
+                                    ->description('Dados financeiros previstos para o tributo.')
+                                    ->icon('heroicon-o-calendar-days')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('vencimento')
+                                            ->label('Vencimento')
+                                            ->required()
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false)
+                                            ->placeholder('dd/mm/aaaa')
+                                            ->columnSpan(4),
 
-                                Forms\Components\TextInput::make('valor')
-                                    ->label('Valor')
-                                    ->numeric(),
+                                        Forms\Components\TextInput::make('valor')
+                                            ->label('Valor')
+                                            ->required()
+                                            ->numeric()
+                                            ->prefix('R$')
+                                            ->placeholder('0.00')
+                                            ->columnSpan(4),
+                                    ])
+                                    ->columns(12),
 
-                                Forms\Components\DatePicker::make('pago_em')
-                                    ->label('Pago em')
-                                    ->displayFormat('d/m/Y'),
+                                Forms\Components\Section::make('Pagamento')
+                                    ->description('Preencha quando houver registro de quitaÃ§Ã£o.')
+                                    ->icon('heroicon-o-credit-card')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('pago_em')
+                                            ->label('Pago em')
+                                            ->required()
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false)
+                                            ->placeholder('dd/mm/aaaa')
+                                            ->columnSpan(4),
 
-                                Forms\Components\TextInput::make('valor_pago')
-                                    ->label('Valor Pago')
-                                    ->numeric(),
+                                        Forms\Components\TextInput::make('valor_pago')
+                                            ->label('Valor pago')
+                                            ->required()
+                                            ->numeric()
+                                            ->prefix('R$')
+                                            ->placeholder('0.00')
+                                            ->columnSpan(4),
 
-                                Forms\Components\TextInput::make('processo_pagto')
-                                    ->label('Processo Pagto'),
+                                        Forms\Components\TextInput::make('processo_pagto')
+                                            ->label('Processo de pagamento')
+                                            ->required()
+                                            ->placeholder('Informe o processo, se houver')
+                                            ->columnSpan(4),
+                                    ])
+                                    ->columns(12),
 
-                                Forms\Components\Select::make('atualizado_por')
-                                    ->label('Atualizado por')
-                                    ->relationship('atualizadoPorRelacaoref', 'name')
-                                    ->default(fn () => auth()->id())
-                                    ->searchable()
-                                    ->preload(),
+                                Forms\Components\Section::make('Auditoria e observaÃ§Ãµes')
+                                    ->description('Controle interno de atualizaÃ§Ã£o e informaÃ§Ãµes complementares.')
+                                    ->icon('heroicon-o-clipboard-document-list')
+                                    ->schema([
+                                        Forms\Components\Select::make('atualizado_por')
+                                            ->label('Atualizado por')
+                                            ->relationship('atualizadoPorRelacaoref', 'name')
+                                            ->required()
+                                            ->default(fn () => auth()->id())
+                                            ->searchable()
+                                            ->preload()
+                                            ->native(false)
+                                            ->columnSpan(6),
 
-                                Forms\Components\Textarea::make('observacao')
-                                    ->label('Observação')
-                                    ->rows(4),
+                                        Forms\Components\DatePicker::make('date_time')
+                                            ->label('Atualizado em')
+                                            ->required()
+                                            ->default(now())
+                                            ->displayFormat('d/m/Y')
+                                            ->native(false)
+                                            ->disabled()
+                                            ->dehydrated()
+                                            ->columnSpan(6),
 
-                                Forms\Components\DatePicker::make('date_time')
-                                    ->label('Atualizado em')
-                                    ->default(now())
-                                    ->displayFormat('d/m/Y')
-                                    ->disabled()
-                                    ->dehydrated(),
-                            ])->columns(2),
+                                        Forms\Components\Textarea::make('observacao')
+                                            ->label('ObservaÃ§Ã£o')
+                                            ->required()
+                                            ->rows(4)
+                                            ->placeholder('Registre informaÃ§Ãµes relevantes sobre o tributo')
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(12),
+                            ]),
 
                         Forms\Components\Tabs\Tab::make('Eventos')
+                            ->icon('heroicon-o-clock')
                             ->schema([
-                                Forms\Components\Repeater::make('eventos')
+                                Forms\Components\Section::make('HistÃ³rico de eventos')
+                                    ->description('Registre ocorrÃªncias relacionadas ao tributo.')
+                                    ->icon('heroicon-o-queue-list')
                                     ->schema([
-                                        Forms\Components\DatePicker::make('data')
-                                            ->label('Data')
-                                            ->displayFormat('d/m/Y'),
+                                        Forms\Components\Repeater::make('eventos')
+                                            ->required()
+                                            ->schema([
+                                                Forms\Components\DatePicker::make('data')
+                                                    ->label('Data')
+                                                    ->required()
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false)
+                                                    ->placeholder('dd/mm/aaaa')
+                                                    ->columnSpanFull(),
 
-                                        Forms\Components\Textarea::make('descricao')
-                                            ->label('Descrição')
-                                            ->rows(2),
+                                                Forms\Components\Textarea::make('descricao')
+                                                    ->label('DescriÃ§Ã£o')
+                                                    ->required()
+                                                    ->rows(2)
+                                                    ->placeholder('Descreva o evento')
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columns(12)
+                                            ->defaultItems(1)
+                                            ->minItems(1)
+                                            ->addActionLabel('Adicionar evento')
+                                            ->collapsible()
+                                            ->reorderableWithButtons()
+                                            ->hiddenLabel(),
                                     ])
-                                    ->columns(2)
-                                    ->defaultItems(1)
-                                    ->addActionLabel('Adicionar em eventos')
-                                    ->hiddenLabel()
+                                    ->columnSpanFull(),
                             ]),
                     ])
                     ->columnSpanFull()
@@ -110,94 +190,30 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('imovelRelacaoref.descricao')
-                    ->label('Imóvel')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('tipoTributoRelacaoref.descricao')
-                    ->label('Tipo do tributo')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('vencimento')
-                    ->label('Vencimento')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('valor')
-                    ->label('Valor')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('pago_em')
-                    ->label('Pago em')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('valor_pago')
-                    ->label('Valor Pago')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('processo_pagto')
-                    ->label('Processo Pagto')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('observacao')
-                    ->label('Observação')
-                    ->sortable()
-                    ->searchable()
-                    ->width('400px')
+                TableColumns::text('imovelRelacaoref.descricao', 'Imóvel', isFirstColumn: true),
+                TableColumns::text('tipoTributoRelacaoref.descricao', 'Tipo do tributo'),
+                TableColumns::date('vencimento', 'Vencimento'),
+                TableColumns::money('valor', 'Valor'),
+                TableColumns::date('pago_em', 'Pago em'),
+                TableColumns::money('valor_pago', 'Valor Pago'),
+                TableColumns::text('processo_pagto', 'Processo Pagto')
+                    ->badge(),
+                TableColumns::text('observacao', 'Observação')
                     ->wrap(),
             ])
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Tributo')
-                    ->modalWidth('4xl')
-                    ->mutateRecordDataUsing(function (array $data): array {
-                        $data['date_time'] = date('Y-m-d');
-
-                        if (empty($data['eventos'])) {
-                            $data['eventos'] = [['data' => null, 'descricao' => null]];
-                        }
-
-                        return $data;
-                    }),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Tributo encontrado');
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTributos::route('/'),
+            'create' => Pages\CreateTributo::route('/create'),
+            'edit' => Pages\EditTributo::route('/{record}/edit'),
         ];
     }
 }

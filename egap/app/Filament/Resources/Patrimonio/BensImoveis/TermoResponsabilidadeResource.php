@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\TermoResponsabilidade;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -86,78 +88,34 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ])
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('num_termo')
-                    ->label('Termo Nº')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('ano_termo')
-                    ->label('Ano')
-                    ->sortable()
-                    ->searchable(),
-
-                    Tables\Columns\TextColumn::make('arquivo')
-                    ->label('Arquivo')
-                    ->searchable()
+                TableColumns::text('num_termo', 'Termo Nº', isFirstColumn: true),
+                TableColumns::text('ano_termo', 'Ano'),
+                TableColumns::text('arquivo', 'Arquivo')
                     ->url(fn ($record) => $record->arquivo ? "https://sistemas.tjes.jus.br/patrimonio{$record->arquivo}" : null)
                     ->openUrlInNewTab()
                     ->extraCellAttributes(['style' => 'color: #3b82f6; text-decoration: underline; cursor: pointer;']),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('atualizadoPorRelacaoref.name')
-                    ->label('Atualizado por')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('termosImoveis.imovelRelacaoref.descricao')
-                    ->label('Imóvel')
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y'),
+                TableColumns::text('atualizadoPorRelacaoref.name', 'Atualizado por'),
+                TableColumns::text('termosImoveis.imovelRelacaoref.descricao', 'Imóvel')
                     ->listWithLineBreaks()
-                    ->limitList(3)
-                    ->searchable(),
+                    ->limitList(3),
             ])
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Editar')
-                    ->color('warning')
-                    ->icon('heroicon-o-pencil-square')
-                    ->modalHeading('Editar Termos de Responsabilidade')
-                    ->modalWidth('4xl'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('Excluir')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave')
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(10)
-            ->striped()
-            ->emptyStateHeading('Nenhum Termo de Responsabilidade encontrado');
+            ->searchPlaceholder('Entre com a palavra-chave');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTermoResponsabilidades::route('/'),
+            'create' => Pages\CreateTermoResponsabilidade::route('/create'),
+            'edit' => Pages\EditTermoResponsabilidade::route('/{record}/edit'),
         ];
     }
 }

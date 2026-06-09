@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Cadastro;
 
 use App\Filament\Resources\Cadastro\ModelosResource\Pages;
+use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\ModelosResource\RelationManagers;
 use App\Models\Cadastro\Modelos;
 use Filament\Forms;
@@ -47,48 +49,15 @@ class ModelosResource extends Resource
                     ->columns(1),
             ]);
     }
-
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('marca_ref.descricao')
-                    ->label('Marca')
-                    ->default('Sem marca')
-                    ->sortable()
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Modelo')
-                    ->alignCenter()
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->alignCenter()
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('atualizado_por.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->sortable(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->hiddenLabel()
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                TableColumns::text('marca_ref.descricao', 'Marca', isFirstColumn: true)
+                    ->default('Sem marca'),
+                TableColumns::text('descricao', 'Modelo'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizado_por.name', 'Atualizado por'),
             ])
             ->defaultSort('descricao');
     }

@@ -142,6 +142,7 @@ class MateriaisResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'processoRelacaoRef',

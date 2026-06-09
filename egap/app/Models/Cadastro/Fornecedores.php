@@ -19,16 +19,24 @@ class Fornecedores extends Model
         'Usuario'
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+    ];
+
     // atualizado por
     public function atualizado_por() : BelongsTo
     {
         return $this->belongsTo(UserEgap::class, 'Usuario', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->Usuario = auth()->id();
+        static::saving(function (self $model): void {
+            if (auth()->id() !== null) {
+                $model->Usuario = auth()->id();
+            }
+
+            $model->date_time = now();
         });
     }
 }

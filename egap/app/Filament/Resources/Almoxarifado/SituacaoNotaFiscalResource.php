@@ -44,6 +44,7 @@ class SituacaoNotaFiscalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
                 TextColumn::make('descricao')
