@@ -15,9 +15,6 @@ class ListTermoResponsabilidades extends ListRecords
         return [
             Actions\CreateAction::make()
                 ->label('Novo')
-                ->modalHeading('Adicionar Termos de Responsabilidade')
-                ->modalWidth('4xl')
-                ->createAnother(false),
         ];
     }
 }

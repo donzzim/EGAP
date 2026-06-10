@@ -11,4 +11,12 @@ class OrcProjeto extends Model
     protected $primaryKey = 'id';
     protected $guarded = [];
     public $timestamps = false;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+        });
+    }
 }

@@ -79,4 +79,11 @@ class AtividadeInventario extends Model
             'carga efetuada',
         ], true);
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Almoxarifado;
 
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
+use App\Filament\Support\MoneyInput;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
@@ -19,7 +20,6 @@ use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -111,28 +111,16 @@ class MovimentacaoEstoqueResource extends Resource
                             ->placeholder('0,00')
                             ->required(),
 
-                        TextInput::make('preco_unitario')
+                        MoneyInput::make('preco_unitario')
                             ->label('Preço Unitário')
                             ->required()
                             ->columnSpan(1)
-                            ->inputMode('decimal')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (float|int|string|null $state): ?string => static::formatarValorMonetario($state))
-                            ->dehydrateStateUsing(fn (float|int|string|null $state): ?string => static::normalizarValorMonetario($state))
                             ->placeholder('0,00'),
 
-                        TextInput::make('valor_total')
+                        MoneyInput::make('valor_total')
                             ->label('Valor Total')
                             ->required()
                             ->columnSpan(1)
-                            ->inputMode('decimal')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (float|int|string|null $state): ?string => static::formatarValorMonetario($state))
-                            ->dehydrateStateUsing(fn (float|int|string|null $state): ?string => static::normalizarValorMonetario($state))
                             ->placeholder('0,00')
                             ->helperText('Pode ser preenchido manualmente ou calculado automaticamente.'),
                     ])
@@ -152,26 +140,14 @@ class MovimentacaoEstoqueResource extends Resource
                             ->inputMode('decimal')
                             ->placeholder('0,00'),
 
-                        TextInput::make('preco_medio_estoque')
+                        MoneyInput::make('preco_medio_estoque')
                             ->label('Preço Médio Estoque')
                             ->required()
-                            ->inputMode('decimal')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (float|int|string|null $state): ?string => static::formatarValorMonetario($state))
-                            ->dehydrateStateUsing(fn (float|int|string|null $state): ?string => static::normalizarValorMonetario($state))
                             ->placeholder('0,00'),
 
-                        TextInput::make('valor_total_estoque')
+                        MoneyInput::make('valor_total_estoque')
                             ->label('Valor Total Estoque')
                             ->required()
-                            ->inputMode('decimal')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (float|int|string|null $state): ?string => static::formatarValorMonetario($state))
-                            ->dehydrateStateUsing(fn (float|int|string|null $state): ?string => static::normalizarValorMonetario($state))
                             ->placeholder('0,00'),
                     ])
                     ->columns([
@@ -220,31 +196,6 @@ class MovimentacaoEstoqueResource extends Resource
                         'md' => 2,
                     ]),
             ]);
-    }
-
-    protected static function formatarValorMonetario(float|int|string|null $valor): ?string
-    {
-        if ($valor === null || $valor === '') {
-            return null;
-        }
-
-        return number_format((float) static::normalizarValorMonetario($valor), 2, ',', '');
-    }
-
-    protected static function normalizarValorMonetario(float|int|string|null $valor): ?string
-    {
-        if ($valor === null || $valor === '') {
-            return null;
-        }
-
-        $valor = preg_replace('/[^\d,.-]/', '', (string) $valor) ?? '0';
-
-        if (str_contains($valor, ',')) {
-            $valor = str_replace('.', '', $valor);
-            $valor = str_replace(',', '.', $valor);
-        }
-
-        return number_format((float) $valor, 2, '.', '');
     }
 
     public static function table(Table $table): Table

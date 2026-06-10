@@ -49,14 +49,9 @@ class Lotacao extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model): void {
-            $model->date_time = $model->date_time ?? now();
-            $model->usuario = static::resolveAuthenticatedEgapUserId();
-        });
-
-        static::updating(function (self $model): void {
+        static::saving(function (self $model): void {
             $model->date_time = now();
-            $model->usuario = static::resolveAuthenticatedEgapUserId();
+            $model->usuario = auth()->id();
         });
     }
 

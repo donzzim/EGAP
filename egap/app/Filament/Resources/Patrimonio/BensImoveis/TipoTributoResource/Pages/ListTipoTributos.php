@@ -14,10 +14,7 @@ class ListTipoTributos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Novo')
-                ->modalHeading('Adicionar Tipo de Tributo')
-                ->modalWidth('md')
-                ->createAnother(false),
+                ->label('Novo'),
         ];
     }
 }

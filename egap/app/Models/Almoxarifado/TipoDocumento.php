@@ -23,11 +23,11 @@ class TipoDocumento extends Model
         return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->Usuario = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
+            $model->atualizado_por = auth()->id();
         });
     }
 }

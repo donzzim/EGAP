@@ -44,4 +44,12 @@ class ProMaterial extends Model
     {
         return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+        });
+    }
 }

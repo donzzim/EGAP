@@ -10,12 +10,11 @@ class EditTipoTributo extends EditRecord
 {
     protected static string $resource = TipoTributoResource::class;
 
-    protected ?string $heading = 'Editar Tipo de Tributo';
-
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

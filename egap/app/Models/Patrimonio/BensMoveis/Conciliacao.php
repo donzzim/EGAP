@@ -28,10 +28,9 @@ class Conciliacao extends Model
     public function fornecedorRef(): BelongsTo { return $this->belongsTo(Fornecedores::class, 'fornecedor', 'id'); }
     public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'Usuario', 'id'); }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->Usuario = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
         });
     }

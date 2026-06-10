@@ -18,7 +18,7 @@ class SituacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Situacao::class;
 
@@ -37,7 +37,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\TextInput::make('Descricao')
-                            ->label('Descricao')
+                            ->label('Descrição')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
@@ -48,14 +48,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('Id', 'Id', isFirstColumn: true)
-                    ->width('80px'),
-                TableColumns::text('Descricao', 'Descricao'),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+                TableColumns::text('Id', '#', isFirstColumn: true),
+                TableColumns::text('Descricao', 'Descrição'),
+            ]);
     }
 
     public static function getPages(): array

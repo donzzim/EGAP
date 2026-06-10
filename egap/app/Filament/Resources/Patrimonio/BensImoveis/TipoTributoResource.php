@@ -18,7 +18,7 @@ class TipoTributoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TipoTributo::class;
 
@@ -48,12 +48,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('descricao', 'Descrição', isFirstColumn: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+                TableColumns::text('id', '#', isFirstColumn: true),
+                TableColumns::text('descricao', 'Descrição'),
+            ]);
     }
 
     public static function getPages(): array

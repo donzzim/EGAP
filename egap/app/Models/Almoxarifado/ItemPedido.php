@@ -124,16 +124,8 @@ class ItemPedido extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
-            if (blank($model->date_time)) {
-                $model->date_time = now();
-            }
-        });
-
-        static::updating(function (self $model) {
-            if (blank($model->date_time)) {
-                $model->date_time = now();
-            }
+        static::saving(function (self $model): void {
+            $model->date_time = now();
         });
     }
 }

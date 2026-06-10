@@ -9,7 +9,7 @@ class Cedido extends Model
     //protected $connection = 'egap';
     protected $table = 'imo_cedidos';
     protected $primaryKey = 'id';
-    protected $guarded = [];
+    protected $guarded = ['id'];
     public $timestamps = false;
 
     protected $casts = [
@@ -34,5 +34,13 @@ class Cedido extends Model
     public function tipoTributoRelacaoref()
     {
         return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\TipoTributo::class, 'tipo_tributo', 'id');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+        });
     }
 }

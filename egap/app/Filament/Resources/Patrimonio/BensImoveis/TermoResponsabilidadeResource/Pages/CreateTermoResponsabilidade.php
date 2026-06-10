@@ -9,5 +9,4 @@ class CreateTermoResponsabilidade extends CreateRecord
 {
     protected static string $resource = TermoResponsabilidadeResource::class;
 
-    protected ?string $heading = 'Adicionar Termos de Responsabilidade';
 }

@@ -137,15 +137,11 @@ class BemMovel extends Model
     public function elementodespesaRel(): BelongsTo { return $this->elementoDespesaRef(); }
     public function atualizado_por(): BelongsTo { return $this->usuarioRef(); }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->Usuario = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
-        });
-        static::updating(function ($model) {
             $model->Usuario = auth()->id();
-            $model->date_time = now();
         });
     }
 }

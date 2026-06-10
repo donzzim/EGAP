@@ -102,6 +102,7 @@ class CedidoResource extends Resource
                                             ->label('Situação')
                                             ->options([
                                                 'Vigente' => 'Vigente',
+                                                'Encerrado' => 'Encerrado',
                                             ])
                                             ->placeholder('Selecione a situação'),
 
@@ -266,19 +267,15 @@ class CedidoResource extends Resource
                     ->limit(35)
                     ->tooltip(fn ($record): ?string => $record->condicao_uso),
                 TableColumns::text('num_processo', 'Nº Processo')
-                    ->badge()
-                    ->placeholder('-'),
+                    ->badge(),
                 TableColumns::text('situacao', 'Situação')
-                    ->badge()
-                    ->placeholder('-'),
+                    ->badge(),
                 TableColumns::date('data_assinatura', 'Assinatura'),
                 TableColumns::date('vencimento', 'Vencimento'),
                 TableColumns::text('vigencia', 'Vigência')
-                    ->badge()
-                    ->placeholder('-'),
+                    ->badge(),
                 TableColumns::text('retribuicao', 'Retribuição')
-                    ->badge()
-                    ->placeholder('-'),
+                    ->badge(),
             ])
             ->filters([
 

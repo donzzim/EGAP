@@ -19,7 +19,7 @@ class CidadesResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Cidades::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -32,8 +32,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
         return $form
             ->schema([
                 Forms\Components\TextInput::make('descricao')
+                    ->label('Nome da Cidade')
                     ->maxLength(255)
-                    ->default(null),
+                    ->required(),
             ]);
     }
     public static function table(Table $table): Table
@@ -42,25 +43,15 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
             ->columns([
                 TableColumns::text('id', '#', isFirstColumn: true),
                 TableColumns::text('descricao', 'Cidade')
-            ])
-            ->filters([
-                //
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListCidades::route('/'),
-            //'create' => Pages\CreateCidades::route('/create'),
-            //'edit' => Pages\EditCidades::route('/{record}/edit'),
+            'create' => Pages\CreateCidades::route('/create'),
+            'edit' => Pages\EditCidades::route('/{record}/edit'),
         ];
     }
 }

@@ -36,11 +36,11 @@ class DescricaoDetalhada extends Model
         'date_time' => 'datetime',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->atualizado_por = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
+            $model->atualizado_por = auth()->id();
         });
     }
 

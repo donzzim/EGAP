@@ -4,13 +4,13 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\Reavaliacao;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Pages\SubNavigationPosition;
@@ -34,15 +34,6 @@ class ReavaliacaoResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $moneyInput = fn (string $field, string $label) => Forms\Components\TextInput::make($field)
-            ->label($label)
-            ->prefix('R$')
-            ->placeholder('0,00')
-            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-            ->stripCharacters('.')
-            ->formatStateUsing(fn ($state): ?string => filled($state) ? number_format((float) $state, 2, ',', '') : null)
-            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? str_replace(',', '.', $state) : null);
-
         $monthsInput = fn (string $field, string $label) => Forms\Components\TextInput::make($field)
             ->label($label)
             ->numeric()
@@ -92,7 +83,8 @@ class ReavaliacaoResource extends Resource
                                             ->displayFormat('d/m/Y')
                                             ->native(false),
 
-                                        $moneyInput('valor_reavaliacao', 'Valor da Reavaliação'),
+                                        MoneyInput::make('valor_reavaliacao')
+                                            ->label('Valor da Reavaliação'),
 
                                         Forms\Components\TextInput::make('vida_util_reavaliacao')
                                             ->label('Vida Útil da Reavaliação')
@@ -100,7 +92,8 @@ class ReavaliacaoResource extends Resource
                                             ->suffix('meses')
                                             ->placeholder('0'),
 
-                                        $moneyInput('ajuste_contabil', 'Ajuste Contábil'),
+                                        MoneyInput::make('ajuste_contabil')
+                                            ->label('Ajuste Contábil'),
 
                                         Forms\Components\Textarea::make('observacao')
                                             ->label('Observação')
@@ -117,8 +110,10 @@ class ReavaliacaoResource extends Resource
                                 Forms\Components\Section::make('Valores de Referência')
                                     ->icon('heroicon-o-banknotes')
                                     ->schema([
-                                        $moneyInput('valor_mercado', 'Valor de Mercado'),
-                                        $moneyInput('valor_aquisicao', 'Valor de Aquisição'),
+                                        MoneyInput::make('valor_mercado')
+                                            ->label('Valor de Mercado'),
+                                        MoneyInput::make('valor_aquisicao')
+                                            ->label('Valor de Aquisição'),
                                     ])
                                     ->columns(2),
 
@@ -158,29 +153,19 @@ class ReavaliacaoResource extends Resource
                                 Forms\Components\Section::make('Controle')
                                     ->icon('heroicon-o-clipboard-document-list')
                                     ->schema([
-                                        Forms\Components\Select::make('atualizado_por')
-                                            ->label('Atualizado por')
-                                            ->relationship('atualizadoPorRelacaoref', 'name')
-                                            ->default(fn () => auth()->id())
-                                            ->searchable()
-                                            ->preload()
-                                            ->placeholder('Selecione o usuário'),
-
                                         Forms\Components\DateTimePicker::make('data_disponibilizacao')
                                             ->label('Data de Disponibilização')
                                             ->default(now())
+                                            ->columnSpan(1)
                                             ->displayFormat('d/m/Y H:i:s')
                                             ->native(false),
 
                                         Forms\Components\DateTimePicker::make('data_referencia')
                                             ->label('Data de Referência')
                                             ->default(now())
+                                            ->columnSpan(1)
                                             ->displayFormat('d/m/Y H:i:s')
                                             ->native(false),
-
-                                        Forms\Components\DateTimePicker::make('date_time')
-                                            ->label('Atualizado em')
-                                            ->hidden(),
                                     ])
                                     ->columns(3),
                             ]),

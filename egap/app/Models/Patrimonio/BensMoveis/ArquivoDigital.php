@@ -48,26 +48,10 @@ class ArquivoDigital extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
-
-            if (blank($model->date_time)) {
-                $model->date_time = now();
-            }
-
+        static::saving(function (self $model): void {
+            $model->date_time = now();
             $model->atualizado_em = now();
-
-            if (filament()->auth()->check()) {
-                $model->atualizado_por = filament()->auth()->id();
-            }
-        });
-
-        static::updating(function (self $model) {
-
-            $model->atualizado_em = now();
-
-            if (filament()->auth()->check()) {
-                $model->atualizado_por = filament()->auth()->id();
-            }
+            $model->atualizado_por = auth()->id();
         });
     }
 }

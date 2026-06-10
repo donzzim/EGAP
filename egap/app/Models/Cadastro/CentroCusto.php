@@ -16,13 +16,9 @@ class CentroCusto extends Model
         'descricao',
     ];
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->date_time = now();
-        });
-
-        static::updating(function ($model) {
+        static::saving(function (self $model): void {
             $model->date_time = now();
         });
     }

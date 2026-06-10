@@ -11,6 +11,7 @@ class Depreciacao extends Model
     //protected $connection = 'egap';
     protected $table = 'imo_depreciacao';
     protected $primaryKey = 'Id';
+    public $timestamps = false;
     protected $guarded = ['Id'];
 
     public function imovelRelacaoref() : BelongsTo
@@ -21,5 +22,12 @@ class Depreciacao extends Model
     public function obraRelacaoref() : BelongsTo
     {
         return $this->belongsTo(Obra::class, 'id_obra', 'id');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
     }
 }

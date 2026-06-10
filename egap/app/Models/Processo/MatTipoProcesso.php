@@ -17,4 +17,11 @@ class MatTipoProcesso extends Model
     {
         return $this->hasMany(Processo::class, 'id_tipo_processo', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

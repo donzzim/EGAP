@@ -85,7 +85,17 @@ class BemImovel extends Model
 
     public function tributosRelacaoRef()
     {
-        return $this->hasMany(Tributo::class, 'Id_imovel', 'Id');
+        return $this->hasMany(Tributo::class, 'Id_imovel', 'Id')
+            ->with('tipoTributoRelacaoref')
+            ->orderBy('vencimento')
+            ->orderBy('Id');
+    }
+
+    public function depreciacoesRelacaoRef()
+    {
+        return $this->hasMany(Depreciacao::class, 'Id_imovel', 'Id')
+            ->orderByDesc('data_calculo')
+            ->orderByDesc('item');
     }
 
     public function cedidosRelacaoRef()

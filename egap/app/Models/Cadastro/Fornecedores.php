@@ -32,11 +32,8 @@ class Fornecedores extends Model
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
-            if (auth()->id() !== null) {
-                $model->Usuario = auth()->id();
-            }
-
             $model->date_time = now();
+            $model->Usuario = auth()->id();
         });
     }
 }

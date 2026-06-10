@@ -4,15 +4,31 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
+use App\Filament\Support\MoneyInput;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\BemImovel;
+use App\Models\Patrimonio\BensImoveis\Depreciacao;
+use Carbon\CarbonImmutable;
 use Filament\Forms;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Form;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\Grid as InfolistGrid;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section as InfolistSection;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use Throwable;
 
 class BemImovelResource extends Resource
 {
@@ -21,555 +37,671 @@ class BemImovelResource extends Resource
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemImovel::class;
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $recordTitleAttribute = 'descricao';
     protected static ?string $modelLabel = 'Bem Imóvel';
-    protected static ?string $pluralModelLabel = 'Administração dos bens imóveis';
+    protected static ?string $pluralModelLabel = 'Administração dos Bens Imóveis';
     protected static ?string $navigationLabel = 'Administração dos bens imóveis';
     protected static ?string $navigationGroup = 'Bens Imóveis';
     protected static ?int $navigationSort = 1;
     protected static ?string $slug = 'bens-imoveis/adm-bens-imoveis';
 
+    // -------------------------------------------------------------------------
+    // FORM
+    // -------------------------------------------------------------------------
+
     public static function form(Form $form): Form
     {
-        return $form
+        return $form->schema([
+            Forms\Components\Tabs::make('TabsBemImovel')
+                ->tabs([
+                    self::tabImovel(),
+                    self::tabLocalizacao(),
+                    self::tabDescricao(),
+                    self::tabContabil(),
+                    self::tabReavaliacao(),
+                    self::tabSituacao(),
+                ])
+                ->columnSpanFull(),
+        ]);
+    }
+
+    // ---- Tabs ----------------------------------------------------------------
+
+    private static function tabImovel(): Forms\Components\Tabs\Tab
+    {
+        return Forms\Components\Tabs\Tab::make('Imóvel')
+            ->icon('heroicon-o-building-office-2')
             ->schema([
-                Tabs::make('Tabs')
-                    ->columnSpanFull()
-                    ->tabs([
-                        Tabs\Tab::make('1. Imóveis')->schema([
-                            Grid::make(3)->schema([
-                                Forms\Components\TextInput::make('num_registro')->label('Núm. registro'),
-                                Forms\Components\DatePicker::make('data_construcao')->label('Data construção')->displayFormat('d/m/Y')->native(false),
-                                Forms\Components\TextInput::make('valor_historico_escritura')->label('Valor histórico escritura')->numeric(),
+                self::section('Identificação', 'heroicon-o-identification', [
+                    self::text('num_registro', 'Núm. registro')->columnSpan(3),
+                    self::date('data_construcao', 'Data de construção')->columnSpan(3),
+                    self::text('num_matricula', 'Matrícula')->columnSpan(3),
+                    self::select('Id_setores', 'Setor', 'setoresRelacaoRef', 'Setor')->columnSpan(6),
+                    self::select('id_responsavel', 'Responsável', 'responsavelRelacaoRef', 'descricao')->columnSpan(6),
+                ])->description('Dados principais de registro e responsabilidade do imóvel.')->columns(12),
 
-                                Forms\Components\TextInput::make('valor_historico_iptu')->label('Valor historico IPTU')->numeric(),
-                                Forms\Components\TextInput::make('valor_historico_1a_avaliacao')->label('Valor historico 1a avaliacao')->numeric(),
-                                Forms\Components\TextInput::make('criterio_valor_historico')->label('Critério valor histórico'),
+                self::section('Processos', 'heroicon-o-folder-open', [
+                    self::text('num_processo_tj', 'Processo TJ'),
+                    self::text('num_processo_seger', 'Processo SEGER'),
+                    self::select('num_processo_adm', 'Processo Administrativo', 'processoAdmRelacaoRef', 'num_processo'),
+                ])->description('Vinculações processuais relacionadas ao imóvel.')->columns(3),
 
-                                Forms\Components\TextInput::make('criterio_valor_atualizado')->label('Critério valor atualizado'),
-
-                                Forms\Components\Select::make('id_setores')
-                                    ->label('Setores')
-                                    ->relationship('setoresRelacaoref', 'Setor')
-                                    ->searchable()
-                                    ->optionsLimit(50),
-
-                                Forms\Components\Select::make('id_responsavel')
-                                    ->label('Responsável')
-                                    ->relationship('responsavelRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->optionsLimit(50),
-
-                                Forms\Components\TextInput::make('num_processo_tj')->label('Processo TJ'),
-                                Forms\Components\TextInput::make('num_processo_seger')->label('Processo SEGER'),
-                                Forms\Components\TextInput::make('num_matricula')->label('Matrícula'),
-
-                                Forms\Components\Select::make('num_processo_adm')
-                                    ->label('Proc Administrativo')
-                                    ->relationship('processoAdmRelacaoref', 'num_processo')
-                                    ->searchable()
-                                    ->optionsLimit(50),
-                            ])
-                        ]),
-
-                        Tabs\Tab::make('2. Localização')->schema([
-                            Grid::make(2)->schema([
-                                Forms\Components\TextInput::make('end_logradouro')->label('Logradouro'),
-                                Forms\Components\TextInput::make('end_numero')->label('Número'),
-                                Forms\Components\TextInput::make('end_cidade')->label('Cidade'),
-                                Forms\Components\TextInput::make('end_bairro')->label('Bairro'),
-                                Forms\Components\TextInput::make('end_estado')->label('Estado'),
-                                Forms\Components\TextInput::make('end_cep')->label('CEP'),
-                                Forms\Components\TextInput::make('end_compl_endereco')->label('Complemento'),
-                                Forms\Components\TextInput::make('end_latitude')->label('Latitude'),
-                                Forms\Components\TextInput::make('end_longitude')->label('Longitude'),
-
-                                Forms\Components\Select::make('id_cidade')
-                                    ->label('Cidade (Select)')
-                                    ->relationship('cidadeRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->optionsLimit(50),
-
-                                Forms\Components\Select::make('id_ciduf')
-                                    ->label('Cidade/UF')
-                                    ->relationship('cidufRelacaoref', 'cd_uf')
-                                    ->searchable()
-                                    ->optionsLimit(50),
-                            ])
-                        ]),
-
-                        Tabs\Tab::make('3. Descrição do Imóvel')->schema([
-                            Grid::make(2)->schema([
-                                Forms\Components\TextInput::make('descricao')->label('Descrição')->columnSpanFull(),
-                                Forms\Components\TextInput::make('inscricao_generica')->label('Inscricao genérica'),
-                                Forms\Components\TextInput::make('area')->label('Área')->numeric(),
-                                Forms\Components\TextInput::make('area_terreno_total')->label('Área terreno total')->numeric(),
-                                Forms\Components\TextInput::make('area_edificacao')->label('Área edificação')->numeric(),
-
-                                Forms\Components\Select::make('id_tipoimovel')
-                                    ->label('Tipo Imóvel')
-                                    ->relationship('tipoImovelRelacaoref', 'desc_tipo_imovel')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\Select::make('id_denominacao')
-                                    ->label('Denominação')
-                                    ->relationship('denominacaoRelacaoref', 'denominacao')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\Select::make('id_tipodebem')
-                                    ->label('Tipo de bem')
-                                    ->relationship('tipoDeBemRelacaoref', 'Descricao')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\TextInput::make('inscricao_fiscal')->label('Inscricao Fiscal'),
-                                Forms\Components\TextInput::make('inscricao_imobiliaria')->label('Inscricao Imobiliária'),
-                            ])
-                        ]),
-
-                        Tabs\Tab::make('4. Contábil')->schema([
-                            Grid::make(2)->schema([
-                                Forms\Components\DatePicker::make('data_aquisicao')->label('Data aquisição')->displayFormat('d/m/Y')->native(false),
-                                Forms\Components\DatePicker::make('data_incorporacao')->label('Data incorporação')->displayFormat('d/m/Y')->native(false),
-                                Forms\Components\TextInput::make('vida_util')->label('Vida Útil'),
-                                Forms\Components\DatePicker::make('data_ingresso_contabil')->label('Data ingresso contábil')->displayFormat('d/m/Y')->native(false),
-                                Forms\Components\TextInput::make('idade_aparente_anos')->label('Idade Aparente (anos)')->numeric(),
-
-                                Forms\Components\Select::make('id_planocontas')
-                                    ->label('Conta Contábil')
-                                    ->relationship('planoContasRelacaoref', 'titulo')
-                                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->codigo} / {$record->titulo}")
-                                    ->searchable(['codigo', 'titulo'])
-                                    ->optionsLimit(50),
-
-                                Forms\Components\Select::make('id_elementodespesa')
-                                    ->label('Elemento Despesa')
-                                    ->relationship('elementoDespesaRelacaoref', 'DescricaodaClasse')
-                                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->CodigodaClasse} - {$record->DescricaodaClasse}")
-                                    ->searchable(['CodigodaClasse', 'DescricaodaClasse'])
-                                    ->optionsLimit(50),
-
-                                Forms\Components\TextInput::make('vida_util_remanescente')->label('Vida Útil Remanescente'),
-                                Forms\Components\TextInput::make('depreciacao_mensal')->label('Depreciacao Mensal')->numeric(),
-                                Forms\Components\TextInput::make('depreciacao_acumulada')->label('Depreciacao Acumulada')->numeric(),
-                                Forms\Components\TextInput::make('valor_liquido_contabil')->label('Valor Líquido Contabil')->numeric(),
-                                Forms\Components\TextInput::make('valor_residual')->label('Valor Residual')->numeric(),
-                            ])
-                        ]),
-
-                        Tabs\Tab::make('5. Reavaliação')->schema([
-                            Grid::make(2)->schema([
-                                Forms\Components\DatePicker::make('data_reavaliacao')->label('Data reavaliação')->displayFormat('d/m/Y')->native(false),
-                                Forms\Components\TextInput::make('valor_atualizado')->label('Valor atualizado')->numeric(),
-                                Forms\Components\TextInput::make('valor_reavaliado')->label('Valor reavaliado')->numeric(),
-                            ])
-                        ]),
-
-                        Tabs\Tab::make('6. Situação')->schema([
-                            Grid::make(2)->schema([
-                                Forms\Components\Select::make('id_situacao')
-                                    ->label('Conta')
-                                    ->relationship('situacaoRelacaoref', 'Descricao')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\Select::make('id_condicaouso')
-                                    ->label('Condição de Uso')
-                                    ->relationship('condicaoUsoRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\Select::make('id_estadoconservacao')
-                                    ->label('Estado de conservação')
-                                    ->relationship('estadoConservacaoRelacaoref', 'descEstadoConservacao')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\Select::make('id_entradasaida')
-                                    ->label('Entrada/Saída')
-                                    ->relationship('entradaSaidaRelacaoref', 'tipo')
-                                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->tipo} - {$record->descricao}")
-                                    ->searchable(['tipo', 'descricao'])
-                                    ->preload(),
-
-                                Forms\Components\DatePicker::make('data_baixa')->label('Data Baixa')->displayFormat('d/m/Y')->native(false),
-                                Forms\Components\TextInput::make('processo_baixa')->label('Processo de baixa'),
-                                Forms\Components\Textarea::make('observacao')->label('Observação')->columnSpanFull(),
-                                Forms\Components\DatePicker::make('data_situacao')->label('Data Transf. Ativo')->displayFormat('d/m/Y')->native(false),
-                            ])
-                        ]),
-                    ])
+                self::section('Valores históricos', 'heroicon-o-banknotes', [
+                    MoneyInput::make('valor_historico_escritura')->label('Valor histórico da escritura'),
+                    MoneyInput::make('valor_historico_iptu')->label('Valor histórico do IPTU'),
+                    MoneyInput::make('valor_historico_1a_avaliacao')->label('Valor histórico da 1ª avaliação'),
+                    self::text('criterio_valor_historico', 'Critério do valor histórico')->columnSpan(6),
+                    self::text('criterio_valor_atualizado', 'Critério do valor atualizado')->columnSpan(6),
+                ])->description('Critérios e valores históricos usados na composição patrimonial.')->columns(12),
             ]);
     }
 
+    private static function tabLocalizacao(): Forms\Components\Tabs\Tab
+    {
+        return Forms\Components\Tabs\Tab::make('Localização')
+            ->icon('heroicon-o-map-pin')
+            ->schema([
+                self::section('Endereço', 'heroicon-o-map', [
+                    self::text('end_logradouro', 'Logradouro')->columnSpan(7),
+                    self::text('end_numero', 'Número')->columnSpan(2),
+                    self::text('end_cep', 'CEP')->columnSpan(3),
+                    self::text('end_bairro', 'Bairro')->columnSpan(4),
+                    self::text('end_cidade', 'Cidade')->columnSpan(4),
+                    self::text('end_estado', 'Estado')->maxLength(2)->columnSpan(2),
+                    self::text('end_compl_endereco', 'Complemento')->columnSpanFull(),
+                ])->columns(12),
+
+                self::section('Referências geográficas', 'heroicon-o-globe-alt', [
+                    self::text('end_latitude', 'Latitude'),
+                    self::text('end_longitude', 'Longitude'),
+                    self::select('id_cidade', 'Cidade cadastrada', 'cidadeRelacaoRef', 'descricao'),
+                    self::select('id_ciduf', 'Cidade/UF', 'cidufRelacaoRef', 'cd_uf'),
+                ])->columns(4),
+            ]);
+    }
+
+    private static function tabDescricao(): Forms\Components\Tabs\Tab
+    {
+        return Forms\Components\Tabs\Tab::make('Descrição')
+            ->icon('heroicon-o-document-text')
+            ->schema([
+                self::section('Descrição do imóvel', 'heroicon-o-home-modern', [
+                    self::text('descricao', 'Descrição')->columnSpanFull(),
+                    self::text('inscricao_generica', 'Inscrição genérica')->columnSpan(4),
+                    self::text('inscricao_fiscal', 'Inscrição fiscal')->columnSpan(4),
+                    self::text('inscricao_imobiliaria', 'Inscrição imobiliária')->columnSpan(4),
+                ])->columns(12),
+
+                self::section('Classificação', 'heroicon-o-squares-2x2', [
+                    self::select('Id_tipoimovel', 'Tipo de imóvel', 'tipoImovelRelacaoRef', 'desc_tipo_imovel'),
+                    self::select('id_denominacao', 'Denominação', 'denominacaoRelacaoRef', 'denominacao'),
+                    self::select('Id_tipodebem', 'Tipo de bem', 'tipoDeBemRelacaoRef', 'Descricao'),
+                ])->columns(3),
+
+                self::section('Áreas', 'heroicon-o-arrows-pointing-out', [
+                    self::number('area', 'Área')->suffix('m²'),
+                    self::number('area_terreno_total', 'Área do terreno total')->suffix('m²'),
+                    self::number('area_edificacao', 'Área de edificação')->suffix('m²'),
+                ])->columns(3),
+            ]);
+    }
+
+    private static function tabContabil(): Forms\Components\Tabs\Tab
+    {
+        return Forms\Components\Tabs\Tab::make('Contábil')
+            ->icon('heroicon-o-calculator')
+            ->schema([
+                self::section('Classificação contábil', 'heroicon-o-clipboard-document-list', [
+                    self::select('id_planocontas', 'Conta contábil', 'planoContasRelacaoRef', 'titulo')
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->codigo} / {$record->titulo}")
+                        ->searchable(['codigo', 'titulo'])
+                        ->columnSpan(6),
+                    self::select('id_elementodespesa', 'Elemento de despesa', 'elementoDespesaRelacaoRef', 'DescricaodaClasse')
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->CodigodaClasse} - {$record->DescricaodaClasse}")
+                        ->searchable(['CodigodaClasse', 'DescricaodaClasse'])
+                        ->columnSpan(6),
+                ])->columns(12),
+
+                self::section('Datas e vida útil', 'heroicon-o-calendar-days', [
+                    self::date('data_aquisicao', 'Data de aquisição'),
+                    self::date('data_incorporacao', 'Data de incorporação'),
+                    self::date('data_ingresso_contabil', 'Data de ingresso contábil'),
+                    self::number('vida_util', 'Vida útil')->suffix('meses'),
+                    self::number('vida_util_remanescente', 'Vida útil remanescente')->suffix('meses'),
+                    self::number('idade_aparente_anos', 'Idade aparente')->suffix('anos'),
+                ])->columns(3),
+
+                self::section('Valores contábeis', 'heroicon-o-banknotes', [
+                    MoneyInput::make('depreciacao_mensal')->label('Depreciação mensal'),
+                    MoneyInput::make('depreciacao_acumulada')->label('Depreciação acumulada'),
+                    MoneyInput::make('valor_liquido_contabil')->label('Valor líquido contábil'),
+                    MoneyInput::make('valor_residual')->label('Valor residual'),
+                ])->columns(4),
+            ]);
+    }
+
+    private static function tabReavaliacao(): Forms\Components\Tabs\Tab
+    {
+        return Forms\Components\Tabs\Tab::make('Reavaliação')
+            ->icon('heroicon-o-currency-dollar')
+            ->schema([
+                self::section('Última reavaliação', 'heroicon-o-arrow-path', [
+                    self::date('data_reavaliacao', 'Data da reavaliação'),
+                    MoneyInput::make('valor_atualizado')->label('Valor atualizado'),
+                    MoneyInput::make('valor_reavaliado')->label('Valor reavaliado'),
+                ])->columns(3),
+            ]);
+    }
+
+    private static function tabSituacao(): Forms\Components\Tabs\Tab
+    {
+        return Forms\Components\Tabs\Tab::make('Situação')
+            ->icon('heroicon-o-check-circle')
+            ->schema([
+                self::section('Estado atual', 'heroicon-o-check-badge', [
+                    self::select('Id_situacao', 'Situação', 'situacaoRelacaoRef', 'Descricao'),
+                    self::select('id_condicaouso', 'Condição de uso', 'condicaoUsoRelacaoRef', 'descricao'),
+                    self::select('Id_estadoconservacao', 'Estado de conservação', 'estadoConservacaoRelacaoRef', 'descEstadoConservacao'),
+                    self::select('id_entradasaida', 'Entrada/Saída', 'entradaSaidaRelacaoRef', 'tipo')
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->tipo} - {$record->descricao}")
+                        ->searchable(['tipo', 'descricao']),
+                ])->columns(4),
+
+                self::section('Baixa e observações', 'heroicon-o-archive-box-x-mark', [
+                    self::date('data_baixa', 'Data da baixa'),
+                    self::text('processo_baixa', 'Processo de baixa'),
+                    self::date('data_situacao', 'Data de transferência do ativo'),
+                    self::textarea('observacao', 'Observação')->columnSpanFull(),
+                ])->columns(3),
+            ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // TABLE
+    // -------------------------------------------------------------------------
+
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
+            ->deferLoading()
+            ->defaultSort('Id', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('num_registro')
-                    ->label('Núm. registro')
-                    ->searchable()
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('setoresRelacaoRef.Setor')
-                    ->label('Setores')
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('responsavelRelacaoRef.descricao')
-                    ->label('Responsável')
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('num_processo_tj')
-                    ->label('Processo TJ')
-                    ->searchable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('num_processo_seger')
-                    ->label('Processo SEGER')
-                    ->searchable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('num_matricula')
-                    ->label('Matrícula')
-                    ->searchable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('end_cidade')
-                    ->label('Cidade')
-                    ->searchable()
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('cidufRelacaoref.cd_uf')
-                    ->label('Cidade/UF')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->searchable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('tipoImovelRelacaoref.desc_tipo_imovel')
-                    ->label('Tipo Imóvel')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('denominacaoRelacaoref.denominacao')
-                    ->label('Denominação')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('tipoDeBemRelacaoref.Descricao')
-                    ->label('Tipo de bem'),
-
-                Tables\Columns\TextColumn::make('data_aquisicao')
-                    ->label('Data aquisição')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('valor_reavaliado')
-                    ->label('Valor reavaliado')
-                    ->money('BRL')
-                    ->sortable()
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('situacaoRelacaoref.Descricao')
-                    ->label('Conta')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('condicaoUsoRelacaoref.descricao')
-                    ->label('Condição de Uso/Forma de Aquisição')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('estadoConservacaoRelacaoref.descEstadoConservacao')
-                    ->label('Estado de conservação')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('id_entradasaida')
-                    ->label('Entrada/Saída')
-                    ->formatStateUsing(fn ($record) => $record->entradaSaidaRelacaoref
-                        ? "{$record->entradaSaidaRelacaoref->tipo} - {$record->entradaSaidaRelacaoref->descricao}"
-                        : null)
-                    ->alignCenter(),
+                TableColumns::text('Id', '#', isFirstColumn: true),
+                TableColumns::text('num_registro', 'Núm. registro')->badge(),
+                TableColumns::text('descricao', 'Descrição')
+                    ->limit(45)
+                    ->tooltip(fn ($record): ?string => $record->descricao),
+                TableColumns::text('setoresRelacaoRef.Setor', 'Setor')
+                    ->limit(35)
+                    ->tooltip(fn ($record): ?string => $record->setoresRelacaoRef?->Setor),
+                TableColumns::text('responsavelRelacaoRef.descricao', 'Responsável')
+                    ->limit(30)
+                    ->tooltip(fn ($record): ?string => $record->responsavelRelacaoRef?->descricao),
+                TableColumns::text('end_cidade', 'Cidade'),
+                TableColumns::text('cidufRelacaoRef.cd_uf', 'UF'),
+                TableColumns::text('tipoImovelRelacaoRef.desc_tipo_imovel', 'Tipo de imóvel'),
+                TableColumns::text('denominacaoRelacaoRef.denominacao', 'Denominação'),
+                TableColumns::date('data_aquisicao', 'Aquisição'),
+                TableColumns::money('valor_reavaliado', 'Valor reavaliado'),
+                TableColumns::text('situacaoRelacaoRef.Descricao', 'Situação')->badge(),
+                TableColumns::text('condicaoUsoRelacaoRef.descricao', 'Condição'),
+                TableColumns::text('estadoConservacaoRelacaoRef.descEstadoConservacao', 'Conservação'),
+                TableColumns::text('entradaSaidaRelacaoRef.tipo', 'Entrada/Saída')
+                    ->formatStateUsing(fn ($record): string => $record->entradaSaidaRelacaoRef
+                        ? "{$record->entradaSaidaRelacaoRef->tipo} - {$record->entradaSaidaRelacaoRef->descricao}"
+                        : '-'),
             ])
             ->actions([
+                Tables\Actions\EditAction::make()->tooltip('Editar')->hiddenLabel(),
+                Tables\Actions\ViewAction::make()->tooltip('Visualizar')->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()->tooltip('Excluir')->hiddenLabel(),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make()
-                        ->label('Editar')
-                        ->color('warning')
-                        ->icon('heroicon-o-pencil-square')
-                        ->modalHeading('Editar Bem Imóvel')
-                        ->modalWidth('7xl'),
-
-                    Tables\Actions\ViewAction::make()
-                        ->label('Visualizar')
-                        ->icon('heroicon-o-eye'),
-
-                    Tables\Actions\DeleteAction::make()
-                        ->label('Excluir')
-                        ->color('danger')
-                        ->icon('heroicon-o-trash'),
-
-                Tables\Actions\EditAction::make('gerenciar_tributos')
-                        ->label('Tributos')
-                        ->color('info')
-                        ->icon('heroicon-o-document-text')
-                        ->modalHeading(fn ($record) => "Gerenciar Tributos - " . $record->descricao)
-                        ->modalWidth('6xl')
-                        ->modalSubmitActionLabel('Salvar alterações')
-                        ->form([
-                            Forms\Components\Repeater::make('tributosRelacaoRef')
-                                ->relationship('tributosRelacaoRef')
-                                ->label('')
-                                ->defaultItems(0)
-                                ->addActionLabel('Adicionar novo tributo')
-                                ->collapsible()
-                                ->schema([
-                                    Forms\Components\Select::make('tipo_tributo')
-                                        ->label('Tipo do tributo')
-                                        ->relationship('tipoTributoRelacaoref', 'descricao')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required(),
-
-                                    Forms\Components\DatePicker::make('vencimento')
-                                        ->label('Vencimento')
-                                        ->displayFormat('d/m/Y')
-                                        ->native(false),
-
-                                    Forms\Components\TextInput::make('valor')
-                                        ->label('Valor')
-                                        ->numeric()
-                                        ->prefix('R$'),
-
-                                    Forms\Components\DatePicker::make('pago_em')
-                                        ->label('Pago em')
-                                        ->displayFormat('d/m/Y')
-                                        ->native(false),
-
-                                    Forms\Components\TextInput::make('valor_pago')
-                                        ->label('Valor Pago')
-                                        ->numeric()
-                                        ->prefix('R$'),
-
-                                    Forms\Components\TextInput::make('processo_pagto')
-                                        ->label('Processo Pagto'),
-
-                                    Forms\Components\Textarea::make('observacao')
-                                        ->label('Observação')
-                                        ->columnSpanFull()
-                                        ->rows(2),
-
-                                    Forms\Components\Hidden::make('atualizado_por')->default(fn () => auth()->id()),
-                                    Forms\Components\Hidden::make('date_time')->default(now()),
-                                ])
-                                ->columns(3)
-                        ]),
-
-                Tables\Actions\Action::make('abrir_ocupacoes')
+                    self::calcularDepreciacaoTableAction(),
+                    self::registroDepreciacaoTableAction(),
+                    self::tributosTableAction(),
+                    Tables\Actions\Action::make('ocupacoes_action')
                         ->label('Ocupações de Terceiros')
-                        ->color('info')
-                        ->icon('heroicon-o-map-pin')
-                        ->url(fn () => \App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource::getUrl('index'))
-                        ->openUrlInNewTab(),
-
-                Tables\Actions\EditAction::make('gerenciar_reavaliacoes')
-                    ->label('Reavaliação dos Imóveis')
-                    ->color('info')
-                    ->icon('heroicon-o-currency-dollar')
-                    ->modalHeading(fn ($record) => "Reavaliações - " . $record->descricao)
-                    ->modalWidth('7xl')
-                    ->modalSubmitActionLabel('Salvar alterações')
-                    ->form([
-                        Forms\Components\Repeater::make('reavaliacoesRelacaoRef')
-                            ->relationship('reavaliacoesRelacaoRef')
-                            ->label('')
-                            ->defaultItems(0)
-                            ->addActionLabel('Adicionar nova reavaliação')
-                            ->collapsible()
-                            ->itemLabel(fn (array $state) => 'Reavaliação: ' . (isset($state['data_reavaliacao']) ? date('d/m/Y', strtotime($state['data_reavaliacao'])) : 'Nova'))
-                            ->schema([
-                                Forms\Components\Tabs::make('Tabs')
-                                    ->tabs([
-                                        Forms\Components\Tabs\Tab::make('Reavaliação dos Imóveis')
-                                            ->schema([
-
-                                                Forms\Components\DatePicker::make('data_reavaliacao')
-                                                    ->label('Data Reavaliação')
-                                                    ->default(now())
-                                                    ->displayFormat('d/m/Y')
-                                                    ->native(false),
-
-                                                Forms\Components\TextInput::make('valor_reavaliacao')
-                                                    ->label('Valor Reavaliação')
-                                                    ->numeric()
-                                                    ->prefix('R$'),
-
-                                                Forms\Components\TextInput::make('vida_util_reavaliacao')
-                                                    ->label('Vida Útil Reavaliação')
-                                                    ->numeric(),
-
-                                                Forms\Components\Select::make('Id_estadoconservacao')
-                                                    ->label('Estado de Conservação')
-                                                    ->relationship('estadoConservacaoRelacaoref', 'descEstadoConservacao')
-                                                    ->searchable()
-                                                    ->preload(),
-
-                                                Forms\Components\TextInput::make('ajuste_contabil')
-                                                    ->label('Ajuste Contábil')
-                                                    ->numeric()
-                                                    ->prefix('R$'),
-
-                                                Forms\Components\Textarea::make('observacao')
-                                                    ->label('Observação')
-                                                    ->columnSpanFull()
-                                                    ->rows(2),
-                                            ])->columns(4),
-
-                                        Forms\Components\Tabs\Tab::make('Complemento')
-                                            ->schema([
-                                                Forms\Components\TextInput::make('valor_mercado')
-                                                    ->label('Valor Mercado')
-                                                    ->numeric()
-                                                    ->prefix('R$'),
-
-                                                Forms\Components\DateTimePicker::make('data_disponibilizacao')
-                                                    ->label('Data Disponibilização')
-                                                    ->default(now())
-                                                    ->displayFormat('d/m/Y H:i:s')
-                                                    ->native(false),
-
-                                                Forms\Components\DateTimePicker::make('data_referencia')
-                                                    ->label('Data Referência')
-                                                    ->default(now())
-                                                    ->displayFormat('d/m/Y H:i:s')
-                                                    ->native(false),
-
-                                                Forms\Components\TextInput::make('valor_aquisicao')
-                                                    ->label('Valor Aquisição')
-                                                    ->numeric()
-                                                    ->prefix('R$'),
-
-                                                Forms\Components\TextInput::make('vida_util_siafi')
-                                                    ->label('Vida Útil SIAFI')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('vida_util')
-                                                    ->label('Vida Útil')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('tempo_utilizacao_meses')
-                                                    ->label('Tempo Utilização Meses')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('vida_util_remanescente_meses')
-                                                    ->label('Vida Útil Remanescente Meses')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('vida_util_estimada_anos')
-                                                    ->label('Vida Útil Estimada Anos')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('PUB1')
-                                                    ->label('PUB1')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('PUV')
-                                                    ->label('PUV')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('FR')
-                                                    ->label('FR')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('utilizacao_bem_anos')
-                                                    ->label('Utilização Bem Anos')
-                                                    ->numeric(),
-
-                                                Forms\Components\TextInput::make('idade_aparente_anos')
-                                                    ->label('Idade Aparente Anos')
-                                                    ->numeric(),
-
-                                                Forms\Components\Hidden::make('atualizado_por')->default(fn () => auth()->id()),
-                                                Forms\Components\Hidden::make('date_time')->default(now()),
-                                            ])->columns(4),
-                                    ])
-                                    ->columnSpanFull()
-                            ])
-                    ]),
-
+                        ->icon('heroicon-o-flag'),
                     Tables\Actions\Action::make('imprimir')
                         ->label('Imprimir termo')
-                        ->color('info')
                         ->icon('heroicon-o-printer')
                         ->url(fn ($record) => "https://sistemas.tjes.jus.br/patrimonio/index.php?option=com_reports&name=termo-imovel&tmpl=component&bens={$record->Id}")
                         ->openUrlInNewTab(),
-
-                    Tables\Actions\EditAction::make('gerenciar_obras')
+                    Tables\Actions\Action::make('processos_action')
+                        ->label('Processos')
+                        ->icon('heroicon-o-folder'),
+                    Tables\Actions\Action::make('reavaliacao_action')
+                        ->label('Reavaliação dos Imóveis')
+                        ->icon('heroicon-o-forward'),
+                    Tables\Actions\Action::make('obras_action')
                         ->label('Obras e Ampliações')
-                        ->color('info')
-                        ->icon('heroicon-o-wrench-screwdriver')
-                        ->modalHeading(fn ($record) => "Obras e Ampliações - " . $record->descricao)
-                        ->modalWidth('4xl')
-                        ->modalSubmitActionLabel('Salvar alterações')
-                        ->form([
-                            Forms\Components\Repeater::make('obrasRelacaoRef')
-                                ->relationship('obrasRelacaoRef')
-                                ->label('')
-                                ->defaultItems(0)
-                                ->addActionLabel('Adicionar nova obra/ampliação')
-                                ->collapsible()
-
-                                ->itemLabel(fn (array $state) => 'Obra: ' . (isset($state['data']) ? date('d/m/Y', strtotime($state['data'])) : 'Nova'))
-                                ->schema([
-                                    Forms\Components\Textarea::make('descricao')
-                                        ->label('Descrição')
-                                        ->columnSpanFull()
-                                        ->rows(3),
-
-                                    Forms\Components\DatePicker::make('data')
-                                        ->label('Data')
-                                        ->displayFormat('d/m/Y')
-                                        ->native(false),
-
-                                    Forms\Components\TextInput::make('valor')
-                                        ->label('Valor')
-                                        ->numeric()
-                                        ->prefix('R$'),
-
-                                    Forms\Components\Hidden::make('atualizado_por')->default(fn () => auth()->id()),
-                                    Forms\Components\Hidden::make('date_time')->default(now()),
-                                ])
-                                ->columns(2)
-                        ]),
-
+                        ->icon('heroicon-o-home'),
                 ])
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->tooltip('Opções')
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
-                ]),
-            ])
-            ->selectCurrentPageOnly()
-            ->striped()
-            ->deferLoading()
-            ->emptyStateHeading('Nenhum bem imóvel encontrado');
+                    ->hiddenLabel()
+                    ->icon('heroicon-m-ellipsis-vertical'),
+            ]);
     }
+
+    // ---- Table Actions -------------------------------------------------------
+
+    private static function calcularDepreciacaoTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('calcular_depreciacao_action')
+            ->label('Calcular Depreciação')
+            ->icon('heroicon-o-calculator')
+            ->requiresConfirmation()
+            ->modalHeading('Calcular depreciação')
+            ->modalDescription('Os registros de depreciação existentes a partir da data-base serão recalculados.')
+            ->visible(fn (BemImovel $record): bool => (int) $record->id_denominacao === 1)
+            ->action(fn (BemImovel $record) => self::executarCalculoDepreciacao($record));
+    }
+
+    private static function registroDepreciacaoTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('registro_depreciacao_action')
+            ->label('Registros de Depreciação')
+            ->icon('heroicon-o-pencil-square')
+            ->modalHeading(fn (BemImovel $record): string => "Registros de depreciação do imóvel #{$record->Id}")
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalWidth('7xl')
+            ->mountUsing(fn (BemImovel $record) => $record->loadMissing('depreciacoesRelacaoRef'))
+            ->infolist(fn (BemImovel $record): array => [
+                InfolistSection::make('Resumo')
+                    ->icon('heroicon-o-calculator')
+                    ->description('Registros carregados somente ao abrir este modal.')
+                    ->schema([
+                        InfolistGrid::make(3)->schema([
+                            TextEntry::make('depreciacoes_total')
+                                ->label('Total de registros')
+                                ->state(fn (BemImovel $record): int => $record->depreciacoesRelacaoRef->count())
+                                ->badge()
+                                ->color('primary'),
+                            TextEntry::make('depreciacoes_ultima_data')
+                                ->label('Última Data')
+                                ->state(fn (BemImovel $record): string => self::formatDate($record->depreciacoesRelacaoRef->last()?->data_calculo))
+                                ->placeholder('-'),
+                            TextEntry::make('depreciacoes_primeira_data')
+                                ->label('Primeira Data')
+                                ->state(fn (BemImovel $record): string => self::formatDate($record->depreciacoesRelacaoRef->first()?->data_calculo))
+                                ->placeholder('-'),
+                        ]),
+                    ]),
+                InfolistSection::make('Depreciações')
+                    ->icon('heroicon-o-arrow-trending-down')
+                    ->schema([
+                        TextEntry::make('depreciacoes_vazias')
+                            ->hiddenLabel()
+                            ->state('Nenhum registro de depreciação relacionado a este bem imóvel.')
+                            ->badge()
+                            ->color('gray')
+                            ->visible(fn (BemImovel $record): bool => $record->depreciacoesRelacaoRef->isEmpty()),
+                        RepeatableEntry::make('depreciacoesRelacaoRef')
+                            ->hiddenLabel()
+                            ->contained(false)
+                            ->schema([
+                                InfolistGrid::make(12)->schema([
+                                    TextEntry::make('item')
+                                        ->label('Item')
+                                        ->badge()->color('gray')->placeholder('-')->columnSpan(1),
+                                    TextEntry::make('data_calculo')
+                                        ->label('Data cálculo')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('valor')
+                                        ->label('Valor base')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('vida_util')
+                                        ->label('Vida útil')
+                                        ->suffix(' meses')->badge()->color('info')->placeholder('-')->columnSpan(1),
+                                    TextEntry::make('valor_residual')
+                                        ->label('Residual')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('depreciacao_mensal')
+                                        ->label('Mensal')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('depreciacao_acumulada')
+                                        ->label('Acumulada')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->color('warning')->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('valor_liquido_contabil')
+                                        ->label('Valor líquido contábil')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->color('success')->placeholder('-')->columnSpan(3),
+                                    TextEntry::make('obraRelacaoref.descricao')
+                                        ->label('Obra/ampliação')
+                                        ->placeholder('-')->columnSpan(9),
+                                ]),
+                            ])
+                            ->visible(fn (BemImovel $record): bool => $record->depreciacoesRelacaoRef->isNotEmpty()),
+                    ]),
+            ]);
+    }
+
+    private static function tributosTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('tributos_action')
+            ->label('Tributos')
+            ->icon('heroicon-o-clipboard')
+            ->modalHeading(fn (BemImovel $record): string => "Tributos do imóvel #{$record->Id}")
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalWidth('7xl')
+            ->mountUsing(fn (BemImovel $record) => $record->loadMissing('tributosRelacaoRef'))
+            ->infolist(fn (BemImovel $record): array => [
+                InfolistSection::make('Resumo')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->description('Tributos carregados somente ao abrir este modal.')
+                    ->schema([
+                        InfolistGrid::make(3)->schema([
+                            TextEntry::make('tributos_total')
+                                ->label('Total de tributos')
+                                ->state(fn (BemImovel $record): int => $record->tributosRelacaoRef->count())
+                                ->badge()->color('primary'),
+                            TextEntry::make('tributos_valor_total')
+                                ->label('Valor previsto')
+                                ->state(fn (BemImovel $record): string => self::formatMoney($record->tributosRelacaoRef->sum('valor')))
+                                ->color('warning'),
+                            TextEntry::make('tributos_valor_pago_total')
+                                ->label('Valor pago')
+                                ->state(fn (BemImovel $record): string => self::formatMoney($record->tributosRelacaoRef->sum('valor_pago')))
+                                ->color('success'),
+                        ]),
+                    ]),
+                InfolistSection::make('Tributos')
+                    ->icon('heroicon-o-banknotes')
+                    ->schema([
+                        TextEntry::make('tributos_vazios')
+                            ->hiddenLabel()
+                            ->state('Nenhum tributo relacionado a este bem imóvel.')
+                            ->badge()->color('gray')
+                            ->visible(fn (BemImovel $record): bool => $record->tributosRelacaoRef->isEmpty()),
+                        RepeatableEntry::make('tributosRelacaoRef')
+                            ->hiddenLabel()
+                            ->contained(false)
+                            ->schema([
+                                InfolistGrid::make(12)->schema([
+                                    TextEntry::make('tipoTributoRelacaoref.descricao')
+                                        ->label('Tipo')
+                                        ->badge()->color('info')->placeholder('-')->columnSpan(3),
+                                    TextEntry::make('vencimento')
+                                        ->label('Vencimento')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('valor')
+                                        ->label('Valor')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->color('warning')->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('pago_em')
+                                        ->label('Pago em')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->placeholder('-')->columnSpan(2),
+                                    TextEntry::make('valor_pago')
+                                        ->label('Valor pago')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->color('success')->placeholder('-')->columnSpan(3),
+                                    TextEntry::make('processo_pagto')
+                                        ->label('Processo')
+                                        ->placeholder('-')->columnSpan(4),
+                                    TextEntry::make('observacao')
+                                        ->label('Observação')
+                                        ->placeholder('-')->columnSpan(8),
+                                ]),
+                            ])
+                            ->visible(fn (BemImovel $record): bool => $record->tributosRelacaoRef->isNotEmpty()),
+                    ]),
+            ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // PAGES
+    // -------------------------------------------------------------------------
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBemImovels::route('/'),
+            'index'  => Pages\ListBemImovels::route('/'),
+            'create' => Pages\CreateBemImovel::route('/create'),
+            'edit'   => Pages\EditBemImovel::route('/{record}/edit'),
         ];
+    }
+
+    // -------------------------------------------------------------------------
+    // LÓGICA DE DEPRECIAÇÃO
+    // -------------------------------------------------------------------------
+
+    /**
+     * Executa o cálculo de depreciação e envia notificação ao usuário.
+     * Separa o tratamento de erros da lógica de negócio.
+     */
+    private static function executarCalculoDepreciacao(BemImovel $record): void
+    {
+        try {
+            $total = self::calcularDepreciacao($record);
+
+            Notification::make()
+                ->title('Depreciação calculada')
+                ->body("{$total} registro(s) gerado(s).")
+                ->success()
+                ->send();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            Notification::make()
+                ->title('Não foi possível calcular a depreciação')
+                ->body($exception->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
+    /**
+     * Calcula e persiste os registros de depreciação do imóvel.
+     *
+     * @throws InvalidArgumentException quando os dados do imóvel são insuficientes.
+     * @return int Quantidade de registros gerados.
+     */
+    private static function calcularDepreciacao(BemImovel $record): int
+    {
+        // Recarrega o registro com o relacionamento necessário para não depender
+        // do estado que foi passado (pode estar incompleto/em cache).
+        $imovel = BemImovel::query()
+            ->with('elementoDespesaRelacaoRef')
+            ->findOrFail($record->getKey());
+
+        if ((int) $imovel->id_denominacao !== 1) {
+            throw new InvalidArgumentException('A depreciação só pode ser calculada para imóveis com denominação 1.');
+        }
+
+        [$dataBase, $valor, $vidaUtil] = self::resolverParametrosDepreciacao($imovel);
+
+        $percentualResidual = self::decimal($imovel->elementoDespesaRelacaoRef?->ValorResidual);
+        $valorResidual      = $valor * ($percentualResidual / 100);
+        $depreciacaoMensal  = ($valor - $valorResidual) / $vidaUtil;
+
+        $rows        = [];
+        $seq         = 1;
+        $dataCalculo = $dataBase;
+
+        for ($mesesRestantes = $vidaUtil; $mesesRestantes > 0; $mesesRestantes--) {
+            $depreciacaoAcumulada = ($seq - 1) * $depreciacaoMensal;
+
+            $rows[] = [
+                'date_time'            => now(),
+                'Id_imovel'            => $imovel->getKey(),
+                'item'                 => $seq,
+                'data_calculo'         => $dataCalculo->toDateString(),
+                'valor'                => $valor,
+                'vida_util'            => $mesesRestantes,
+                'valor_residual'       => $valorResidual,
+                'depreciacao_mensal'   => $depreciacaoMensal,
+                'depreciacao_acumulada' => $depreciacaoAcumulada,
+                'valor_liquido_contabil' => $valor - $depreciacaoAcumulada,
+            ];
+
+            $seq++;
+            $dataCalculo = $dataCalculo->addMonthNoOverflow()->startOfMonth();
+        }
+
+        DB::transaction(function () use ($imovel, $dataBase, $rows): void {
+            Depreciacao::query()
+                ->where('Id_imovel', $imovel->getKey())
+                ->whereDate('data_calculo', '>=', $dataBase->toDateString())
+                ->delete();
+
+            // Inserção em lotes para evitar queries muito grandes.
+            foreach (array_chunk($rows, 500) as $chunk) {
+                Depreciacao::query()->insert($chunk);
+            }
+        });
+
+        return count($rows);
+    }
+
+    /**
+     * Extrai e valida os três parâmetros essenciais para o cálculo:
+     * data-base, valor e vida útil.
+     *
+     * @return array{CarbonImmutable, float, int}
+     * @throws InvalidArgumentException
+     */
+    private static function resolverParametrosDepreciacao(BemImovel $imovel): array
+    {
+        $dataReavaliacao = self::dateOrNull($imovel->data_reavaliacao);
+
+        $dataBase = $dataReavaliacao
+            ? $dataReavaliacao->subMonthNoOverflow()
+            : self::dateOrNull($imovel->data_aquisicao);
+
+        if ($dataBase === null) {
+            throw new InvalidArgumentException('Informe a data de aquisição ou a data de reavaliação do imóvel.');
+        }
+
+        $valor = $dataReavaliacao
+            ? self::decimal($imovel->valor_reavaliado)
+            : self::decimal($imovel->valor_historico_1a_avaliacao);
+
+        if ($valor <= 0) {
+            throw new InvalidArgumentException('O valor-base para depreciação deve ser maior que zero.');
+        }
+
+        $vidaUtil = $dataReavaliacao
+            ? (int) $imovel->vida_util
+            : (int) ($imovel->elementoDespesaRelacaoRef?->VidaUtil ?? 0);
+
+        if ($vidaUtil <= 0) {
+            throw new InvalidArgumentException('Informe a vida útil do imóvel ou do elemento de despesa.');
+        }
+
+        return [$dataBase, $valor, $vidaUtil];
+    }
+
+    // -------------------------------------------------------------------------
+    // HELPERS DE FORMULÁRIO
+    // -------------------------------------------------------------------------
+
+    private static function section(string $heading, string $icon, array $schema): Forms\Components\Section
+    {
+        return Forms\Components\Section::make($heading)
+            ->icon($icon)
+            ->schema($schema);
+    }
+
+    private static function select(string $field, string $label, string $relationship, string $titleAttribute): Select
+    {
+        return Select::make($field)
+            ->label($label)
+            ->relationship($relationship, $titleAttribute)
+            ->searchable()
+            ->preload()
+            ->native(false)
+            ->optionsLimit(50)
+            ->placeholder("Selecione {$label}");
+    }
+
+    private static function text(string $field, string $label): TextInput
+    {
+        return TextInput::make($field)
+            ->label($label)
+            ->placeholder($label);
+    }
+
+    private static function number(string $field, string $label): TextInput
+    {
+        return TextInput::make($field)
+            ->label($label)
+            ->numeric()
+            ->placeholder('0');
+    }
+
+    private static function textarea(string $field, string $label): Textarea
+    {
+        return Textarea::make($field)
+            ->label($label)
+            ->rows(3)
+            ->placeholder($label);
+    }
+
+    private static function date(string $field, string $label): DatePicker
+    {
+        return DatePicker::make($field)
+            ->label($label)
+            ->displayFormat('d/m/Y')
+            ->native(false)
+            ->placeholder('dd/mm/aaaa');
+    }
+
+    private static function dateTime(string $field, string $label): DateTimePicker
+    {
+        return DateTimePicker::make($field)
+            ->label($label)
+            ->default(now())
+            ->displayFormat('d/m/Y H:i:s')
+            ->native(false);
+    }
+
+    // -------------------------------------------------------------------------
+    // HELPERS DE FORMATAÇÃO
+    // -------------------------------------------------------------------------
+
+    private static function dateOrNull(mixed $value): ?CarbonImmutable
+    {
+        if (! $value || str_starts_with((string) $value, '0000-00-00')) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($value)->startOfDay();
+    }
+
+    private static function decimal(mixed $value): float
+    {
+        if ($value === null || $value === '') {
+            return 0.0;
+        }
+
+        return (float) str_replace(',', '.', (string) $value);
+    }
+
+    private static function formatMoney(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '-';
+        }
+
+        return 'R$ ' . number_format((float) $value, 2, ',', '.');
+    }
+
+    private static function formatDate(mixed $value): string
+    {
+        if (! $value || str_starts_with((string) $value, '0000-00-00')) {
+            return '-';
+        }
+
+        return CarbonImmutable::parse($value)->format('d/m/Y');
     }
 }

@@ -93,16 +93,10 @@ class Pedidos extends Model
         return $this->belongsTo(ComplementoSetor::class, 'ComplementoSetor', 'id');
     }
 
-//    protected static function booted(): void
-//    {
-//        static::creating(function (self $model) {
-//            if (blank($model->date_time)) {
-//                $model->date_time = now();
-//            }
-//        });
-//
-//        static::updating(function (self $model) {
-//            $model->date_time = now();
-//        });
-//    }
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

@@ -111,4 +111,12 @@ class Solicitacao extends Model
 
         return '• ' . implode("\n• ", $linhas);
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->id_user = auth()->id();
+        });
+    }
 }

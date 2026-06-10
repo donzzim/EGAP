@@ -42,26 +42,20 @@ class ItemNotaFiscal extends Model
         return $this->belongsTo(DescricaoDetalhada::class, 'id_material', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->atualizado_por = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
+            $model->atualizado_por = auth()->id();
             $model->calcularTotal();
         });
 
-        static::updating(function ($model) {
-            $model->atualizado_por = auth()->id();
-            $model->date_time = now();
-            $model->calcularTotal();
-        });
-
-        static::saved(function ($model) {
+        static::saved(function (self $model): void {
             $model->notaFiscal?->calcularValorTotal();
             $model->notaFiscal?->saveQuietly();
         });
 
-        static::deleted(function ($model) {
+        static::deleted(function (self $model): void {
             $model->notaFiscal?->calcularValorTotal();
             $model->notaFiscal?->saveQuietly();
         });

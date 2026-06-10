@@ -58,15 +58,13 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('id', '#', isFirstColumn: true),
-                TableColumns::text('id_cidade', 'id cidade'),
-                TableColumns::text('cd_uf', 'cd uf'),
-                TableColumns::text('cd_cep_cidade', 'cd cep cidade'),
+                TableColumns::text('id_cidade', '#', isFirstColumn: true),
+                TableColumns::text('cd_uf', 'UF'),
+                TableColumns::text('cd_cep_cidade', 'CEP'),
             ])
             ->filters([
                 //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+            ]);
     }
 
     public static function getPages(): array

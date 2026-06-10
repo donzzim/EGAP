@@ -78,16 +78,11 @@ class NotaFiscal extends Model
         return $this->belongsTo(Setores::class, 'setor');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->atualizado_por = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
-        });
-
-        static::updating(function ($model) {
             $model->atualizado_por = auth()->id();
-            $model->date_time = now();
         });
     }
 

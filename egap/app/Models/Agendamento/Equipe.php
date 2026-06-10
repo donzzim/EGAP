@@ -34,16 +34,11 @@ class Equipe extends Model
         return $this->belongsTo(UserEgap::class, 'id_pessoa', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->id_user = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
-        });
-
-        static::updating(function ($model) {
             $model->id_user = auth()->id();
-            $model->date_time = now();
         });
     }
 }

@@ -130,12 +130,12 @@ class Inventario extends Model
         return strtolower(trim((string) $this->situacao));
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->atualizado_por = Auth::id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
             $model->atualizado_em = now();
+            $model->atualizado_por = auth()->id();
         });
     }
 }

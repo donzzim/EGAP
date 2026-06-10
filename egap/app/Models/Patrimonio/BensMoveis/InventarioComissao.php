@@ -30,4 +30,11 @@ class InventarioComissao extends Model
     {
         return $this->belongsTo(UserEgap::class, 'nome', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

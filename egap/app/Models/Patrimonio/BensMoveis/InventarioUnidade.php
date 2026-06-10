@@ -65,8 +65,8 @@ class InventarioUnidade extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model): void {
-            $model->date_time ??= now();
+        static::saving(function (self $model): void {
+            $model->date_time = now();
         });
     }
 }

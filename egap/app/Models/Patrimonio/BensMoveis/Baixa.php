@@ -29,11 +29,11 @@ class Baixa extends Model
      * ✅ GATILHO DE CRIAÇÃO:
      * Grava automaticamente o usuário e a data/hora.
      */
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($baixa) {
-            $baixa->Usuario = Auth::id();
-            $baixa->date_time = now();
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->Usuario = auth()->id();
         });
     }
 

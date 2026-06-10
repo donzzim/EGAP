@@ -37,7 +37,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\TextInput::make('desc_tipo_imovel')
-                            ->label('desc tipo imovel')
+                            ->label('Descrição')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
@@ -48,14 +48,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('Id', 'Id', isFirstColumn: true)
-                    ->width('80px'),
-                TableColumns::text('desc_tipo_imovel', 'desc tipo imovel'),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+                TableColumns::text('Id', '#', isFirstColumn: true),
+                TableColumns::text('desc_tipo_imovel', 'Descrição'),
+            ]);
     }
 
     public static function getPages(): array

@@ -18,7 +18,7 @@ class EntradaSaidaResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = EntradaSaida::class;
 
@@ -36,29 +36,20 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
             ->schema([
                 Forms\Components\Section::make()
                     ->schema([
-                        Forms\Components\DateTimePicker::make('date_time')
-                            ->label('date time')
-                            ->default(now())
-                            ->required()
-                            ->columnSpanFull(),
-
-                        Forms\Components\TextInput::make('usuario')
-                            ->label('usuario')
-                            ->numeric()
-                            ->required()
-                            ->columnSpanFull(),
-
                         Forms\Components\TextInput::make('descricao')
-                            ->label('descricao')
+                            ->label('Descrição')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('tipo')
-                            ->label('tipo')
+                        Forms\Components\Select::make('tipo')
+                            ->label('Tipo')
                             ->required()
                             ->columnSpanFull()
-                            ->rows(4),
+                            ->options([
+                                'Entrada' => 'Entrada',
+                                'Saída' => 'Saída'
+                            ])
                     ])
             ]);
     }
@@ -66,23 +57,20 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('id', 'ID', isFirstColumn: true)
-                    ->width('80px'),
+                TableColumns::text('id', '#', isFirstColumn: true),
                 TableColumns::dateTime('date_time', 'Data', 'd/m/Y'),
-                TableColumns::text('usuario', 'Usuário'),
+                TableColumns::text('usuarioRef.name', 'Usuário'),
                 TableColumns::text('descricao', 'Descrição'),
                 TableColumns::text('tipo', 'Tipo'),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListEntradaSaidas::route('/'),
+            'create' => Pages\CreateEntradaSaida::route('/create'),
+            'edit' => Pages\EditEntradaSaida::route('/{record}/edit'),
         ];
     }
 }

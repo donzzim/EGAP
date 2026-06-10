@@ -10,12 +10,11 @@ class EditTermoResponsabilidade extends EditRecord
 {
     protected static string $resource = TermoResponsabilidadeResource::class;
 
-    protected ?string $heading = 'Editar Termos de Responsabilidade';
-
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

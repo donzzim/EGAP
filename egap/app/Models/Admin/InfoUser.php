@@ -35,4 +35,11 @@ class InfoUser extends Model
     {
         return $this->belongsTo(UserEgap::class, 'usuario_id', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

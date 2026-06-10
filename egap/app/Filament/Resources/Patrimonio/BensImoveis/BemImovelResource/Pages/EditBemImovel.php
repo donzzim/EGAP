@@ -10,12 +10,10 @@ class EditBemImovel extends EditRecord
 {
     protected static string $resource = BemImovelResource::class;
 
-    protected ?string $heading = 'Editar Bem Imóvel';
-
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            Actions\DeleteAction::make()
         ];
     }
 }

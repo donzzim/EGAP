@@ -40,4 +40,12 @@ class Reavaliacao extends Model
     /** ✅ RELAÇÕES PARA CONSULTA */
     public function bem(): BelongsTo { return $this->belongsTo(BemMovel::class, 'id_patrimonio', 'id'); }
     public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'Usuario', 'id'); }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+        });
+    }
 }

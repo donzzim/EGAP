@@ -4,11 +4,11 @@ namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
+use App\Filament\Support\MoneyInput;
 use App\Models\Patrimonio\BensIntangiveis\Amortizacao;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Pages\SubNavigationPosition;
@@ -62,40 +62,20 @@ class AmortizacaoResource extends Resource
                 Forms\Components\Section::make('Valores da Amortização')
                     ->description('Valores financeiros correspondentes a este período.')
                     ->schema([
-                        Forms\Components\TextInput::make('valor')
+                        MoneyInput::make('valor')
                             ->label('Valor Base')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (?string $state): ?string => $state ? number_format((float)$state, 2, ',', '') : null)
-                            ->dehydrateStateUsing(fn (?string $state): ?string => $state ? str_replace(',', '.', $state) : null)
                             ->required(),
 
-                        Forms\Components\TextInput::make('amortizacao_mensal')
+                        MoneyInput::make('amortizacao_mensal')
                             ->label('Amortização Mensal')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (?string $state): ?string => $state ? number_format((float)$state, 2, ',', '') : null)
-                            ->dehydrateStateUsing(fn (?string $state): ?string => $state ? str_replace(',', '.', $state) : null)
                             ->required(),
 
-                        Forms\Components\TextInput::make('amortizacao_acumulada')
+                        MoneyInput::make('amortizacao_acumulada')
                             ->label('Amortização Acumulada')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (?string $state): ?string => $state ? number_format((float)$state, 2, ',', '') : null)
-                            ->dehydrateStateUsing(fn (?string $state): ?string => $state ? str_replace(',', '.', $state) : null)
                             ->required(),
 
-                        Forms\Components\TextInput::make('valor_liquido_contabil')
+                        MoneyInput::make('valor_liquido_contabil')
                             ->label('Valor Líquido Contábil')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-                            ->stripCharacters('.')
-                            ->formatStateUsing(fn (?string $state): ?string => $state ? number_format((float)$state, 2, ',', '') : null)
-                            ->dehydrateStateUsing(fn (?string $state): ?string => $state ? str_replace(',', '.', $state) : null)
                             ->required(),
                     ])->columns(2),
             ]);

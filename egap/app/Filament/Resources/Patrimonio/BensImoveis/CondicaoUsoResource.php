@@ -18,7 +18,7 @@ class CondicaoUsoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = CondicaoUso::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
@@ -36,7 +36,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\TextInput::make('descricao')
-                            ->label('descricao')
+                            ->label('Descrição')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
@@ -49,17 +49,15 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
             ->columns([
                 TableColumns::text('id', '#', isFirstColumn: true),
                 TableColumns::text('descricao', 'Descrição'),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListCondicaoUsos::route('/'),
+            'create' => Pages\CreateCondicaoUso::route('/create'),
+            'edit' => Pages\EditCondicaoUso::route('/{record}/edit'),
         ];
     }
 }

@@ -4,13 +4,13 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Depreciacao;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Pages\SubNavigationPosition;
@@ -33,15 +33,6 @@ class DepreciacaoResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $moneyInput = fn (string $field, string $label) => Forms\Components\TextInput::make($field)
-            ->label($label)
-            ->prefix('R$')
-            ->placeholder('0,00')
-            ->mask(RawJs::make('$money($input, \',\', \'.\', 2)'))
-            ->stripCharacters('.')
-            ->formatStateUsing(fn ($state): ?string => filled($state) ? number_format((float) $state, 2, ',', '') : null)
-            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? str_replace(',', '.', $state) : null);
-
         return $form
             ->schema([
                 Forms\Components\Section::make('Identificação do Imóvel')
@@ -89,10 +80,14 @@ class DepreciacaoResource extends Resource
                 Forms\Components\Section::make('Valores da Depreciação')
                     ->icon('heroicon-o-banknotes')
                     ->schema([
-                        $moneyInput('depreciacao_mensal', 'Depreciação Mensal'),
-                        $moneyInput('depreciacao_acumulada', 'Depreciação Acumulada'),
-                        $moneyInput('valor_residual', 'Valor Residual'),
-                        $moneyInput('valor_liquido_contabil', 'Valor Líquido Contábil')
+                        MoneyInput::make('depreciacao_mensal')
+                            ->label('Depreciação Mensal'),
+                        MoneyInput::make('depreciacao_acumulada')
+                            ->label('Depreciação Acumulada'),
+                        MoneyInput::make('valor_residual')
+                            ->label('Valor Residual'),
+                        MoneyInput::make('valor_liquido_contabil')
+                            ->label('Valor Líquido Contábil')
                     ])
                     ->columns(2),
             ]);

@@ -73,7 +73,10 @@ class MovimentacaoEstoque extends Model
 
     protected static function booted(): void
     {
-        static::saving(function (self $model) {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+
             $quantidade = (float) ($model->quantidade ?? 0);
             $precoUnitario = (float) ($model->preco_unitario ?? 0);
 

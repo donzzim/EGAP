@@ -18,7 +18,7 @@ class TermoResponsabilidadeResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TermoResponsabilidade::class;
 
@@ -38,6 +38,8 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                     ->schema([
                         Forms\Components\TextInput::make('num_termo')
                             ->label('Termo Nº')
+                            ->disabled(fn (string $operation): ?int => $operation === 'create' ? true : false)
+                            ->default(fn (string $operation): ?int => $operation === 'create' ? self::getNextNumTermo() : null)
                             ->numeric(),
 
                         Forms\Components\TextInput::make('ano_termo')
@@ -47,47 +49,21 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                         Forms\Components\FileUpload::make('arquivo')
                             ->label('Arquivo')
                             ->columnSpanFull(),
-
-                        Forms\Components\DatePicker::make('atualizado_em')
-                            ->label('Atualizado em')
-                            ->displayFormat('d/m/Y'),
-
-                        Forms\Components\Select::make('atualizado_por')
-                            ->label('Atualizado por')
-                            ->relationship('atualizadoPorRelacaoref', 'name')
-                            ->searchable()
-                            ->preload(),
                     ])->columns(2),
-
-                Forms\Components\Section::make()
-                    ->schema([
-                        Forms\Components\Repeater::make('termosImoveis')
-                            ->relationship('termosImoveis')
-                            ->label('')
-                            ->schema([
-                                Forms\Components\DateTimePicker::make('date_time')
-                                    ->label('date time')
-                                    ->displayFormat('Y-m-d H:i:s'),
-
-                                Forms\Components\Select::make('termo')
-                                    ->label('Termo')
-                                    ->relationship('termoRelacaoref', 'num_termo')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Forms\Components\Select::make('imovel')
-                                    ->label('Imóvel')
-                                    ->relationship('imovelRelacaoref', 'descricao')
-                                    ->searchable()
-                                    ->preload(),
-                            ])
-                            ->columns(3)
-                            ->defaultItems(1)
-                            ->addable(false)
-                            ->deletable(false)
-                    ])
             ]);
     }
+
+    private static function getNextNumTermo(): int
+    {
+        $ultimoNumTermo = TermoResponsabilidade::query()
+            ->whereNotNull('num_termo')
+            ->where('num_termo', '<>', '')
+            ->orderByRaw('CAST(num_termo AS UNSIGNED) DESC')
+            ->value('num_termo');
+
+        return ((int) $ultimoNumTermo) + 1;
+    }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
@@ -97,17 +73,12 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 TableColumns::text('arquivo', 'Arquivo')
                     ->url(fn ($record) => $record->arquivo ? "https://sistemas.tjes.jus.br/patrimonio{$record->arquivo}" : null)
                     ->openUrlInNewTab()
-                    ->extraCellAttributes(['style' => 'color: #3b82f6; text-decoration: underline; cursor: pointer;']),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y'),
-                TableColumns::text('atualizadoPorRelacaoref.name', 'Atualizado por'),
-                TableColumns::text('termosImoveis.imovelRelacaoref.descricao', 'Imóvel')
-                    ->listWithLineBreaks()
-                    ->limitList(3),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+                    ->formatStateUsing(fn ($state) => $state ? 'Abrir' : '-')
+                    ->color('primary')
+                    ->weight('bold'),
+                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::text('atualizadoPorRef.name', 'Atualizado por'),
+            ]);
     }
 
     public static function getPages(): array

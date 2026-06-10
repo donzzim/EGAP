@@ -71,20 +71,9 @@ class FasePedido extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
-            $model->date_time ??= now();
-
-            if (Auth::check()) {
-                $model->Usuario = Auth::id();
-            }
-        });
-
-        static::updating(function (self $model) {
-            $model->atualizado_em = now()->toDateString();
-
-            if (Auth::check()) {
-                $model->Usuario = Auth::id();
-            }
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->Usuario = auth()->id();
         });
     }
 }

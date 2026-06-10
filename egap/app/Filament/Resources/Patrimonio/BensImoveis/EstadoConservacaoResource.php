@@ -9,6 +9,7 @@ use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\EstadoConservacao;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -37,7 +38,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\TextInput::make('descEstadoConservacao')
-                            ->label('descEstadoConservacao')
+                            ->label('Estado de Conservação')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
@@ -48,20 +49,17 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('Id', 'Id', isFirstColumn: true)
-                    ->width('80px'),
-                TableColumns::text('descEstadoConservacao', 'descEstadoConservacao'),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+                TableColumns::text('Id', '#', isFirstColumn: true),
+                TableColumns::text('descEstadoConservacao', 'Estado de Conservação'),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListEstadoConservacaos::route('/'),
+            'create' => Pages\CreateEstadoConservacao::route('/create'),
+            'edit' => Pages\EditEstadoConservacao::route('/{record}/edit'),
         ];
     }
 }

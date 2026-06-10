@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Obra;
@@ -42,29 +43,16 @@ class ObraResource extends Resource
                             ->preload()
                             ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('descricao')
+                        Forms\Components\TextInput::make('descricao')
                             ->label('Descrição')
-                            ->columnSpanFull()
-                            ->rows(4),
+                            ->columnSpanFull(),
 
                         Forms\Components\DatePicker::make('data')
                             ->label('Data')
+                            ->default(now())
                             ->displayFormat('d/m/Y'),
 
-                        Forms\Components\TextInput::make('valor')
-                            ->label('Valor (R$)')
-                            ->numeric(),
-
-                        Forms\Components\Select::make('atualizado_por')
-                            ->label('Atualizado por')
-                            ->relationship('atualizadoPorRelacaoref', 'name')
-                            ->searchable()
-                            ->preload()
-                            ->columnSpanFull(),
-
-                        Forms\Components\DateTimePicker::make('date_time')
-                            ->label('date time')
-                            ->hidden(),
+                        MoneyInput::make('valor')
                     ])
                     ->columns(2)
             ]);
@@ -75,13 +63,9 @@ class ObraResource extends Resource
         return TableDefaults::apply($table)
             ->columns([
                 TableColumns::text('imovelRelacaoref.descricao', 'Imóveis', isFirstColumn: true),
-                TableColumns::text('descricao', 'Descrição')
-                    ->limit(50),
+                TableColumns::text('descricao', 'Descrição'),
                 TableColumns::date('data', 'Data'),
                 TableColumns::text('valor', 'Valor (R$)'),
-            ])
-            ->filters([
-                //
             ]);
     }
 

@@ -58,4 +58,11 @@ class Processo extends Model
     {
         return $this->hasMany(\App\Models\Processo\ProMaterial::class, 'processo', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

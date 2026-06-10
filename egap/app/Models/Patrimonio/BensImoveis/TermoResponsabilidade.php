@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class TermoResponsabilidade extends Model
@@ -12,13 +13,16 @@ class TermoResponsabilidade extends Model
     protected $guarded = [];
     public $timestamps = false;
 
-    public function atualizadoPorRelacaoref()
+    public function atualizadoPorRef()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
-    public function termosImoveis()
+    protected static function booted(): void
     {
-        return $this->hasMany(TermoImovel::class, 'termo', 'id');
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+        });
     }
 }

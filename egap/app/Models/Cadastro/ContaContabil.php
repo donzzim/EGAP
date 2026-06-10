@@ -26,11 +26,11 @@ class ContaContabil extends Model
         return $this->belongsTo(UserEgap::class, 'usuario', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->usuario = auth()->id();
+        static::saving(function (self $model): void {
             $model->date_time = now();
+            $model->usuario = auth()->id();
         });
     }
 

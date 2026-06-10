@@ -83,22 +83,9 @@ class TransferenciaBemMovel extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
-            if (blank($model->date_time)) {
-                $model->date_time = now();
-            }
-
-            if (blank($model->Usuario) && filament()->auth()->check()) {
-                $model->Usuario = filament()->auth()->id();
-            }
-        });
-
-        static::updating(function (self $model) {
+        static::saving(function (self $model): void {
             $model->date_time = now();
-
-            if (filament()->auth()->check()) {
-                $model->Usuario = filament()->auth()->id();
-            }
+            $model->Usuario = auth()->id();
         });
     }
 

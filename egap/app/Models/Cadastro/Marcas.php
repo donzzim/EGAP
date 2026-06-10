@@ -29,9 +29,10 @@ class Marcas extends Model
         return $this->belongsTo(UserEgap::class, 'Usuario', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
             $model->Usuario = auth()->id();
         });
     }

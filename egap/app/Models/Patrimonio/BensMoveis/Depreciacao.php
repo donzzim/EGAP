@@ -29,4 +29,11 @@ class Depreciacao extends Model
     {
         return $this->belongsTo(BemMovel::class, 'patrimonio', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

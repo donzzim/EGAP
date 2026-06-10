@@ -30,4 +30,12 @@ class Tributo extends Model
     {
         return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
+        });
+    }
 }

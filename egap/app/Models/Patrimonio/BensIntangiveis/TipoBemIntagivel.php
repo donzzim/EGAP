@@ -26,18 +26,9 @@ class TipoBemIntagivel extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $model) {
-            $model->date_time ??= now();
-
-            if (Auth::check()) {
-                $model->atualizado_por = Auth::id();
-            }
-        });
-
-        static::updating(function (self $model) {
-            if (Auth::check()) {
-                $model->atualizado_por = Auth::id();
-            }
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
         });
     }
 

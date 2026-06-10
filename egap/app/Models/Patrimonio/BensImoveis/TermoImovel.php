@@ -21,4 +21,11 @@ class TermoImovel extends Model
     {
         return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'imovel', 'Id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }

@@ -16,16 +16,11 @@ class TipoTributo extends Model
         return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
-            $model->atualizado_por = auth()->id() ?? 1;
+        static::saving(function (self $model): void {
             $model->date_time = now();
-        });
-
-        static::updating(function ($model) {
-            $model->atualizado_por = auth()->id() ?? 1;
-            $model->date_time = now();
+            $model->atualizado_por = auth()->id();
         });
     }
 }

@@ -18,7 +18,7 @@ class ResponsavelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Responsavel::class;
 
@@ -37,13 +37,14 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\TextInput::make('descricao')
-                            ->label('descricao')
+                            ->label('Descrição')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
 
                         Forms\Components\TextInput::make('proprietario')
-                            ->label('proprietario')
+                            ->label('Proprietário')
+                            ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
                     ])
@@ -53,15 +54,10 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('id', 'id', isFirstColumn: true)
-                    ->width('80px'),
-                TableColumns::text('descricao', 'descricao'),
-                TableColumns::text('proprietario', 'proprietario'),
-            ])
-            ->filters([
-                //
-            ])
-            ->searchPlaceholder('Entre com a palavra-chave');
+                TableColumns::text('id', '#', isFirstColumn: true),
+                TableColumns::text('descricao', 'Descrição'),
+                TableColumns::text('proprietario', 'Proprietário'),
+            ]);
     }
 
     public static function getPages(): array

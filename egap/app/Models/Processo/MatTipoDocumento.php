@@ -16,4 +16,11 @@ class MatTipoDocumento extends Model
     {
         return $this->hasMany(MatAnexoProcesso::class, 'tipo_documento', 'id');
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            $model->date_time = now();
+        });
+    }
 }
