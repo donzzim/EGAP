@@ -18,7 +18,7 @@ class CreateBaixa extends CreateRecord
             BemMovel::where('id', $item->id_bem)
                 ->where('SituacaoBem', 1)
                 ->update([
-                    'SituacaoBem'   => 7,
+                    'SituacaoBem' => 7,
                     'ProcessoBaixa' => $baixa->NumeroProcesso,
                 ]);
         }

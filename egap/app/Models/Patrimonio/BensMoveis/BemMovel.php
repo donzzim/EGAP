@@ -12,17 +12,19 @@ use App\Models\Cadastro\Fornecedores;
 use App\Models\Cadastro\Marcas;
 use App\Models\Cadastro\Modelos;
 use App\Models\Cadastro\Setores;
-use App\Models\Cadastro\SituacaoBem;
 use App\Models\Cadastro\UnidadesDeMedida;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BemMovel extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'mat_patrimonio';
+
     protected $primaryKey = 'id';
+
     public $timestamps = false;
 
     public static $snakeAttributes = false;
@@ -51,7 +53,7 @@ class BemMovel extends Model
 
     protected $casts = [
         'DatadeIncorporacao' => 'datetime',
-        'ValorAquisicao' => 'decimal:2'
+        'ValorAquisicao' => 'decimal:2',
     ];
 
     public function usuarioRef(): BelongsTo
@@ -129,13 +131,46 @@ class BemMovel extends Model
         return $this->belongsTo(Setores::class, 'UnidadeJudiciaria', 'id');
     }
 
-    public function descricaoResumidaRel(): BelongsTo { return $this->descricaoResumidaBemRef(); }
-    public function marcaRel(): BelongsTo { return $this->marcaRef(); }
-    public function unidadeJudiciariaRel(): BelongsTo { return $this->unidadeJudiciariaRef(); }
-    public function fornecedorRel(): BelongsTo { return $this->fornecedorRef(); }
-    public function contaContabilRel(): BelongsTo { return $this->contaContabilRef(); }
-    public function elementodespesaRel(): BelongsTo { return $this->elementoDespesaRef(); }
-    public function atualizado_por(): BelongsTo { return $this->usuarioRef(); }
+    public function ultimaTransferencia(): HasOne
+    {
+        return $this->hasOne(TransferenciaBemMovel::class, 'NumPatrimonio', 'NumPatrimonio')
+            ->latestOfMany('id');
+    }
+
+    public function descricaoResumidaRel(): BelongsTo
+    {
+        return $this->descricaoResumidaBemRef();
+    }
+
+    public function marcaRel(): BelongsTo
+    {
+        return $this->marcaRef();
+    }
+
+    public function unidadeJudiciariaRel(): BelongsTo
+    {
+        return $this->unidadeJudiciariaRef();
+    }
+
+    public function fornecedorRel(): BelongsTo
+    {
+        return $this->fornecedorRef();
+    }
+
+    public function contaContabilRel(): BelongsTo
+    {
+        return $this->contaContabilRef();
+    }
+
+    public function elementodespesaRel(): BelongsTo
+    {
+        return $this->elementoDespesaRef();
+    }
+
+    public function atualizado_por(): BelongsTo
+    {
+        return $this->usuarioRef();
+    }
 
     protected static function booted(): void
     {

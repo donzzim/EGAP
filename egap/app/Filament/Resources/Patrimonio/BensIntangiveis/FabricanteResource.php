@@ -4,39 +4,49 @@ namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\Fabricante;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Pages\SubNavigationPosition;
+use Filament\Resources\Resource;
+use Filament\Tables\Table;
 
 class FabricanteResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Fabricante::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
+
     protected static ?string $navigationLabel = 'Fabricantes';
+
     protected static ?string $modelLabel = 'Fabricante';
+
     protected static ?string $pluralModelLabel = 'Fabricantes';
+
     protected static ?string $navigationGroup = 'Bens Intangíveis';
+
     protected static ?int $navigationSort = 4;
+
+    protected static ?string $slug = 'bens-intangiveis/fabricantes';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Detalhes do Fabricante')
-                    ->description('Informe o nome ou a razão social da empresa fabricante do bem intangível.')
+                Forms\Components\Section::make('Identificação do Fabricante')
+                    ->description('Informe o nome ou a razão social do fabricante do bem intangível.')
+                    ->icon('heroicon-o-building-office')
                     ->schema([
                         Forms\Components\TextInput::make('descricao')
-                            ->label('Descrição / Nome do Fabricante')
-                            ->placeholder('Ex: Microsoft, Adobe, Oracle, TOTVS...')
+                            ->label('Fabricante')
+                            ->placeholder('Ex.: Microsoft, Adobe ou Oracle')
+                            ->prefixIcon('heroicon-o-building-office')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
@@ -46,44 +56,16 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Fabricante')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('atualizadoPorRef.nome')
-                    ->label('Atualizado por')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TableColumns::text('descricao', 'Fabricante', isFirstColumn: true)
+                    ->icon('heroicon-o-building-office')
+                    ->weight('medium')
+                    ->wrap(),
+                TableColumns::text('atualizadoPorRef.name', 'Atualizado por'),
+                TableColumns::dateTime('date_time', 'Atualizado em'),
             ])
-            ->filters([
-                // Adicione filtros aqui, se desejar
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->defaultSort('descricao');
     }
 
     public static function getPages(): array

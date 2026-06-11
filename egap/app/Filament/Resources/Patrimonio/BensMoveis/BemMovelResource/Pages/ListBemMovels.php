@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource;
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,17 +15,19 @@ class ListBemMovels extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            Actions\CreateAction::make()
+                ->label('Novo'),
+        ];
     }
 
-    // 🌟 A CURA DO COMPONENTE GIGANTE: Força o Livewire a indexar o DOM de cada linha pelo ID real!
-    // Quando você salvar a alteração e a linha atualizar, o JavaScript NÃO perde o botão Opções.
+    // Mantém a identidade estável das linhas durante atualizações do Livewire.
     public function getTableRecordKey(Model $record): string
     {
         return (string) $record->id;
     }
 
-    // Mantém a paginação simples e ultra leve para 185 mil linhas
+    // Evita a consulta de contagem total na tabela com grande volume de registros.
     protected function paginateTableQuery(Builder $query): Paginator
     {
         return $query->simplePaginate($this->getTableRecordsPerPage() == 'all' ? 10 : $this->getTableRecordsPerPage());

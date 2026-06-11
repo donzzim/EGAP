@@ -14,7 +14,7 @@ class ListReavaliacaos extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

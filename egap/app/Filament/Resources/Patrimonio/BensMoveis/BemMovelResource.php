@@ -4,157 +4,306 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
+use App\Filament\Support\MoneyInput;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms;
-use Filament\Forms\Components\{DatePicker, Grid, Select, Tabs, Textarea, TextInput};
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BemMovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?string $model = BemMovel::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
     protected static ?string $navigationGroup = 'Bens Móveis';
-    protected static ?string $navigationLabel = 'Administração dos bens móveis';
+
+    protected static ?string $navigationLabel = 'Administração';
+
     protected static ?string $modelLabel = 'Bem Móvel';
-    protected static ?string $pluralModelLabel = 'Bens Móveis';
-    protected static ?string $slug = 'bem-moveis';
+
+    protected static ?string $pluralModelLabel = 'Administração dos Bens Móveis';
+
+    protected static ?string $recordTitleAttribute = 'NumPatrimonio';
+
+    protected static ?string $slug = 'bens-moveis/adm-bens-moveis';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
-        return $form
+        return $form->schema([
+            Tabs::make('Administração do Bem Móvel')
+                ->persistTabInQueryString()
+                ->tabs([
+                    self::tabPatrimonio(),
+                    self::tabDescricao(),
+                    self::tabLocalizacao(),
+                    self::tabAquisicao(),
+                    self::tabVeiculo(),
+                    self::tabContabil(),
+                    self::tabObservacao(),
+                    self::tabSituacao(),
+                ])
+                ->columnSpanFull(),
+        ]);
+    }
+
+    private static function tabPatrimonio(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Patrimônio')
+            ->icon('heroicon-o-identification')
             ->schema([
-                Tabs::make('Administração do Bem')
-                    ->tabs([
-                        Tabs\Tab::make('1. Patrimônio')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    TextInput::make('NumPatrimonio')->label('Patrimônio')->required()->unique(ignoreRecord: true),
-                                    TextInput::make('TomboSmarapd')->label('Patrimônio (Conciliação)'),
-                                    TextInput::make('NumTomboSmarapd')->label('Patrimônio (sem cód. barras)'),
-                                    TextInput::make('NumerodeSerie')->label('Número de Série'),
-                                ]),
-                            ]),
+                self::section('Identificação Patrimonial', 'heroicon-o-qr-code', [
+                    self::text('NumPatrimonio', 'Patrimônio')
+                        ->required()
+                        ->unique(ignoreRecord: true),
+                    self::text('TomboSmarapd', 'Patrimônio de Conciliação'),
+                    self::text('NumTomboSmarapd', 'Patrimônio sem Código de Barras'),
+                    self::text('NumerodeSerie', 'Número de Série'),
+                ])->description('Códigos usados para identificação e conciliação do bem.')->columns(2),
+            ]);
+    }
 
-                        Tabs\Tab::make('2. Descrição do Bem')
-                            ->schema([
-                                TextInput::make('DescricaoResumidadoBem')->label('ID Descrição Resumida'),
-                                Textarea::make('Descricao')->label('Descrição Detalhada')->required()->rows(5)->columnSpanFull(),
-                                Grid::make(3)->schema([
-                                    TextInput::make('Marca')->label('ID Marca'),
-                                    TextInput::make('Modelo')->label('ID Modelo'),
-                                    Select::make('TipodoBem')->label('Tipo do Bem')->options(['Móveis' => 'Móveis', 'Imóveis' => 'Imóveis', 'Veículos' => 'Veículos']),
-                                    Select::make('EstadodeConservacao')->label('Estado de Conservação')->options(['ÓTIMO' => 'ÓTIMO', 'BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA']),
-                                    Select::make('Voltagem')->label('Voltagem')->options(['N/A' => 'Não Aplicável', '110v' => '110v', '220v' => '220v', 'BIVOLT' => 'BIVOLT']),
-                                ]),
-                            ]),
+    private static function tabDescricao(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Descrição')
+            ->icon('heroicon-o-document-text')
+            ->schema([
+                self::section('Descrição do Bem', 'heroicon-o-archive-box', [
+                    self::select('DescricaoResumidadoBem', 'Descrição Resumida', 'descricaoResumidaBemRef', 'Descricao')
+                        ->columnSpanFull(),
+                    self::textarea('Descricao', 'Descrição Detalhada')
+                        ->required()
+                        ->rows(5)
+                        ->columnSpanFull(),
+                ])->description('Descrição resumida e detalhada utilizada na identificação do material.'),
 
-                        Tabs\Tab::make('3. Localização')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    TextInput::make('UnidadeJudiciaria')->label('ID Unidade Judiciária'),
-                                    TextInput::make('Setor')->label('ID Setor'),
-                                    TextInput::make('ComplementoSetor')->label('Complemento'),
-                                    TextInput::make('AndarSetor')->label('Andar'),
-                                ]),
-                            ]),
+                self::section('Classificação e Características', 'heroicon-o-squares-2x2', [
+                    self::select('Marca', 'Marca', 'marcaRef', 'descricao'),
+                    self::select('Modelo', 'Modelo', 'modeloRef', 'descricao'),
+                    self::options('TipodoBem', 'Tipo do Bem', [
+                        'Móveis' => 'Móveis',
+                        'Imóveis' => 'Imóveis',
+                        'Veículos' => 'Veículos',
+                    ]),
+                    self::options('EstadodeConservacao', 'Estado de Conservação', [
+                        'ÓTIMO' => 'ÓTIMO',
+                        'BOM' => 'BOM',
+                        'REGULAR' => 'REGULAR',
+                        'RUIM' => 'RUIM',
+                        'SUCATA' => 'SUCATA',
+                    ]),
+                    self::options('Voltagem', 'Voltagem', [
+                        'N/A' => 'Não Aplicável',
+                        '110v' => '110v',
+                        '220v' => '220v',
+                        'BIVOLT' => 'BIVOLT',
+                    ]),
+                ])->columns(3),
+            ]);
+    }
 
-                        Tabs\Tab::make('4. Informações da Nota')
-                            ->schema([
-                                Grid::make(2)->schema([
-                                    TextInput::make('Fornecedor')->label('ID Fornecedor'),
-                                    TextInput::make('NotaFiscal')->label('N° Nota Fiscal'),
-                                    DatePicker::make('DataCadastro')->label('Data do Cadastro'),
-                                    TextInput::make('ValorAquisicao')->label('Valor Aquisição')->numeric()->prefix('R$'),
-                                    TextInput::make('numero_processo')->label('N° do Processo'),
-                                    TextInput::make('nota_empenho')->label('Nota de Empenho'),
-                                ]),
-                            ]),
+    private static function tabLocalizacao(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Localização')
+            ->icon('heroicon-o-map-pin')
+            ->schema([
+                self::section('Localização Atual', 'heroicon-o-building-office', [
+                    self::select('UnidadeJudiciaria', 'Unidade Judiciária', 'unidadeJudiciariaRef', 'Setor'),
+                    self::select('Setor', 'Setor', 'setorRef', 'Setor'),
+                    self::text('ComplementoSetor', 'Complemento'),
+                    self::text('AndarSetor', 'Andar'),
+                ])->description('Unidade e setor onde o bem está localizado.')->columns(2),
+            ]);
+    }
 
-                        Tabs\Tab::make('5. Veículos')->schema([
-                            Grid::make(3)->schema([
-                                TextInput::make('Placa')->label('Placa'),
-                                TextInput::make('Chassi')->label('Chassi'),
-                                TextInput::make('Renavam')->label('Renavam'),
-                                Select::make('Combustivel')->label('Combustível')->options(['Gasolina' => 'Gasolina', 'Diesel' => 'Diesel', 'Flex' => 'Flex']),
-                            ]),
-                        ]),
+    private static function tabAquisicao(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Aquisição')
+            ->icon('heroicon-o-receipt-percent')
+            ->schema([
+                self::section('Documento de Aquisição', 'heroicon-o-document-check', [
+                    self::select('Fornecedor', 'Fornecedor', 'fornecedorRef', 'NomeFornecedor'),
+                    self::text('NotaFiscal', 'Nota Fiscal'),
+                    self::date('DataCadastro', 'Data do Cadastro'),
+                    MoneyInput::make('ValorAquisicao')->label('Valor de Aquisição'),
+                    self::text('numero_processo', 'Número do Processo'),
+                    self::text('nota_empenho', 'Nota de Empenho'),
+                    self::text('nota_liquidacao', 'Nota de Liquidação'),
+                    self::date('data_liquidacao', 'Data de Liquidação'),
+                ])->description('Origem documental e financeira da incorporação do bem.')->columns(2),
+            ]);
+    }
 
-                        Tabs\Tab::make('6. Contábil')->schema([
-                            Grid::make(2)->schema([
-                                TextInput::make('ContaContabil')->label('ID Conta Contábil'),
-                                TextInput::make('VidaUtil')->label('Vida Útil (meses)')->numeric(),
-                                TextInput::make('ValorResidual')->label('Valor Residual (R$)')->numeric()->prefix('R$'),
-                                TextInput::make('DepreciacaoAcumulada')->label('Depreciação Acumulada')->numeric()->prefix('R$'),
-                            ]),
-                        ]),
+    private static function tabVeiculo(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Veículo')
+            ->icon('heroicon-o-truck')
+            ->schema([
+                self::section('Dados do Veículo', 'heroicon-o-truck', [
+                    self::text('Placa', 'Placa'),
+                    self::text('Chassi', 'Chassi'),
+                    self::text('Renavam', 'Renavam'),
+                    self::options('Combustivel', 'Combustível', [
+                        'Gasolina' => 'Gasolina',
+                        'Diesel' => 'Diesel',
+                        'Flex' => 'Flex',
+                    ]),
+                    self::number('AnoFabricacao', 'Ano de Fabricação'),
+                    self::number('AnoModelo', 'Ano do Modelo'),
+                ])->description('Preencha apenas para bens classificados como veículos.')->columns(3),
+            ]);
+    }
 
-                        Tabs\Tab::make('7. Observação')->schema([Textarea::make('Observacao')->label('Observações Gerais')->columnSpanFull()->rows(4)]),
+    private static function tabContabil(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Contábil')
+            ->icon('heroicon-o-calculator')
+            ->schema([
+                self::section('Classificação Contábil', 'heroicon-o-clipboard-document-list', [
+                    self::select('ContaContabil', 'Conta Contábil', 'contaContabilRef', 'titulo'),
+                    self::select('Produto', 'Elemento de Despesa', 'elementoDespesaRef', 'DescricaodaClasse'),
+                    self::number('VidaUtil', 'Vida Útil')->suffix('meses'),
+                ])->columns(3),
 
-                        Tabs\Tab::make('9. Situação')->schema([
-                            Grid::make(2)->schema([
-                                DatePicker::make('DataBaixa')->label('Data da Baixa')->disabled(),
-                                TextInput::make('ProcessoBaixa')->label('Processo de Baixa')->disabled(),
-                                DatePicker::make('DatadaReavaliacao')->label('Data da Última Reavaliação')->disabled(),
-                                TextInput::make('SituacaoBem')->label('ID Situação')->disabled(),
-                            ]),
-                        ]),
-                    ])->columnSpanFull(),
+                self::section('Valores Contábeis', 'heroicon-o-banknotes', [
+                    MoneyInput::make('ValorResidual')->label('Valor Residual'),
+                    MoneyInput::make('DepreciacaoMensal')->label('Depreciação Mensal'),
+                    MoneyInput::make('DepreciacaoAcumulada')->label('Depreciação Acumulada'),
+                    MoneyInput::make('ValorReavaliado')->label('Valor Reavaliado'),
+                ])->columns(2),
+            ]);
+    }
+
+    private static function tabObservacao(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Observação')
+            ->icon('heroicon-o-chat-bubble-left-right')
+            ->schema([
+                self::section('Informações Adicionais', 'heroicon-o-pencil-square', [
+                    self::textarea('Observacao', 'Observações Gerais')
+                        ->rows(6)
+                        ->columnSpanFull(),
+                ])->description('Registre informações complementares relevantes para o bem.'),
+            ]);
+    }
+
+    private static function tabSituacao(): Tabs\Tab
+    {
+        return Tabs\Tab::make('Situação')
+            ->icon('heroicon-o-check-circle')
+            ->schema([
+                self::section('Situação Atual', 'heroicon-o-check-badge', [
+                    self::select('SituacaoBem', 'Situação', 'situacaoBemRef', 'descricao'),
+                    self::date('DataBaixa', 'Data da Baixa')->disabled(),
+                    self::text('ProcessoBaixa', 'Processo de Baixa')->disabled(),
+                    self::date('DatadaReavaliacao', 'Data da Última Reavaliação')->disabled(),
+                ])->description('Dados de situação, baixa e última reavaliação do bem.')->columns(2),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->deferLoading()
             ->poll(null)
+            ->modifyQueryUsing(fn (Builder $query) => $query->with([
+                'ultimaTransferencia.termoRel.arquivoDigital',
+            ]))
             ->columns([
-                Tables\Columns\TextColumn::make('NumPatrimonio')->label('Patrimônio')->sortable()->searchable(isIndividual: true),
-                Tables\Columns\TextColumn::make('Descricao')->label('Descrição')->limit(35)->searchable(isIndividual: true),
-                Tables\Columns\TextColumn::make('unidadeJudiciariaRef.Setor')->label('Unidade')->alignCenter()->default('Não Informado'),
+                TableColumns::text('NumPatrimonio', 'Patrimônio', isFirstColumn: true)
+                    ->badge()
+                    ->copyable()
+                    ->copyMessage('Patrimônio copiado')
+                    ->searchable(isIndividual: true),
+                TableColumns::text('Descricao', 'Descrição')
+                    ->limit(40)
+                    ->tooltip(fn (BemMovel $record): ?string => $record->Descricao)
+                    ->searchable(isIndividual: true),
+                TableColumns::text('unidadeJudiciariaRef.Setor', 'Unidade')
+                    ->wrap(),
 
                 Tables\Columns\TextColumn::make('ultimo_termo_status')
                     ->label('Status do Termo')
-                    ->getStateUsing(function ($record) {
-                        $ultimo = DB::connection('egap')
-                            ->table('mat_transferencia')
-                            ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
-                            ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
-                            ->where('mat_transferencia.NumPatrimonio', $record->NumPatrimonio)
-                            ->select('mat_arquivodigital.situacao', 'mat_termos.num_termo')
-                            ->orderBy('mat_transferencia.date_time', 'desc')
-                            ->first();
-
+                    ->getStateUsing(function (BemMovel $record): string {
                         if ($record->situacaoBemRef?->descricao === 'Transferência') {
-                            return '⏳ Aguardando Assinatura/Validação';
+                            return 'Aguardando validação';
                         }
 
-                        if (!$ultimo || empty($ultimo->num_termo)) return 'Sem Movimentação';
+                        $termo = $record->ultimaTransferencia?->termoRel;
 
-                        return $ultimo->situacao == 1 ? '✅ Assinado' : '⏳ Aguardando Assinatura/Validação';
+                        if (! $termo?->num_termo) {
+                            return 'Sem movimentação';
+                        }
+
+                        return (int) $termo->arquivoDigital?->situacao === 1
+                            ? 'Assinado'
+                            : 'Aguardando validação';
                     })
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        '✅ Assinado' => 'success',
-                        '⏳ Aguardando Assinatura/Validação' => 'warning',
+                        'Assinado' => 'success',
+                        'Aguardando validação' => 'warning',
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('ValorAquisicao')->label('Valor')->alignCenter()->money('BRL')->sortable(),
-                Tables\Columns\TextColumn::make('situacaoBemRef.descricao')->label('Situação')->alignCenter()->default('Não Informado'),
+                TableColumns::money('ValorAquisicao', 'Valor de Aquisição'),
+                TableColumns::text('situacaoBemRef.descricao', 'Situação')
+                    ->badge()
+                    ->color(fn (?string $state): string => match (mb_strtolower($state ?? '')) {
+                        'ativo', 'em uso' => 'success',
+                        'transferência' => 'warning',
+                        'baixado', 'inservível' => 'danger',
+                        default => 'gray',
+                    }),
+                TableColumns::text('marcaRef.descricao', 'Marca')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::text('modeloRef.descricao', 'Modelo')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::dateTime('date_time', 'Atualizado em')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('UnidadeJudiciaria')
+                    ->label('Unidade Judiciária')
+                    ->relationship('unidadeJudiciariaRef', 'Setor')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('SituacaoBem')
+                    ->label('Situação')
+                    ->relationship('situacaoBemRef', 'descricao')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('TipodoBem')
+                    ->label('Tipo do Bem')
+                    ->options(['Móveis' => 'Móveis', 'Imóveis' => 'Imóveis', 'Veículos' => 'Veículos']),
+                Tables\Filters\SelectFilter::make('EstadodeConservacao')
+                    ->label('Estado de Conservação')
+                    ->options(['ÓTIMO' => 'ÓTIMO', 'BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA']),
+            ], layout: Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\EditAction::make()->label('Editar'),
@@ -177,7 +326,10 @@ class BemMovelResource extends Resource
                                     ->label('Valor')
                                     ->options(function (Forms\Get $get) {
                                         $elemento = $get('elemento');
-                                        if (!$elemento) return [];
+                                        if (! $elemento) {
+                                            return [];
+                                        }
+
                                         return match ($elemento) {
                                             'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
                                             'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
@@ -205,6 +357,7 @@ class BemMovelResource extends Resource
                                 ->where('NumPatrimonio', $record->NumPatrimonio)
                                 ->orderBy('date_time', 'desc')
                                 ->get();
+
                             return view('patrimonio.historico-movimentacoes', ['historico' => $movimentacoes]);
                         }),
 
@@ -223,6 +376,7 @@ class BemMovelResource extends Resource
                                 ->select(['mat_termos.id as TermoID', 'mat_termos.num_termo', 'mat_termos.ano_termo', 'mat_transferencia.date_time', 'mat_arquivodigital.situacao as StatusArquivo'])
                                 ->orderBy('mat_transferencia.date_time', 'desc')
                                 ->get()->unique('TermoID');
+
                             return view('patrimonio.termos-digitalizados-modal', ['termos' => $termos]);
                         }),
 
@@ -242,7 +396,7 @@ class BemMovelResource extends Resource
                             $record->update(['TomboSmarapd' => $data['TomboSmarapd'], 'DatadaReavaliacao' => $data['DatadaReavaliacao']]);
                             DB::connection('egap')->table('mat_conciliacao')->insert([
                                 'date_time' => now(), 'numero_patrimonio' => $record->NumPatrimonio, 'descricao' => $record->Descricao,
-                                'data_conciliacao' => $data['DatadaReavaliacao'], 'patrimonio' => $data['TomboSmarapd']
+                                'data_conciliacao' => $data['DatadaReavaliacao'], 'patrimonio' => $data['TomboSmarapd'],
                             ]);
                             Notification::make()->title('Conciliado com sucesso!')->success()->send();
                         }),
@@ -252,12 +406,12 @@ class BemMovelResource extends Resource
                         ->icon('heroicon-o-arrows-right-left')
                         ->color('warning')
                         ->form([
-                            Forms\Components\Grid::make(2)->schema([
-                                Forms\Components\Select::make('unidade_atual')
+                            Grid::make(2)->schema([
+                                Select::make('unidade_atual')
                                     ->label('Unidade Destino')
                                     ->options(fn () => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'))
                                     ->searchable()->live()->required(),
-                                Forms\Components\Select::make('setor_atual')
+                                Select::make('setor_atual')
                                     ->label('Setor Destino')
                                     ->options(fn (Forms\Get $get) => $get('unidade_atual') ? DB::connection('egap')->table('mat_setores')->where('CodigoPai', $get('unidade_atual'))->orderBy('Setor')->pluck('Setor', 'id') : [])
                                     ->searchable()->required(),
@@ -279,7 +433,7 @@ class BemMovelResource extends Resource
                                 ]);
 
                                 DB::connection('egap')->table('mat_arquivodigital')->insert([
-                                    'date_time' => now(), 'termo' => $id_termo, 'situacao' => 0, 'atualizado_em' => now(), 'atualizado_por' => $user
+                                    'date_time' => now(), 'termo' => $id_termo, 'situacao' => 0, 'atualizado_em' => now(), 'atualizado_por' => $user,
                                 ]);
 
                                 DB::connection('egap')->table('mat_transferencia')->insert([
@@ -304,7 +458,7 @@ class BemMovelResource extends Resource
                         ->form([
                             TextInput::make('processo_baixa')->label('Processo Nº')->required(),
                             Select::make('situacao_baixa_id')->label('Motivo')
-                                ->options(fn() => DB::connection('egap')->table('mat_situacao')->where('situacao', 'Baixado')->pluck('descricao', 'id'))
+                                ->options(fn () => DB::connection('egap')->table('mat_situacao')->where('situacao', 'Baixado')->pluck('descricao', 'id'))
                                 ->required(),
                             DatePicker::make('data_baixa')->label('Data')->default(now())->required(),
                         ])
@@ -322,7 +476,9 @@ class BemMovelResource extends Resource
                         ->color('success')
                         ->form([
                             Select::make('estado_conservacao')->label('Estado de Conservação')->options([10 => 'Ótimo', 8 => 'Bom', 5 => 'Regular', 2 => 'Ruim'])->required(),
-                        ])->action(function ($record, array $data) { Notification::make()->title('Reavaliado!')->success()->send(); }),
+                        ])->action(function ($record, array $data) {
+                            Notification::make()->title('Reavaliado!')->success()->send();
+                        }),
 
                     Action::make('calculo_depreciacao')
                         ->label('Depreciação')
@@ -339,7 +495,7 @@ class BemMovelResource extends Resource
                         ->color('success')
                         ->disabled(function ($record) {
                             // Só habilita se existir transferência assinada com termo válido em mat_transferencia
-                            return !DB::connection('egap')
+                            return ! DB::connection('egap')
                                 ->table('mat_transferencia')
                                 ->join('mat_arquivodigital', 'mat_transferencia.Termo', '=', 'mat_arquivodigital.termo')
                                 ->join('mat_termos', 'mat_transferencia.Termo', '=', 'mat_termos.id')
@@ -358,19 +514,19 @@ class BemMovelResource extends Resource
                                 ->orderBy('mat_transferencia.date_time', 'desc')
                                 ->first();
 
-                            if (!$status) {
-                                return "Sem movimentação de transferência registrada.";
+                            if (! $status) {
+                                return 'Sem movimentação de transferência registrada.';
                             }
 
                             if ($status->situacao != 1) {
-                                return "Aguardando assinatura/validação do destinatário no sistema antigo.";
+                                return 'Aguardando assinatura/validação do destinatário no sistema antigo.';
                             }
 
                             if (empty($status->num_termo)) {
-                                return "Inconsistência: Termo assinado, mas sem número de termo vinculado.";
+                                return 'Inconsistência: Termo assinado, mas sem número de termo vinculado.';
                             }
 
-                            return "Imprimir Termo de Responsabilidade";
+                            return 'Imprimir Termo de Responsabilidade';
                         })
                         ->url(function ($record) {
                             $valido = DB::connection('egap')
@@ -400,7 +556,10 @@ class BemMovelResource extends Resource
                             Grid::make(2)->schema([
                                 Select::make('elemento')->label('Elemento')->options(['DescricaoResumidadoBem' => 'Descrição Resumida', 'UnidadeJudiciaria' => 'Unidade Judiciária', 'Setor' => 'Setor', 'UnidadeGestora' => 'Unidade Gestora'])->required()->live(),
                                 Select::make('valor')->label('Valor')->options(function (Forms\Get $get) {
-                                    if (!$get('elemento')) return [];
+                                    if (! $get('elemento')) {
+                                        return [];
+                                    }
+
                                     return match ($get('elemento')) {
                                         'DescricaoResumidadoBem' => DB::connection('egap')->table('mat_descricaoresumida')->orderBy('Descricao')->pluck('Descricao', 'id'),
                                         'UnidadeJudiciaria' => DB::connection('egap')->table('mat_setores')->whereRaw('id = CodigoPai')->orderBy('Setor')->pluck('Setor', 'id'),
@@ -411,7 +570,7 @@ class BemMovelResource extends Resource
                                 })->searchable()->required(),
                             ]),
                         ])
-                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                        ->action(function (Collection $records, array $data) {
                             DB::connection('egap')->transaction(function () use ($records, $data) {
                                 $ids = $records->pluck('id')->toArray();
                                 DB::connection('egap')->table('mat_patrimonio')->whereIn('id', $ids)->update([$data['elemento'] => $data['valor']]);
@@ -423,8 +582,70 @@ class BemMovelResource extends Resource
             ]);
     }
 
+    private static function section(string $heading, string $icon, array $schema): Section
+    {
+        return Section::make($heading)
+            ->icon($icon)
+            ->schema($schema);
+    }
+
+    private static function select(string $field, string $label, string $relationship, string $titleAttribute): Select
+    {
+        return Select::make($field)
+            ->label($label)
+            ->relationship($relationship, $titleAttribute)
+            ->searchable()
+            ->preload()
+            ->native(false)
+            ->optionsLimit(50)
+            ->placeholder("Selecione {$label}");
+    }
+
+    private static function options(string $field, string $label, array $options): Select
+    {
+        return Select::make($field)
+            ->label($label)
+            ->options($options)
+            ->native(false)
+            ->placeholder("Selecione {$label}");
+    }
+
+    private static function text(string $field, string $label): TextInput
+    {
+        return TextInput::make($field)
+            ->label($label);
+    }
+
+    private static function number(string $field, string $label): TextInput
+    {
+        return TextInput::make($field)
+            ->label($label)
+            ->numeric()
+            ->placeholder('0');
+    }
+
+    private static function textarea(string $field, string $label): Textarea
+    {
+        return Textarea::make($field)
+            ->label($label)
+            ->rows(3)
+            ->placeholder($label);
+    }
+
+    private static function date(string $field, string $label): DatePicker
+    {
+        return DatePicker::make($field)
+            ->label($label)
+            ->displayFormat('d/m/Y')
+            ->native(false)
+            ->placeholder('dd/mm/aaaa');
+    }
+
     public static function getPages(): array
     {
-        return ['index' => Pages\ListBemMovels::route('/')];
+        return [
+            'index' => Pages\ListBemMovels::route('/'),
+            'edit' => Pages\EditBemMovel::route('/{record}/edit'),
+        ];
     }
 }

@@ -2,18 +2,25 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Models\Patrimonio\BensMoveis\Conciliacao;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensMoveis\Conciliacao;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Forms\Components\{TextInput, Select, DatePicker, Textarea, Grid, Section, Tabs};
-use Filament\Pages\SubNavigationPosition;
 use Filament\Notifications\Notification;
+use Filament\Pages\SubNavigationPosition;
+use Filament\Resources\Resource;
+use Filament\Tables\Table;
 
 class ConciliacaoResource extends Resource
 {
@@ -33,6 +40,8 @@ class ConciliacaoResource extends Resource
 
     protected static ?int $navigationSort = 15;
 
+    protected static ?string $slug = 'bens-moveis/conciliacoes';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
@@ -40,48 +49,57 @@ class ConciliacaoResource extends Resource
         return $form
             ->schema([
                 Tabs::make('Abas de Conciliação')
+                    ->persistTabInQueryString()
                     ->tabs([
-                        // ✅ ABA 1: CADASTRO INDIVIDUAL
                         Tabs\Tab::make('Individual')
                             ->icon('heroicon-m-user')
                             ->schema([
-                                Grid::make(2)->schema([
-                                    Select::make('numero_patrimonio')
-                                        ->label('Número Patrimônio')
-                                        ->searchable()
-                                        ->live()
-                                        ->getSearchResultsUsing(fn (string $search) =>
-                                            BemMovel::where('NumPatrimonio', 'like', "%{$search}%")->limit(20)->pluck('NumPatrimonio', 'NumPatrimonio')
-                                        )
-                                        ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                            $bem = BemMovel::where('NumPatrimonio', $state)->first();
-                                            if ($bem) {
-                                                $set('descricao', $bem->Descricao);
-                                                $set('valor_aquisicao', $bem->ValorAquisicao);
-                                            }
-                                        }),
-
-                                    TextInput::make('patrimonio_desmembrado')->label('Desmembrado'),
-
-                                    Textarea::make('descricao')->label('Descrição')->rows(3)->columnSpanFull(),
-
-                                    DatePicker::make('data_conciliacao')->label('Data Conciliação')->default(now())->required(),
-
-                                    Select::make('comarca')
-                                        ->label('Comarca')
-                                        ->relationship('comarcaRef', 'Setor')
-                                        ->searchable(),
-
-                                    TextInput::make('valor_aquisicao')->label('Valor')->numeric()->prefix('R$'),
-                                ]),
+                                Section::make('Dados da Conciliação')
+                                    ->description('Selecione o patrimônio e confira os dados recuperados do cadastro.')
+                                    ->icon('heroicon-o-clipboard-document-check')
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            Select::make('numero_patrimonio')
+                                                ->label('Número do Patrimônio')
+                                                ->placeholder('Busque pelo patrimônio')
+                                                ->searchable()
+                                                ->live()
+                                                ->getSearchResultsUsing(fn (string $search) => BemMovel::where('NumPatrimonio', 'like', "%{$search}%")
+                                                    ->limit(20)
+                                                    ->pluck('NumPatrimonio', 'NumPatrimonio'))
+                                                ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                                    $bem = BemMovel::where('NumPatrimonio', $state)->first();
+                                                    if ($bem) {
+                                                        $set('descricao', $bem->Descricao);
+                                                        $set('valor_aquisicao', $bem->ValorAquisicao);
+                                                    }
+                                                }),
+                                            TextInput::make('patrimonio_desmembrado')->label('Desmembrado'),
+                                            Textarea::make('descricao')->label('Descrição')->rows(3)->columnSpanFull(),
+                                            DatePicker::make('data_conciliacao')
+                                                ->label('Data da Conciliação')
+                                                ->default(now())
+                                                ->displayFormat('d/m/Y')
+                                                ->native(false)
+                                                ->required(),
+                                            Select::make('comarca')
+                                                ->label('Comarca')
+                                                ->relationship('comarcaRef', 'Setor')
+                                                ->placeholder('Selecione a comarca')
+                                                ->searchable()
+                                                ->preload()
+                                                ->native(false),
+                                            TextInput::make('valor_aquisicao')->label('Valor')->numeric()->prefix('R$'),
+                                        ]),
+                                    ]),
                             ]),
 
-                        // ✅ ABA 2: PROCESSAMENTO EM MASSA (Substitui a página antiga)
                         Tabs\Tab::make('Processar em Massa')
                             ->icon('heroicon-m-squares-plus')
                             ->schema([
                                 Section::make('Conciliação Rápida')
                                     ->description('Cole aqui a lista de patrimónios para conciliar vários de uma só vez.')
+                                    ->icon('heroicon-o-squares-plus')
                                     ->schema([
                                         Textarea::make('massa_dados')
                                             ->label('Dados para Conciliar')
@@ -94,7 +112,6 @@ class ConciliacaoResource extends Resource
                                                 ->color('success')
                                                 ->requiresConfirmation()
                                                 ->action(function (Forms\Get $get) {
-                                                    // Aqui entra a lógica de processamento do textarea
                                                     Notification::make()->title('Processado com sucesso!')->success()->send();
                                                 }),
                                         ]),
@@ -106,20 +123,22 @@ class ConciliacaoResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('numero_patrimonio')->label('Patrimônio')->searchable()->sortable()->weight('bold'),
-                Tables\Columns\TextColumn::make('descricao')->label('Descrição')->limit(40),
-                Tables\Columns\TextColumn::make('comarcaRef.Setor')->label('Comarca'),
-                Tables\Columns\TextColumn::make('data_conciliacao')->label('Data')->date('d/m/Y'),
+                TableColumns::text('numero_patrimonio', 'Patrimônio', isFirstColumn: true)
+                    ->badge()
+                    ->copyable()
+                    ->weight('medium'),
+                TableColumns::text('descricao', 'Descrição')
+                    ->limit(45)
+                    ->tooltip(fn ($record): ?string => $record->descricao),
+                TableColumns::text('comarcaRef.Setor', 'Comarca')
+                    ->wrap(),
+                TableColumns::date('data_conciliacao', 'Data'),
+                TableColumns::money('valor_aquisicao', 'Valor de Aquisição')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('id', 'desc')
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ]);
+            ->defaultSort('id', 'desc');
     }
 
     public static function getPages(): array

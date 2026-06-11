@@ -13,9 +13,8 @@ class ListItemInventarios extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            /** ✅ BOTÃO "NOVO" ADICIONADO */
             Actions\CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

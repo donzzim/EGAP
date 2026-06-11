@@ -4,11 +4,13 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\Reavaliacao;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class ReavaliacaoResource extends Resource
 {
@@ -17,48 +19,49 @@ class ReavaliacaoResource extends Resource
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Reavaliacao::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+
     protected static ?string $navigationGroup = 'Bens Móveis';
+
     protected static ?string $navigationLabel = 'Reavaliação';
+
     protected static ?string $modelLabel = 'Reavaliação';
+
+    protected static ?string $pluralModelLabel = 'Reavaliações';
+
     protected static ?int $navigationSort = 7;
 
-    /** ✅ TRAVA DE SEGURANÇA: Apenas Consulta */
-    public static function canCreate(): bool { return false; }
-    public static function canEdit($record): bool { return false; }
-    public static function canDelete($record): bool { return false; }
+    protected static ?string $slug = 'bens-moveis/reavaliacoes';
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('patrimonio')
-                    ->label('Patrimônio')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('data_reavaliacao')
-                    ->label('Última Reavaliação')
-                    ->date('d/m/Y')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('valor_aquisicao')
-                    ->label('Valor Aquisição')
-                    ->money('BRL'),
-
-                Tables\Columns\TextColumn::make('valor_reavaliacao')
-                    ->label('Valor Reavaliação')
-                    ->money('BRL')
-                    ->weight('bold'),
-
-                Tables\Columns\TextColumn::make('vida_util_remanescente_meses')
-                    ->label('Vida Útil Rem. (Meses)')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('estado_conservacao')
-                    ->label('Estado')
+                TableColumns::text('patrimonio', 'Patrimônio', isFirstColumn: true)
+                    ->badge(),
+                TableColumns::date('data_reavaliacao', 'Última Reavaliação'),
+                TableColumns::money('valor_aquisicao', 'Valor de Aquisição'),
+                TableColumns::money('valor_reavaliacao', 'Valor da Reavaliação')
+                    ->weight('medium'),
+                TableColumns::text('vida_util_remanescente_meses', 'Vida Útil Remanescente')
+                    ->suffix(' meses'),
+                TableColumns::text('estado_conservacao', 'Estado')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'ÓTIMO', 'BOM' => 'success',
@@ -66,12 +69,8 @@ class ReavaliacaoResource extends Resource
                         default => 'danger',
                     }),
 
-                Tables\Columns\TextColumn::make('ajuste_contabil')
-                    ->label('Ajuste Contábil')
-                    ->money('BRL'),
-
-                Tables\Columns\TextColumn::make('responsavel.name')
-                    ->label('Atualizado por')
+                TableColumns::money('ajuste_contabil', 'Ajuste Contábil'),
+                TableColumns::text('responsavel.name', 'Atualizado por')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -82,8 +81,10 @@ class ReavaliacaoResource extends Resource
                         'REGULAR' => 'REGULAR',
                         'RUIM' => 'RUIM',
                     ]),
-            ])
-            ->actions([]);
+            ], layout: Tables\Enums\FiltersLayout::AboveContent)
+            ->actions([])
+            ->bulkActions([])
+            ->defaultSort('data_reavaliacao', 'desc');
     }
 
     public static function getPages(): array

@@ -11,12 +11,12 @@ use App\Models\Patrimonio\BensImoveis\BemImovel;
 use App\Models\Patrimonio\BensImoveis\Depreciacao;
 use Carbon\CarbonImmutable;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Infolists\Components\Grid as InfolistGrid;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
@@ -39,12 +39,19 @@ class BemImovelResource extends Resource
     protected static ?string $model = BemImovel::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?string $recordTitleAttribute = 'descricao';
+
     protected static ?string $modelLabel = 'Bem Imóvel';
+
     protected static ?string $pluralModelLabel = 'Administração dos Bens Imóveis';
-    protected static ?string $navigationLabel = 'Administração dos bens imóveis';
+
+    protected static ?string $navigationLabel = 'Administração';
+
     protected static ?string $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $slug = 'bens-imoveis/adm-bens-imoveis';
 
     // -------------------------------------------------------------------------
@@ -75,26 +82,45 @@ class BemImovelResource extends Resource
             ->icon('heroicon-o-building-office-2')
             ->schema([
                 self::section('Identificação', 'heroicon-o-identification', [
-                    self::text('num_registro', 'Núm. registro')->columnSpan(3),
-                    self::date('data_construcao', 'Data de construção')->columnSpan(3),
-                    self::text('num_matricula', 'Matrícula')->columnSpan(3),
-                    self::select('Id_setores', 'Setor', 'setoresRelacaoRef', 'Setor')->columnSpan(6),
-                    self::select('id_responsavel', 'Responsável', 'responsavelRelacaoRef', 'descricao')->columnSpan(6),
-                ])->description('Dados principais de registro e responsabilidade do imóvel.')->columns(12),
+                    self::text('num_registro', 'Núm. registro')
+                        ->columnSpan(3),
+                    self::date('data_construcao', 'Data de construção')
+                        ->columnSpan(3),
+                    self::text('num_matricula', 'Matrícula')
+                        ->columnSpan(3),
+                    self::select('Id_setores', 'Setor', 'setoresRelacaoRef', 'Setor')
+                        ->columnSpan(6),
+                    self::select('id_responsavel', 'Responsável', 'responsavelRelacaoRef', 'descricao')
+                        ->columnSpan(6),
+                ])
+                    ->description('Dados principais de registro e responsabilidade do imóvel.')
+                    ->columns(12),
 
                 self::section('Processos', 'heroicon-o-folder-open', [
                     self::text('num_processo_tj', 'Processo TJ'),
                     self::text('num_processo_seger', 'Processo SEGER'),
                     self::select('num_processo_adm', 'Processo Administrativo', 'processoAdmRelacaoRef', 'num_processo'),
-                ])->description('Vinculações processuais relacionadas ao imóvel.')->columns(3),
+                ])
+                    ->description('Vinculações processuais relacionadas ao imóvel.')
+                    ->columns(3),
 
                 self::section('Valores históricos', 'heroicon-o-banknotes', [
-                    MoneyInput::make('valor_historico_escritura')->label('Valor histórico da escritura'),
-                    MoneyInput::make('valor_historico_iptu')->label('Valor histórico do IPTU'),
-                    MoneyInput::make('valor_historico_1a_avaliacao')->label('Valor histórico da 1ª avaliação'),
-                    self::text('criterio_valor_historico', 'Critério do valor histórico')->columnSpan(6),
-                    self::text('criterio_valor_atualizado', 'Critério do valor atualizado')->columnSpan(6),
-                ])->description('Critérios e valores históricos usados na composição patrimonial.')->columns(12),
+                    MoneyInput::make('valor_historico_escritura')
+                        ->label('Valor histórico da escritura')
+                        ->columnSpan(4),
+                    MoneyInput::make('valor_historico_iptu')
+                        ->label('Valor histórico do IPTU')
+                        ->columnSpan(4),
+                    MoneyInput::make('valor_historico_1a_avaliacao')
+                        ->label('Valor histórico da 1ª avaliação')
+                        ->columnSpan(4),
+                    self::text('criterio_valor_historico', 'Critério do valor histórico')
+                        ->columnSpan(6),
+                    self::text('criterio_valor_atualizado', 'Critério do valor atualizado')
+                        ->columnSpan(6),
+                ])
+                    ->description('Critérios e valores históricos usados na composição patrimonial.')
+                    ->columns(12),
             ]);
     }
 
@@ -254,30 +280,16 @@ class BemImovelResource extends Resource
                         : '-'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->tooltip('Editar')->hiddenLabel(),
-                Tables\Actions\ViewAction::make()->tooltip('Visualizar')->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()->tooltip('Excluir')->hiddenLabel(),
+                ...TableDefaults::actions(),
                 Tables\Actions\ActionGroup::make([
                     self::calcularDepreciacaoTableAction(),
                     self::registroDepreciacaoTableAction(),
                     self::tributosTableAction(),
-                    Tables\Actions\Action::make('ocupacoes_action')
-                        ->label('Ocupações de Terceiros')
-                        ->icon('heroicon-o-flag'),
-                    Tables\Actions\Action::make('imprimir')
-                        ->label('Imprimir termo')
-                        ->icon('heroicon-o-printer')
-                        ->url(fn ($record) => "https://sistemas.tjes.jus.br/patrimonio/index.php?option=com_reports&name=termo-imovel&tmpl=component&bens={$record->Id}")
-                        ->openUrlInNewTab(),
-                    Tables\Actions\Action::make('processos_action')
-                        ->label('Processos')
-                        ->icon('heroicon-o-folder'),
-                    Tables\Actions\Action::make('reavaliacao_action')
-                        ->label('Reavaliação dos Imóveis')
-                        ->icon('heroicon-o-forward'),
-                    Tables\Actions\Action::make('obras_action')
-                        ->label('Obras e Ampliações')
-                        ->icon('heroicon-o-home'),
+                    self::ocupacaoTableAction(),
+                    self::imprimirTermoTableAction(),
+                    self::processosTableAction(),
+                    self::reavaliacaoTableAction(),
+                    self::obrasTableAction(),
                 ])
                     ->hiddenLabel()
                     ->icon('heroicon-m-ellipsis-vertical'),
@@ -345,37 +357,52 @@ class BemImovelResource extends Resource
                                 InfolistGrid::make(12)->schema([
                                     TextEntry::make('item')
                                         ->label('Item')
-                                        ->badge()->color('gray')->placeholder('-')->columnSpan(1),
+                                        ->badge()->color('gray')
+                                        ->placeholder('-')
+                                        ->columnSpan(1),
                                     TextEntry::make('data_calculo')
                                         ->label('Data cálculo')
                                         ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->placeholder('-')->columnSpan(2),
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
                                     TextEntry::make('valor')
                                         ->label('Valor base')
                                         ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->placeholder('-')->columnSpan(2),
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
                                     TextEntry::make('vida_util')
                                         ->label('Vida útil')
-                                        ->suffix(' meses')->badge()->color('info')->placeholder('-')->columnSpan(1),
+                                        ->suffix(' meses')
+                                        ->badge()
+                                        ->color('info')
+                                        ->placeholder('-')
+                                        ->columnSpan(1),
                                     TextEntry::make('valor_residual')
                                         ->label('Residual')
                                         ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->placeholder('-')->columnSpan(2),
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
                                     TextEntry::make('depreciacao_mensal')
                                         ->label('Mensal')
                                         ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->placeholder('-')->columnSpan(2),
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
                                     TextEntry::make('depreciacao_acumulada')
                                         ->label('Acumulada')
                                         ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('warning')->placeholder('-')->columnSpan(2),
+                                        ->color('warning')
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
                                     TextEntry::make('valor_liquido_contabil')
                                         ->label('Valor líquido contábil')
                                         ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('success')->placeholder('-')->columnSpan(3),
+                                        ->color('success')
+                                        ->placeholder('-')
+                                        ->columnSpan(3),
                                     TextEntry::make('obraRelacaoref.descricao')
                                         ->label('Obra/ampliação')
-                                        ->placeholder('-')->columnSpan(9),
+                                        ->placeholder('-')
+                                        ->columnSpan(9),
                                 ]),
                             ])
                             ->visible(fn (BemImovel $record): bool => $record->depreciacoesRelacaoRef->isNotEmpty()),
@@ -458,6 +485,357 @@ class BemImovelResource extends Resource
             ]);
     }
 
+    private static function ocupacaoTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('ocupacoes_action')
+            ->label('Ocupações de Terceiros')
+            ->icon('heroicon-o-flag')
+            ->modalHeading(fn (BemImovel $record): string => "Ocupações de terceiros do imóvel #{$record->Id}")
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalWidth('7xl')
+            ->mountUsing(fn (BemImovel $record) => $record->loadMissing([
+                'cedidosRelacaoRef' => fn ($query) => $query
+                    ->orderByDesc('data_assinatura')
+                    ->orderByDesc('id'),
+            ]))
+            ->infolist(fn (BemImovel $record): array => [
+                InfolistSection::make('Resumo')
+                    ->icon('heroicon-o-users')
+                    ->schema([
+                        TextEntry::make('ocupacoes_total')
+                            ->label('Total de ocupações')
+                            ->state(fn (BemImovel $record): int => $record->cedidosRelacaoRef->count())
+                            ->badge()
+                            ->color('primary'),
+                    ]),
+                InfolistSection::make('Ocupações de terceiros')
+                    ->icon('heroicon-o-flag')
+                    ->schema([
+                        TextEntry::make('ocupacoes_vazias')
+                            ->hiddenLabel()
+                            ->state('Nenhuma ocupação de terceiro relacionada a este bem imóvel.')
+                            ->badge()
+                            ->color('gray')
+                            ->visible(fn (BemImovel $record): bool => $record->cedidosRelacaoRef->isEmpty()),
+                        RepeatableEntry::make('cedidosRelacaoRef')
+                            ->hiddenLabel()
+                            ->contained(false)
+                            ->schema([
+                                InfolistGrid::make(12)->schema([
+                                    TextEntry::make('situacao')
+                                        ->label('Situação')
+                                        ->badge()
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
+                                    TextEntry::make('num_processo')
+                                        ->label('Nº do processo')
+                                        ->placeholder('-')
+                                        ->columnSpan(3),
+                                    TextEntry::make('resumo')
+                                        ->label('Partes/Terceiros')
+                                        ->placeholder('-')
+                                        ->columnSpan(7),
+                                    TextEntry::make('proprietario_responsavel')
+                                        ->label('Proprietário/Responsável')
+                                        ->placeholder('-')
+                                        ->columnSpan(6),
+                                    TextEntry::make('condicao_uso')
+                                        ->label('Condição de uso')
+                                        ->placeholder('-')
+                                        ->columnSpan(6),
+                                    TextEntry::make('objeto')
+                                        ->label('Objeto')
+                                        ->placeholder('-')
+                                        ->columnSpan(12),
+                                    TextEntry::make('data_assinatura')
+                                        ->label('Assinatura')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->columnSpan(2),
+                                    TextEntry::make('data_publicacao')
+                                        ->label('Publicação')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->columnSpan(2),
+                                    TextEntry::make('vencimento')
+                                        ->label('Vencimento')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->columnSpan(2),
+                                    TextEntry::make('vigencia')
+                                        ->label('Vigência')
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
+                                    TextEntry::make('retribuicao')
+                                        ->label('Retribuição')
+                                        ->badge()
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
+                                    TextEntry::make('despesas')
+                                        ->label('Despesas')
+                                        ->listWithLineBreaks()
+                                        ->bulleted()
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
+                                    TextEntry::make('observacao')
+                                        ->label('Observação')
+                                        ->placeholder('-')
+                                        ->columnSpan(12),
+                                ]),
+                            ])
+                            ->visible(fn (BemImovel $record): bool => $record->cedidosRelacaoRef->isNotEmpty()),
+                    ]),
+            ]);
+    }
+
+    private static function imprimirTermoTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('imprimir')
+            ->label('Imprimir termo')
+            ->icon('heroicon-o-printer')
+            ->url(fn ($record) => "https://sistemas.tjes.jus.br/patrimonio/index.php?option=com_reports&name=termo-imovel&tmpl=component&bens={$record->Id}")
+            ->openUrlInNewTab();
+    }
+
+    private static function processosTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('processos_action')
+            ->label('Processos')
+            ->icon('heroicon-o-folder')
+            ->modalHeading(fn (BemImovel $record): string => "Processos do imóvel #{$record->Id}")
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalWidth('7xl')
+            ->mountUsing(fn (BemImovel $record) => $record->loadMissing([
+                'processoAdmRelacaoRef.tipoProcessoRelacaoRef',
+                'processoAdmRelacaoRef.unidadeRequisitanteRelacaoRef',
+                'processoAdmRelacaoRef.gestorTitularRelacaoRef',
+            ]))
+            ->infolist(fn (BemImovel $record): array => [
+                InfolistSection::make('Referências do imóvel')
+                    ->icon('heroicon-o-document-text')
+                    ->schema([
+                        InfolistGrid::make(3)->schema([
+                            TextEntry::make('num_processo_tj')
+                                ->label('Processo TJ')
+                                ->placeholder('-'),
+                            TextEntry::make('num_processo_seger')
+                                ->label('Processo SEGER')
+                                ->placeholder('-'),
+                            TextEntry::make('processo_administrativo_total')
+                                ->label('Processos administrativos vinculados')
+                                ->state(fn (BemImovel $record): int => $record->processoAdmRelacaoRef ? 1 : 0)
+                                ->badge()
+                                ->color('primary'),
+                        ]),
+                    ]),
+                InfolistSection::make('Processo administrativo')
+                    ->icon('heroicon-o-folder-open')
+                    ->schema([
+                        TextEntry::make('processo_administrativo_vazio')
+                            ->hiddenLabel()
+                            ->state('Nenhum processo administrativo relacionado a este bem imóvel.')
+                            ->badge()
+                            ->color('gray')
+                            ->visible(fn (BemImovel $record): bool => $record->processoAdmRelacaoRef === null),
+                        InfolistGrid::make(12)
+                            ->schema([
+                                TextEntry::make('processoAdmRelacaoRef.num_processo')
+                                    ->label('Nº Processo TJES')
+                                    ->placeholder('-')
+                                    ->columnSpan(3),
+                                TextEntry::make('processoAdmRelacaoRef.no_processo_sei')
+                                    ->label('Nº Processo SEI')
+                                    ->placeholder('-')
+                                    ->columnSpan(3),
+                                TextEntry::make('processoAdmRelacaoRef.tipoProcessoRelacaoRef.descricao')
+                                    ->label('Tipo')
+                                    ->placeholder('-')
+                                    ->columnSpan(3),
+                                TextEntry::make('processoAdmRelacaoRef.situacao_atual')
+                                    ->label('Situação atual')
+                                    ->badge()
+                                    ->placeholder('-')
+                                    ->columnSpan(3),
+                                TextEntry::make('processoAdmRelacaoRef.data_abertura')
+                                    ->label('Data de abertura')
+                                    ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                    ->columnSpan(2),
+                                TextEntry::make('processoAdmRelacaoRef.data_vigencia')
+                                    ->label('Fim da vigência')
+                                    ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                    ->columnSpan(2),
+                                TextEntry::make('processoAdmRelacaoRef.unidadeRequisitanteRelacaoRef.Setor')
+                                    ->label('Unidade requisitante')
+                                    ->placeholder('-')
+                                    ->columnSpan(4),
+                                TextEntry::make('processoAdmRelacaoRef.gestorTitularRelacaoRef.name')
+                                    ->label('Gestor titular')
+                                    ->placeholder('-')
+                                    ->columnSpan(4),
+                                TextEntry::make('processoAdmRelacaoRef.descricao')
+                                    ->label('Descrição')
+                                    ->placeholder('-')
+                                    ->columnSpan(12),
+                            ])
+                            ->visible(fn (BemImovel $record): bool => $record->processoAdmRelacaoRef !== null),
+                    ]),
+            ]);
+    }
+
+    private static function reavaliacaoTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('reavaliacao_action')
+            ->label('Reavaliação dos Imóveis')
+            ->icon('heroicon-o-forward')
+            ->modalHeading(fn (BemImovel $record): string => "Reavaliações do imóvel #{$record->Id}")
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalWidth('7xl')
+            ->mountUsing(fn (BemImovel $record) => $record->load([
+                'reavaliacoesRelacaoRef' => fn ($query) => $query
+                    ->with('estadoConservacaoRelacaoref')
+                    ->orderByDesc('data_reavaliacao')
+                    ->orderByDesc('Id'),
+            ]))
+            ->infolist(fn (BemImovel $record): array => [
+                InfolistSection::make('Resumo')
+                    ->icon('heroicon-o-calculator')
+                    ->schema([
+                        TextEntry::make('reavaliacoes_total')
+                            ->label('Total de reavaliações')
+                            ->state(fn (BemImovel $record): int => $record->reavaliacoesRelacaoRef->count())
+                            ->badge()
+                            ->color('primary'),
+                    ]),
+                InfolistSection::make('Reavaliações')
+                    ->icon('heroicon-o-banknotes')
+                    ->schema([
+                        TextEntry::make('reavaliacoes_vazias')
+                            ->hiddenLabel()
+                            ->state('Nenhuma reavaliação relacionada a este bem imóvel.')
+                            ->badge()
+                            ->color('gray')
+                            ->visible(fn (BemImovel $record): bool => $record->reavaliacoesRelacaoRef->isEmpty()),
+                        RepeatableEntry::make('reavaliacoesRelacaoRef')
+                            ->hiddenLabel()
+                            ->contained(false)
+                            ->schema([
+                                InfolistGrid::make(12)->schema([
+                                    TextEntry::make('data_reavaliacao')
+                                        ->label('Data da reavaliação')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->columnSpan(2),
+                                    TextEntry::make('estadoConservacaoRelacaoref.descEstadoConservacao')
+                                        ->label('Estado de conservação')
+                                        ->badge()
+                                        ->placeholder('-')
+                                        ->columnSpan(3),
+                                    TextEntry::make('valor_reavaliacao')
+                                        ->label('Valor da reavaliação')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->color('success')
+                                        ->columnSpan(3),
+                                    TextEntry::make('ajuste_contabil')
+                                        ->label('Ajuste contábil')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->columnSpan(2),
+                                    TextEntry::make('vida_util_reavaliacao')
+                                        ->label('Vida útil')
+                                        ->suffix(' meses')
+                                        ->placeholder('-')
+                                        ->columnSpan(2),
+                                    TextEntry::make('valor_mercado')
+                                        ->label('Valor de mercado')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->columnSpan(3),
+                                    TextEntry::make('valor_aquisicao')
+                                        ->label('Valor de aquisição')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->columnSpan(3),
+                                    TextEntry::make('vida_util_remanescente_meses')
+                                        ->label('Vida útil remanescente')
+                                        ->suffix(' meses')
+                                        ->placeholder('-')
+                                        ->columnSpan(3),
+                                    TextEntry::make('idade_aparente_anos')
+                                        ->label('Idade aparente')
+                                        ->suffix(' anos')
+                                        ->placeholder('-')
+                                        ->columnSpan(3),
+                                    TextEntry::make('observacao')
+                                        ->label('Observação')
+                                        ->placeholder('-')
+                                        ->columnSpan(12),
+                                ]),
+                            ])
+                            ->visible(fn (BemImovel $record): bool => $record->reavaliacoesRelacaoRef->isNotEmpty()),
+                    ]),
+            ]);
+    }
+
+    private static function obrasTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('obras_action')
+            ->label('Obras e Ampliações')
+            ->icon('heroicon-o-home')
+            ->modalHeading(fn (BemImovel $record): string => "Obras e ampliações do imóvel #{$record->Id}")
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalWidth('7xl')
+            ->mountUsing(fn (BemImovel $record) => $record->load([
+                'obrasRelacaoRef' => fn ($query) => $query
+                    ->orderByDesc('data')
+                    ->orderByDesc('id'),
+            ]))
+            ->infolist(fn (BemImovel $record): array => [
+                InfolistSection::make('Resumo')
+                    ->icon('heroicon-o-wrench-screwdriver')
+                    ->schema([
+                        InfolistGrid::make(2)->schema([
+                            TextEntry::make('obras_total')
+                                ->label('Total de obras e ampliações')
+                                ->state(fn (BemImovel $record): int => $record->obrasRelacaoRef->count())
+                                ->badge()
+                                ->color('primary'),
+                            TextEntry::make('obras_valor_total')
+                                ->label('Valor total')
+                                ->state(fn (BemImovel $record): string => self::formatMoney($record->obrasRelacaoRef->sum('valor')))
+                                ->color('success'),
+                        ]),
+                    ]),
+                InfolistSection::make('Obras e ampliações')
+                    ->icon('heroicon-o-home')
+                    ->schema([
+                        TextEntry::make('obras_vazias')
+                            ->hiddenLabel()
+                            ->state('Nenhuma obra ou ampliação relacionada a este bem imóvel.')
+                            ->badge()
+                            ->color('gray')
+                            ->visible(fn (BemImovel $record): bool => $record->obrasRelacaoRef->isEmpty()),
+                        RepeatableEntry::make('obrasRelacaoRef')
+                            ->hiddenLabel()
+                            ->contained(false)
+                            ->schema([
+                                InfolistGrid::make(12)->schema([
+                                    TextEntry::make('data')
+                                        ->label('Data')
+                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
+                                        ->columnSpan(2),
+                                    TextEntry::make('descricao')
+                                        ->label('Descrição')
+                                        ->placeholder('-')
+                                        ->columnSpan(7),
+                                    TextEntry::make('valor')
+                                        ->label('Valor')
+                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
+                                        ->color('success')
+                                        ->columnSpan(3),
+                                ]),
+                            ])
+                            ->visible(fn (BemImovel $record): bool => $record->obrasRelacaoRef->isNotEmpty()),
+                    ]),
+            ]);
+    }
+
     // -------------------------------------------------------------------------
     // PAGES
     // -------------------------------------------------------------------------
@@ -465,9 +843,9 @@ class BemImovelResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBemImovels::route('/'),
+            'index' => Pages\ListBemImovels::route('/'),
             'create' => Pages\CreateBemImovel::route('/create'),
-            'edit'   => Pages\EditBemImovel::route('/{record}/edit'),
+            'edit' => Pages\EditBemImovel::route('/{record}/edit'),
         ];
     }
 
@@ -503,8 +881,9 @@ class BemImovelResource extends Resource
     /**
      * Calcula e persiste os registros de depreciação do imóvel.
      *
-     * @throws InvalidArgumentException quando os dados do imóvel são insuficientes.
      * @return int Quantidade de registros gerados.
+     *
+     * @throws InvalidArgumentException quando os dados do imóvel são insuficientes.
      */
     private static function calcularDepreciacao(BemImovel $record): int
     {
@@ -521,25 +900,25 @@ class BemImovelResource extends Resource
         [$dataBase, $valor, $vidaUtil] = self::resolverParametrosDepreciacao($imovel);
 
         $percentualResidual = self::decimal($imovel->elementoDespesaRelacaoRef?->ValorResidual);
-        $valorResidual      = $valor * ($percentualResidual / 100);
-        $depreciacaoMensal  = ($valor - $valorResidual) / $vidaUtil;
+        $valorResidual = $valor * ($percentualResidual / 100);
+        $depreciacaoMensal = ($valor - $valorResidual) / $vidaUtil;
 
-        $rows        = [];
-        $seq         = 1;
+        $rows = [];
+        $seq = 1;
         $dataCalculo = $dataBase;
 
         for ($mesesRestantes = $vidaUtil; $mesesRestantes > 0; $mesesRestantes--) {
             $depreciacaoAcumulada = ($seq - 1) * $depreciacaoMensal;
 
             $rows[] = [
-                'date_time'            => now(),
-                'Id_imovel'            => $imovel->getKey(),
-                'item'                 => $seq,
-                'data_calculo'         => $dataCalculo->toDateString(),
-                'valor'                => $valor,
-                'vida_util'            => $mesesRestantes,
-                'valor_residual'       => $valorResidual,
-                'depreciacao_mensal'   => $depreciacaoMensal,
+                'date_time' => now(),
+                'Id_imovel' => $imovel->getKey(),
+                'item' => $seq,
+                'data_calculo' => $dataCalculo->toDateString(),
+                'valor' => $valor,
+                'vida_util' => $mesesRestantes,
+                'valor_residual' => $valorResidual,
+                'depreciacao_mensal' => $depreciacaoMensal,
                 'depreciacao_acumulada' => $depreciacaoAcumulada,
                 'valor_liquido_contabil' => $valor - $depreciacaoAcumulada,
             ];
@@ -568,6 +947,7 @@ class BemImovelResource extends Resource
      * data-base, valor e vida útil.
      *
      * @return array{CarbonImmutable, float, int}
+     *
      * @throws InvalidArgumentException
      */
     private static function resolverParametrosDepreciacao(BemImovel $imovel): array
@@ -627,8 +1007,7 @@ class BemImovelResource extends Resource
     private static function text(string $field, string $label): TextInput
     {
         return TextInput::make($field)
-            ->label($label)
-            ->placeholder($label);
+            ->label($label);
     }
 
     private static function number(string $field, string $label): TextInput
@@ -693,7 +1072,7 @@ class BemImovelResource extends Resource
             return '-';
         }
 
-        return 'R$ ' . number_format((float) $value, 2, ',', '.');
+        return 'R$ '.number_format((float) $value, 2, ',', '.');
     }
 
     private static function formatDate(mixed $value): string

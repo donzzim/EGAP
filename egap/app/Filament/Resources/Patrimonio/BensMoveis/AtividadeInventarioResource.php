@@ -2,17 +2,23 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Models\Patrimonio\BensMoveis\AtividadeInventario;
+use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Setores;
+use App\Models\Patrimonio\BensMoveis\AtividadeInventario;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{TextInput, Select, DatePicker, Grid, Section};
-use Filament\Pages\SubNavigationPosition;
 
 class AtividadeInventarioResource extends Resource
 {
@@ -23,12 +29,8 @@ class AtividadeInventarioResource extends Resource
     /** ✅ Vincula ao Cluster para aparecer nas abas superiores */
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?string $slug = 'atividades-do-inventario';
+    protected static ?string $slug = 'bens-moveis/atividades-inventario';
 
-    /** ✅ CORREÇÃO CRÍTICA:
-     * Alterado de 'Patrimônio - Bens Móveis' para apenas 'Bens Móveis'.
-     * Isso faz com que ele entre na mesma aba do BemMovelResource, sumindo com aquela aba extra.
-     */
     protected static ?string $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Atividades do Inventário';
@@ -37,7 +39,6 @@ class AtividadeInventarioResource extends Resource
 
     protected static ?string $modelLabel = 'Atividade';
 
-    /** ✅ ORDEM: Aparece logo após a Administração e Incorporação */
     protected static ?int $navigationSort = 3;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
@@ -48,32 +49,49 @@ class AtividadeInventarioResource extends Resource
             ->schema([
                 Section::make('Atividades do Inventário')
                     ->description('Registro de progresso por unidade e setor conforme o sistema legado.')
+                    ->icon('heroicon-o-list-bullet')
                     ->schema([
                         Grid::make(2)->schema([
                             Select::make('id_inventario')
                                 ->label('Inventário No')
                                 ->relationship('inventario', 'num_inventario')
+                                ->placeholder('Selecione o inventário')
+                                ->searchable()
+                                ->preload()
+                                ->native(false)
                                 ->required(),
 
                             Select::make('id_unidade')
                                 ->label('Unidade')
                                 ->relationship('unidadeRel', 'Setor')
+                                ->placeholder('Selecione a unidade')
                                 ->searchable()
+                                ->preload()
+                                ->native(false)
                                 ->required()
                                 ->live(),
 
                             Select::make('setor')
                                 ->label('Setor')
-                                ->options(fn (Forms\Get $get) =>
-                                    Setores::where('CodigoPai', $get('id_unidade'))->pluck('Setor', 'id')
+                                ->options(fn (Forms\Get $get) => Setores::where('CodigoPai', $get('id_unidade'))
+                                    ->pluck('Setor', 'id')
                                 )
-                                ->searchable(),
+                                ->placeholder('Selecione o setor')
+                                ->searchable()
+                                ->native(false),
 
                             TextInput::make('complemento')
-                                ->label('Complemento'),
+                                ->label('Complemento')
+                                ->placeholder('Informe o complemento'),
 
-                            DatePicker::make('inicio')->label('Início'),
-                            DatePicker::make('termino')->label('Término'),
+                            DatePicker::make('inicio')
+                                ->label('Início')
+                                ->displayFormat('d/m/Y')
+                                ->native(false),
+                            DatePicker::make('termino')
+                                ->label('Término')
+                                ->displayFormat('d/m/Y')
+                                ->native(false),
 
                             TextInput::make('dupla')
                                 ->label('Dupla')
@@ -86,11 +104,15 @@ class AtividadeInventarioResource extends Resource
                                     'Em andamento' => 'Em andamento',
                                     'Finalizado' => 'Finalizado',
                                     'carga efetuada' => 'carga efetuada',
-                                ])->default('Aberto'),
+                                ])
+                                ->native(false)
+                                ->default('Aberto'),
 
                             TextInput::make('qtde_inventariada')
                                 ->label('Qtde Inventariada')
-                                ->numeric(),
+                                ->numeric()
+                                ->minValue(0)
+                                ->placeholder('0'),
                         ]),
                     ]),
             ]);
@@ -98,55 +120,50 @@ class AtividadeInventarioResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('inventario.num_inventario')
-                    ->label('Inventário No')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('id_unidade')
-                    ->label('Unidade (Cód.)')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('unidadeRel.Setor')
-                    ->label('Setor')
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('complemento')
-                    ->label('Complemento'),
-
-                Tables\Columns\TextColumn::make('inicio')
-                    ->label('Início')
-                    ->date('d/m/Y'),
-
-                Tables\Columns\TextColumn::make('dupla')
-                    ->label('Dupla')
+                TableColumns::text('inventario.num_inventario', 'Inventário No', isFirstColumn: true)
+                    ->badge(),
+                TableColumns::text('unidadeRel.Setor', 'Unidade')
                     ->wrap(),
-
-                Tables\Columns\TextColumn::make('situacao')
-                    ->label('Situação')
+                TableColumns::text('setorRel.Setor', 'Setor')
+                    ->wrap(),
+                TableColumns::date('inicio', 'Início'),
+                TableColumns::date('termino', 'Término')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::text('dupla', 'Dupla')
+                    ->wrap(),
+                TableColumns::text('situacao', 'Situação')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Finalizado', 'carga efetuada' => 'success',
                         'Em andamento', 'Aberto' => 'info',
                         default => 'warning',
                     }),
-
-                Tables\Columns\TextColumn::make('qtde_inventariada')
-                    ->label('Qtd.')
-                    ->alignCenter(),
+                TableColumns::text('qtde_inventariada', 'Qtd.')
+                    ->numeric()
+                    ->badge()
+                    ->color('gray'),
+                TableColumns::text('complemento', 'Complemento')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('id_inventario')
+                    ->label('Inventário')
+                    ->relationship('inventario', 'num_inventario')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('situacao')
+                    ->label('Situação')
+                    ->options([
+                        'Aberto' => 'Aberto',
+                        'Em andamento' => 'Em andamento',
+                        'Finalizado' => 'Finalizado',
+                        'carga efetuada' => 'Carga efetuada',
+                    ]),
+            ], layout: Tables\Enums\FiltersLayout::AboveContent)
             ->defaultSort('id', 'desc')
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->hiddenLabel(),
-            ]);
+            ->recordTitleAttribute('dupla');
     }
 
     public static function getPages(): array

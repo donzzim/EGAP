@@ -2,33 +2,55 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Materiais;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Patrimonio\BensMoveis\Termo;
-use App\Filament\Clusters\PatrimonioCluster;
-use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Forms\Components\{TextInput, Textarea, Grid, Section, Placeholder, Select, FileUpload};
-use Illuminate\Support\Facades\DB;
+use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TermoResource extends Resource
 {
     protected static ?string $model = Termo::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
+
     protected static ?string $cluster = PatrimonioCluster::class;
+
     protected static ?string $navigationGroup = 'Bens Móveis';
+
     protected static ?string $navigationLabel = 'Termos de Responsabilidade';
+
+    protected static ?string $modelLabel = 'Termo de Responsabilidade';
+
     protected static ?string $pluralModelLabel = 'Termos de Responsabilidade';
+
     protected static ?int $navigationSort = 5;
+
+    protected static ?string $slug = 'bens-moveis/termos';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
@@ -36,15 +58,20 @@ class TermoResource extends Resource
         return $form
             ->schema([
                 Section::make('Termos de Responsabilidade')
+                    ->description('Identificação, vínculo com pedido e situação atual do termo.')
+                    ->icon('heroicon-o-document-text')
                     ->columns(3)
                     ->schema([
                         TextInput::make('num_termo')
                             ->label('Num. Termo')
+                            ->placeholder('Informe o número')
                             ->required(),
 
                         TextInput::make('ano_termo')
                             ->label('Ano Termo')
                             ->numeric()
+                            ->default(now()->year)
+                            ->placeholder((string) now()->year)
                             ->required(),
 
                         Grid::make(1)->columnSpan(1)->schema([
@@ -59,27 +86,28 @@ class TermoResource extends Resource
 
                         Select::make('pedido_no')
                             ->label('Pedido No')
-                            ->placeholder('Por favor selecione')
+                            ->placeholder('Selecione o pedido')
                             ->searchable()
+                            ->native(false)
                             ->options(function () {
                                 return Solicitacao::select('id', 'date_time')
                                     ->limit(50)
                                     ->get()
                                     ->mapWithKeys(function ($item) {
                                         $ano = Carbon::parse($item->date_time)->format('Y');
+
                                         return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
                                     });
                             })
-                            ->getSearchResultsUsing(fn (string $search): array =>
-                            Solicitacao::where('id', 'like', "%{$search}%")
+                            ->getSearchResultsUsing(fn (string $search): array => Solicitacao::where('id', 'like', "%{$search}%")
                                 ->limit(50)
                                 ->get()
                                 ->mapWithKeys(function ($item) {
                                     $ano = Carbon::parse($item->date_time)->format('Y');
+
                                     return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
                                 })
-                                ->toArray()
-                            ),
+                                ->toArray()),
 
                         Select::make('situacao_entrega')
                             ->label('Situação Entrega')
@@ -93,11 +121,14 @@ class TermoResource extends Resource
                     ]),
 
                 Section::make('Anexos do Termo')
+                    ->description('Anexe o documento e registre informações complementares.')
+                    ->icon('heroicon-o-paper-clip')
                     ->schema([
                         Grid::make(4)->schema([
                             FileUpload::make('arquivo_digital')
                                 ->label('Arquivo Digital')
                                 ->directory('termos-patrimonio')
+                                ->acceptedFileTypes(['application/pdf'])
                                 ->columnSpan(2),
 
                             Select::make('situacao')
@@ -106,6 +137,7 @@ class TermoResource extends Resource
                                     'Validado' => 'Validado',
                                     'Pendente' => 'Pendente',
                                 ])
+                                ->native(false)
                                 ->default('Validado'),
 
                             TextInput::make('web_status')
@@ -124,32 +156,29 @@ class TermoResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
-            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->withCount('transferencias'))
+        return TableDefaults::apply($table)
+            ->modifyQueryUsing(fn (Builder $query) => $query->withCount('transferencias'))
             ->columns([
-                Tables\Columns\TextColumn::make('termo_completo')
-                    ->label('Termo')
+                TableColumns::text('termo_completo', 'Termo', isFirstColumn: true)
                     ->searchable(['num_termo', 'ano_termo'])
-                    ->sortable()
-                    ->weight('bold'),
+                    ->badge()
+                    ->weight('medium'),
 
-                Tables\Columns\TextColumn::make('observacao')
-                    ->label('Observação')
+                TableColumns::text('observacao', 'Observação')
                     ->limit(40)
-                    ->placeholder('-'),
+                    ->tooltip(fn ($record): ?string => $record->observacao)
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('arquivo_virtual')
                     ->label('Arquivo Digital')
-                    ->getStateUsing(fn ($record) => $record->situacao_entrega === 'Validado' ? "termo_{$record->num_termo}.html" : "-")
+                    ->getStateUsing(fn ($record) => $record->situacao_entrega === 'Validado' ? "termo_{$record->num_termo}.html" : '-')
                     ->color('primary')
                     ->weight('bold')
                     ->url(fn ($record) => $record->situacao_entrega === 'Validado' ? route('termo.imprimir', ['id' => $record->id]) : null)
                     ->openUrlInNewTab(),
 
-                Tables\Columns\TextColumn::make('situacao_entrega')
-                    ->label('Situação')
+                TableColumns::text('situacao_entrega', 'Situação')
                     ->badge()
                     ->color(fn ($state) => match ($state) {
                         'Validado' => 'success',
@@ -159,46 +188,61 @@ class TermoResource extends Resource
                         default => 'warning',
                     }),
 
-                Tables\Columns\TextColumn::make('transferencias_count')
-                    ->label('Materiais')
-                    ->getStateUsing(fn ($record) => "📊 ({$record->transferencias_count}) Materiais")
+                TableColumns::text('transferencias_count', 'Materiais')
+                    ->getStateUsing(fn ($record) => "{$record->transferencias_count} materiais")
+                    ->searchable(false)
+                    ->icon('heroicon-o-rectangle-stack')
                     ->color('info')
-                    ->weight('bold')
-                    ->alignCenter()
+                    ->weight('medium')
                     ->disabledClick(false)
                     ->action(
                         Action::make('ver_materiais_coluna')
                             ->modalHeading(fn ($record) => "Materiais Vinculados ao Termo: {$record->termo_completo}")
-                            ->modalWidth(\Filament\Support\Enums\MaxWidth::ExtraLarge)
+                            ->modalWidth(MaxWidth::ExtraLarge)
                             ->modalSubmitAction(false)
                             ->modalCancelActionLabel('Fechar')
                             ->infolist([
-                                \Filament\Infolists\Components\RepeatableEntry::make('transferencias')
+                                RepeatableEntry::make('transferencias')
                                     ->label('')
                                     ->schema([
                                         \Filament\Infolists\Components\Grid::make(4)->schema([
-                                            \Filament\Infolists\Components\TextEntry::make('NumPatrimonio')
+                                            TextEntry::make('NumPatrimonio')
                                                 ->label('Nº Patrimônio')
                                                 ->weight('bold')
                                                 ->color('primary'),
-                                            \Filament\Infolists\Components\TextEntry::make('MaterialDescricao')
+                                            TextEntry::make('MaterialDescricao')
                                                 ->label('Descrição do Bem')
                                                 ->columnSpan(3),
-                                            \Filament\Infolists\Components\TextEntry::make('UnidadeJudiciariaAtual')
+                                            TextEntry::make('UnidadeJudiciariaAtual')
                                                 ->label('Unidade Judiciária'),
-                                            \Filament\Infolists\Components\TextEntry::make('SetorAtual')
+                                            TextEntry::make('SetorAtual')
                                                 ->label('Setor'),
-                                            \Filament\Infolists\Components\TextEntry::make('ComplementoAtual')
+                                            TextEntry::make('ComplementoAtual')
                                                 ->label('Complemento')
                                                 ->default('-'),
-                                            \Filament\Infolists\Components\TextEntry::make('date_time')
+                                            TextEntry::make('date_time')
                                                 ->label('Movimentado em')
                                                 ->dateTime('d/m/Y H:i'),
                                         ]),
-                                    ])->grid(1)
-                            ])
+                                    ])->grid(1),
+                            ]),
                     ),
+                TableColumns::dateTime('atualizado_em', 'Atualizado em')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::text('responsavelRef.name', 'Atualizado por')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('situacao_entrega')
+                    ->label('Situação')
+                    ->options([
+                        'Reservado' => 'Reservado',
+                        'Em rota' => 'Em rota',
+                        'Entregue' => 'Entregue',
+                        'Validado' => 'Validado',
+                        'Cancelado' => 'Cancelado',
+                    ]),
+            ], layout: Tables\Enums\FiltersLayout::AboveContent)
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()->label('Visualizar Detalhes'),
@@ -209,29 +253,29 @@ class TermoResource extends Resource
                         ->icon('heroicon-o-rectangle-stack')
                         ->color('info')
                         ->modalHeading(fn ($record) => "Materiais do Termo: {$record->termo_completo}")
-                        ->modalWidth(\Filament\Support\Enums\MaxWidth::ExtraLarge)
+                        ->modalWidth(MaxWidth::ExtraLarge)
                         ->modalSubmitAction(false)
                         ->modalCancelActionLabel('Fechar')
                         ->infolist([
-                            \Filament\Infolists\Components\RepeatableEntry::make('transferencias')
+                            RepeatableEntry::make('transferencias')
                                 ->label('')
                                 ->schema([
                                     \Filament\Infolists\Components\Grid::make(4)->schema([
-                                        \Filament\Infolists\Components\TextEntry::make('NumPatrimonio')
+                                        TextEntry::make('NumPatrimonio')
                                             ->label('Nº Patrimônio')
                                             ->weight('bold'),
-                                        \Filament\Infolists\Components\TextEntry::make('MaterialDescricao')
+                                        TextEntry::make('MaterialDescricao')
                                             ->label('Descrição')
                                             ->columnSpan(3),
-                                        \Filament\Infolists\Components\TextEntry::make('UnidadeJudiciariaAtual')
+                                        TextEntry::make('UnidadeJudiciariaAtual')
                                             ->label('Comarca/Unidade'),
-                                        \Filament\Infolists\Components\TextEntry::make('SetorAtual')
+                                        TextEntry::make('SetorAtual')
                                             ->label('Setor'),
-                                        \Filament\Infolists\Components\TextEntry::make('date_time')
+                                        TextEntry::make('date_time')
                                             ->label('Data')
                                             ->dateTime('d/m/Y H:i'),
                                     ]),
-                                ])
+                                ]),
                         ]),
 
                     Action::make('imprimir')
@@ -246,7 +290,7 @@ class TermoResource extends Resource
                         ->icon('heroicon-o-arrow-uturn-right')
                         ->color('gray')
                         ->form([
-                            Forms\Components\Textarea::make('observacao_logistica')
+                            Textarea::make('observacao_logistica')
                                 ->label('Observação')
                                 ->placeholder('Justificativa para a logística...')
                                 ->required(),
@@ -259,19 +303,19 @@ class TermoResource extends Resource
                                     'tipo' => 2,
                                     'id_situacao' => 6,
                                     'justificativa' => $data['observacao_logistica'],
-                                    'local_saida' => 'Seção de Patrimônio'
+                                    'local_saida' => 'Seção de Patrimônio',
                                 ]);
 
                                 Materiais::insert([
                                     'date_time' => now(),
                                     'id_user' => auth()->id(),
                                     'id_termo' => $record->id,
-                                    'id_solicitacao' => $idSolicitacao
+                                    'id_solicitacao' => $idSolicitacao,
                                 ]);
 
                                 $record->update([
                                     'situacao_entrega' => 'Em rota',
-                                    'pedido_no' => $idSolicitacao
+                                    'pedido_no' => $idSolicitacao,
                                 ]);
                             });
                             Notification::make()->title('Encaminhado com sucesso')->success()->send();
@@ -279,6 +323,7 @@ class TermoResource extends Resource
                         ->visible(fn ($record) => $record->situacao_entrega === 'Validado'),
                 ])->label('Opções')->button(),
             ])
+            ->bulkActions([])
             ->defaultSort('id', 'desc');
     }
 

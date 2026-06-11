@@ -11,8 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TransferenciaBemMovel extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'mat_transferencia';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -33,7 +34,7 @@ class TransferenciaBemMovel extends Model
 
     public function bem(): BelongsTo
     {
-        return $this->belongsTo(BemMovel::class, 'NumPatrimonio', 'id');
+        return $this->belongsTo(BemMovel::class, 'NumPatrimonio', 'NumPatrimonio');
     }
 
     public function unidadeAnteriorRel(): BelongsTo

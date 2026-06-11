@@ -2,29 +2,46 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
 use App\Filament\Clusters\PatrimonioCluster;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\Inventario;
-use App\Models\Patrimonio\BensMoveis\BemMovel;
+use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Forms\Components\{TextInput, Select, DatePicker, Tabs, Grid, Repeater};
-use Carbon\Carbon;
 
 class InventarioResource extends Resource
 {
     protected static ?string $model = Inventario::class;
+
     protected static ?string $cluster = PatrimonioCluster::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $navigationLabel = 'Gestão do Inventário';
+
     protected static ?string $navigationGroup = 'Bens Móveis';
+
     protected static ?string $pluralModelLabel = 'Gestão do Inventário';
+
     protected static ?string $modelLabel = 'Inventário';
+
     protected static ?int $navigationSort = 10;
+
+    protected static ?string $slug = 'bens-moveis/inventarios';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
@@ -32,27 +49,34 @@ class InventarioResource extends Resource
         return $form
             ->schema([
                 Tabs::make('Abas do Inventário')
+                    ->persistTabInQueryString()
                     ->tabs([
                         Tabs\Tab::make('Gestão do Inventário')
                             ->icon('heroicon-m-adjustments-horizontal')
                             ->schema([
-                                Grid::make(4)->schema([
-                                    TextInput::make('num_inventario')->label('Inventário Nº')->required(),
-                                    TextInput::make('ano_inventario')->label('Ano')->numeric()->default(date('Y')),
-                                    DatePicker::make('inicio_inventario')->label('Início')->live(),
-                                    DatePicker::make('termino_inventario')->label('Término')->live()
-                                        ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
-                                            $inicio = $get('inicio_inventario');
-                                            if ($inicio && $state) {
-                                                $dias = Carbon::parse($inicio)->diffInDays(Carbon::parse($state));
-                                                $set('dias', $dias);
-                                            }
-                                        }),
-                                    TextInput::make('dias')->label('Dias')->numeric()->readOnly(),
-                                    Select::make('situacao')->label('Situação')
-                                        ->options(['A inventariar' => 'A inventariar', 'Em andamento' => 'Em andamento', 'Finalizado' => 'Finalizado'])
-                                        ->default('A inventariar'),
-                                ]),
+                                Section::make('Dados do Inventário')
+                                    ->description('Defina o período e acompanhe a situação do inventário.')
+                                    ->icon('heroicon-o-calendar-days')
+                                    ->schema([
+                                        Grid::make(4)->schema([
+                                            TextInput::make('num_inventario')->label('Inventário Nº')->required(),
+                                            TextInput::make('ano_inventario')->label('Ano')->numeric()->default(date('Y')),
+                                            DatePicker::make('inicio_inventario')->label('Início')->displayFormat('d/m/Y')->native(false)->live(),
+                                            DatePicker::make('termino_inventario')->label('Término')->displayFormat('d/m/Y')->native(false)->live()
+                                                ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
+                                                    $inicio = $get('inicio_inventario');
+                                                    if ($inicio && $state) {
+                                                        $dias = Carbon::parse($inicio)->diffInDays(Carbon::parse($state));
+                                                        $set('dias', $dias);
+                                                    }
+                                                }),
+                                            TextInput::make('dias')->label('Dias')->numeric()->suffix('dias')->readOnly(),
+                                            Select::make('situacao')->label('Situação')
+                                                ->options(['A inventariar' => 'A inventariar', 'Em andamento' => 'Em andamento', 'Finalizado' => 'Finalizado'])
+                                                ->native(false)
+                                                ->default('A inventariar'),
+                                        ]),
+                                    ]),
                             ]),
 
                         Tabs\Tab::make('Comissões')
@@ -61,10 +85,10 @@ class InventarioResource extends Resource
                                 Repeater::make('comissoes')
                                     ->relationship('comissoes')
                                     ->schema([
-                                        Select::make('comissao')->label('Comissão')->options(['Permanente' => 'Permanente', 'Especial' => 'Especial'])->required(),
-                                        Select::make('funcao')->label('Função')->options(['Presidente' => 'Presidente', 'Membro' => 'Membro', 'Secretário' => 'Secretário'])->required(),
-                                        Select::make('nome')->label('Membro')->relationship('membroRef', 'name')->searchable()->required(),
-                                    ])->columns(3)->createItemButtonLabel('Adicionar Membro à Comissão')
+                                        Select::make('comissao')->label('Comissão')->options(['Permanente' => 'Permanente', 'Especial' => 'Especial'])->native(false)->required(),
+                                        Select::make('funcao')->label('Função')->options(['Presidente' => 'Presidente', 'Membro' => 'Membro', 'Secretário' => 'Secretário'])->native(false)->required(),
+                                        Select::make('nome')->label('Membro')->relationship('membroRef', 'name')->searchable()->preload()->native(false)->required(),
+                                    ])->columns(3)->addActionLabel('Adicionar Membro à Comissão'),
                             ]),
 
                         Tabs\Tab::make('Materiais Inventariados')
@@ -76,12 +100,15 @@ class InventarioResource extends Resource
                                         Select::make('id_bem')
                                             ->label('Patrimônio')
                                             ->relationship('bem', 'NumPatrimonio')
+                                            ->placeholder('Busque pelo patrimônio')
                                             ->searchable()
+                                            ->preload()
+                                            ->native(false)
                                             ->required()
                                             ->columnSpan(2),
-                                        Select::make('estado_conservacao')->label('Estado')->options(['BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA']),
+                                        Select::make('estado_conservacao')->label('Estado')->options(['BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA'])->native(false),
                                         TextInput::make('observacao')->label('Observação'),
-                                    ])->columns(4)->createItemButtonLabel('Vincular Patrimônio')
+                                    ])->columns(4)->addActionLabel('Vincular Patrimônio'),
                             ]),
                     ])->columnSpanFull(),
             ]);
@@ -89,36 +116,16 @@ class InventarioResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('num_inventario')
-                    ->label('Inventário Nº')
-                    ->sortable()
-                    ->searchable()
-                    ->weight('bold'),
-
-                Tables\Columns\TextColumn::make('ano_inventario')
-                    ->label('Ano')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('inicio_inventario')
-                    ->label('Início')
-                    ->date('d/m/Y')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('termino_inventario')
-                    ->label('Término')
-                    ->date('d/m/Y')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('dias')
-                    ->label('Dias')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('situacao')
-                    ->label('Situação')
+                TableColumns::text('num_inventario', 'Inventário Nº', isFirstColumn: true)
+                    ->badge()
+                    ->weight('medium'),
+                TableColumns::text('ano_inventario', 'Ano'),
+                TableColumns::date('inicio_inventario', 'Início'),
+                TableColumns::date('termino_inventario', 'Término'),
+                TableColumns::text('dias', 'Dias')->suffix(' dias'),
+                TableColumns::text('situacao', 'Situação')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'A inventariar' => 'warning',
@@ -127,34 +134,31 @@ class InventarioResource extends Resource
                         default => 'gray',
                     }),
 
-                /** ✅ CAMPOS SOLICITADOS: Unidades e Comissões (com contagem e ícones) */
-                Tables\Columns\TextColumn::make('itens_count')
+                TableColumns::text('itens_count', 'Materiais')
                     ->counts('itens')
-                    ->label('Unidades')
+                    ->searchable(false)
                     ->icon('heroicon-m-archive-box')
                     ->iconColor('primary')
                     ->badge()
-                    ->color('gray')
-                    ->alignCenter(),
-
-                Tables\Columns\TextColumn::make('comissoes_count')
+                    ->color('gray'),
+                TableColumns::text('comissoes_count', 'Comissões')
                     ->counts('comissoes')
-                    ->label('Comissões')
+                    ->searchable(false)
                     ->icon('heroicon-m-users')
                     ->iconColor('success')
                     ->badge()
-                    ->color('gray')
-                    ->alignCenter(),
+                    ->color('gray'),
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('situacao')
+                    ->label('Situação')
+                    ->options(['A inventariar' => 'A inventariar', 'Em andamento' => 'Em andamento', 'Finalizado' => 'Finalizado']),
+            ], layout: Tables\Enums\FiltersLayout::AboveContent)
             ->defaultSort('id', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('Gerenciar'),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\EditAction::make()->label('Gerenciar')->icon('heroicon-o-cog-6-tooth'),
+                Tables\Actions\ViewAction::make()->tooltip('Visualizar')->hiddenLabel(),
+                Tables\Actions\DeleteAction::make()->tooltip('Excluir')->hiddenLabel(),
             ]);
     }
 

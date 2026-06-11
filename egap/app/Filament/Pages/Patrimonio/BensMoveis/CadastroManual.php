@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Filament\Pages\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource;
@@ -16,7 +16,7 @@ class CadastroManual extends Page
 
     protected static ?string $navigationGroup = 'Bens Móveis';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 10;
 
     public function mount(): void
     {

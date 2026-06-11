@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\FasePedido;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
@@ -26,11 +28,15 @@ class ValidarTermoResource extends Resource
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?string $slug = 'validar-termos';
+    protected static ?string $slug = 'bens-moveis/validar-termos';
 
     protected static ?string $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Validar Termos';
+
+    protected static ?string $modelLabel = 'Validação de Termo';
+
+    protected static ?string $pluralModelLabel = 'Validação de Termos';
 
     protected static ?int $navigationSort = 4;
 
@@ -41,11 +47,23 @@ class ValidarTermoResource extends Resource
         return false;
     }
 
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Visualizar Detalhes do Termo')
+                    ->description('Consulte os dados principais antes de validar ou invalidar o documento.')
+                    ->icon('heroicon-o-check-badge')
                     ->schema([
                         Forms\Components\Grid::make(3)->schema([
                             Forms\Components\TextInput::make('id')->label('ID do Registro')->readOnly(),
@@ -59,12 +77,12 @@ class ValidarTermoResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
-                Tables\Columns\TextColumn::make('termo_completo')->label('Termo')->searchable(['num_termo', 'ano_termo'])->weight('bold'),
+                TableColumns::text('termo_completo', 'Termo', isFirstColumn: true)
+                    ->searchable(['num_termo', 'ano_termo'])
+                    ->badge()
+                    ->weight('medium'),
 
                 Tables\Columns\TextColumn::make('status_virtual')
                     ->label('Link do Arquivo')
@@ -74,8 +92,7 @@ class ValidarTermoResource extends Resource
                     ->url(fn ($record) => $record->situacao_entrega === 'Validado' ? route('termo.imprimir', ['id' => $record->id]) : null)
                     ->openUrlInNewTab(),
 
-                Tables\Columns\TextColumn::make('situacao_entrega')
-                    ->label('Situação')
+                TableColumns::text('situacao_entrega', 'Situação')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Validado' => 'success',
@@ -83,7 +100,20 @@ class ValidarTermoResource extends Resource
                         'Cancelado' => 'danger',
                         default => 'warning',
                     }),
+                TableColumns::dateTime('atualizado_em', 'Atualizado em')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::text('responsavelRef.name', 'Atualizado por')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('situacao_entrega')
+                    ->label('Situação')
+                    ->options([
+                        'Em rota' => 'Em rota',
+                        'Validado' => 'Validado',
+                        'Cancelado' => 'Cancelado',
+                    ]),
+            ], layout: Tables\Enums\FiltersLayout::AboveContent)
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()->label('Visualizar'),
@@ -97,7 +127,7 @@ class ValidarTermoResource extends Resource
                                 ->label('Selecione o Termo em PDF')
                                 ->required()
                                 ->acceptedFileTypes(['application/pdf'])
-                                ->disk('public') // Certifique-se de apontar pro diretório correto em config/filesystems.php
+                                ->disk('public')
                                 ->directory('images/termos')
                                 ->getUploadedFileNameForStorageUsing(function ($record) {
                                     // Padrao do TJES: termo_ID_YYYYMMDDHHMMSS.pdf
@@ -116,7 +146,7 @@ class ValidarTermoResource extends Resource
                                     'arquivo_digital' => $pathUrl,
                                     'atualizado_em' => now(),
                                     'atualizado_por' => $userid,
-                                    'situacao' => 0, // Reseta para pendente
+                                    'situacao' => 0,
                                     'observacao' => $observacao,
                                     'validado_por' => null,
                                     'data_validacao' => null,
@@ -128,7 +158,6 @@ class ValidarTermoResource extends Resource
                             Notification::make()->title('Arquivo anexado! Aguardando validação.')->success()->send();
                         }),
 
-                    // Invalidar / cancelar termo.
                     Action::make('invalidar_termo')
                         ->label('Invalidar/Cancelar Termo')
                         ->icon('heroicon-o-hand-thumb-down')
@@ -170,7 +199,6 @@ class ValidarTermoResource extends Resource
                             Notification::make()->title('Termo Invalidado/Cancelado!')->danger()->send();
                         }),
 
-                    // Validar termo.
                     Action::make('validar_termo_novo')
                         ->label('Validar Termo [Novo]')
                         ->icon('heroicon-o-hand-thumb-up')
@@ -194,7 +222,6 @@ class ValidarTermoResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    // Validar em massa.
                     Tables\Actions\BulkAction::make('validar_termos_em_lote')
                         ->label('Validar Selecionados')
                         ->icon('heroicon-o-check-badge')

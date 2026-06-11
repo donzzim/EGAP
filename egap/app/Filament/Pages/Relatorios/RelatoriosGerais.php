@@ -1,26 +1,25 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Filament\Pages\Relatorios;
 
-use Filament\Pages\Page;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextInput;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\CentroCusto;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoResumida;
+use App\Models\Cadastro\Setores;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
-use Illuminate\Support\Facades\DB;
-use App\Models\Cadastro\ContaContabil;
-use App\Models\Cadastro\CentroCusto;
-use App\Models\Patrimonio\BensMoveis\BemMovel;
-use App\Models\Cadastro\DescricaoDetalhada;
-use App\Models\Cadastro\Setores;
-use App\Models\Cadastro\DescricaoResumida;
-use App\Models\Almoxarifado\SituacaoPedido;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Pages\Page;
 
 class RelatoriosGerais extends Page implements HasForms
 {

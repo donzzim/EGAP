@@ -2,27 +2,44 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Models\Patrimonio\BensMoveis\ItemInventario;
+use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Setores;
-use Filament\Forms;
+use App\Models\Patrimonio\BensMoveis\ItemInventario;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{TextInput, Select, DatePicker, Textarea, Grid, Section, Toggle};
-use Filament\Pages\SubNavigationPosition;
 
 class ItemInventarioResource extends Resource
 {
     protected static ?string $model = ItemInventario::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $cluster = PatrimonioCluster::class;
+
     protected static ?string $navigationGroup = 'Bens Móveis';
+
     protected static ?string $navigationLabel = 'Materiais Inventariados';
+
     protected static ?string $pluralModelLabel = 'Materiais Inventariados';
+
+    protected static ?string $modelLabel = 'Material Inventariado';
+
     protected static ?int $navigationSort = 13;
+
+    protected static ?string $slug = 'bens-moveis/materiais-inventariados';
+
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
@@ -30,9 +47,10 @@ class ItemInventarioResource extends Resource
         return $form
             ->schema([
                 Section::make('Itens Inventariados')
+                    ->description('Registre a identificação, localização e conferência física do material.')
+                    ->icon('heroicon-o-clipboard-document-list')
                     ->schema([
                         Grid::make(3)->schema([
-                            /** ✅ TextInput conforme o original */
                             TextInput::make('id_inventario')
                                 ->label('Inventário'),
 
@@ -42,13 +60,12 @@ class ItemInventarioResource extends Resource
                             TextInput::make('unidade_localizado')
                                 ->label('Unidade Localizado'),
 
-                            // LINHA 2
-                            /** ✅ CORREÇÃO: Removido o filtro restritivo para que todas as unidades/comarcas apareçam */
                             Select::make('unidades')
                                 ->label('Unidades')
-                                ->options(fn() => Setores::pluck('Setor', 'id'))
+                                ->options(fn () => Setores::pluck('Setor', 'id'))
                                 ->searchable()
-                                ->preload(), // Carrega os primeiros itens para facilitar a vista
+                                ->preload()
+                                ->native(false),
 
                             TextInput::make('setor')
                                 ->label('Setor'),
@@ -56,7 +73,6 @@ class ItemInventarioResource extends Resource
                             TextInput::make('setor_localizado')
                                 ->label('Setor Localizado'),
 
-                            // LINHA 3
                             TextInput::make('id_complementosetor')
                                 ->label('Complemento Setor'),
 
@@ -66,7 +82,6 @@ class ItemInventarioResource extends Resource
                             TextInput::make('num_patrimonio')
                                 ->label('Patrimônio Nº'),
 
-                            // LINHA 4
                             TextInput::make('num_patrimonioantigo')
                                 ->label('Patrimônio (sem cód. barras)'),
 
@@ -76,7 +91,6 @@ class ItemInventarioResource extends Resource
                             TextInput::make('estado_conservacao')
                                 ->label('Estado de Conservação'),
 
-                            // LINHA 5
                             TextInput::make('descricao_resumida')
                                 ->label('Descrição Resumida')
                                 ->columnSpan(1),
@@ -91,14 +105,18 @@ class ItemInventarioResource extends Resource
                         Grid::make(3)->schema([
                             Textarea::make('descricao_detalhada')
                                 ->label('Descrição Detalhada')
+                                ->rows(3)
+                                ->columnSpan(2),
+                            Textarea::make('observacao')
+                                ->label('Observação')
                                 ->rows(3),
-                            TextInput::make('observacao')
-                                ->label('Observação'),
                             TextInput::make('situacao')
                                 ->label('Situação'),
                         ]),
 
                         Section::make('Dados e-GAP (Controle)')
+                            ->description('Campos técnicos de integração e auditoria.')
+                            ->icon('heroicon-o-cog-6-tooth')
                             ->collapsed()
                             ->schema([
                                 Grid::make(3)->schema([
@@ -110,7 +128,7 @@ class ItemInventarioResource extends Resource
                                     TextInput::make('modelo_egap')->label('Modelo eGAP'),
                                     TextInput::make('termo')->label('Termo'),
 
-                                    DatePicker::make('transferido_em')->label('Transferido em'),
+                                    DatePicker::make('transferido_em')->label('Transferido em')->displayFormat('d/m/Y')->native(false),
                                     TextInput::make('conciliado_patrimonio')->label('Conciliado (Patrimônio)'),
                                     TextInput::make('imagem_enviada')->label('Imagem Enviada'),
                                 ]),
@@ -121,20 +139,37 @@ class ItemInventarioResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
-            ->emptyStateHeading('Por favor, selecione ao menos um filtro.')
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('num_patrimonio')->label('Patrimônio Nº')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('descricao_resumida')->label('Descrição')->limit(30),
-                Tables\Columns\TextColumn::make('estado_conservacao')->label('Estado'),
-                Tables\Columns\TextColumn::make('date_time')->label('Atualizado em')->dateTime('d/m/Y H:i'),
+                TableColumns::text('num_patrimonio', 'Patrimônio Nº', isFirstColumn: true)
+                    ->badge(),
+                TableColumns::text('descricao_resumida', 'Descrição')
+                    ->limit(40)
+                    ->tooltip(fn ($record): ?string => $record->descricao_resumida),
+                TableColumns::text('inventario.num_inventario', 'Inventário'),
+                TableColumns::text('estado_conservacao', 'Estado')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'ÓTIMO', 'BOM' => 'success',
+                        'REGULAR' => 'warning',
+                        'RUIM', 'SUCATA' => 'danger',
+                        default => 'gray',
+                    }),
+                TableColumns::text('situacao', 'Situação')->badge(),
+                TableColumns::dateTime('date_time', 'Atualizado em')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-            ]);
+            ->filters([
+                Tables\Filters\SelectFilter::make('id_inventario')
+                    ->label('Inventário')
+                    ->relationship('inventario', 'num_inventario')
+                    ->searchable()
+                    ->preload(),
+                Tables\Filters\SelectFilter::make('estado_conservacao')
+                    ->label('Estado de Conservação')
+                    ->options(['ÓTIMO' => 'ÓTIMO', 'BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA']),
+            ], layout: Tables\Enums\FiltersLayout::AboveContent)
+            ->defaultSort('id', 'desc');
     }
 
     public static function getPages(): array
