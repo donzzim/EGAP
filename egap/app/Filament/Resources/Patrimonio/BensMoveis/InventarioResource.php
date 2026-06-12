@@ -38,7 +38,7 @@ class InventarioResource extends Resource
 
     protected static ?string $modelLabel = 'Inventário';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 12;
 
     protected static ?string $slug = 'bens-moveis/inventarios';
 

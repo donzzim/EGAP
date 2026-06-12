@@ -15,9 +15,11 @@ class Termo extends Model
 {
     private const TIPO_TRANSPORTE_CARGA = '2';
 
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'mat_termos';
+
     public $timestamps = false;
+
     public static $snakeAttributes = false;
 
     protected $fillable = [
@@ -26,12 +28,15 @@ class Termo extends Model
         'ano_termo',
         'atualizado_em',
         'atualizado_por',
-        'analisado_por',
         'pedido_no',
         'situacao_entrega',
-        'arquivo_digital',
-        'observacao',
-        'web_status',
+    ];
+
+    protected $casts = [
+        'date_time' => 'datetime',
+        'atualizado_em' => 'datetime',
+        'ano_termo' => 'integer',
+        'num_termo' => 'integer',
     ];
 
     public function pedidoRef(): BelongsTo
@@ -41,7 +46,7 @@ class Termo extends Model
 
     public function arquivoDigital(): HasOne
     {
-        return $this->hasOne(ArquivoDigital::class, 'termo', 'id');
+        return $this->hasOne(ArquivoDigital::class, 'termo', 'id')->latestOfMany('id');
     }
 
     public function transferencias(): HasMany
@@ -51,7 +56,8 @@ class Termo extends Model
 
     public function ultimaTransferencia(): HasOne
     {
-        return $this->hasOne(TransferenciaBemMovel::class, 'Termo', 'id')->latestOfMany('id');
+        return $this->hasOne(TransferenciaBemMovel::class, 'Termo', 'id')
+            ->latestOfMany('id');
     }
 
     public function materiais(): HasMany

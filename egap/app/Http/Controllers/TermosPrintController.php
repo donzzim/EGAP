@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Patrimonio\BensMoveis\Termo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class TermosPrintController extends Controller
@@ -11,7 +12,7 @@ class TermosPrintController extends Controller
     {
         $termo = Termo::query()
             ->with([
-                'arquivoDigital',
+                'arquivoDigital.validadoPor.infoUser',
                 'ultimaTransferencia.setorAtualRel',
                 'ultimaTransferencia.complementoAtualRel',
                 'ultimaTransferencia.usuarioRef.infoUser',
@@ -41,6 +42,10 @@ class TermosPrintController extends Controller
         $complementoAtual = $ultimaTransferencia?->complementoAtualRel;
         $usuarioEmitente = $ultimaTransferencia?->usuarioRef;
         $infoEmitente = $usuarioEmitente?->infoUser;
+        $usuarioDestinatario = (int) ($arquivoDigital?->situacao ?? 0) === 1
+            ? $arquivoDigital?->validadoPor
+            : $usuarioEmitente;
+        $infoDestinatario = $usuarioDestinatario?->infoUser;
 
         $bens = $termo->transferencias
             ->map(function ($transferencia) {
@@ -65,13 +70,10 @@ class TermosPrintController extends Controller
             ->values();
 
         $usuarioAutenticado = Auth::user();
-        $cpfRaw = $infoEmitente?->cpf ?? $usuarioAutenticado?->cpf;
-
-        $cpfEmitente = '';
-        if ($cpfRaw) {
-            $nbr_cpf = str_pad(preg_replace('/[^0-9]/', '', $cpfRaw), 11, '0', STR_PAD_LEFT);
-            $cpfEmitente = substr($nbr_cpf, 0, 3) . '.' . substr($nbr_cpf, 3, 3) . '.' . substr($nbr_cpf, 6, 3) . '-' . substr($nbr_cpf, 9, 2);
-        }
+        $dataEmissao = Carbon::parse($termo->date_time ?? now())->format('d/m/Y');
+        $dataAssinatura = Carbon::parse(
+            $arquivoDigital?->data_validacao ?? $arquivoDigital?->date_time ?? $termo->date_time ?? now(),
+        )->format('d/m/Y');
 
         return view('patrimonio.termo_impresso', [
             'termo' => $termo,
@@ -82,7 +84,23 @@ class TermosPrintController extends Controller
             'complemento' => $complementoAtual?->descricao ?? 'NÃO INFORMADO',
             'usuarioEmitente' => $usuarioEmitente?->name ?? $usuarioAutenticado?->name ?? 'NÃO INFORMADO',
             'cargoEmitente' => $infoEmitente?->cargo ?? $usuarioAutenticado?->cargo ?? 'SERVIDOR',
-            'cpfEmitente' => $cpfEmitente,
+            'cpfEmitente' => $this->formatCpf($infoEmitente?->cpf ?? $usuarioAutenticado?->cpf),
+            'usuarioDestinatario' => $usuarioDestinatario?->name,
+            'cargoDestinatario' => $infoDestinatario?->cargo,
+            'cpfDestinatario' => $this->formatCpf($infoDestinatario?->cpf),
+            'dataEmissao' => $dataEmissao,
+            'dataAssinatura' => $dataAssinatura,
         ]);
+    }
+
+    private function formatCpf(?string $cpf): string
+    {
+        if (blank($cpf)) {
+            return '';
+        }
+
+        $digits = str_pad(preg_replace('/\D/', '', $cpf), 11, '0', STR_PAD_LEFT);
+
+        return substr($digits, 0, 3).'.'.substr($digits, 3, 3).'.'.substr($digits, 6, 3).'-'.substr($digits, 9, 2);
     }
 }

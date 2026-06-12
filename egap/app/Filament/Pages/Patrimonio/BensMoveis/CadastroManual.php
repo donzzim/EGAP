@@ -16,7 +16,7 @@ class CadastroManual extends Page
 
     protected static ?string $navigationGroup = 'Bens Móveis';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 9;
 
     public function mount(): void
     {

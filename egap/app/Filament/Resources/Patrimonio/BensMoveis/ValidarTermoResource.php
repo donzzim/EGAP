@@ -38,24 +38,9 @@ class ValidarTermoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Validação de Termos';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canEdit($record): bool
-    {
-        return false;
-    }
-
-    public static function canDelete($record): bool
-    {
-        return false;
-    }
 
     public static function form(Form $form): Form
     {
@@ -100,10 +85,8 @@ class ValidarTermoResource extends Resource
                         'Cancelado' => 'danger',
                         default => 'warning',
                     }),
-                TableColumns::dateTime('atualizado_em', 'Atualizado em')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::dateTime('atualizado_em', 'Atualizado em'),
                 TableColumns::text('responsavelRef.name', 'Atualizado por')
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('situacao_entrega')

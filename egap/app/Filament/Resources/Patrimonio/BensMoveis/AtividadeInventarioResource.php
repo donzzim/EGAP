@@ -39,7 +39,7 @@ class AtividadeInventarioResource extends Resource
 
     protected static ?string $modelLabel = 'Atividade';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 14;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 

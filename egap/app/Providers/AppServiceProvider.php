@@ -2,10 +2,8 @@
 
 namespace App\Providers;
 
-use App\Filament\Livewire\PortalTransparencia\AlmoxarifadoCharts;
-use App\Filament\Livewire\PortalTransparencia\PatrimonioCharts;
+use App\Services\LivewireComponentsService;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,7 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
-        Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
+        LivewireComponentsService::getLivewireComponents();
     }
 }

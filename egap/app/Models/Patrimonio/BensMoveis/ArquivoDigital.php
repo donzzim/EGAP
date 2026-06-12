@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ArquivoDigital extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'mat_arquivodigital';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -23,6 +24,14 @@ class ArquivoDigital extends Model
         'observacao',
         'situacao', // SELECT: 0 => ['Pendente', 1 => 'Validado', 2 => 'Rejeitado', default => 'Indefinido']
         'web',
+    ];
+
+    protected $casts = [
+        'date_time' => 'datetime',
+        'atualizado_em' => 'datetime',
+        'data_validacao' => 'datetime',
+        'situacao' => 'integer',
+        'web' => 'integer',
     ];
 
     /*

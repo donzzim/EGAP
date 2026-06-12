@@ -32,13 +32,13 @@ class ConciliacaoResource extends Resource
 
     protected static ?string $navigationGroup = 'Bens Móveis';
 
-    protected static ?string $navigationLabel = 'Conciliação (Inventário)';
+    protected static ?string $navigationLabel = 'Conciliação';
 
     protected static ?string $pluralModelLabel = 'Conciliações';
 
     protected static ?string $modelLabel = 'Conciliação';
 
-    protected static ?int $navigationSort = 15;
+    protected static ?int $navigationSort = 7;
 
     protected static ?string $slug = 'bens-moveis/conciliacoes';
 
@@ -135,8 +135,7 @@ class ConciliacaoResource extends Resource
                 TableColumns::text('comarcaRef.Setor', 'Comarca')
                     ->wrap(),
                 TableColumns::date('data_conciliacao', 'Data'),
-                TableColumns::money('valor_aquisicao', 'Valor de Aquisição')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::money('valor_aquisicao', 'Valor de Aquisição'),
             ])
             ->defaultSort('id', 'desc');
     }

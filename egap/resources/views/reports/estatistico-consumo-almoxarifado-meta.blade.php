@@ -1,3 +1,3 @@
-<x-filament-panel::page>
+<x-filament-panels::page>
 
-</x-filament-panel::page>
+</x-filament-panels::page>

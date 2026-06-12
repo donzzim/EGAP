@@ -31,7 +31,7 @@ class DepreciacaoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Depreciações';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 8;
 
     protected static ?string $slug = 'bens-moveis/depreciacoes';
 

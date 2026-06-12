@@ -9,7 +9,6 @@ use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\Baixa;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\ItemBaixa;
-use App\Models\Patrimonio\BensMoveis\SituacaoBemMovel;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
@@ -24,8 +23,8 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
+use Livewire\Livewire;
 
 class BaixaResource extends Resource
 {
@@ -136,8 +135,8 @@ class BaixaResource extends Resource
                 TableColumns::text('itens_count', 'Materiais')
                     ->counts('itens')
                     ->searchable(false)
-                    ->badge()
                     ->color('primary')
+                    ->weight('bold')
                     ->tooltip('Clique para visualizar os materiais desta baixa')
                     ->extraAttributes([
                         'class' => 'cursor-pointer underline decoration-dotted underline-offset-4',
@@ -240,31 +239,21 @@ class BaixaResource extends Resource
     {
         return Action::make('visualizar_materiais')
             ->modalHeading(fn (Baixa $record): string => "Materiais da baixa {$record->NumeroProcesso}")
-            ->modalWidth('7xl')
+            ->modalWidth('full')
+            ->extraModalWindowAttributes([
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem;',
+            ])
+            ->stickyModalHeader()
+            ->stickyModalFooter()
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Fechar')
-            ->modalContent(function (Baixa $record): View {
-                $connectionName = $record->getConnectionName() ?? config('database.default');
-                $itens = $record->itens()
-                    ->with([
-                        'bem.descricaoResumidaBemRef',
-                        'bem.marcaRef',
-                        'bem.modeloRef',
-                        'bem.situacaoBemRef',
-                    ])
-                    ->orderBy('id')
-                    ->get();
-
-                $situacoesDestino = SituacaoBemMovel::on($connectionName)
-                    ->whereIn('id', $itens->pluck('id_situacao')->filter()->unique())
-                    ->get()
-                    ->keyBy('id');
-
-                return view('filament.resources.patrimonio.bens-moveis.baixa.materiais-modal', [
-                    'itens' => $itens,
-                    'situacoesDestino' => $situacoesDestino,
-                ]);
-            });
+            ->modalContent(fn (Baixa $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.materiais-baixa-modal',
+                    ['baixaId' => (int) $record->getKey()],
+                    "materiais-baixa-{$record->getKey()}",
+                )
+            ));
     }
 
     public static function getPages(): array

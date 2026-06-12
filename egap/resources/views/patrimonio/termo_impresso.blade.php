@@ -30,8 +30,16 @@
     </style>
 </head>
 <body>
+    @php
+        $assinaturaEletronica = $assinaturaEletronica ?? ((int) ($arquivoDigital->situacao ?? 0) === 1);
+        $usuarioDestinatario = $usuarioDestinatario ?? $usuarioEmitente ?? null;
+        $cargoDestinatario = $cargoDestinatario ?? $cargoEmitente ?? null;
+        $cpfDestinatario = $cpfDestinatario ?? $cpfEmitente ?? null;
+        $dataEmissao = $dataEmissao ?? date('d/m/Y', strtotime($termo->date_time ?? now()));
+        $dataAssinatura = $dataAssinatura ?? $dataEmissao;
+    @endphp
     <div class="page">
-        @if(isset($arquivoDigital) && $arquivoDigital->situacao == 0)
+        @if(! $assinaturaEletronica)
         <div class="warning-box">
             IMPORTANTE!
             <p>Para concluir a transferência, solicite <b>assinatura eletrônica</b> ao servidor recebedor dos bens (setor destinatário), caso contrário, eles permanecerão na relação de bens do setor remetente e a transferência ficará pendente no sistema.</p>
@@ -112,11 +120,11 @@
         <table class="signatures">
             <tr>
                 <td>
-                    @if(isset($arquivoDigital) && $arquivoDigital->situacao == 1)
+                    @if($assinaturaEletronica)
                         <div class="sign-line" style="width: 60%; margin: 0 auto 2px;">Emitente (Gerado por)</div>
                         <div>{{ mb_strtoupper($usuarioEmitente ?? 'USUÁRIO') }}</div>
                         <div>{{ mb_strtoupper($cargoEmitente ?? 'SERVIDOR') }}</div>
-                        <div>{{ date('d/m/Y', strtotime($termo->date_time ?? now())) }}</div>
+                        <div>{{ $dataEmissao }}</div>
                     @else
                         <div>{{ mb_strtoupper($usuarioEmitente ?? 'USUÁRIO') }} ({{ mb_strtoupper($cargoEmitente ?? 'SERVIDOR') }})</div>
                         <div class="sign-line" style="margin-top: 2px; width: 60%; margin: 2px auto;">Setor (Emitente)</div>
@@ -125,11 +133,11 @@
                     @endif
                 </td>
                 <td>
-                    @if(isset($arquivoDigital) && $arquivoDigital->situacao == 1)
+                    @if($assinaturaEletronica)
                         <div class="sign-line" style="width: 60%; margin: 0 auto 2px;">Destinatário (Recebido por)</div>
-                        <div>{{ mb_strtoupper($usuarioEmitente ?? 'USUÁRIO') }}</div>
-                        <div>{{ mb_strtoupper($cargoEmitente ?? 'SERVIDOR') }}</div>
-                        <div>{{ date('d/m/Y', strtotime($termo->date_time ?? now())) }}</div>
+                        <div>{{ mb_strtoupper($usuarioDestinatario ?? 'USUÁRIO') }}</div>
+                        <div>{{ mb_strtoupper($cargoDestinatario ?? 'SERVIDOR') }}</div>
+                        <div>{{ $dataAssinatura }}</div>
                     @else
                         <div style="margin-top: 14px;"></div>
                         <div class="sign-line" style="width: 60%; margin: 0 auto 2px;">Setor (Destinatário)</div>
@@ -148,8 +156,8 @@
                 @endif
             </div>
             <div style="display: table-cell; vertical-align: middle;">
-                @if(isset($arquivoDigital) && $arquivoDigital->situacao == 1)
-                    Documento assinado eletronicamente por <b>{{ mb_strtoupper($usuarioEmitente ?? 'USUÁRIO') }}</b>, CPF: <b>{{ $cpfEmitente ?? 'NÃO INFORMADO' }}</b>, {{ mb_strtoupper($cargoEmitente ?? 'SERVIDOR') }}, em {{ date('d/m/Y', strtotime($termo->date_time ?? now())) }}, conforme art. 1º do Ato Normativo TJES Nº 75/2018. Código de Validação {{ $termo->num_termo }}/{{ $termo->ano_termo }}.
+                @if($assinaturaEletronica)
+                    Documento assinado eletronicamente por <b>{{ mb_strtoupper($usuarioDestinatario ?? 'USUÁRIO') }}</b>, CPF: <b>{{ $cpfDestinatario ?: 'NÃO INFORMADO' }}</b>, {{ mb_strtoupper($cargoDestinatario ?? 'SERVIDOR') }}, em {{ $dataAssinatura }}, conforme art. 1º do Ato Normativo TJES Nº 75/2018. Código de Validação {{ $termo->num_termo }}/{{ $termo->ano_termo }}.
                 @else
                     Documento gerado em {{ date('d/m/Y', strtotime($termo->date_time ?? now())) }}<br>
                     Os itens constantes neste termo foram devidamente conferidos e embarcados, sendo sua guarda de responsabilidade do transportador até a efetivação da entrega.

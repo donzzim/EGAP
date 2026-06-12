@@ -30,7 +30,7 @@ class ReavaliacaoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Reavaliações';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 11;
 
     protected static ?string $slug = 'bens-moveis/reavaliacoes';
 

@@ -41,4 +41,9 @@ class ItemBaixa extends Model
     {
         return $this->belongsTo(Baixa::class, 'id_baixa', 'id');
     }
+
+    public function situacaoDestino(): BelongsTo
+    {
+        return $this->belongsTo(SituacaoBemMovel::class, 'id_situacao', 'id');
+    }
 }
