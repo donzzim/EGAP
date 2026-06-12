@@ -202,12 +202,10 @@ class TermoResource extends Resource
 
                 TableColumns::text('arquivoDigital.situacao', 'Situação')
                     ->formatStateUsing(fn ($state): string => match ($state === null ? null : (int) $state) {
-                        null => 'Indefinido',
                         0 => 'Pendente',
                         1 => 'Validado',
-                        2 => 'Rejeitado',
-                        4 => 'Cancelado',
-                        default => 'Indefinido',
+                        2 => 'Invalidado',
+                        3 => 'Cancelado',
                     })
                     ->badge()
                     ->color(fn ($state): string => match ($state === null ? null : (int) $state) {
@@ -243,7 +241,7 @@ class TermoResource extends Resource
                         'Reservado' => 'Reservado',
                         'Em rota' => 'Em rota',
                         'Entregue' => 'Entregue',
-                        'Validado' => 'Validado',
+                        'Encaminhado para Logística' => 'Encaminhado para Logística',
                     ]),
                 Tables\Filters\Filter::make('num_termo')
                     ->form([
@@ -346,9 +344,22 @@ class TermoResource extends Resource
     private static function encaminharLogisticaTableAction(): Action
     {
         return Action::make('encaminhar_logistica')
-            ->label('Encaminhar para logística')
+            ->label('Encaminhar para Logística')
             ->icon('heroicon-o-arrow-up-on-square')
-            ->color('gray');
+            ->color('gray')
+            ->requiresConfirmation()
+            ->modalHeading('Encaminhar para Logística')
+            ->modalDescription('A situação de entrega será atualizada para Encaminhado para Logística.')
+            ->action(function (Termo $record): void {
+                $record->update([
+                    'situacao_entrega' => 'Encaminhado para Logística',
+                ]);
+
+                Notification::make()
+                    ->title('Termo encaminhado para Logística.')
+                    ->success()
+                    ->send();
+            });
     }
 
     private static function novoTermoTableAction(): Action
