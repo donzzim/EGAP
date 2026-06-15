@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TermosPrintController extends Controller
 {
-    public function imprimir($id)
+    public function print($id)
     {
         $termo = Termo::query()
             ->with([

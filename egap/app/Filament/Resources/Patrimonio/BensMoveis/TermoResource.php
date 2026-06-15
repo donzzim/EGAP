@@ -6,16 +6,18 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
-use App\Models\Agendamento\Solicitacao;
+use App\Models\Almoxarifado\Pedidos;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
@@ -55,100 +57,118 @@ class TermoResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(3)
             ->schema([
-                Section::make('Termos de Responsabilidade')
-                    ->description('Identificação, vínculo com pedido e situação atual do termo.')
+                Section::make('Identificação do Termo')
+                    ->description('Informe os dados que identificam o termo de responsabilidade.')
                     ->icon('heroicon-o-document-text')
-                    ->columns(3)
+                    ->columnSpan(2)
+                    ->columns(2)
                     ->schema([
                         TextInput::make('num_termo')
-                            ->label('Num. Termo')
-                            ->placeholder('Informe o número')
+                            ->label('Número do Termo')
+                            ->numeric()
+                            ->minValue(1)
                             ->required(),
 
                         TextInput::make('ano_termo')
-                            ->label('Ano Termo')
+                            ->label('Ano do Termo')
                             ->numeric()
-                            ->default(now()->year)
-                            ->placeholder((string) now()->year)
+                            ->minValue(1900)
+                            ->maxValue((int) now()->addYear()->format('Y'))
+                            ->default((int) now()->format('Y'))
                             ->required(),
 
-                        Grid::make(1)->columnSpan(1)->schema([
-                            Placeholder::make('atualizado_em_display')
-                                ->label('Atualizado em')
-                                ->content(fn ($record) => $record?->updated_at?->format('d/m/Y H:i') ?? '-'),
-
-                            Placeholder::make('atualizado_por_display')
-                                ->label('Atualizado por')
-                                ->content(fn ($record) => $record?->atualizado_por ?? 'Sistema'),
-                        ]),
-
                         Select::make('pedido_no')
-                            ->label('Pedido No')
-                            ->placeholder('Selecione o pedido')
-                            ->searchable()
-                            ->native(false)
-                            ->options(function () {
-                                return Solicitacao::select('id', 'date_time')
-                                    ->limit(50)
-                                    ->get()
-                                    ->mapWithKeys(function ($item) {
-                                        $ano = Carbon::parse($item->date_time)->format('Y');
+                            ->label('Número do Pedido')
+                            ->placeholder('Pesquise pelo número ou protocolo do pedido')
+                            ->relationship(
+                                name: 'pedidoRef',
+                                titleAttribute: 'id',
+                            )
+                            ->getOptionLabelFromRecordUsing(function (Pedidos $record): string {
+                                $ano = $record->date_time?->format('Y') ?? 'Sem ano';
 
-                                        return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
-                                    });
+                                return "{$record->id}/{$ano} - Prot. {$record->num_protocolo}";
                             })
-                            ->getSearchResultsUsing(fn (string $search): array => Solicitacao::where('id', 'like', "%{$search}%")
-                                ->limit(50)
-                                ->get()
-                                ->mapWithKeys(function ($item) {
-                                    $ano = Carbon::parse($item->date_time)->format('Y');
+                            ->searchable(['id', 'num_protocolo'])
+                            ->optionsLimit(50)
+                            ->native(false)
+                            ->columnSpanFull()
+                            ->required(),
+                    ]),
 
-                                    return [$item->id => "{$item->id}/{$ano} - Prot. {$item->id}"];
-                                })
-                                ->toArray()),
-
+                Section::make('Situação da Entrega')
+                    ->description('Acompanha somente o fluxo logístico do termo.')
+                    ->icon('heroicon-o-truck')
+                    ->columnSpan(1)
+                    ->schema([
                         Select::make('situacao_entrega')
-                            ->label('Situação Entrega')
+                            ->label('Situação da Entrega')
                             ->options([
                                 'Reservado' => 'Reservado',
                                 'Em rota' => 'Em rota',
                                 'Entregue' => 'Entregue',
                                 'Encaminhado para Logística' => 'Encaminhado para Logística',
                             ])
-                            ->native(false),
+                            ->default('Reservado')
+                            ->native(false)
+                            ->required(),
                     ]),
 
-                Section::make('Anexos do Termo')
-                    ->description('Anexe o documento e registre informações complementares.')
+                Section::make('Anexo do Termo')
+                    ->description('O arquivo e seus dados de validação são armazenados em mat_arquivodigital.')
                     ->icon('heroicon-o-paper-clip')
+                    ->columnSpanFull()
                     ->schema([
-                        Grid::make(4)->schema([
-                            FileUpload::make('arquivo_digital')
-                                ->label('Arquivo Digital')
-                                ->directory('termos-patrimonio')
-                                ->acceptedFileTypes(['application/pdf'])
-                                ->columnSpan(2),
+                        Group::make([
+                            Grid::make(3)
+                                ->schema([
+                                    FileUpload::make('arquivo_digital')
+                                        ->label('Arquivo Digital')
+                                        ->helperText(fn (?ArquivoDigital $record): string => filled($record?->arquivo_digital)
+                                            ? 'A substituição do PDF deve ser feita em Validar Termos.'
+                                            : 'Somente PDF, com tamanho máximo de 10 MB.')
+                                        ->disk('public')
+                                        ->directory('images/termos')
+                                        ->visibility('public')
+                                        ->acceptedFileTypes(['application/pdf'])
+                                        ->maxSize(10240)
+                                        ->openable()
+                                        ->downloadable()
+                                        ->previewable(false)
+                                        ->disabled(fn (?ArquivoDigital $record): bool => filled($record?->arquivo_digital))
+                                        ->columnSpan(2),
+                                    Select::make('situacao')
+                                        ->label('Situação do Arquivo')
+                                        ->options(ArquivoDigital::situacaoOptions())
+                                        ->default(ArquivoDigital::SITUACAO_PENDENTE)
+                                        ->dehydrated()
+                                        ->native(false),
+                                    Textarea::make('observacao')
+                                        ->label('Observação')
+                                        ->rows(3)
+                                        ->columnSpan(2),
+                                    Toggle::make('web')
+                                        ->label('Disponível na WEB')
+                                        ->default(false)
+                                        ->inline(false),
+                                ]),
+                        ])
+                            ->relationship('arquivoDigital')
+                            ->mutateRelationshipDataBeforeFillUsing(function (array $data): array {
+                                $data['arquivo_digital'] = ArquivoDigital::caminhoArquivoDigitalNoDisco(
+                                    $data['arquivo_digital'] ?? null,
+                                );
 
-                            Select::make('situacao')
-                                ->label('Situação')
-                                ->options([
-                                    'Validado' => 'Validado',
-                                    'Pendente' => 'Pendente',
-                                ])
-                                ->native(false)
-                                ->default('Validado'),
+                                return $data;
+                            })
+                            ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                                $data['situacao'] ??= ArquivoDigital::SITUACAO_PENDENTE;
+                                $data['web'] ??= false;
 
-                            TextInput::make('web_status')
-                                ->label('WEB')
-                                ->numeric()
-                                ->default(0),
-                        ]),
-
-                        Textarea::make('observacao')
-                            ->label('Observação')
-                            ->rows(4)
-                            ->columnSpanFull(),
+                                return $data;
+                            }),
                     ]),
             ]);
     }
@@ -164,13 +184,13 @@ class TermoResource extends Resource
 
                 TableColumns::text('pedido_no', 'Pedido No'),
 
-                TableColumns::text('situacao_entrega', 'Situação Entrega')
+                TableColumns::text('situacao_entrega', 'Situação da Entrega')
                     ->badge()
                     ->color(fn (?string $state): string => match ($state) {
-                        'Validado', 'Entregue' => 'success',
+                        'Entregue' => 'success',
                         'Em rota' => 'info',
-                        'Cancelado' => 'danger',
-                        default => 'warning',
+                        'Encaminhado para Logística' => 'warning',
+                        default => 'gray',
                     }),
 
                 TableColumns::text('termo_completo', 'Termo')
@@ -185,9 +205,9 @@ class TermoResource extends Resource
                     ->color('primary')
                     ->limit(50)
                     ->weight('medium')
-                    ->url(function ($record) {
-                        return 'https://sistemas.tjes.jus.br/patrimonio/images/termos/'.$record->arquivoDigital->arquivo_digital;
-                    })
+                    ->url(fn (?string $state): ?string => filled($state)
+                        ? rtrim((string) config('app.egap'), '/').'/'.ltrim($state, '/')
+                        : null)
                     ->openUrlInNewTab(),
 
                 TableColumns::text('responsavelRef.name', 'Atualizado por')
@@ -201,19 +221,9 @@ class TermoResource extends Resource
                     ->wrap(),
 
                 TableColumns::text('arquivoDigital.situacao', 'Situação')
-                    ->formatStateUsing(fn ($state): string => match ($state === null ? null : (int) $state) {
-                        0 => 'Pendente',
-                        1 => 'Validado',
-                        2 => 'Invalidado',
-                        3 => 'Cancelado',
-                    })
+                    ->formatStateUsing(fn ($state): string => ArquivoDigital::situacaoLabel($state))
                     ->badge()
-                    ->color(fn ($state): string => match ($state === null ? null : (int) $state) {
-                        1 => 'success',
-                        2, 4 => 'danger',
-                        0 => 'warning',
-                        default => 'gray',
-                    }),
+                    ->color(fn ($state): string => ArquivoDigital::situacaoColor($state)),
 
                 TableColumns::text('arquivoDigital.web', 'WEB')
                     ->formatStateUsing(fn ($state): string => match ($state === null ? null : (int) $state) {
@@ -236,7 +246,7 @@ class TermoResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('situacao_entrega')
-                    ->label('Situação Entrega')
+                    ->label('Situação da Entrega')
                     ->options([
                         'Reservado' => 'Reservado',
                         'Em rota' => 'Em rota',
@@ -260,13 +270,8 @@ class TermoResource extends Resource
                         )),
 
                 Tables\Filters\SelectFilter::make('situacao_arquivo_filter')
-                    ->label('Situação')
-                    ->options([
-                        0 => 'Pendente',
-                        1 => 'Validado',
-                        2 => 'Invalidado',
-                        3 => 'Cancelado',
-                    ])
+                    ->label('Situação do Arquivo')
+                    ->options(ArquivoDigital::situacaoOptions())
                     ->query(function (Builder $query, array $data): Builder {
                         $situacao = $data['value'] ?? null;
 
@@ -291,7 +296,7 @@ class TermoResource extends Resource
                             filled($data['value'] ?? null),
                             fn (Builder $query): Builder => $query->whereHas(
                                 'arquivoDigital',
-                                fn (Builder $query): Builder => $query->where('web', $data['value']),
+                                fn (Builder $query): Builder => $query->where('web', (int) $data['value']),
                             ),
                         )),
             ], layout: Tables\Enums\FiltersLayout::AboveContent)
@@ -350,7 +355,17 @@ class TermoResource extends Resource
             ->requiresConfirmation()
             ->modalHeading('Encaminhar para Logística')
             ->modalDescription('A situação de entrega será atualizada para Encaminhado para Logística.')
+            ->disabled(fn (Termo $record): bool => $record->situacao_entrega === 'Encaminhado para Logística')
             ->action(function (Termo $record): void {
+                if ($record->situacao_entrega === 'Encaminhado para Logística') {
+                    Notification::make()
+                        ->title('O termo já foi encaminhado para Logística.')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
                 $record->update([
                     'situacao_entrega' => 'Encaminhado para Logística',
                 ]);

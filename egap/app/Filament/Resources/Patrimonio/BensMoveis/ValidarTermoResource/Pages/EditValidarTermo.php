@@ -3,17 +3,19 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource;
-use Filament\Actions;
+use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use Filament\Resources\Pages\EditRecord;
 
 class EditValidarTermo extends EditRecord
 {
     protected static string $resource = ValidarTermoResource::class;
 
-    protected function getHeaderActions(): array
+    protected function mutateFormDataBeforeFill(array $data): array
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        $data['arquivo_digital'] = ArquivoDigital::caminhoArquivoDigitalNoDisco(
+            $data['arquivo_digital'] ?? null,
+        );
+
+        return $data;
     }
 }

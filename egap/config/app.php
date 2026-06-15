@@ -27,6 +27,7 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+    'egap' => env('EGAP_LINKS', 'https://sistemas.tjes.jus.br/patrimonio/'),
 
     /*
     |--------------------------------------------------------------------------

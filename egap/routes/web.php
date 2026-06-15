@@ -22,7 +22,7 @@ Route::prefix('egap')->group(function () {
         Route::get('/depreciacao/{id}/imprimir', [DepreciacaoController::class, 'imprimir'])
             ->name('depreciacao.imprimir');
 
-        Route::get('/termos/{id}/imprimir', [TermosPrintController::class, 'imprimir'])
+        Route::get('/bens-moveis/termos/{id}/print', [TermosPrintController::class, 'print'])
             ->name('termo.imprimir');
 
         Route::get('/bens-selecionados/{ids}/imprimir', function ($ids) {
