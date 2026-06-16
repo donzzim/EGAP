@@ -8,7 +8,9 @@ use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\FasePedido;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Termo;
+use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -110,7 +112,6 @@ class ValidarTermoResource extends Resource
 
                         Forms\Components\Toggle::make('web')
                             ->label('Disponível na WEB')
-                            ->helperText('Indica se o documento pode ser disponibilizado no ambiente web.')
                             ->default(false)
                             ->inline(false),
                     ]),
@@ -176,7 +177,7 @@ class ValidarTermoResource extends Resource
                     ->form([
                         TextInput::make('termo')
                             ->label('Termo')
-                            ->placeholder('Informe número/ano ou ID do termo'),
+                            ->placeholder('Informe número do termo'),
                     ])
                     ->query(fn (Builder $query, array $data): Builder => self::aplicarFiltroTermo(
                         $query,
@@ -235,7 +236,7 @@ class ValidarTermoResource extends Resource
                     })
                     ->deselectRecordsAfterCompletion(),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('atualizado_em', 'desc');
     }
 
     private static function aplicarFiltroTermo(Builder $query, ?string $search): Builder
@@ -272,6 +273,7 @@ class ValidarTermoResource extends Resource
         return Action::make('upload_termo')
             ->label('Upload do Termo')
             ->icon('heroicon-o-document-arrow-up')
+            ->color('gray')
             ->form([
                 Forms\Components\FileUpload::make('arquivo')
                     ->label('Selecione o Termo em PDF')
@@ -306,10 +308,10 @@ class ValidarTermoResource extends Resource
         return Action::make('invalidar_termo')
             ->label('Invalidar/Cancelar Termo')
             ->icon('heroicon-o-hand-thumb-down')
-            ->color('danger')
+            ->color('gray')
             ->form([
                 Forms\Components\Select::make('situacao')
-                    ->label('Nova Situação')
+                    ->label('Situação')
                     ->options([
                         ArquivoDigital::SITUACAO_INVALIDADO => 'Invalidado',
                         ArquivoDigital::SITUACAO_CANCELADO => 'Cancelado',
@@ -317,7 +319,7 @@ class ValidarTermoResource extends Resource
                     ->native(false)
                     ->required(),
                 Forms\Components\Textarea::make('observacao')
-                    ->label('Motivo / Observação')
+                    ->label('Observação')
                     ->required(),
             ])
             ->action(function (ArquivoDigital $record, array $data): void {
@@ -343,7 +345,7 @@ class ValidarTermoResource extends Resource
         return Action::make('validar_termo_novo')
             ->label('Validar Termo')
             ->icon('heroicon-o-hand-thumb-up')
-            ->color('success')
+            ->color('gray')
             ->requiresConfirmation()
             ->action(function (ArquivoDigital $record): void {
                 $validado = self::validarArquivoDigital($record, (int) auth()->id());
@@ -351,7 +353,7 @@ class ValidarTermoResource extends Resource
                 if (! $validado) {
                     Notification::make()
                         ->title('Não foi possível validar o termo.')
-                        ->body('Verifique se existe um PDF, um termo relacionado e bens associados.')
+                        ->body('Verifique se existe um termo relacionado e transferencias associadas.')
                         ->warning()
                         ->send();
 
@@ -365,39 +367,38 @@ class ValidarTermoResource extends Resource
 
     private static function validarArquivoDigital(ArquivoDigital $arquivoDigital, int $userid): bool
     {
-        if ($arquivoDigital->situacao !== ArquivoDigital::SITUACAO_PENDENTE || blank($arquivoDigital->arquivo_digital)) {
+        if ($arquivoDigital->situacao !== ArquivoDigital::SITUACAO_PENDENTE || blank($arquivoDigital->termo)) {
             return false;
         }
 
-        $termo = $arquivoDigital->termoRel;
-
-        if (! $termo) {
-            return false;
-        }
-
-        $transferencias = $termo->transferencias()
-            ->with('bem')
-            ->get()
-            ->filter(fn ($transferencia): bool => $transferencia->bem !== null);
+        $transferencias = TransferenciaBemMovel::query()
+            ->where('Termo', $arquivoDigital->termo)
+            ->get([
+                'Termo',
+                'NumPatrimonio',
+                'UnidadeAtual',
+                'SetorAtual',
+                'ComplementoAtual',
+            ]);
 
         if ($transferencias->isEmpty()) {
             return false;
         }
 
-        $termo->getConnection()->transaction(function () use ($termo, $arquivoDigital, $transferencias, $userid) {
+        $arquivoDigital->getConnection()->transaction(function () use ($arquivoDigital, $transferencias, $userid) {
             foreach ($transferencias as $transferencia) {
-                $transferencia->bem?->update([
-                    'UnidadeJudiciaria' => $transferencia->UnidadeAtual,
-                    'Setor' => $transferencia->SetorAtual,
-                    'ComplementoSetor' => $transferencia->ComplementoAtual,
-                    'date_time' => now(),
-                    'Usuario' => $userid,
-                ]);
-            }
+                BemMovel::query()
+                    ->whereKey($transferencia->NumPatrimonio)
+                    ->update([
+                        'UnidadeJudiciaria' => $transferencia->UnidadeAtual,
+                        'Setor' => $transferencia->SetorAtual,
+                        'ComplementoSetor' => $transferencia->ComplementoAtual,
+                    ]);
 
-            FasePedido::query()
-                ->where('id_termo', $termo->id)
-                ->update(['idSituacao' => 3]);
+                FasePedido::query()
+                    ->where('id_termo', $transferencia->Termo)
+                    ->update(['idSituacao' => 3]);
+            }
 
             $arquivoDigital->fill([
                 'atualizado_em' => now(),

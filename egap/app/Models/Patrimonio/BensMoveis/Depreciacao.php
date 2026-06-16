@@ -24,8 +24,7 @@ class Depreciacao extends Model
         'valor_liquido_contabil',
     ];
 
-    /** ✅ RELAÇÃO: Liga ao Bem Móvel para pegar o número oficial */
-    public function bem(): BelongsTo
+    public function patrimonioRef(): BelongsTo
     {
         return $this->belongsTo(BemMovel::class, 'patrimonio', 'id');
     }

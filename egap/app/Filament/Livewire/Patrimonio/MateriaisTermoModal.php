@@ -44,28 +44,32 @@ class MateriaisTermoModal extends Component implements HasForms, HasTable
 
                 TextColumn::make('origem')
                     ->label('Origem')
-                    ->getStateUsing(fn (TransferenciaBemMovel $record): string => self::localizacao(
+                    ->getStateUsing(fn (TransferenciaBemMovel $record): string => self::unidade(
                         $record->unidadeAnteriorRel?->UnidadeOrganizacional,
+                        $record->UnidadeAnterior,
+                    ))
+                    ->description(fn (TransferenciaBemMovel $record): ?string => self::setor(
                         $record->setorAnteriorRel?->Setor,
                         $record->complementoAnteriorRel?->descricao,
-                        $record->UnidadeAnterior,
                         $record->SetorAnterior,
                     ))
                     ->wrap(),
 
                 TextColumn::make('destino')
                     ->label('Destino')
-                    ->getStateUsing(fn (TransferenciaBemMovel $record): string => self::localizacao(
+                    ->getStateUsing(fn (TransferenciaBemMovel $record): string => self::unidade(
                         $record->unidadeAtualRel?->UnidadeOrganizacional,
+                        $record->UnidadeAtual,
+                    ))
+                    ->description(fn (TransferenciaBemMovel $record): ?string => self::setor(
                         $record->setorAtualRel?->Setor,
                         $record->complementoAtualRel?->descricao,
-                        $record->UnidadeAtual,
                         $record->SetorAtual,
                     ))
                     ->wrap(),
 
-                TableColumns::dateTime('date_time', 'Movimentado em')
-                    ->description(fn (TransferenciaBemMovel $record): string => $record->usuarioRef?->name ?? '-'),
+                TableColumns::text('usuarioRef.name', 'Movimentado por')
+                    ->description(fn (TransferenciaBemMovel $record): string => $record->date_time?->format('d/m/Y H:i') ?? '-'),
             ])
             ->defaultSort('id')
             ->defaultPaginationPageOption(15)
@@ -92,20 +96,24 @@ class MateriaisTermoModal extends Component implements HasForms, HasTable
             ]);
     }
 
-    private static function localizacao(
+    private static function unidade(
         ?string $unidade,
+        mixed $unidadeId,
+    ): string {
+        return $unidade ?: ($unidadeId ? "Unidade {$unidadeId}" : '-');
+    }
+
+    private static function setor(
         ?string $setor,
         ?string $complemento,
-        mixed $unidadeId,
         mixed $setorId,
-    ): string {
+    ): ?string {
         $partes = array_filter([
-            $unidade ?: ($unidadeId ? "Unidade {$unidadeId}" : null),
             $setor ?: ($setorId ? "Setor {$setorId}" : null),
             $complemento,
         ]);
 
-        return $partes ? implode(' / ', $partes) : '-';
+        return $partes ? implode(' / ', $partes) : null;
     }
 
     public function render(): View

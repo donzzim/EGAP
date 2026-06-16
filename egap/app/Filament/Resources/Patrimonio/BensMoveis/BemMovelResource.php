@@ -645,6 +645,7 @@ class BemMovelResource extends Resource
     {
         return [
             'index' => Pages\ListBemMovels::route('/'),
+            'create' => Pages\CreateBemMovel::route('/create'),
             'edit' => Pages\EditBemMovel::route('/{record}/edit'),
         ];
     }

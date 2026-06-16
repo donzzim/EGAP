@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\CpfHelper;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -84,23 +85,12 @@ class TermosPrintController extends Controller
             'complemento' => $complementoAtual?->descricao ?? 'NÃO INFORMADO',
             'usuarioEmitente' => $usuarioEmitente?->name ?? $usuarioAutenticado?->name ?? 'NÃO INFORMADO',
             'cargoEmitente' => $infoEmitente?->cargo ?? $usuarioAutenticado?->cargo ?? 'SERVIDOR',
-            'cpfEmitente' => $this->formatCpf($infoEmitente?->cpf ?? $usuarioAutenticado?->cpf),
+            'cpfEmitente' => CpfHelper::format($infoEmitente?->cpf ?? $usuarioAutenticado?->cpf),
             'usuarioDestinatario' => $usuarioDestinatario?->name,
             'cargoDestinatario' => $infoDestinatario?->cargo,
-            'cpfDestinatario' => $this->formatCpf($infoDestinatario?->cpf),
+            'cpfDestinatario' => CpfHelper::format($infoDestinatario?->cpf),
             'dataEmissao' => $dataEmissao,
             'dataAssinatura' => $dataAssinatura,
         ]);
-    }
-
-    private function formatCpf(?string $cpf): string
-    {
-        if (blank($cpf)) {
-            return '';
-        }
-
-        $digits = str_pad(preg_replace('/\D/', '', $cpf), 11, '0', STR_PAD_LEFT);
-
-        return substr($digits, 0, 3).'.'.substr($digits, 3, 3).'.'.substr($digits, 6, 3).'-'.substr($digits, 9, 2);
     }
 }

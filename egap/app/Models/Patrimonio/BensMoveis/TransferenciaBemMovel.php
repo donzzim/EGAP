@@ -32,6 +32,10 @@ class TransferenciaBemMovel extends Model
         'pedido_no',
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime',
+    ];
+
     public function bem(): BelongsTo
     {
         return $this->belongsTo(BemMovel::class, 'NumPatrimonio', 'NumPatrimonio');

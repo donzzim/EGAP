@@ -14,7 +14,7 @@ class Reavaliacao extends Model
     public static $snakeAttributes = false;
 
     protected $fillable = [
-        'id_patrimonio',
+        'patrimonio',
         'data_reavaliacao',
         'data_disponibilizacao',
         'data_referencia',
@@ -34,12 +34,17 @@ class Reavaliacao extends Model
         'valor_reavaliacao',
         'ajuste_contabil',
         'date_time',
-        'Usuario',
+        'atualizado_por',
     ];
 
-    /** ✅ RELAÇÕES PARA CONSULTA */
-    public function bem(): BelongsTo { return $this->belongsTo(BemMovel::class, 'id_patrimonio', 'id'); }
-    public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'Usuario', 'id'); }
+    public function bem(): BelongsTo
+    {
+        return $this->belongsTo(BemMovel::class, 'id_patrimonio', 'id');
+    }
+    public function responsavel(): BelongsTo
+    {
+        return $this->belongsTo(UserEgap::class, 'Usuario', 'id');
+    }
 
     protected static function booted(): void
     {

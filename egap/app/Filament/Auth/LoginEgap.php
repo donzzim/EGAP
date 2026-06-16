@@ -208,7 +208,7 @@ class LoginEgap extends BaseLogin
     protected function getAuthenticateFormAction(): Action
     {
         return Action::make('authenticate')
-            ->label('Entrar no sistema')
+            ->label('Entrar')
             ->submit('authenticate');
     }
 

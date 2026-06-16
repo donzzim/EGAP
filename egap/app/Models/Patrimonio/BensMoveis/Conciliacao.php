@@ -3,7 +3,7 @@
 namespace App\Models\Patrimonio\BensMoveis;
 
 use App\Models\Cadastro\Setores;
-use App\Models\Patrimonio\Fornecedores;
+use App\Models\Cadastro\Fornecedores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,18 +16,25 @@ class Conciliacao extends Model
     public static $snakeAttributes = false;
 
     protected $fillable = [
-        'date_time', 'numero_patrimonio', 'patrimonio_desmembrado', 'descricao',
-        'data_aquisicao', 'data_conciliacao', 'local', 'comarca',
-        'valor_aquisicao', 'forma_aquisicao', 'numero_documento', 'fornecedor',
-        'patrimonio', 'Usuario',
+        'date_time',
+        'numero_patrimonio',
+        'descricao',
+        'data_aquisicao',
+        'local',
+        'comarca',
+        'valor_aquisicao',
+        'forma_aquisicao',
+        'numero_documento',
+        'fornecedor',
+        'data_conciliacao',
+        'patrimonio',
+        'patrimonio_desmembrado',
     ];
 
-    /** ✅ RELAÇÕES */
-    public function localRef(): BelongsTo { return $this->belongsTo(Setores::class, 'local', 'id'); }
-    public function comarcaRef(): BelongsTo { return $this->belongsTo(Setores::class, 'comarca', 'id'); }
-    public function fornecedorRef(): BelongsTo { return $this->belongsTo(Fornecedores::class, 'fornecedor', 'id'); }
-    public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'Usuario', 'id'); }
-
+    public function patrimonioRef(): BelongsTo
+    {
+        return $this->belongsTo(BemMovel::class, 'patrimonio', 'id');
+    }
     protected static function booted(): void
     {
         static::saving(function (self $model): void {

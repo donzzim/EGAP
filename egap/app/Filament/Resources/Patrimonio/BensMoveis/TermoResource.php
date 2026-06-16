@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Helper\CpfHelper;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
@@ -232,7 +233,7 @@ class TermoResource extends Resource
                         default => '-',
                     })
                     ->badge()
-                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'gray'),
+                    ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'danger'),
 
                 TableColumns::text('transferencias_count', 'Materiais')
                     ->searchable(false)
@@ -308,6 +309,7 @@ class TermoResource extends Resource
                     self::gerarNovoArquivoTableAction(),
                     self::corrigirTermoTableAction(),
                     self::encaminharLogisticaTableAction(),
+                    self::validarTermosRedirectTableAction()
                 ])
                     ->hiddenLabel()
                     ->icon('heroicon-m-ellipsis-vertical'),
@@ -321,7 +323,8 @@ class TermoResource extends Resource
             ->modalHeading(fn (Termo $record): string => "Materiais do termo {$record->termo_completo}")
             ->modalWidth('full')
             ->extraModalWindowAttributes([
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem;',
+                'class' => 'materiais-termo-modal-window',
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
             ])
             ->stickyModalHeader()
             ->stickyModalFooter()
@@ -344,6 +347,21 @@ class TermoResource extends Resource
             ->color('gray')
             ->url(fn (Termo $record): string => route('termo.imprimir', ['id' => $record->id]))
             ->openUrlInNewTab();
+    }
+
+    private static function validarTermosRedirectTableAction(): Action
+    {
+        return Action::make('validarTermosRedirect')
+            ->label('Validar Termo')
+            ->icon('heroicon-o-check-badge')
+            ->color('gray')
+            ->url(fn (Termo $record): string => ValidarTermoResource::getUrl('index', [
+                'tableFilters' => [
+                    'termo_filter' => [
+                        'termo' => "{$record->num_termo}/{$record->ano_termo}",
+                    ],
+                ],
+            ]));
     }
 
     private static function encaminharLogisticaTableAction(): Action
@@ -639,25 +657,14 @@ class TermoResource extends Resource
             'complemento' => $ultimaTransferencia?->complementoAtualRel?->descricao,
             'usuarioEmitente' => $usuarioEmitente?->name ?? $usuarioAutenticado?->name,
             'cargoEmitente' => $infoEmitente?->cargo ?? $usuarioAutenticado?->cargo,
-            'cpfEmitente' => self::formatCpf($infoEmitente?->cpf ?? $usuarioAutenticado?->cpf),
+            'cpfEmitente' => CpfHelper::format($infoEmitente?->cpf ?? $usuarioAutenticado?->cpf),
             'usuarioDestinatario' => $usuarioDestinatario?->name,
             'cargoDestinatario' => $infoDestinatario?->cargo,
-            'cpfDestinatario' => self::formatCpf($infoDestinatario?->cpf),
+            'cpfDestinatario' => CpfHelper::format($infoDestinatario?->cpf),
             'dataEmissao' => $dataEmissao,
             'dataAssinatura' => $dataAssinatura,
             'assinaturaEletronica' => true,
         ])->render();
-    }
-
-    private static function formatCpf(?string $cpf): string
-    {
-        if (blank($cpf)) {
-            return '';
-        }
-
-        $digits = str_pad(preg_replace('/\D/', '', $cpf), 11, '0', STR_PAD_LEFT);
-
-        return substr($digits, 0, 3).'.'.substr($digits, 3, 3).'.'.substr($digits, 6, 3).'-'.substr($digits, 9, 2);
     }
 
     private static function sendActionError(string $title, \Throwable $exception): void
