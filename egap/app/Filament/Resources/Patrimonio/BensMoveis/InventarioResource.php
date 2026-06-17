@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -17,10 +18,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
+use Livewire\Livewire;
+use Throwable;
 
 class InventarioResource extends Resource
 {
@@ -48,67 +53,178 @@ class InventarioResource extends Resource
     {
         return $form
             ->schema([
-                Tabs::make('Abas do Inventário')
+                Tabs::make('Inventário')
                     ->persistTabInQueryString()
                     ->tabs([
-                        Tabs\Tab::make('Gestão do Inventário')
+                        Tabs\Tab::make('Dados gerais')
                             ->icon('heroicon-m-adjustments-horizontal')
                             ->schema([
-                                Section::make('Dados do Inventário')
-                                    ->description('Defina o período e acompanhe a situação do inventário.')
+                                Section::make('Identificação e período')
+                                    ->description('Defina a numeração, vigência e situação do inventário.')
                                     ->icon('heroicon-o-calendar-days')
                                     ->schema([
-                                        Grid::make(4)->schema([
-                                            TextInput::make('num_inventario')->label('Inventário Nº')->required(),
-                                            TextInput::make('ano_inventario')->label('Ano')->numeric()->default(date('Y')),
-                                            DatePicker::make('inicio_inventario')->label('Início')->displayFormat('d/m/Y')->native(false)->live(),
-                                            DatePicker::make('termino_inventario')->label('Término')->displayFormat('d/m/Y')->native(false)->live()
-                                                ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) {
-                                                    $inicio = $get('inicio_inventario');
-                                                    if ($inicio && $state) {
-                                                        $dias = Carbon::parse($inicio)->diffInDays(Carbon::parse($state));
-                                                        $set('dias', $dias);
-                                                    }
-                                                }),
-                                            TextInput::make('dias')->label('Dias')->numeric()->suffix('dias')->readOnly(),
-                                            Select::make('situacao')->label('Situação')
-                                                ->options(['A inventariar' => 'A inventariar', 'Em andamento' => 'Em andamento', 'Finalizado' => 'Finalizado'])
+                                        Grid::make(5)->schema([
+                                            TextInput::make('num_inventario')
+                                                ->label('Inventário Nº')
+                                                ->required()
+                                                ->maxLength(50),
+
+                                            TextInput::make('ano_inventario')
+                                                ->label('Ano')
+                                                ->numeric()
+                                                ->minValue(2000)
+                                                ->maxValue((int) date('Y') + 1)
+                                                ->default(date('Y'))
+                                                ->required(),
+
+                                            DatePicker::make('inicio_inventario')
+                                                ->label('Início')
+                                                ->displayFormat('d/m/Y')
                                                 ->native(false)
-                                                ->default('A inventariar'),
+                                                ->live()
+                                                ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasInventario($get, $set)),
+
+                                            DatePicker::make('termino_inventario')
+                                                ->label('Término')
+                                                ->displayFormat('d/m/Y')
+                                                ->native(false)
+                                                ->live()
+                                                ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasInventario($get, $set)),
+
+                                            TextInput::make('dias')
+                                                ->label('Dias')
+                                                ->numeric()
+                                                ->suffix('dias')
+                                                ->readOnly(),
+
+                                            Select::make('situacao')
+                                                ->label('Situação')
+                                                ->options(Inventario::situacoes())
+                                                ->native(false)
+                                                ->default(Inventario::SITUACAO_A_INVENTARIAR)
+                                                ->required()
+                                                ->columnSpanFull(),
                                         ]),
+                                    ]),
+                            ]),
+
+                        Tabs\Tab::make('Unidades')
+                            ->icon('heroicon-m-building-office')
+                            ->schema([
+                                Section::make('Unidades inventariadas')
+                                    ->description('Vincule as unidades que compõem este inventário e acompanhe o período por unidade.')
+                                    ->icon('heroicon-o-building-office')
+                                    ->schema([
+                                        Repeater::make('unidadesInventariadas')
+                                            ->relationship('unidadesInventariadas')
+                                            ->schema([
+                                                Select::make('unidades')
+                                                    ->label('Unidade')
+                                                    ->relationship(
+                                                        'unidade',
+                                                        'UnidadeOrganizacional',
+                                                        modifyQueryUsing: fn ($query) => $query
+                                                            ->unidadesRaiz()
+                                                            ->orderBy('UnidadeOrganizacional')
+                                                    )
+                                                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->UnidadeOrganizacional ?: $record->Setor ?: "Unidade {$record->id}")
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->native(false)
+                                                    ->required()
+                                                    ->columnSpan(2),
+
+                                                DatePicker::make('data_inicio')
+                                                    ->label('Início')
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false)
+                                                    ->live()
+                                                    ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasUnidade($get, $set)),
+
+                                                DatePicker::make('data_termino')
+                                                    ->label('Término')
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false)
+                                                    ->live()
+                                                    ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasUnidade($get, $set)),
+
+                                                TextInput::make('dias')
+                                                    ->label('Dias')
+                                                    ->numeric()
+                                                    ->suffix('dias')
+                                                    ->readOnly(),
+
+                                                Select::make('situacao')
+                                                    ->label('Situação')
+                                                    ->options(Inventario::situacoes())
+                                                    ->native(false)
+                                                    ->default(Inventario::SITUACAO_A_INVENTARIAR)
+                                                    ->required(),
+                                            ])
+                                            ->columns([
+                                                'default' => 1,
+                                                'lg' => 6,
+                                            ])
+                                            ->defaultItems(0)
+                                            ->reorderable(false)
+                                            ->collapsible()
+                                            ->itemLabel(fn (array $state): string => filled($state['unidades'] ?? null)
+                                                ? "Unidade {$state['unidades']}"
+                                                : 'Unidade inventariada')
+                                            ->addActionLabel('Adicionar unidade'),
                                     ]),
                             ]),
 
                         Tabs\Tab::make('Comissões')
                             ->icon('heroicon-m-users')
                             ->schema([
-                                Repeater::make('comissoes')
-                                    ->relationship('comissoes')
+                                Section::make('Comissão do inventário')
+                                    ->description('Informe os membros responsáveis pelo inventário.')
+                                    ->icon('heroicon-o-users')
                                     ->schema([
-                                        Select::make('comissao')->label('Comissão')->options(['Permanente' => 'Permanente', 'Especial' => 'Especial'])->native(false)->required(),
-                                        Select::make('funcao')->label('Função')->options(['Presidente' => 'Presidente', 'Membro' => 'Membro', 'Secretário' => 'Secretário'])->native(false)->required(),
-                                        Select::make('nome')->label('Membro')->relationship('membroRef', 'name')->searchable()->preload()->native(false)->required(),
-                                    ])->columns(3)->addActionLabel('Adicionar Membro à Comissão'),
-                            ]),
+                                        Repeater::make('comissoes')
+                                            ->relationship('comissoes')
+                                            ->schema([
+                                                Select::make('comissao')
+                                                    ->label('Comissão')
+                                                    ->options([
+                                                        'Permanente' => 'Permanente',
+                                                        'Especial' => 'Especial',
+                                                    ])
+                                                    ->native(false)
+                                                    ->required(),
 
-                        Tabs\Tab::make('Materiais Inventariados')
-                            ->icon('heroicon-m-archive-box')
-                            ->schema([
-                                Repeater::make('itens')
-                                    ->relationship('itens')
-                                    ->schema([
-                                        Select::make('id_bem')
-                                            ->label('Patrimônio')
-                                            ->relationship('bem', 'NumPatrimonio')
-                                            ->placeholder('Busque pelo patrimônio')
-                                            ->searchable()
-                                            ->preload()
-                                            ->native(false)
-                                            ->required()
-                                            ->columnSpan(2),
-                                        Select::make('estado_conservacao')->label('Estado')->options(['BOM' => 'BOM', 'REGULAR' => 'REGULAR', 'RUIM' => 'RUIM', 'SUCATA' => 'SUCATA'])->native(false),
-                                        TextInput::make('observacao')->label('Observação'),
-                                    ])->columns(4)->addActionLabel('Vincular Patrimônio'),
+                                                Select::make('funcao')
+                                                    ->label('Função')
+                                                    ->options([
+                                                        'Presidente' => 'Presidente',
+                                                        'Membro' => 'Membro',
+                                                        'Secretário' => 'Secretário',
+                                                    ])
+                                                    ->native(false)
+                                                    ->required(),
+
+                                                Select::make('nome')
+                                                    ->label('Membro')
+                                                    ->relationship('membroRef', 'name')
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->native(false)
+                                                    ->required(),
+                                            ])
+                                            ->columns([
+                                                'default' => 1,
+                                                'lg' => 3,
+                                            ])
+                                            ->defaultItems(0)
+                                            ->reorderable(false)
+                                            ->collapsible()
+                                            ->itemLabel(fn (array $state): string => collect([
+                                                $state['comissao'] ?? null,
+                                                $state['funcao'] ?? null,
+                                            ])->filter()->join(' - ') ?: 'Membro da comissão')
+                                            ->addActionLabel('Adicionar membro'),
+                                    ]),
                             ]),
                     ])->columnSpanFull(),
             ]);
@@ -127,39 +243,165 @@ class InventarioResource extends Resource
                 TableColumns::text('dias', 'Dias')->suffix(' dias'),
                 TableColumns::text('situacao', 'Situação')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'A inventariar' => 'warning',
-                        'Em andamento' => 'info',
-                        'Finalizado' => 'success',
-                        default => 'gray',
-                    }),
+                    ->formatStateUsing(fn (?string $state): string => Inventario::rotuloSituacao($state))
+                    ->color(fn (?string $state): string => Inventario::corSituacao($state)),
 
-                TableColumns::text('itens_count', 'Materiais')
-                    ->counts('itens')
+                TableColumns::text('unidades_inventariadas_count', 'Unidades')
+                    ->counts('unidadesInventariadas')
                     ->searchable(false)
-                    ->icon('heroicon-m-archive-box')
+                    ->sortable(false)
+                    ->icon('heroicon-m-building-office')
                     ->iconColor('primary')
                     ->badge()
-                    ->color('gray'),
+                    ->color('gray')
+                    ->tooltip('Visualizar unidades')
+                    ->action(self::unidadesInventariadasTableAction()),
                 TableColumns::text('comissoes_count', 'Comissões')
                     ->counts('comissoes')
                     ->searchable(false)
+                    ->sortable(false)
                     ->icon('heroicon-m-users')
                     ->iconColor('success')
                     ->badge()
-                    ->color('gray'),
+                    ->color('gray')
+                    ->tooltip('Visualizar comissões')
+                    ->action(self::comissoesTableAction()),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('situacao')
+                    ->columnSpan(2)
                     ->label('Situação')
-                    ->options(['A inventariar' => 'A inventariar', 'Em andamento' => 'Em andamento', 'Finalizado' => 'Finalizado']),
+                    ->options(Inventario::situacoes()),
             ], layout: Tables\Enums\FiltersLayout::AboveContent)
             ->defaultSort('id', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('Gerenciar')->icon('heroicon-o-cog-6-tooth'),
-                Tables\Actions\ViewAction::make()->tooltip('Visualizar')->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()->tooltip('Excluir')->hiddenLabel(),
+                ...TableDefaults::actions(),
+                self::atualizarSituacaoTableAction()
             ]);
+    }
+
+    private static function atualizarSituacaoTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('atualizar_situacao')
+                ->icon('heroicon-o-clipboard-document-list')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->hiddenLabel()
+                ->modalHeading('Atualizar situação do inventário')
+                ->modalDescription('Os bens vinculados aos setores/unidades deste inventário serão marcados como A INVENTARIAR.')
+                ->action(function (Inventario $record): void {
+                    try {
+                        $totalAtualizado = self::atualizarSituacaoBensInventario($record);
+                    } catch (Throwable $exception) {
+                        Notification::make()
+                            ->title('Não foi possível atualizar a situação.')
+                            ->body($exception->getMessage())
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $notification = Notification::make()
+                        ->title('Situação atualizada.')
+                        ->body("{$totalAtualizado} bem(ns) marcado(s) como A INVENTARIAR.");
+
+                    $totalAtualizado > 0
+                        ? $notification->success()
+                        : $notification->warning();
+
+                    $notification->send();
+                })
+                ->tooltip('Atualizar situação');
+    }
+
+    private static function unidadesInventariadasTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('visualizar_unidades_inventario')
+            ->modalHeading(fn (Inventario $record): string => "Unidades do Inventário {$record->num_inventario}/{$record->ano_inventario}")
+            ->modalWidth('full')
+            ->extraModalWindowAttributes([
+                'class' => 'materiais-termo-modal-window',
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
+            ])
+            ->stickyModalHeader()
+            ->stickyModalFooter()
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalContent(fn (Inventario $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.inventario-unidades-modal',
+                    ['inventarioId' => (int) $record->getKey()],
+                    "inventario-unidades-{$record->getKey()}",
+                )
+            ));
+    }
+
+    private static function comissoesTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('visualizar_comissoes_inventario')
+            ->modalHeading(fn (Inventario $record): string => "Comissões do Inventário {$record->num_inventario}/{$record->ano_inventario}")
+            ->modalWidth('full')
+            ->extraModalWindowAttributes([
+                'class' => 'materiais-termo-modal-window',
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
+            ])
+            ->stickyModalHeader()
+            ->stickyModalFooter()
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalContent(fn (Inventario $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.inventario-comissoes-modal',
+                    ['inventarioId' => (int) $record->getKey()],
+                    "inventario-comissoes-{$record->getKey()}",
+                )
+            ));
+    }
+
+    private static function atualizarSituacaoBensInventario(Inventario $inventario): int
+    {
+        $unidades = $inventario->unidadesInventariadas()
+            ->pluck('unidades')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($unidades->isEmpty()) {
+            return 0;
+        }
+
+        return BemMovel::query()
+            ->where(function ($query) use ($unidades): void {
+                $query
+                    ->whereIn('Setor', $unidades)
+                    ->orWhereIn('UnidadeJudiciaria', $unidades);
+            })
+            ->update([
+                'sit_inventario' => 'A INVENTARIAR',
+                'id_inventario' => $inventario->getKey(),
+            ]);
+    }
+
+    private static function calcularDiasInventario(Forms\Get $get, Forms\Set $set): void
+    {
+        self::calcularDias($get('inicio_inventario'), $get('termino_inventario'), $set);
+    }
+
+    private static function calcularDiasUnidade(Forms\Get $get, Forms\Set $set): void
+    {
+        self::calcularDias($get('data_inicio'), $get('data_termino'), $set);
+    }
+
+    private static function calcularDias(mixed $inicio, mixed $termino, Forms\Set $set): void
+    {
+        if (! $inicio || ! $termino) {
+            $set('dias', null);
+
+            return;
+        }
+
+        $set('dias', Carbon::parse($inicio)->diffInDays(Carbon::parse($termino)));
     }
 
     public static function getPages(): array

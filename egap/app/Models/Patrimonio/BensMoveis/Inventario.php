@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Auth;
 
 class Inventario extends Model
 {
-    public const SITUACAO_EM_ANDAMENTO = '0';
-    public const SITUACAO_A_INVENTARIAR = '1';
-    public const SITUACAO_FINALIZADO = '2';
+    public const SITUACAO_A_INVENTARIAR = '0';
+    public const SITUACAO_EM_EXECUCAO = '1';
+    public const SITUACAO_CONCLUIDO = '2';
 
     //protected $connection = 'egap';
 
@@ -69,10 +69,12 @@ class Inventario extends Model
     {
         return $query->where(function (Builder $query): void {
             $query
-                ->where('situacao', self::SITUACAO_EM_ANDAMENTO)
+                ->where('situacao', self::SITUACAO_A_INVENTARIAR)
+                ->orWhere('situacao', 'A inventariar')
+                ->orWhere('situacao', self::SITUACAO_EM_EXECUCAO)
+                ->orWhere('situacao', 'Em execução')
                 ->orWhere('situacao', 'Em andamento')
-                ->orWhere('situacao', self::SITUACAO_A_INVENTARIAR)
-                ->orWhere('situacao', 'A inventariar');
+                ->orWhere('situacao', 'Em execucao');
         });
     }
 
@@ -80,15 +82,48 @@ class Inventario extends Model
     {
         return $query->where(function (Builder $query): void {
             $query
-                ->where('situacao', self::SITUACAO_FINALIZADO)
+                ->where('situacao', self::SITUACAO_CONCLUIDO)
+                ->orWhere('situacao', 'Concluído')
+                ->orWhere('situacao', 'Concluido')
                 ->orWhere('situacao', 'Finalizado');
         });
+    }
+
+    public static function situacoes(): array
+    {
+        return [
+            self::SITUACAO_A_INVENTARIAR => 'A inventariar',
+            self::SITUACAO_EM_EXECUCAO => 'Em execução',
+            self::SITUACAO_CONCLUIDO => 'Concluído',
+        ];
+    }
+
+    public static function rotuloSituacao(?string $situacao): string
+    {
+        return match ($situacao) {
+            self::SITUACAO_A_INVENTARIAR, 'A inventariar' => 'A inventariar',
+            self::SITUACAO_EM_EXECUCAO, 'Em execução', 'Em execucao', 'Em andamento' => 'Em execução',
+            self::SITUACAO_CONCLUIDO, 'Concluído', 'Concluido', 'Finalizado' => 'Concluído',
+            default => (string) $situacao,
+        };
+    }
+
+    public static function corSituacao(?string $situacao): string
+    {
+        return match ($situacao) {
+            self::SITUACAO_A_INVENTARIAR, 'A inventariar' => 'warning',
+            self::SITUACAO_EM_EXECUCAO, 'Em execução', 'Em execucao', 'Em andamento' => 'info',
+            self::SITUACAO_CONCLUIDO, 'Concluído', 'Concluido', 'Finalizado' => 'success',
+            default => 'gray',
+        };
     }
 
     public function estaAberto(): bool
     {
         return in_array($this->situacaoNormalizada(), [
-            self::SITUACAO_EM_ANDAMENTO,
+            self::SITUACAO_EM_EXECUCAO,
+            'em execução',
+            'em execucao',
             'em andamento',
         ], true);
     }
@@ -110,7 +145,9 @@ class Inventario extends Model
     public function estaFinalizado(): bool
     {
         return in_array($this->situacaoNormalizada(), [
-            self::SITUACAO_FINALIZADO,
+            self::SITUACAO_CONCLUIDO,
+            'concluído',
+            'concluido',
             'finalizado',
         ], true);
     }

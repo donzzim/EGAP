@@ -19,8 +19,13 @@ class ConferenciaBensService
     private const SITUACOES_ELEGIVEIS = [1, 7, 8];
 
     private const STATUS_LOCALIZADO = 'LOCALIZADO';
+
     private const STATUS_NAO_LOCALIZADO = 'NÃO LOCALIZADO';
+
+    private const STATUS_NAO_LOCALIZADO_SEM_ACENTO = 'NAO LOCALIZADO';
+
     private const STATUS_DIVERGENTE = 'DIVERGENTE';
+
     private const STATUS_A_INVENTARIAR = 'A INVENTARIAR';
 
     public function atual(array $scope): array
@@ -157,7 +162,7 @@ class ConferenciaBensService
                 return $itemExistente;
             }
 
-            $item = ItemInventario::query()->create($this->dadosItemInventario(
+            $item = $this->criarItemInventario($this->dadosItemInventario(
                 $inventario,
                 $scope,
                 $bemTravado,
@@ -211,14 +216,14 @@ class ConferenciaBensService
                 $dados = $this->dadosItemInventario($inventario, $scope, $bem, self::STATUS_NAO_LOCALIZADO, $justificativa);
 
                 if ($item) {
-                    $item->fill([
+                    $this->atualizarItemInventario($item, [
                         'situacao' => self::STATUS_NAO_LOCALIZADO,
                         'observacao' => $justificativa,
                         'atualizado_por' => $scope['id_egap'],
                         'date_time' => now(),
-                    ])->save();
+                    ]);
                 } else {
-                    ItemInventario::query()->create($dados);
+                    $this->criarItemInventario($dados);
                 }
 
                 BemMovel::query()
@@ -289,14 +294,14 @@ class ConferenciaBensService
             $item = $this->itemExistente($inventario, $scope, $bem);
 
             if ($item) {
-                $item->fill([
+                $this->atualizarItemInventario($item, [
                     'situacao' => self::STATUS_DIVERGENTE,
                     'observacao' => $observacaoCompleta,
                     'atualizado_por' => $scope['id_egap'],
                     'date_time' => now(),
-                ])->save();
+                ]);
             } else {
-                $item = ItemInventario::query()->create($this->dadosItemInventario(
+                $item = $this->criarItemInventario($this->dadosItemInventario(
                     $inventario,
                     $scope,
                     $bem,
@@ -341,14 +346,14 @@ class ConferenciaBensService
             $item = $this->itemSemCadastroExistente($inventario, $scope, $codigo);
 
             if ($item) {
-                $item->fill([
+                $this->atualizarItemInventario($item, [
                     'situacao' => self::STATUS_DIVERGENTE,
                     'observacao' => $observacao,
                     'atualizado_por' => $scope['id_egap'],
                     'date_time' => now(),
-                ])->save();
+                ]);
             } else {
-                ItemInventario::query()->create([
+                $this->criarItemInventario([
                     'date_time' => now(),
                     'id_bem' => null,
                     'unidades' => $scope['unidade_judiciaria'],
@@ -401,8 +406,8 @@ class ConferenciaBensService
         $inventario = Inventario::query()
             ->orderByRaw("
                 CASE
-                    WHEN situacao IN ('Em andamento', 'A inventariar', '0') THEN 0
-                    WHEN situacao = 'Finalizado' THEN 2
+                    WHEN situacao IN ('0', '1', 'A inventariar', 'Em execução', 'Em execucao', 'Em andamento') THEN 0
+                    WHEN situacao IN ('2', 'Concluído', 'Concluido', 'Finalizado') THEN 2
                     ELSE 1
                 END
             ")
@@ -506,7 +511,7 @@ class ConferenciaBensService
     {
         return match ($status) {
             'localizado' => $this->whereItemStatus($query, $inventario, $scope, self::STATUS_LOCALIZADO),
-            'nao_localizado' => $this->whereItemStatus($query, $inventario, $scope, self::STATUS_NAO_LOCALIZADO),
+            'nao_localizado' => $this->whereItemStatus($query, $inventario, $scope, $this->statusNaoLocalizado()),
             'divergente' => $this->whereItemStatus($query, $inventario, $scope, self::STATUS_DIVERGENTE),
             'em_transferencia' => $query->where(function (Builder $query): void {
                 $query
@@ -519,7 +524,10 @@ class ConferenciaBensService
         };
     }
 
-    private function whereItemStatus(Builder $query, Inventario $inventario, array $scope, string $status): Builder
+    /**
+     * @param  string|array<int, string>  $status
+     */
+    private function whereItemStatus(Builder $query, Inventario $inventario, array $scope, string|array $status): Builder
     {
         return $query->whereExists(function ($query) use ($inventario, $scope, $status): void {
             $query
@@ -527,7 +535,11 @@ class ConferenciaBensService
                 ->from('mat_itensinventario')
                 ->where('mat_itensinventario.id_inventario', $inventario->id)
                 ->where('mat_itensinventario.setor', $scope['setor'])
-                ->where('mat_itensinventario.situacao', $status)
+                ->when(
+                    is_array($status),
+                    fn ($query) => $query->whereIn('mat_itensinventario.situacao', $status),
+                    fn ($query) => $query->where('mat_itensinventario.situacao', $status),
+                )
                 ->where(function ($query): void {
                     $query
                         ->whereColumn('mat_itensinventario.id_bem', 'mat_patrimonio.id')
@@ -731,7 +743,7 @@ class ConferenciaBensService
         return [
             'date_time' => now(),
             'id_bem' => $bem->id,
-            'unidades' => $bem->UnidadeJudiciaria,
+            'unidades' => $scope['unidade_judiciaria'],
             'num_patrimonio' => $bem->NumPatrimonio,
             'num_patrimonioantigo' => $bem->NumerodePatAnterior,
             'num_serie' => $bem->NumerodeSerie,
@@ -742,8 +754,8 @@ class ConferenciaBensService
             'setor' => $scope['setor'],
             'id_inventario' => $inventario->id,
             'estado_conservacao' => $bem->EstadodeConservacao,
-            'setor_localizado' => $bem->setorRef?->Setor,
-            'unidade_localizado' => $bem->unidadeJudiciariaRef?->Setor,
+            'setor_localizado' => $bem->Setor,
+            'unidade_localizado' => $bem->UnidadeJudiciaria,
             'complemento_localizado' => $bem->complementoSetorRef?->descricao,
             'observacao' => $observacao,
             'situacao' => $situacao,
@@ -760,7 +772,7 @@ class ConferenciaBensService
     {
         $total = (clone $this->bensEsperadosQuery($scope))->count();
         $localizados = $this->countItens($inventario, $scope, self::STATUS_LOCALIZADO);
-        $naoLocalizados = $this->countItens($inventario, $scope, self::STATUS_NAO_LOCALIZADO);
+        $naoLocalizados = $this->countItens($inventario, $scope, $this->statusNaoLocalizado());
         $divergentes = $this->countItens($inventario, $scope, self::STATUS_DIVERGENTE);
 
         $pendentes = (clone $this->bensEsperadosQuery($scope))
@@ -821,12 +833,19 @@ class ConferenciaBensService
         ];
     }
 
-    private function countItens(Inventario $inventario, array $scope, string $situacao): int
+    /**
+     * @param  string|array<int, string>  $situacao
+     */
+    private function countItens(Inventario $inventario, array $scope, string|array $situacao): int
     {
         return ItemInventario::query()
             ->where('id_inventario', $inventario->id)
             ->where('setor', $scope['setor'])
-            ->where('situacao', $situacao)
+            ->when(
+                is_array($situacao),
+                fn (Builder $query): Builder => $query->whereIn('situacao', $situacao),
+                fn (Builder $query): Builder => $query->where('situacao', $situacao),
+            )
             ->count();
     }
 
@@ -849,6 +868,7 @@ class ConferenciaBensService
             ->whereIn('situacao', [
                 self::STATUS_LOCALIZADO,
                 self::STATUS_NAO_LOCALIZADO,
+                self::STATUS_NAO_LOCALIZADO_SEM_ACENTO,
                 self::STATUS_DIVERGENTE,
             ])
             ->count();
@@ -926,9 +946,9 @@ class ConferenciaBensService
     private function statusConferencia(BemMovel $bem, ?ItemInventario $item): string
     {
         if ($item) {
-            return match ($item->situacao) {
+            return match ($this->situacaoItemKey($item->situacao)) {
                 self::STATUS_LOCALIZADO => 'localizado',
-                self::STATUS_NAO_LOCALIZADO => 'nao_localizado',
+                self::STATUS_NAO_LOCALIZADO_SEM_ACENTO => 'nao_localizado',
                 self::STATUS_DIVERGENTE => 'divergente',
                 default => 'registrado',
             };
@@ -956,6 +976,44 @@ class ConferenciaBensService
             'registrado' => 'Registrado',
             default => 'Pendente',
         };
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function statusNaoLocalizado(): array
+    {
+        return [
+            self::STATUS_NAO_LOCALIZADO,
+            self::STATUS_NAO_LOCALIZADO_SEM_ACENTO,
+        ];
+    }
+
+    private function situacaoItemKey(?string $situacao): string
+    {
+        return Str::upper(Str::ascii(trim((string) $situacao)));
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function criarItemInventario(array $attributes): ItemInventario
+    {
+        return ItemInventario::withoutEvents(
+            fn (): ItemInventario => ItemInventario::query()->create($attributes),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function atualizarItemInventario(ItemInventario $item, array $attributes): ItemInventario
+    {
+        return ItemInventario::withoutEvents(function () use ($item, $attributes): ItemInventario {
+            $item->fill($attributes)->save();
+
+            return $item;
+        });
     }
 
     private function isEmTransferencia(BemMovel $bem): bool
@@ -996,12 +1054,11 @@ class ConferenciaBensService
 
     private function situacaoInventarioLabel(null|int|string $situacao): string
     {
-        return match ((string) $situacao) {
-            '0' => 'Em andamento',
-            '1' => 'A inventariar',
-            '2' => 'Finalizado',
-            default => (string) ($situacao ?: 'Em andamento'),
-        };
+        if ($situacao === null || $situacao === '') {
+            return Inventario::rotuloSituacao(Inventario::SITUACAO_A_INVENTARIAR);
+        }
+
+        return Inventario::rotuloSituacao((string) $situacao);
     }
 
     private function dateValue(mixed $value): ?string

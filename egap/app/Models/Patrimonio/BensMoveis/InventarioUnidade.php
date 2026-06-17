@@ -41,6 +41,11 @@ class InventarioUnidade extends Model
         return $this->belongsTo(Setores::class, 'unidades', 'id');
     }
 
+    public function setores(): HasMany
+    {
+        return $this->hasMany(Setores::class, 'CodigoPai', 'unidades');
+    }
+
     public function equipes(): HasMany
     {
         return $this->hasMany(InventarioEquipe::class, 'unidade', 'id');
