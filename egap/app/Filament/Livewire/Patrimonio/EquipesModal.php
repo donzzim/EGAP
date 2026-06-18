@@ -21,7 +21,7 @@ class EquipesModal extends Component implements HasForms, HasTable
 
     public int $unidadeId;
 
-    public function mount(int $unidadeId): void
+    public function mount(int $unidadeId, ?int $inventarioId = null): void
     {
         $this->unidadeId = $unidadeId;
     }
@@ -31,7 +31,7 @@ class EquipesModal extends Component implements HasForms, HasTable
         return TableDefaults::apply($table)
             ->query($this->getEquipesQuery())
             ->columns([
-                TableColumns::text('membroRef.name', 'Integrante', isFirstColumn: true)
+                TableColumns::text('integrantesRef.name', 'Integrante', isFirstColumn: true)
                     ->icon('heroicon-o-user')
                     ->weight('medium'),
 
@@ -52,7 +52,7 @@ class EquipesModal extends Component implements HasForms, HasTable
     {
         return InventarioEquipe::query()
             ->where('unidade', $this->unidadeId)
-            ->with('membroRef');
+            ->with('integrantesRef');
     }
 
     public function render(): View

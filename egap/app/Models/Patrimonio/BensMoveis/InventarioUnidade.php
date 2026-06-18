@@ -43,7 +43,8 @@ class InventarioUnidade extends Model
 
     public function setores(): HasMany
     {
-        return $this->hasMany(Setores::class, 'CodigoPai', 'unidades');
+        return $this->hasMany(Setores::class, 'CodigoPai', 'unidades')
+            ->whereColumn('id', '<>', 'CodigoPai');
     }
 
     public function equipes(): HasMany
@@ -66,6 +67,32 @@ class InventarioUnidade extends Model
                 ->orWhere('situacao', 'Em andamento')
                 ->orWhere('situacao', 'A inventariar');
         });
+    }
+
+    public function inventariaUnidadeInteira(): bool
+    {
+        return (bool) $this->unidade?->inventariaUnidadeInteira();
+    }
+
+    public function tipoAbrangencia(): string
+    {
+        return $this->inventariaUnidadeInteira() ? 'unidade' : 'setor';
+    }
+
+    public function unidadePaiId(): ?int
+    {
+        if (! $this->unidade) {
+            return null;
+        }
+
+        return $this->inventariaUnidadeInteira()
+            ? (int) $this->unidade->id
+            : (int) $this->unidade->CodigoPai;
+    }
+
+    public function rotuloUnidadeInventariada(): string
+    {
+        return $this->unidade?->rotuloInventario() ?: (string) $this->unidades;
     }
 
     protected static function booted(): void

@@ -25,7 +25,6 @@ class InventarioComissao extends Model
         return $this->belongsTo(Inventario::class, 'id_inventario', 'id');
     }
 
-    /** ✅ RELAÇÃO COM O USUÁRIO: A coluna 'nome' guarda o ID da jos_users */
     public function membroRef(): BelongsTo
     {
         return $this->belongsTo(UserEgap::class, 'nome', 'id');

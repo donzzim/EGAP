@@ -32,7 +32,8 @@ class UnidadesModal extends Component implements HasForms, HasTable
         return TableDefaults::apply($table)
             ->query($this->getUnidadesQuery())
             ->columns([
-                TableColumns::text('unidade.UnidadeOrganizacional', 'Unidade', isFirstColumn: true)
+                TableColumns::text('unidade_inventariada', 'Unidade/Setor', isFirstColumn: true)
+                    ->state(fn (InventarioUnidade $record): string => $record->rotuloUnidadeInventariada())
                     ->icon('heroicon-o-building-office')
                     ->weight('medium')
                     ->wrap(),
@@ -64,7 +65,7 @@ class UnidadesModal extends Component implements HasForms, HasTable
     {
         return InventarioUnidade::query()
             ->where('id_inventario', $this->inventarioId)
-            ->with('unidade');
+            ->with('unidade.pai');
     }
 
     public function render(): View

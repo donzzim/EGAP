@@ -6,6 +6,8 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Models\Cadastro\Setores;
+use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -21,6 +23,8 @@ use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
+use Livewire\Livewire;
 
 class InventarioUnidadeResource extends Resource
 {
@@ -58,7 +62,7 @@ class InventarioUnidadeResource extends Resource
                                     ->description('Vincule a unidade ao inventário e informe o período de execução.')
                                     ->icon('heroicon-o-building-office')
                                     ->schema([
-                                        Grid::make(2)->schema([
+                                        Grid::make(6)->schema([
                                             Select::make('id_inventario')
                                                 ->label('Inventário No')
                                                 ->relationship('inventario', 'num_inventario')
@@ -69,15 +73,53 @@ class InventarioUnidadeResource extends Resource
                                                 ->required()
                                                 ->columnSpanFull(),
 
+                                            Select::make('tipo_abrangencia')
+                                                ->label('Abrangência')
+                                                ->options([
+                                                    'unidade' => 'Unidade inteira',
+                                                    'setor' => 'Setor',
+                                                ])
+                                                ->default('unidade')
+                                                ->native(false)
+                                                ->live()
+                                                ->dehydrated(false)
+                                                ->afterStateHydrated(function (Select $component, ?InventarioUnidade $record): void {
+                                                    $component->state($record?->tipoAbrangencia() ?? 'unidade');
+                                                })
+                                                ->afterStateUpdated(function (Forms\Set $set): void {
+                                                    $set('unidade_pai', null);
+                                                    $set('unidades', null);
+                                                })
+                                                ->required()
+                                                ->columnSpan(2),
+
+                                            Select::make('unidade_pai')
+                                                ->label('Unidade Organizacional')
+                                                ->options(fn (): array => self::opcoesUnidadesOrganizacionais())
+                                                ->searchable()
+                                                ->preload()
+                                                ->native(false)
+                                                ->live()
+                                                ->dehydrated(false)
+                                                ->visible(fn (Forms\Get $get): bool => $get('tipo_abrangencia') === 'setor')
+                                                ->required(fn (Forms\Get $get): bool => $get('tipo_abrangencia') === 'setor')
+                                                ->afterStateHydrated(function (Select $component, ?InventarioUnidade $record): void {
+                                                    if ($record && ! $record->inventariaUnidadeInteira()) {
+                                                        $component->state($record->unidadePaiId());
+                                                    }
+                                                })
+                                                ->afterStateUpdated(fn (Forms\Set $set) => $set('unidades', null))
+                                                ->columnSpan(2),
+
                                             Select::make('unidades')
-                                                ->label('Unidades')
-                                                ->relationship('unidade', 'Setor')
-                                                ->placeholder('Selecione a unidade')
+                                                ->label(fn (Forms\Get $get): string => $get('tipo_abrangencia') === 'setor' ? 'Setor' : 'Unidade Organizacional')
+                                                ->options(fn (Forms\Get $get): array => self::opcoesAbrangencia($get))
+                                                ->placeholder('Selecione a abrangência')
                                                 ->searchable()
                                                 ->preload()
                                                 ->native(false)
                                                 ->required()
-                                                ->columnSpanFull(),
+                                                ->columnSpan(2),
 
                                             DatePicker::make('data_inicio')
                                                 ->label('Data Início')
@@ -102,12 +144,9 @@ class InventarioUnidadeResource extends Resource
 
                                             Select::make('situacao')
                                                 ->label('Situação')
-                                                ->options([
-                                                    'A inventariar' => 'A inventariar',
-                                                    'Em andamento' => 'Em andamento',
-                                                    'Concluído' => 'Concluído',
-                                                    'carga efetuada' => 'carga efetuada',
-                                                ])->native(false)->default('A inventariar'),
+                                                ->options(Inventario::situacoes())
+                                                ->native(false)
+                                                ->default(Inventario::SITUACAO_A_INVENTARIAR),
                                         ]),
                                     ]),
                             ]),
@@ -118,30 +157,29 @@ class InventarioUnidadeResource extends Resource
                                 Repeater::make('equipes')
                                     ->relationship('equipes')
                                     ->schema([
-                                        Grid::make(3)->schema([
-                                            Select::make('id_inventario')
-                                                ->label('Inventário No')
-                                                ->relationship('unidadeInventariada.inventario', 'num_inventario')
-                                                ->searchable()
-                                                ->preload()
-                                                ->native(false)
-                                                ->required(),
-
+                                        Grid::make(2)->schema([
                                             Select::make('funcao')
                                                 ->label('Função')
-                                                ->options(['Líder' => 'Líder', 'Membro' => 'Membro'])
+                                                ->options([
+                                                    'Líder' => 'Líder',
+                                                    'Membro' => 'Membro',
+                                                ])
                                                 ->native(false)
                                                 ->required(),
 
                                             Select::make('integrante')
                                                 ->label('Integrante')
-                                                ->relationship('membroRef', 'name')
+                                                ->relationship('integrantesRef', 'name')
                                                 ->searchable()
                                                 ->preload()
                                                 ->native(false)
                                                 ->required(),
                                         ]),
                                     ])
+                                    ->defaultItems(0)
+                                    ->reorderable(false)
+                                    ->collapsible()
+                                    ->itemLabel(fn (array $state): string => $state['funcao'] ?? 'Integrante')
                                     ->addActionLabel('Adicionar Integrante'),
                             ]),
                     ])->columnSpanFull(),
@@ -159,46 +197,101 @@ class InventarioUnidadeResource extends Resource
         }
     }
 
+    private static function opcoesUnidadesOrganizacionais(): array
+    {
+        return Setores::query()
+            ->unidadesInventariaveis()
+            ->orderBy('Setor')
+            ->get(['id', 'UnidadeOrganizacional', 'Setor', 'CodigoPai'])
+            ->mapWithKeys(fn (Setores $setor): array => [
+                $setor->id => $setor->rotuloInventario(),
+            ])
+            ->toArray();
+    }
+
+    private static function opcoesAbrangencia(Forms\Get $get): array
+    {
+        if ($get('tipo_abrangencia') !== 'setor') {
+            return self::opcoesUnidadesOrganizacionais();
+        }
+
+        $unidadePai = (int) $get('unidade_pai');
+
+        if (! $unidadePai) {
+            return [];
+        }
+
+        return Setores::query()
+            ->filhosDe($unidadePai)
+            ->orderBy('Setor')
+            ->pluck('Setor', 'id')
+            ->toArray();
+    }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
             ->columns([
-                TableColumns::text('unidade.Setor', 'Unidade', isFirstColumn: true)
+                TableColumns::text('unidade_inventariada', 'Unidade/Setor', isFirstColumn: true)
+                    ->state(fn (InventarioUnidade $record): string => $record->rotuloUnidadeInventariada())
                     ->icon('heroicon-o-building-office')
                     ->weight('medium')
                     ->wrap(),
-                TableColumns::text('inventario.num_inventario', 'Inventário')->badge(),
                 TableColumns::date('data_inicio', 'Data Início'),
                 TableColumns::date('data_termino', 'Data Término'),
-                TableColumns::text('dias', 'Dias')->suffix(' dias'),
+                TableColumns::text('dias', 'Dias')
+                    ->suffix(' dias'),
                 TableColumns::text('situacao', 'Situação')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'Concluído', 'carga efetuada' => 'success',
                         'Em andamento' => 'info',
                         default => 'warning',
-                    }),
+                    })
+                    ->formatStateUsing(fn (?string $state): string => Inventario::rotuloSituacao($state))
+                    ->color(fn (?string $state): string => Inventario::corSituacao($state)),
 
-                TableColumns::text('equipes.membroRef.name', 'Integrantes')
-                    ->listWithLineBreaks()
-                    ->bulleted(),
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('id_inventario')
-                    ->label('Inventário')
-                    ->relationship('inventario', 'num_inventario')
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\SelectFilter::make('situacao')
-                    ->label('Situação')
-                    ->options(['A inventariar' => 'A inventariar', 'Em andamento' => 'Em andamento', 'Concluído' => 'Concluído', 'carga efetuada' => 'Carga efetuada']),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
-            ->defaultSort('id', 'desc')
-            ->actions([
-                Tables\Actions\EditAction::make()->label('Gerenciar')->icon('heroicon-o-cog-6-tooth'),
-                Tables\Actions\ViewAction::make()->tooltip('Visualizar')->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()->tooltip('Excluir')->hiddenLabel(),
+                TableColumns::text('equipes_integrantes', 'Integrantes')
+                    ->counts('equipes')
+                    ->state(fn (InventarioUnidade $record): int => (int) ($record->equipes_count ?? $record->equipes()->count()))
+                    ->searchable(false)
+                    ->sortable(false)
+                    ->badge()
+                    ->color('gray')
+                    ->weight('medium')
+                    ->icon('heroicon-o-users')
+                    ->iconColor('primary')
+                    ->tooltip('Visualizar integrantes')
+                    ->action(self::equipesIntegrantesTableAction()),
             ]);
+    }
+
+    private static function equipesIntegrantesTableAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('visualizar_integrantes_equipe')
+            ->modalHeading(fn (InventarioUnidade $record): string => sprintf(
+                'Integrantes da unidade %s',
+                $record->unidade?->Setor ?? $record->unidade?->UnidadeOrganizacional ?? $record->unidades
+            ))
+            ->modalWidth('full')
+            ->extraModalWindowAttributes([
+                'class' => 'egap-modal-window',
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
+            ])
+            ->stickyModalHeader()
+            ->stickyModalFooter()
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalContent(fn (InventarioUnidade $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.inventario-equipes-modal',
+                    [
+                        'inventarioId' => (int) $record->id_inventario,
+                        'unidadeId' => (int) $record->getKey(),
+                    ],
+                    "inventario-equipes-{$record->getKey()}",
+                )
+            ));
     }
 
     public static function getPages(): array

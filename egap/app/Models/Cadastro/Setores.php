@@ -71,7 +71,8 @@ class Setores extends Model
     // Hierarquia (filhos)
     public function filhos(): HasMany
     {
-        return $this->hasMany(Setores::class, 'CodigoPai');
+        return $this->hasMany(Setores::class, 'CodigoPai')
+            ->whereColumn('id', '<>', 'CodigoPai');
     }
 
     public function lotacoesComoUnidadeJudiciaria(): HasMany
@@ -98,9 +99,44 @@ class Setores extends Model
         return $query->whereColumn('id', 'CodigodaUO');
     }
 
+    public function scopeUnidadesInventariaveis(Builder $query): Builder
+    {
+        return $query->whereColumn('id', 'CodigoPai');
+    }
+
+    public function scopeSetoresInventariaveis(Builder $query): Builder
+    {
+        return $query
+            ->whereNotNull('CodigoPai')
+            ->whereColumn('id', '<>', 'CodigoPai');
+    }
+
     public function scopeFilhosDe(Builder $query, int $unidadeId): Builder
     {
-        return $query->where('CodigoPai', $unidadeId);
+        return $query
+            ->where('CodigoPai', $unidadeId)
+            ->whereColumn('id', '<>', 'CodigoPai');
+    }
+
+    public function inventariaUnidadeInteira(): bool
+    {
+        return $this->id !== null
+            && $this->CodigoPai !== null
+            && (int) $this->id === (int) $this->CodigoPai;
+    }
+
+    public function rotuloInventario(): string
+    {
+        if ($this->inventariaUnidadeInteira()) {
+            return $this->UnidadeOrganizacional ?: $this->Setor ?: "Unidade {$this->id}";
+        }
+
+        return collect([
+            $this->pai?->UnidadeOrganizacional ?: $this->pai?->Setor,
+            $this->Setor,
+        ])
+            ->filter()
+            ->join(' - ') ?: "Setor {$this->id}";
     }
 
     public function nomeHierarquico(): string

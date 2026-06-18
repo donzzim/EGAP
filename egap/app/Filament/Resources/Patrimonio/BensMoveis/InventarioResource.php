@@ -6,12 +6,15 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Inventario;
+use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -108,7 +111,7 @@ class InventarioResource extends Resource
                                     ]),
                             ]),
 
-                        Tabs\Tab::make('Unidades')
+                        Tabs\Tab::make('Unidades Inventariadas')
                             ->icon('heroicon-m-building-office')
                             ->schema([
                                 Section::make('Unidades inventariadas')
@@ -118,61 +121,147 @@ class InventarioResource extends Resource
                                         Repeater::make('unidadesInventariadas')
                                             ->relationship('unidadesInventariadas')
                                             ->schema([
-                                                Select::make('unidades')
-                                                    ->label('Unidade')
-                                                    ->relationship(
-                                                        'unidade',
-                                                        'UnidadeOrganizacional',
-                                                        modifyQueryUsing: fn ($query) => $query
-                                                            ->unidadesRaiz()
-                                                            ->orderBy('UnidadeOrganizacional')
-                                                    )
-                                                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->UnidadeOrganizacional ?: $record->Setor ?: "Unidade {$record->id}")
-                                                    ->searchable()
-                                                    ->preload()
-                                                    ->native(false)
-                                                    ->required()
-                                                    ->columnSpan(2),
+                                                Grid::make([
+                                                    'default' => 1,
+                                                    'md' => 2,
+                                                    'xl' => 12,
+                                                ])
+                                                    ->schema([
+                                                        Radio::make('tipo_abrangencia')
+                                                            ->label('Abrangência')
+                                                            ->options([
+                                                                'unidade' => 'Unidade inteira',
+                                                                'setor' => 'Setor específico',
+                                                            ])
+                                                            ->descriptions([
+                                                                'unidade' => 'Inventaria toda a unidade organizacional selecionada.',
+                                                                'setor' => 'Inventaria somente o setor selecionado.',
+                                                            ])
+                                                            ->default('unidade')
+                                                            ->inline()
+                                                            ->inlineLabel(false)
+                                                            ->live()
+                                                            ->dehydrated(false)
+                                                            ->afterStateHydrated(function (Radio $component, ?InventarioUnidade $record): void {
+                                                                $component->state($record?->tipoAbrangencia() ?? 'unidade');
+                                                            })
+                                                            ->afterStateUpdated(function (Forms\Set $set): void {
+                                                                $set('unidades', null);
+                                                            })
+                                                            ->required()
+                                                            ->columnSpan([
+                                                                'default' => 'full',
+                                                                'md' => 1,
+                                                                'xl' => 4,
+                                                            ]),
 
-                                                DatePicker::make('data_inicio')
-                                                    ->label('Início')
-                                                    ->displayFormat('d/m/Y')
-                                                    ->native(false)
-                                                    ->live()
-                                                    ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasUnidade($get, $set)),
+                                                        Select::make('unidades')
+                                                            ->label(fn (Forms\Get $get): string => $get('tipo_abrangencia') === 'setor'
+                                                                ? 'Setor'
+                                                                : 'Unidade Organizacional')
+                                                            ->placeholder(fn (Forms\Get $get): string => $get('tipo_abrangencia') === 'setor'
+                                                                ? 'Selecione o setor'
+                                                                : 'Selecione a unidade organizacional')
+                                                            ->options(fn (Forms\Get $get): array => self::opcoesAbrangencia($get))
+                                                            ->searchable()
+                                                            ->preload()
+                                                            ->native(false)
+                                                            ->required()
+                                                            ->columnSpan([
+                                                                'default' => 'full',
+                                                                'md' => 1,
+                                                                'xl' => 8,
+                                                            ]),
 
-                                                DatePicker::make('data_termino')
-                                                    ->label('Término')
-                                                    ->displayFormat('d/m/Y')
-                                                    ->native(false)
-                                                    ->live()
-                                                    ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasUnidade($get, $set)),
+                                                        DatePicker::make('data_inicio')
+                                                            ->label('Início')
+                                                            ->displayFormat('d/m/Y')
+                                                            ->native(false)
+                                                            ->live()
+                                                            ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasUnidade($get, $set))
+                                                            ->columnSpan([
+                                                                'default' => 'full',
+                                                                'md' => 1,
+                                                                'xl' => 3,
+                                                            ]),
 
-                                                TextInput::make('dias')
-                                                    ->label('Dias')
-                                                    ->numeric()
-                                                    ->suffix('dias')
-                                                    ->readOnly(),
+                                                        DatePicker::make('data_termino')
+                                                            ->label('Término')
+                                                            ->displayFormat('d/m/Y')
+                                                            ->native(false)
+                                                            ->live()
+                                                            ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDiasUnidade($get, $set))
+                                                            ->columnSpan([
+                                                                'default' => 'full',
+                                                                'md' => 1,
+                                                                'xl' => 3,
+                                                            ]),
 
-                                                Select::make('situacao')
-                                                    ->label('Situação')
-                                                    ->options(Inventario::situacoes())
-                                                    ->native(false)
-                                                    ->default(Inventario::SITUACAO_A_INVENTARIAR)
-                                                    ->required(),
+                                                        TextInput::make('dias')
+                                                            ->label('Dias')
+                                                            ->numeric()
+                                                            ->suffix('dias')
+                                                            ->readOnly()
+                                                            ->columnSpan([
+                                                                'default' => 'full',
+                                                                'md' => 1,
+                                                                'xl' => 2,
+                                                            ]),
+
+                                                        Select::make('situacao')
+                                                            ->label('Situação')
+                                                            ->options(Inventario::situacoes())
+                                                            ->native(false)
+                                                            ->default(Inventario::SITUACAO_A_INVENTARIAR)
+                                                            ->required()
+                                                            ->columnSpan([
+                                                                'default' => 'full',
+                                                                'md' => 1,
+                                                                'xl' => 4,
+                                                            ]),
+
+                                                        Repeater::make('equipes')
+                                                            ->label('Equipes de Campo')
+                                                            ->relationship('equipes')
+                                                            ->schema([
+                                                                Select::make('funcao')
+                                                                    ->label('Função')
+                                                                    ->options([
+                                                                        'Líder' => 'Líder',
+                                                                        'Membro' => 'Membro',
+                                                                    ])
+                                                                    ->native(false)
+                                                                    ->required(),
+
+                                                                Select::make('integrante')
+                                                                    ->label('Integrante')
+                                                                    ->relationship('integrantesRef', 'name')
+                                                                    ->searchable()
+                                                                    ->preload()
+                                                                    ->native(false)
+                                                                    ->required(),
+                                                            ])
+                                                            ->columns([
+                                                                'default' => 1,
+                                                                'lg' => 2,
+                                                            ])
+                                                            ->defaultItems(0)
+                                                            ->reorderable(false)
+                                                            ->collapsible()
+                                                            ->itemLabel(fn (array $state): string => $state['funcao'] ?? 'Integrante')
+                                                            ->addActionLabel('Adicionar integrante')
+                                                            ->columnSpanFull(),
+                                                    ]),
                                             ])
                                             ->columns([
                                                 'default' => 1,
-                                                'lg' => 6,
                                             ])
                                             ->defaultItems(0)
                                             ->reorderable(false)
                                             ->collapsible()
-                                            ->itemLabel(fn (array $state): string => filled($state['unidades'] ?? null)
-                                                ? "Unidade {$state['unidades']}"
-                                                : 'Unidade inventariada')
+                                            ->itemLabel(fn (array $state): string => self::rotuloItemUnidadeInventariada($state))
                                             ->addActionLabel('Adicionar unidade'),
-                                    ]),
+                                    ])
                             ]),
 
                         Tabs\Tab::make('Comissões')
@@ -199,7 +288,6 @@ class InventarioResource extends Resource
                                                     ->options([
                                                         'Presidente' => 'Presidente',
                                                         'Membro' => 'Membro',
-                                                        'Secretário' => 'Secretário',
                                                     ])
                                                     ->native(false)
                                                     ->required(),
@@ -283,36 +371,79 @@ class InventarioResource extends Resource
     private static function atualizarSituacaoTableAction(): Tables\Actions\Action
     {
         return Tables\Actions\Action::make('atualizar_situacao')
-                ->icon('heroicon-o-clipboard-document-list')
-                ->color('gray')
-                ->requiresConfirmation()
-                ->hiddenLabel()
-                ->modalHeading('Atualizar situação do inventário')
-                ->modalDescription('Os bens vinculados aos setores/unidades deste inventário serão marcados como A INVENTARIAR.')
-                ->action(function (Inventario $record): void {
-                    try {
-                        $totalAtualizado = self::atualizarSituacaoBensInventario($record);
-                    } catch (Throwable $exception) {
-                        Notification::make()
-                            ->title('Não foi possível atualizar a situação.')
-                            ->body($exception->getMessage())
-                            ->danger()
-                            ->send();
+            ->icon('heroicon-o-clipboard-document-list')
+            ->color('gray')
+            ->requiresConfirmation()
+            ->hiddenLabel()
+            ->modalHeading('Atualizar situação do inventário')
+            ->modalDescription('Os bens vinculados aos setores/unidades deste inventário serão marcados como A INVENTARIAR.')
+            ->action(function (Inventario $record): void {
+                try {
+                    $totalAtualizado = self::atualizarSituacaoBensInventario($record);
+                } catch (Throwable $exception) {
+                    Notification::make()
+                        ->title('Não foi possível atualizar a situação.')
+                        ->body($exception->getMessage())
+                        ->danger()
+                        ->send();
 
-                        return;
-                    }
+                    return;
+                }
 
-                    $notification = Notification::make()
-                        ->title('Situação atualizada.')
-                        ->body("{$totalAtualizado} bem(ns) marcado(s) como A INVENTARIAR.");
+                $notification = Notification::make()
+                    ->title('Situação atualizada.')
+                    ->body("{$totalAtualizado} bem(ns) marcado(s) como A INVENTARIAR.");
 
-                    $totalAtualizado > 0
-                        ? $notification->success()
-                        : $notification->warning();
+                $totalAtualizado > 0
+                    ? $notification->success()
+                    : $notification->warning();
 
-                    $notification->send();
-                })
-                ->tooltip('Atualizar situação');
+                $notification->send();
+            })
+            ->tooltip('Atualizar situação');
+    }
+
+    private static function opcoesAbrangencia(Forms\Get $get): array
+    {
+        return $get('tipo_abrangencia') === 'setor'
+            ? self::opcoesSetores()
+            : self::opcoesUnidadesOrganizacionais();
+    }
+    private static function opcoesUnidadesOrganizacionais(): array
+    {
+        return Setores::query()
+            ->unidadesInventariaveis()
+            ->orderBy('Setor')
+            ->get(['id', 'UnidadeOrganizacional', 'Setor', 'CodigoPai'])
+            ->mapWithKeys(fn (Setores $setor): array => [
+                $setor->id => $setor->rotuloInventario(),
+            ])
+            ->toArray();
+    }
+
+    private static function opcoesSetores(): array
+    {
+        return Setores::query()
+            ->setoresInventariaveis()
+            ->orderBy('Setor')
+            ->get(['id', 'UnidadeOrganizacional', 'Setor', 'CodigoPai'])
+            ->mapWithKeys(fn (Setores $setor): array => [
+                $setor->id => $setor->rotuloInventario(),
+            ])
+            ->toArray();
+    }
+
+    private static function rotuloItemUnidadeInventariada(array $state): string
+    {
+        $setorId = $state['unidades'] ?? null;
+
+        if (! $setorId) {
+            return 'Unidade inventariada';
+        }
+
+        return Setores::query()
+            ->find($setorId)
+            ?->rotuloInventario() ?? 'Unidade inventariada';
     }
 
     private static function unidadesInventariadasTableAction(): Tables\Actions\Action
@@ -361,26 +492,60 @@ class InventarioResource extends Resource
 
     private static function atualizarSituacaoBensInventario(Inventario $inventario): int
     {
-        $unidades = $inventario->unidadesInventariadas()
-            ->pluck('unidades')
-            ->filter()
-            ->unique()
-            ->values();
+        [$unidades, $setores] = self::idsAbrangenciaInventario($inventario);
 
-        if ($unidades->isEmpty()) {
+        if ($unidades->isEmpty() && $setores->isEmpty()) {
             return 0;
         }
 
         return BemMovel::query()
-            ->where(function ($query) use ($unidades): void {
-                $query
-                    ->whereIn('Setor', $unidades)
-                    ->orWhereIn('UnidadeJudiciaria', $unidades);
+            ->where(function ($query) use ($unidades, $setores): void {
+                if ($setores->isNotEmpty()) {
+                    $query->whereIn('Setor', $setores);
+                }
+
+                if ($unidades->isNotEmpty()) {
+                    $method = $setores->isNotEmpty() ? 'orWhereIn' : 'whereIn';
+
+                    $query->{$method}('UnidadeJudiciaria', $unidades);
+                }
             })
             ->update([
                 'sit_inventario' => 'A INVENTARIAR',
                 'id_inventario' => $inventario->getKey(),
             ]);
+    }
+
+    private static function idsAbrangenciaInventario(Inventario $inventario): array
+    {
+        $selecionados = $inventario->unidadesInventariadas()
+            ->with('unidade')
+            ->get()
+            ->pluck('unidade')
+            ->filter();
+
+        $unidades = $selecionados
+            ->filter(fn (Setores $setor): bool => $setor->inventariaUnidadeInteira())
+            ->pluck('id')
+            ->unique()
+            ->values();
+
+        $setoresDiretos = $selecionados
+            ->reject(fn (Setores $setor): bool => $setor->inventariaUnidadeInteira())
+            ->pluck('id');
+
+        $setoresDasUnidades = Setores::query()
+            ->whereIn('CodigoPai', $unidades)
+            ->setoresInventariaveis()
+            ->pluck('id');
+
+        $setores = $setoresDiretos
+            ->merge($setoresDasUnidades)
+            ->merge($unidades)
+            ->unique()
+            ->values();
+
+        return [$unidades, $setores];
     }
 
     private static function calcularDiasInventario(Forms\Get $get, Forms\Set $set): void

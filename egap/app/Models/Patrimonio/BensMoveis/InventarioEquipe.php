@@ -25,22 +25,31 @@ class InventarioEquipe extends Model
         return $this->belongsTo(Inventario::class, 'id_inventario', 'id');
     }
 
-    /** ✅ RELAÇÃO COM A ATIVIDADE/UNIDADE */
     public function unidadeInventariada(): BelongsTo
     {
         return $this->belongsTo(InventarioUnidade::class, 'unidade', 'id');
     }
 
-    /** ✅ RELAÇÃO COM O USUÁRIO (integrante) */
-    public function membroRef(): BelongsTo
+    public function integrantesRef(): BelongsTo
     {
         return $this->belongsTo(UserEgap::class, 'integrante', 'id');
+    }
+
+    public function membroRef(): BelongsTo
+    {
+        return $this->integrantesRef();
     }
 
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
             $model->date_time = now();
+
+            if (! $model->id_inventario && $model->unidade) {
+                $model->id_inventario = InventarioUnidade::query()
+                    ->whereKey($model->unidade)
+                    ->value('id_inventario');
+            }
         });
     }
 }
