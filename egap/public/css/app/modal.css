@@ -1,0 +1,27 @@
+.egap-modal-window .fi-modal-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.egap-modal-content,
+.egap-modal-content .fi-ta,
+.egap-modal-content .fi-ta-ctn {
+    height: 100%;
+    min-height: 0;
+}
+
+.egap-modal-content .fi-ta-ctn {
+    display: flex;
+    flex-direction: column;
+}
+
+.egap-modal-content .fi-ta-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.egap-modal-content .fi-ta-pagination {
+    flex-shrink: 0;
+}

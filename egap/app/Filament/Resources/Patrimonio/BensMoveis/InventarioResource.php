@@ -321,7 +321,7 @@ class InventarioResource extends Resource
             ->modalHeading(fn (Inventario $record): string => "Unidades do Inventário {$record->num_inventario}/{$record->ano_inventario}")
             ->modalWidth('full')
             ->extraModalWindowAttributes([
-                'class' => 'materiais-termo-modal-window',
+                'class' => 'egap-modal-window',
                 'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
             ])
             ->stickyModalHeader()
@@ -343,7 +343,7 @@ class InventarioResource extends Resource
             ->modalHeading(fn (Inventario $record): string => "Comissões do Inventário {$record->num_inventario}/{$record->ano_inventario}")
             ->modalWidth('full')
             ->extraModalWindowAttributes([
-                'class' => 'materiais-termo-modal-window',
+                'class' => 'egap-modal-window',
                 'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
             ])
             ->stickyModalHeader()

@@ -323,7 +323,7 @@ class TermoResource extends Resource
             ->modalHeading(fn (Termo $record): string => "Materiais do termo {$record->termo_completo}")
             ->modalWidth('full')
             ->extraModalWindowAttributes([
-                'class' => 'materiais-termo-modal-window',
+                'class' => 'egap-modal-window',
                 'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
             ])
             ->stickyModalHeader()
