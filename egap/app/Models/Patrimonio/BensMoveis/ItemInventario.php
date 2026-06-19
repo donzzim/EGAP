@@ -32,21 +32,20 @@ class ItemInventario extends Model
         'transferido_em' => 'datetime',
     ];
 
-    /** ✅ RELAÇÕES PARA OS SELECTS */
-    public function bem(): BelongsTo { return $this->belongsTo(BemMovel::class, 'id_bem', 'id'); }
-    public function inventario(): BelongsTo { return $this->belongsTo(Inventario::class, 'id_inventario', 'id'); }
+    public function idInventarioRef(): BelongsTo
+    {
+        return $this->belongsTo(Inventario::class, 'id_inventario', 'id');
+    }
 
-    // Relação com Marcas
-    public function marcaRel(): BelongsTo { return $this->belongsTo(Marcas::class, 'marca', 'id'); }
+    public function idBemRef(): BelongsTo
+    {
+        return $this->belongsTo(BemMovel::class, 'id_bem', 'id');
+    }
 
-    // Relação com Modelos
-    public function modeloRel(): BelongsTo { return $this->belongsTo(Modelos::class, 'modelo', 'id'); }
-
-    // Relação com Setores (Original e Localizado)
-    public function setorRef(): BelongsTo { return $this->belongsTo(Setores::class, 'setor', 'id'); }
-    public function setorLocalizadoRef(): BelongsTo { return $this->belongsTo(Setores::class, 'setor_localizado', 'id'); }
-
-    public function responsavel(): BelongsTo { return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id'); }
+    public function unidadesRef(): BelongsTo
+    {
+        return $this->belongsTo(Setores::class, 'unidades', 'id');
+    }
 
     public function scopeDoInventario(Builder $query, Inventario|int $inventario): Builder
     {

@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensMoveis;
 
+use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Cadastro\Setores;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +52,11 @@ class AtividadeInventario extends Model
     public function setorRel(): BelongsTo
     {
         return $this->belongsTo(Setores::class, 'setor', 'id');
+    }
+
+    public function complementoRef(): BelongsTo
+    {
+        return $this->belongsTo(ComplementoSetor::class, 'complemento', 'id');
     }
 
     public function equipes(): HasMany

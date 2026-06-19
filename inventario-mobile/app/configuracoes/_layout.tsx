@@ -42,7 +42,7 @@ export default function ConfiguracoesLayout() {
               gestureEnabled: false,
             }}>
             <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="tema" options={{ headerShown: false }} />
+            <Stack.Screen name="tutorial" options={{ headerShown: false }} />
           </Stack>
         </View>
       </GestureDetector>

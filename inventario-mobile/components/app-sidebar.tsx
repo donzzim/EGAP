@@ -30,7 +30,7 @@ type AppRoute =
   | '/patrimonio/conferencia'
   | '/pedidos/consumo'
   | '/pedidos/permanentes'
-  | '/configuracoes/tema';
+  | '/configuracoes/tutorial';
 
 interface SidebarItem {
   href: AppRoute;
@@ -82,10 +82,10 @@ const PEDIDOS_ITEMS: SidebarItem[] = [
 
 const CONFIGURACOES_ITEMS: SidebarItem[] = [
   {
-    href: '/configuracoes/tema',
-    label: 'Tema',
-    description: 'Alternar entre modo claro e escuro',
-    icon: 'palette',
+    href: '/configuracoes/tutorial',
+    label: 'Tutorial',
+    description: 'Passo a passo de uso do aplicativo',
+    icon: 'school',
   },
 ];
 

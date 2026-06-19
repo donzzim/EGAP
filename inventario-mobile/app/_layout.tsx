@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { router, Stack, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { subscribeAppError, type AppErrorEvent } from '@/src/errors/appErrorEvents';
-import { AppThemeProvider, useAppTheme } from '@/src/theme/appTheme';
+import { AppThemeProvider } from '@/src/theme/appTheme';
 
 function buildErrorHref(event: AppErrorEvent): Href {
   const params = new URLSearchParams();
@@ -24,7 +24,6 @@ function buildErrorHref(event: AppErrorEvent): Href {
 }
 
 function RootNavigator() {
-  const { isDark } = useAppTheme();
   const lastErrorRef = useRef<{ signature: string; notifiedAt: number } | null>(null);
 
   useEffect(() => {
@@ -45,7 +44,7 @@ function RootNavigator() {
   }, []);
 
   return (
-    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="erro" options={{ headerShown: false }} />
@@ -53,7 +52,7 @@ function RootNavigator() {
         <Stack.Screen name="pedidos" options={{ headerShown: false }} />
         <Stack.Screen name="configuracoes" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

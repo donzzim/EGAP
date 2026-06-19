@@ -2,13 +2,12 @@ import { useMemo } from 'react';
 import { useAppTheme } from '@/src/theme/appTheme';
 
 export function useThemeStyles() {
-  const { colors, isDark, mode, setMode } = useAppTheme();
+  const { colors, isDark, mode } = useAppTheme();
 
   const themed = useMemo(() => ({
     colors,
     isDark,
     mode,
-    setMode,
     screen: {
       backgroundColor: colors.screen,
     },
@@ -59,7 +58,7 @@ export function useThemeStyles() {
       backgroundColor: colors.dangerSoft,
       borderColor: colors.danger,
     },
-  }), [colors, isDark, mode, setMode]);
+  }), [colors, isDark, mode]);
 
   return themed;
 }

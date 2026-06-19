@@ -1,10 +1,6 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { Appearance, useColorScheme as useNativeColorScheme } from 'react-native';
-import { appStorage } from '@/src/storage/appStorage';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
-export type AppThemeMode = 'light' | 'dark';
-
-const THEME_STORAGE_KEY = 'egap-mobile-theme-mode';
+export type AppThemeMode = 'light';
 
 export const APP_THEME_COLORS = {
   light: {
@@ -35,92 +31,24 @@ export const APP_THEME_COLORS = {
     dangerSoft: '#FFF5F5',
     dangerPressed: '#FFE3E3',
   },
-  dark: {
-    screen: '#07111D',
-    surface: '#0F1B2A',
-    surfaceMuted: '#132438',
-    surfaceAccent: '#17324A',
-    border: '#29435C',
-    borderAccent: '#3E6E95',
-    text: '#F3F8FC',
-    textMuted: '#A8BED2',
-    textSubtle: '#7F98AD',
-    primary: '#7CC7F7',
-    primarySoft: '#12304A',
-    primaryText: '#07111D',
-    overlay: '#030913D9',
-    track: '#26394D',
-    input: '#0B1624',
-    success: '#5FD6A2',
-    successSoft: '#123528',
-    warning: '#F6C85F',
-    warningSoft: '#392B12',
-    info: '#7CC7F7',
-    infoSoft: '#12304A',
-    purple: '#B9A4FF',
-    purpleSoft: '#261F45',
-    danger: '#FF8F8F',
-    dangerSoft: '#351A24',
-    dangerPressed: '#522832',
-  },
 };
 
 interface AppThemeContextValue {
   colors: typeof APP_THEME_COLORS.light;
   isDark: boolean;
   mode: AppThemeMode;
-  setMode: (mode: AppThemeMode) => Promise<void>;
 }
 
 const AppThemeContext = createContext<AppThemeContextValue | null>(null);
 
-function normalizeThemeMode(value: string | null): AppThemeMode | null {
-  if (value === 'light' || value === 'dark') {
-    return value;
-  }
-
-  return null;
-}
-
 export function AppThemeProvider({ children }: { children: ReactNode }) {
-  const nativeColorScheme = useNativeColorScheme();
-  const [mode, setModeState] = useState<AppThemeMode>(
-    nativeColorScheme === 'dark' ? 'dark' : 'light',
-  );
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadThemeMode() {
-      const storedMode = normalizeThemeMode(await appStorage.getItem(THEME_STORAGE_KEY));
-
-      if (isMounted && storedMode) {
-        setModeState(storedMode);
-        Appearance.setColorScheme(storedMode);
-      }
-    }
-
-    loadThemeMode();
-
-    return () => {
-      isMounted = false;
+  const value = useMemo<AppThemeContextValue>(() => {
+    return {
+      colors: APP_THEME_COLORS.light,
+      isDark: false,
+      mode: 'light',
     };
   }, []);
-
-  const value = useMemo<AppThemeContextValue>(() => {
-    const setMode = async (nextMode: AppThemeMode) => {
-      setModeState(nextMode);
-      Appearance.setColorScheme(nextMode);
-      await appStorage.setItem(THEME_STORAGE_KEY, nextMode);
-    };
-
-    return {
-      colors: APP_THEME_COLORS[mode],
-      isDark: mode === 'dark',
-      mode,
-      setMode,
-    };
-  }, [mode]);
 
   return (
     <AppThemeContext.Provider value={value}>
