@@ -156,8 +156,7 @@ class ItemInventarioResource extends Resource
             ->columns([
                 TableColumns::text('id', '#', isFirstColumn: true)
                     ->badge(),
-                TableColumns::dateTime('date_time', 'Atualizado em')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::dateTime('date_time', 'Atualizado em'),
                 TableColumns::text('id_inventario', 'Inventário')
                     ->formatStateUsing(fn ($state, ItemInventario $record): string => $record->idInventarioRef
                         ? "{$record->idInventarioRef->num_inventario}/{$record->idInventarioRef->ano_inventario}"
@@ -175,17 +174,13 @@ class ItemInventarioResource extends Resource
                     ->tooltip(fn (ItemInventario $record): ?string => $record->unidadesRef?->rotuloInventario()),
                 TableColumns::text('num_patrimonio', 'Patrimônio')
                     ->badge(),
-                TableColumns::text('num_patrimonioantigo', 'Patrimônio Antigo')
-                    ->toggleable(),
-                TableColumns::text('num_serie', 'Nº Série')
-                    ->toggleable(),
+                TableColumns::text('num_patrimonioantigo', 'Patrimônio Antigo'),
+                TableColumns::text('num_serie', 'Nº Série'),
                 TableColumns::text('descricao_resumida', 'Descrição Resumida')
                     ->limit(40)
                     ->tooltip(fn (ItemInventario $record): ?string => $record->descricao_resumida),
-                TableColumns::text('marca', 'Marca')
-                    ->toggleable(),
-                TableColumns::text('modelo', 'Modelo')
-                    ->toggleable(),
+                TableColumns::text('marca', 'Marca'),
+                TableColumns::text('modelo', 'Modelo'),
                 TableColumns::text('setor', 'Setor'),
                 TableColumns::text('estado_conservacao', 'Estado')
                     ->badge()
@@ -195,22 +190,16 @@ class ItemInventarioResource extends Resource
                         'RUIM', 'SUCATA' => 'danger',
                         default => 'gray',
                     }),
-                TableColumns::text('setor_localizado', 'Setor Localizado')
-                    ->toggleable(),
-                TableColumns::text('unidade_localizado', 'Unidade Localizado')
-                    ->toggleable(),
-                TableColumns::text('id_complementosetor', 'Complemento Setor')
-                    ->toggleable(),
-                TableColumns::text('complemento_localizado', 'Complemento Localizado')
-                    ->toggleable(),
+                TableColumns::text('setor_localizado', 'Setor Localizado'),
+                TableColumns::text('unidade_localizado', 'Unidade Localizado'),
+                TableColumns::text('id_complementosetor', 'Complemento Setor'),
+                TableColumns::text('complemento_localizado', 'Complemento Localizado'),
                 TableColumns::text('descricao_detalhada', 'Descrição Detalhada')
                     ->limit(50)
-                    ->tooltip(fn (ItemInventario $record): ?string => $record->descricao_detalhada)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->tooltip(fn (ItemInventario $record): ?string => $record->descricao_detalhada),
                 TableColumns::text('observacao', 'Observação')
                     ->limit(50)
-                    ->tooltip(fn (ItemInventario $record): ?string => $record->observacao)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->tooltip(fn (ItemInventario $record): ?string => $record->observacao),
                 TableColumns::text('situacao', 'Situação')
                     ->badge()
                     ->color(fn (?string $state): string => match (strtoupper(trim((string) $state))) {
@@ -221,28 +210,19 @@ class ItemInventarioResource extends Resource
                         'NÃO LOCALIZADO', 'NAO LOCALIZADO' => 'danger',
                         default => 'gray',
                     }),
-                TableColumns::text('termo', 'Termo')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TableColumns::text('atualizado_por', 'Atualizado por')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TableColumns::text('num_serie_egap', 'Nº Série eGAP')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::text('termo', 'Termo'),
+                TableColumns::text('atualizado_por', 'Atualizado por'),
+                TableColumns::text('num_serie_egap', 'Nº Série eGAP'),
                 TableColumns::text('descricao_detalhada_egap', 'Descrição Detalhada eGAP')
                     ->limit(50)
-                    ->tooltip(fn (ItemInventario $record): ?string => $record->descricao_detalhada_egap)
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TableColumns::text('marca_egap', 'Marca eGAP')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TableColumns::text('modelo_egap', 'Modelo eGAP')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->tooltip(fn (ItemInventario $record): ?string => $record->descricao_detalhada_egap),
+                TableColumns::text('marca_egap', 'Marca eGAP'),
+                TableColumns::text('modelo_egap', 'Modelo eGAP'),
                 TableColumns::dateTime('transferido_em', 'Transferido em')
                     ->badge()
-                    ->color(fn ($state): string => $state ? 'success' : 'warning')
-                    ->toggleable(),
-                TableColumns::text('conciliado_patrimonio', 'Conciliado Patrimônio')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TableColumns::text('imagem_enviada', 'Imagem Enviada')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->color(fn ($state): string => $state ? 'success' : 'warning'),
+                TableColumns::text('conciliado_patrimonio', 'Conciliado Patrimônio'),
+                TableColumns::text('imagem_enviada', 'Imagem Enviada'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('id_inventario')

@@ -18,7 +18,7 @@ class TermosPrintController extends Controller
                 'ultimaTransferencia.complementoAtualRel',
                 'ultimaTransferencia.usuarioRef.infoUser',
                 'transferencias' => fn ($query) => $query
-                    ->select(['id', 'Termo', 'NumPatrimonio'])
+                    ->select(['id', 'Termo', 'NumPatrimonio', 'AndarAtual'])
                     ->orderBy('id'),
                 'transferencias.bem' => fn ($query) => $query
                     ->select([
@@ -27,6 +27,7 @@ class TermosPrintController extends Controller
                         'Descricao',
                         'Marca',
                         'Modelo',
+                        'NumerodeSerie',
                         'EstadodeConservacao',
                         'ValorAquisicao',
                         'ValordaReavaliacao',
@@ -58,6 +59,7 @@ class TermosPrintController extends Controller
 
                 $bem->setAttribute('marca_desc', $bem->marcaRef?->descricao ?? $bem->marcaRef?->Descricao);
                 $bem->setAttribute('modelo_desc', $bem->modeloRef?->descricao);
+                $bem->setAttribute('andar_atual', $transferencia->AndarAtual);
                 $bem->setAttribute(
                     'ValorCalculado',
                     optional($bem->DatadeIncorporacao)->lt('2015-01-01')

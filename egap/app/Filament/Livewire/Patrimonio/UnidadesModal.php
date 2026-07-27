@@ -70,6 +70,6 @@ class UnidadesModal extends Component implements HasForms, HasTable
 
     public function render(): View
     {
-        return view('livewire.patrimonio.unidades-modal');
+        return view('livewire.patrimonio.modal');
     }
 }

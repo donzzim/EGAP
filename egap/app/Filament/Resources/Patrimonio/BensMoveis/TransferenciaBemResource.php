@@ -24,6 +24,8 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
+use Livewire\Livewire;
 
 class TransferenciaBemResource extends Resource
 {
@@ -225,13 +227,24 @@ class TransferenciaBemResource extends Resource
                     ->wrap(),
                 TableColumns::text('complementoAtualRel.descricao', 'Complemento Atual')
                     ->wrap(),
-                TableColumns::dateTime('date_time', 'Atualizado em')
-                    ->description(fn (TransferenciaBemMovel $record): ?string => $record->usuarioRef?->name),
-                TableColumns::text('termoRel.num_termo', 'Termo')
-                    ->formatStateUsing(fn (TransferenciaBemMovel $record): string => $record->termoRel?->termo_completo ?? '-'),
-                TableColumns::text('pedido_no', 'Pedido Nº'),
+                TableColumns::text('usuarioRef.name', 'Atualizado por')
+                    ->description(fn (TransferenciaBemMovel $record): ?string => $record->date_time->format('d/m/Y H:i')),
+                TableColumns::text('TermoVinculado')
+                    ->label('Termo Vinculado')
+                    ->formatStateUsing(fn (TransferenciaBemMovel $record): string => $record->termoRel
+                        ? "{$record->termoRel->num_termo}/{$record->termoRel->ano_termo}"
+                        : '-')
+                    ->color('primary')
+                    ->weight('bold')
+                    ->extraAttributes([
+                        'class' => 'cursor-pointer underline decoration-dotted underline-offset-4',
+                    ])
+                    ->tooltip('Visualizar Termo')
+                    ->action(self::visualizarTermoModal()),
+                TableColumns::text('pedido_no', 'Pedido Nº')
+                    ->formatStateUsing(fn (TransferenciaBemMovel $record): string => $record->pedido_no ? 0 : '-'),
             ])
-            ->defaultSort('id', 'desc')
+            ->defaultSort('date_time', 'desc')
             ->actions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
@@ -243,12 +256,37 @@ class TransferenciaBemResource extends Resource
             ]);
     }
 
+    public static function visualizarTermoModal(): Action
+    {
+        return Action::make('visualizar_termo')
+            ->visible(fn (TransferenciaBemMovel $record): bool => filled($record->Termo))
+            ->modalHeading(fn (TransferenciaBemMovel $record): string => $record->termoRel
+                ? "Validar Termo - {$record->termoRel->num_termo}/{$record->termoRel->ano_termo}"
+                : 'Validar Termo')
+            ->modalWidth('full')
+            ->extraModalWindowAttributes([
+                'class' => 'egap-modal-window',
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
+            ])
+            ->stickyModalHeader()
+            ->stickyModalFooter()
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Fechar')
+            ->modalContent(fn (TransferenciaBemMovel $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.validar-termo-modal',
+                    ['termoId' => (int) $record->Termo],
+                    "validar-termo-{$record->getKey()}",
+                )
+            ));
+    }
+
     public static function encaminharLogisiticaTableAction(): Action
     {
         return Action::make('encaminhar_logistica')
             ->label('Encaminhar para logística')
             ->icon('heroicon-s-bolt')
-            ->color('info')
+            ->color('gray')
             ->requiresConfirmation()
             ->modalHeading('Encaminhar para logística')
             ->modalDescription('Deseja gerar a solicitação de transporte para a Seção de Patrimônio recolher/enviar este bem?')

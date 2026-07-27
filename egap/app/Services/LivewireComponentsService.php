@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
-use App\Filament\Livewire\Patrimonio\MateriaisBaixaModal;
-use App\Filament\Livewire\Patrimonio\MateriaisTermoModal;
 use App\Filament\Livewire\Patrimonio\ComissoesModal;
 use App\Filament\Livewire\Patrimonio\EquipesModal;
+use App\Filament\Livewire\Patrimonio\HistoricoMovimentacoesModal;
+use App\Filament\Livewire\Patrimonio\MateriaisBaixaModal;
+use App\Filament\Livewire\Patrimonio\MateriaisTermoModal;
 use App\Filament\Livewire\Patrimonio\UnidadesModal;
+use App\Filament\Livewire\Patrimonio\ValidarTermoModal;
 use App\Filament\Livewire\PortalTransparencia\AlmoxarifadoCharts;
 use App\Filament\Livewire\PortalTransparencia\PatrimonioCharts;
 use Livewire\Livewire;
@@ -20,6 +22,8 @@ class LivewireComponentsService
         Livewire::component('patrimonio.inventario-comissoes-modal', ComissoesModal::class);
         Livewire::component('patrimonio.inventario-equipes-modal', EquipesModal::class);
         Livewire::component('patrimonio.inventario-unidades-modal', UnidadesModal::class);
+        Livewire::component('patrimonio.historico-movimentacoes-modal', HistoricoMovimentacoesModal::class);
+        Livewire::component('patrimonio.validar-termo-modal', ValidarTermoModal::class);
         Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
         Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
     }

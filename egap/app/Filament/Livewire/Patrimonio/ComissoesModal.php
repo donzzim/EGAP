@@ -66,6 +66,6 @@ class ComissoesModal extends Component implements HasForms, HasTable
 
     public function render(): View
     {
-        return view('livewire.patrimonio.comissoes-modal');
+        return view('livewire.patrimonio.modal');
     }
 }

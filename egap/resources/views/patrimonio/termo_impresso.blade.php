@@ -79,10 +79,12 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 40px;">ITEM</th>
-                    <th style="width: 80px;">PATRIMÔNIO</th>
+                    <th style="width: 30px;">ITEM</th>
+                    <th style="width: 70px;">PATRIMÔNIO</th>
                     <th style="text-align: left;">DESCRIÇÃO DO BEM/MARCA/MODELO</th>
-                    <th style="width: 80px;">SITUAÇÃO</th>
+                    <th style="width: 90px;">SÉRIE</th>
+                    <th style="width: 60px;">SITUAÇÃO</th>
+                    <th style="width: 40px;">ANDAR</th>
                     <th style="width: 60px;">VALOR</th>
                 </tr>
             </thead>
@@ -102,8 +104,10 @@
                             , Modelo: {{ $bem->modelo_desc ?? $bem->modelo_re->descricao }}
                         @endif
                     </td>
+                    <td>{{ $bem->NumerodeSerie ?: '-' }}</td>
                     <td>{{ mb_strtoupper($bem->EstadodeConservacao ?? 'BOM') }}</td>
-                    
+                    <td>{{ $bem->andar_atual ?: '-' }}</td>
+
                     @php
                         $valor = $bem->ValorCalculado ?? 0;
                         if (!isset($bem->ValorCalculado)) {

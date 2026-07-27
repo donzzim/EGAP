@@ -56,9 +56,14 @@ class BemMovel extends Model
         'ValorAquisicao' => 'decimal:2',
     ];
 
-    public function usuarioRef(): BelongsTo
+    public function descricaoResumidaBemRef(): BelongsTo
     {
-        return $this->belongsTo(UserEgap::class, 'Usuario', 'id');
+        return $this->belongsTo(DescricaoResumida::class, 'DescricaoResumidadoBem', 'id');
+    }
+
+    public function unidadeJudiciariaRef(): BelongsTo
+    {
+        return $this->belongsTo(Setores::class, 'UnidadeJudiciaria', 'id');
     }
 
     public function descricaoDetalhadaRef(): BelongsTo
@@ -71,34 +76,43 @@ class BemMovel extends Model
         return $this->belongsTo(Setores::class, 'Setor', 'id');
     }
 
+    public function produtoRef(): BelongsTo
+    {
+        return $this->belongsTo(ElementoDespesa::class, 'Produto', 'id');
+    }
+
+    public function fornecedorRef(): BelongsTo
+    {
+        return $this->belongsTo(Fornecedores::class, 'Fornecedor', 'id');
+    }
+
     public function complementoSetorRef(): BelongsTo
     {
         return $this->belongsTo(ComplementoSetor::class, 'ComplementoSetor', 'id');
     }
 
-    public function unidadeMedidaRef(): BelongsTo
+    public function situacaoBemRef(): BelongsTo
     {
-        return $this->belongsTo(UnidadesDeMedida::class, 'Unidade', 'id');
+        return $this->belongsTo(SituacaoBemMovel::class, 'SituacaoBem', 'id');
     }
 
-    public function produtoRef(): BelongsTo
+    public function marcaRef(): BelongsTo
     {
-        return $this->belongsTo(ElementoDespesa::class, 'Produto', 'id');
+        return $this->belongsTo(Marcas::class, 'Marca', 'id');
     }
 
     public function contaContabilRef(): BelongsTo
     {
         return $this->belongsTo(ContaContabil::class, 'ContaContabil', 'id');
     }
-
-    public function descricaoResumidaBemRef(): BelongsTo
+    public function unidadeMedidaRef(): BelongsTo
     {
-        return $this->belongsTo(DescricaoResumida::class, 'DescricaoResumidadoBem', 'id');
+        return $this->belongsTo(UnidadesDeMedida::class, 'Unidade', 'id');
     }
 
-    public function marcaRef(): BelongsTo
+    public function usuarioRef(): BelongsTo
     {
-        return $this->belongsTo(Marcas::class, 'Marca', 'id');
+        return $this->belongsTo(UserEgap::class, 'Usuario', 'id');
     }
 
     public function modeloRef(): BelongsTo
@@ -111,65 +125,15 @@ class BemMovel extends Model
         return $this->belongsTo(NotaFiscal::class, 'NotaFiscal', 'id');
     }
 
-    public function fornecedorRef(): BelongsTo
-    {
-        return $this->belongsTo(Fornecedores::class, 'Fornecedor', 'id');
-    }
-
     public function elementoDespesaRef(): BelongsTo
     {
         return $this->belongsTo(ElementoDespesa::class, 'Produto', 'id');
-    }
-
-    public function situacaoBemRef(): BelongsTo
-    {
-        return $this->belongsTo(SituacaoBemMovel::class, 'SituacaoBem', 'id');
-    }
-
-    public function unidadeJudiciariaRef(): BelongsTo
-    {
-        return $this->belongsTo(Setores::class, 'UnidadeJudiciaria', 'id');
     }
 
     public function ultimaTransferencia(): HasOne
     {
         return $this->hasOne(TransferenciaBemMovel::class, 'NumPatrimonio', 'NumPatrimonio')
             ->latestOfMany('id');
-    }
-
-    public function descricaoResumidaRel(): BelongsTo
-    {
-        return $this->descricaoResumidaBemRef();
-    }
-
-    public function marcaRel(): BelongsTo
-    {
-        return $this->marcaRef();
-    }
-
-    public function unidadeJudiciariaRel(): BelongsTo
-    {
-        return $this->unidadeJudiciariaRef();
-    }
-
-    public function fornecedorRel(): BelongsTo
-    {
-        return $this->fornecedorRef();
-    }
-
-    public function contaContabilRel(): BelongsTo
-    {
-        return $this->contaContabilRef();
-    }
-
-    public function elementodespesaRel(): BelongsTo
-    {
-        return $this->elementoDespesaRef();
-    }
-
-    public function atualizado_por(): BelongsTo
-    {
-        return $this->usuarioRef();
     }
 
     protected static function booted(): void
