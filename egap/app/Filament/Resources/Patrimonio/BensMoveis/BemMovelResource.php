@@ -104,7 +104,28 @@ class BemMovelResource extends Resource
 
     private static function transferirBensTableAction(): Action
     {
-        return Action::make('transferir_bens');
+        return Action::make('transferir_bens')
+            ->label('Transferir Bens')
+            ->icon('heroicon-o-bell')
+            ->modalHeading(fn (BemMovel $record): string => "Transferir Bem #{$record->NumPatrimonio}")
+            ->modalWidth('full')
+            ->extraModalWindowAttributes([
+                'class' => 'egap-modal-window',
+                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
+            ])
+            ->stickyModalHeader()
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
+            ->modalContent(fn (BemMovel $record, $livewire): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.transferir-bem-adm-modal',
+                    [
+                        'numPatrimonio' => (int) $record->NumPatrimonio,
+                        'parentLivewireId' => $livewire->getId(),
+                    ],
+                    "transferir-bens-{$record->getKey()}",
+                )
+            ));
     }
 
     private static function historicoMovimentacoesTableAction(): Action
@@ -134,17 +155,24 @@ class BemMovelResource extends Resource
 
     private static function vincularBensTableAction(): Action
     {
-        return Action::make('vincular_bens');
+        return Action::make('vincular_bens')
+            ->label('Vincular Bens')
+            ->icon('heroicon-o-plus');
     }
 
     private static function atualizarDadosTableAction(): Action
     {
-        return Action::make('atualizar_dados');
+        return Action::make('atualizar_dados')
+            ->label('Atualizar Dados')
+            ->icon('heroicon-o-cog');
     }
 
     private static function calculoDepreciacaoMensalTableAction(): Action
     {
-        return Action::make('calculo_depreciacao_mensal');
+        return Action::make('calculo_depreciacao_mensal')
+            ->label('Cálculo de Depreciação Mensal')
+            ->tooltip('Calcular Depreciação Mensal')
+            ->icon('heroicon-o-bell');
     }
 
     private static function gerarNovoCalculoTableAction(): Action
@@ -188,22 +216,30 @@ class BemMovelResource extends Resource
 
     private static function conciliarBemTableAction(): Action
     {
-        return Action::make('conciliar_bem');
+        return Action::make('conciliar_bem')
+            ->label('Conciliar Bem')
+            ->icon('heroicon-o-bars-arrow-down');
     }
 
     private static function termoDigitalizadoTableAction(): Action
     {
-        return Action::make('termo_digitalizado');
+        return Action::make('termo_digitalizado')
+            ->label('Termo Digitalizado')
+            ->icon('heroicon-o-clipboard-document-check');
     }
 
     private static function reavaliarBensTableAction(): Action
     {
-        return Action::make('reavaliar_bens');
+        return Action::make('reavaliar_bens')
+            ->label('Reavaliar Bens')
+            ->icon('heroicon-o-clipboard-document-check');
     }
 
     private static function corrigirInformacoesTableAction(): Action
     {
-        return Action::make('reavaliar_bens');
+        return Action::make('corrigir_informacoes')
+            ->label('Corrigir Informações')
+            ->icon('heroicon-o-clipboard-document-check');
     }
 
     public static function getPages(): array

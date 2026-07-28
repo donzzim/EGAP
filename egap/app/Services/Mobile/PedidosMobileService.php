@@ -13,15 +13,17 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\UserMobile;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PedidosMobileService
 {
     private const STATUS_EM_ANALISE = 6;
+
     private const SETOR_ALMOXARIFADO = 799;
+
     private const SETOR_PATRIMONIO = 1239;
 
     /**
@@ -48,7 +50,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array{setor:int} $scope
+     * @param  array{setor:int}  $scope
      * @return array<int, array{id:int, descricao:string}>
      */
     public function complementos(array $scope): array
@@ -81,7 +83,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array{unidade_judiciaria:int} $scope
+     * @param  array{unidade_judiciaria:int}  $scope
      */
     public function materiais(array $scope, string $tipo, ?string $search, int $perPage): LengthAwarePaginator
     {
@@ -95,8 +97,8 @@ class PedidosMobileService
     }
 
     /**
-     * @param array{user_id:int,id_egap:int,setor:int,unidade_judiciaria:int} $scope
-     * @param array<string, mixed> $payload
+     * @param  array{user_id:int,id_egap:int,setor:int,unidade_judiciaria:int}  $scope
+     * @param  array<string, mixed>  $payload
      */
     public function criarPedido(array $scope, array $payload): Pedidos
     {
@@ -131,7 +133,7 @@ class PedidosMobileService
             ]);
         }
 
-        return DB::connection('egap')->transaction(function () use ($scope, $payload, $tipo, $itens, $complementoId, $justificativaGeral): Pedidos {
+        return DB::connection('egap')->transaction(function () use ($scope, $tipo, $itens, $complementoId, $justificativaGeral): Pedidos {
             $pedido = Pedidos::query()->create([
                 'date_time' => now(),
                 'Solicitante' => $scope['id_egap'],
@@ -176,7 +178,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array{user_id:int,id_egap:int,setor:int,unidade_judiciaria:int} $scope
+     * @param  array{user_id:int,id_egap:int,setor:int,unidade_judiciaria:int}  $scope
      */
     public function pedidosDoUsuario(array $scope, int $perPage): LengthAwarePaginator
     {
@@ -190,7 +192,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array{unidade_judiciaria:int} $scope
+     * @param  array{unidade_judiciaria:int}  $scope
      */
     private function materiaisConsumo(array $scope, ?string $search, int $perPage): LengthAwarePaginator
     {
@@ -205,20 +207,20 @@ class PedidosMobileService
             ->whereIn('visibilidade', $visibilidade)
             ->whereHas('descricao_resumida_text', fn (Builder $query): Builder => $query->where('id_tipo_material', 'C'))
             ->when($search !== null && trim($search) !== '', function (Builder $query) use ($search): void {
-                $query->where('descricao_detalhada', 'like', '%' . trim($search) . '%');
+                $query->where('descricao_detalhada', 'like', '%'.trim($search).'%');
             })
             ->orderBy('descricao_detalhada')
             ->paginate($perPage)
             ->withQueryString();
 
         $materialIds = collect($paginator->items())->pluck('id')->map(fn ($id): int => (int) $id)->all();
-        $estoques = $this->estoquesAtuais($materialIds);
+        $estoques = MovimentacaoEstoque::estoquesAtuais($materialIds);
 
         return $paginator->through(fn (DescricaoDetalhada $material): array => $this->materialConsumoToArray($material, $estoques));
     }
 
     /**
-     * @param array{unidade_judiciaria:int} $scope
+     * @param  array{unidade_judiciaria:int}  $scope
      */
     private function materiaisPermanentes(array $scope, ?string $search, int $perPage): LengthAwarePaginator
     {
@@ -229,7 +231,7 @@ class PedidosMobileService
             ->whereIn('visibilidade', $visibilidade)
             ->where('id_tipo_material', 'P')
             ->when($search !== null && trim($search) !== '', function (Builder $query) use ($search): void {
-                $query->where('Descricao', 'like', '%' . trim($search) . '%');
+                $query->where('Descricao', 'like', '%'.trim($search).'%');
             })
             ->orderBy('Descricao')
             ->paginate($perPage)
@@ -242,26 +244,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array<int> $materialIds
-     * @return Collection<int, MovimentacaoEstoque>
-     */
-    private function estoquesAtuais(array $materialIds): Collection
-    {
-        if ($materialIds === []) {
-            return collect();
-        }
-
-        return MovimentacaoEstoque::query()
-            ->whereIn('id', MovimentacaoEstoque::query()
-                ->selectRaw('MAX(id)')
-                ->whereIn('material', $materialIds)
-                ->groupBy('material'))
-            ->get()
-            ->keyBy('material');
-    }
-
-    /**
-     * @param array<int> $materialIds
+     * @param  array<int>  $materialIds
      * @return Collection<int, float>
      */
     private function precosPermanentes(array $materialIds): Collection
@@ -300,7 +283,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param Collection<int, MovimentacaoEstoque> $estoques
+     * @param  Collection<int, MovimentacaoEstoque>  $estoques
      */
     private function materialConsumoToArray(DescricaoDetalhada $material, Collection $estoques): array
     {
@@ -322,7 +305,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param Collection<int, float> $precos
+     * @param  Collection<int, float>  $precos
      */
     private function materialPermanenteToArray(DescricaoResumida $material, Collection $precos): array
     {
@@ -339,7 +322,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     private function criarItemConsumo(Pedidos $pedido, array $payload, int $index): ItemPedido
     {
@@ -363,7 +346,7 @@ class PedidosMobileService
             ]);
         }
 
-        $estoque = $this->estoquesAtuais([$materialId])->get($materialId);
+        $estoque = MovimentacaoEstoque::estoquesAtuais([$materialId])->get($materialId);
 
         return $pedido->itens()->create([
             'date_time' => now(),
@@ -377,7 +360,7 @@ class PedidosMobileService
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     private function criarItemPermanente(Pedidos $pedido, array $payload, int $index): ItemPedido
     {
@@ -487,10 +470,10 @@ class PedidosMobileService
     private function formatarJustificativaPermanente(string $tipoAtendimento, string $justificativa, string $patrimonioSubstituido): string
     {
         if ($tipoAtendimento === 'substituicao') {
-            return '{Substitui&ccedil;&atilde;o; Patrim&ocirc;nio:' . $patrimonioSubstituido . '; Justificativa:' . $justificativa . '}';
+            return '{Substitui&ccedil;&atilde;o; Patrim&ocirc;nio:'.$patrimonioSubstituido.'; Justificativa:'.$justificativa.'}';
         }
 
-        return '{Adi&ccedil;&atilde;o; Justificativa:' . $justificativa . '}';
+        return '{Adi&ccedil;&atilde;o; Justificativa:'.$justificativa.'}';
     }
 
     private function imagemDetalhada(mixed $imagem): ?string

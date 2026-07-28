@@ -4,15 +4,18 @@ namespace App\Models;
 
 use App\Models\Admin\InfoUser;
 use App\Models\Admin\Lotacao;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class UserEgap extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'jos_users';
+
     protected $primaryKey = 'id';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -52,5 +55,31 @@ class UserEgap extends Model
         return $this->hasMany(Lotacao::class, 'id_user', 'id')
             ->orderByDesc('date_time')
             ->orderByDesc('id');
+    }
+
+    /**
+     * Resolve o registro jos_users correspondente ao usuário autenticado no painel
+     * (App\Models\User, tabela `users`), casando pelo login/username.
+     */
+    public static function currentAuthenticated(): ?self
+    {
+        $user = Filament::getCurrentPanel()
+            ? Filament::auth()->user()
+            : null;
+
+        $user ??= auth('pessoa')->user()
+            ?? auth()->user();
+
+        if ($user instanceof self) {
+            return $user;
+        }
+
+        $login = $user?->login ?? $user?->username ?? null;
+
+        if (blank($login)) {
+            return null;
+        }
+
+        return static::query()->where('username', $login)->first();
     }
 }

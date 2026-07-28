@@ -7,11 +7,13 @@ use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class MovimentacaoEstoque extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'alm_estoque';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -61,14 +63,35 @@ class MovimentacaoEstoque extends Model
     }
 
     // Criar model de pedido
-//    public function pedido(): BelongsTo
-//    {
-//        return $this->belongsTo(Pedido::class, 'id_pedido', 'id');
-//    }
+    //    public function pedido(): BelongsTo
+    //    {
+    //        return $this->belongsTo(Pedido::class, 'id_pedido', 'id');
+    //    }
 
     public function tipoMovimentacaoRel(): BelongsTo
     {
         return $this->belongsTo(TipoMovimentacaoNotaFiscal::class, 'tipo_movimentacao', 'id');
+    }
+
+    /**
+     * Última movimentação (registro de estoque atual) de cada material informado.
+     *
+     * @param  array<int>  $materialIds
+     * @return Collection<int, self>
+     */
+    public static function estoquesAtuais(array $materialIds): Collection
+    {
+        if ($materialIds === []) {
+            return collect();
+        }
+
+        return static::query()
+            ->whereIn('id', static::query()
+                ->selectRaw('MAX(id)')
+                ->whereIn('material', $materialIds)
+                ->groupBy('material'))
+            ->get()
+            ->keyBy('material');
     }
 
     protected static function booted(): void

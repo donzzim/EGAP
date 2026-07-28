@@ -7,6 +7,7 @@ use App\Filament\Livewire\Patrimonio\EquipesModal;
 use App\Filament\Livewire\Patrimonio\HistoricoMovimentacoesModal;
 use App\Filament\Livewire\Patrimonio\MateriaisBaixaModal;
 use App\Filament\Livewire\Patrimonio\MateriaisTermoModal;
+use App\Filament\Livewire\Patrimonio\TransferirBensAdmModal;
 use App\Filament\Livewire\Patrimonio\UnidadesModal;
 use App\Filament\Livewire\Patrimonio\ValidarTermoModal;
 use App\Filament\Livewire\PortalTransparencia\AlmoxarifadoCharts;
@@ -17,6 +18,7 @@ class LivewireComponentsService
 {
     public static function getLivewireComponents(): void
     {
+        Livewire::component('patrimonio.transferir-bem-adm-modal', TransferirBensAdmModal::class);
         Livewire::component('patrimonio.materiais-baixa-modal', MateriaisBaixaModal::class);
         Livewire::component('patrimonio.materiais-termo-modal', MateriaisTermoModal::class);
         Livewire::component('patrimonio.inventario-comissoes-modal', ComissoesModal::class);

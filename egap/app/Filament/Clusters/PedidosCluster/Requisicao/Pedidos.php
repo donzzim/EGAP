@@ -16,14 +16,21 @@ use Filament\Tables\Table;
 class Pedidos extends Page implements HasTable
 {
     use InteractsWithTable;
+
     protected static ?string $cluster = PedidosCluster::class;
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $navigationGroup = 'Requisição';
+
     protected static ?string $title = 'Pedido - Materiais Permanentes';
+
     protected static ?string $slug = 'pedidos-materiais-permanentes';
+
     protected static ?string $navigationLabel = 'Pedidos';
+
     protected static string $view = 'filament.pages.pedidos.requisicao.pedidos';
 
     public function table(Table $table): Table
@@ -119,7 +126,7 @@ class Pedidos extends Page implements HasTable
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Fechar')
                     ->modalContent(fn (PedidoModel $record) => view(
-                        'egap.filament.pages.partials.pedidos-itens-modal',
+                        'filament.pages.partials.pedidos-itens-modal',
                         [
                             'pedido' => $record,
                             'itens' => $record->itens,
@@ -127,5 +134,4 @@ class Pedidos extends Page implements HasTable
                     )),
             ]);
     }
-
 }
