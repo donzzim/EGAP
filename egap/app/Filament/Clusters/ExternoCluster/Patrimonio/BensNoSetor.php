@@ -8,11 +8,11 @@ use Filament\Pages\SubNavigationPosition;
 
 class BensNoSetor extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $cluster = ExternoCluster::class;
     protected static ?string $navigationGroup = 'Patrimônio';
     protected static ?string $navigationLabel = 'Bens no Setor (Inventário)';
-
+    protected static ?int $navigationSort = 1;
     protected static string $view = 'filament.pages.externo.patrimonio.bens-no-setor';
 
     public function getSubNavigationPosition(): SubNavigationPosition

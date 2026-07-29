@@ -2,9 +2,17 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Almoxarifado;
 
-class MateriaisDeConsumoDuraveis extends RequisicaoMateriaisConsumoPage
+use App\Filament\Clusters\ExternoCluster;
+
+class MateriaisDeConsumoDuraveis extends RequisicaoDeMateriaisPage
 {
     protected static ?int $navigationSort = 2;
+
+    protected static ?string $cluster = ExternoCluster::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-inbox-stack';
+
+    protected static ?string $navigationGroup = 'Almoxarifado';
 
     protected static ?string $navigationLabel = 'Materiais de Cons. Duráveis';
 
@@ -12,7 +20,7 @@ class MateriaisDeConsumoDuraveis extends RequisicaoMateriaisConsumoPage
 
     protected static string $view = 'filament.pages.externo.almoxarifado.materiais-de-consumo-duraveis';
 
-    protected function tipoMaterial(): string
+    public function tipoMaterial(): string
     {
         return 'D';
     }

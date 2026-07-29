@@ -37,7 +37,7 @@ class PedidosMobileService
 
         if ($idEgap === null || $setor === null || $unidadeJudiciaria === null) {
             throw ValidationException::withMessages([
-                'user' => 'Usuario sem vinculo EGAP, unidade judiciaria ou setor valido para criar pedidos.',
+                'user' => 'Usuário sem vinculo EGAP, unidade judiciaria ou setor valido para criar pedidos.',
             ]);
         }
 
@@ -169,7 +169,7 @@ class PedidosMobileService
                     $scope,
                     $pedido,
                     $item,
-                    'Item incluido no pedido via aplicativo mobile.'
+                    'Item incluído no pedido via aplicativo mobile.'
                 );
             }
 

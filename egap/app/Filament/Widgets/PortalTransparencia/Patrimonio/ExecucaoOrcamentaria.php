@@ -23,7 +23,7 @@ class ExecucaoOrcamentaria extends BaseChart
         $labels = $registros->pluck('ano')->map(fn ($value) => (string) $value)->toArray();
         $valores = $registros->pluck('valor')->map(fn ($value) => (float) $value)->toArray();
         $colors = $this->getColors(count($valores));
-        $border_colors = $this->getBorderColors(count($quantidades));
+        $border_colors = $this->getBorderColors(count($valores));
 
         if ($this->chartType === 'bubble') {
             return [

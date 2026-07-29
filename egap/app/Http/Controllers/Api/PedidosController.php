@@ -150,7 +150,7 @@ class PedidosController extends Controller
 
         if (! $mobileUser instanceof UserMobile) {
             return response()->json([
-                'message' => 'Usuario sem vinculo valido para pedidos mobile.',
+                'message' => 'Usuário sem vinculo valido para pedidos mobile.',
             ], 403);
         }
 

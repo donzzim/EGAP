@@ -1,3 +1,3 @@
 <x-filament-panels::page>
-    {{ $this->table }}
+    @livewire(\App\Filament\Livewire\Externo\Almoxarifado\PedidosAlmoxarifadoTable::class)
 </x-filament-panels::page>

@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoPedidoForm;
+use App\Filament\Livewire\Externo\Almoxarifado\MateriaisDisponiveisTable;
+use App\Filament\Livewire\Externo\Almoxarifado\PedidoItensModal;
+use App\Filament\Livewire\Externo\Almoxarifado\PedidosAlmoxarifadoTable;
 use App\Filament\Livewire\Patrimonio\ComissoesModal;
 use App\Filament\Livewire\Patrimonio\EquipesModal;
 use App\Filament\Livewire\Patrimonio\HistoricoMovimentacoesModal;
@@ -28,5 +32,9 @@ class LivewireComponentsService
         Livewire::component('patrimonio.validar-termo-modal', ValidarTermoModal::class);
         Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
         Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
+        Livewire::component('externo-almoxarifado.materiais-disponiveis-table', MateriaisDisponiveisTable::class);
+        Livewire::component('externo-almoxarifado.carrinho-pedido-form', CarrinhoPedidoForm::class);
+        Livewire::component('externo-almoxarifado.pedidos-almoxarifado-table', PedidosAlmoxarifadoTable::class);
+        Livewire::component('externo-almoxarifado.pedido-itens-modal', PedidoItensModal::class);
     }
 }

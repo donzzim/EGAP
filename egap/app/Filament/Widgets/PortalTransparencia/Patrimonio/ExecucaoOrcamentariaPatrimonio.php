@@ -30,7 +30,7 @@ class ExecucaoOrcamentariaPatrimonio extends BaseChart
             ->toArray();
 
         $colors = $this->getColors(count($valores));
-        $border_colors = $this->getBorderColors(count($quantidades));
+        $border_colors = $this->getBorderColors(count($valores));
 
         if ($this->chartType === 'bubble') {
             return [
