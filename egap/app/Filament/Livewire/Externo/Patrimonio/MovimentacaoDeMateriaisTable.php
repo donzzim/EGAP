@@ -106,7 +106,6 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                         'assinados' => 'Assinados',
                         'cancelados' => 'Cancelados',
                     ])
-                    ->default('pendentes')
                     ->native(false)
                     ->query(function (Builder $query, array $data): Builder {
                         return match ($data['value'] ?? null) {
@@ -151,8 +150,14 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
             ->label('Visualizar Termo')
             ->icon('heroicon-o-printer')
             ->color('gray')
-            ->url(fn (Termo $record): string => route('termo.imprimir', ['id' => $record->id]))
-            ->openUrlInNewTab();
+            ->url(fn (Termo $record): ?string => filled($record->arquivoDigital?->arquivo_digital)
+                ? config('app.egap').$record->arquivoDigital->arquivo_digital
+                : null)
+            ->openUrlInNewTab()
+            ->disabled(fn (Termo $record): bool => blank($record->arquivoDigital?->arquivo_digital))
+            ->tooltip(fn (Termo $record): ?string => blank($record->arquivoDigital?->arquivo_digital)
+                ? 'Nenhum arquivo digital anexado ainda.'
+                : null);
     }
 
     private function situacaoEntregaAction(): Action

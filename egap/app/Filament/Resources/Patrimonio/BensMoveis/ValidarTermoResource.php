@@ -14,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -131,6 +132,7 @@ class ValidarTermoResource extends Resource
                         ? "{$record->termoRel->num_termo}/{$record->termoRel->ano_termo}"
                         : '-')
                     ->badge()
+                    ->tooltip('Clique para acessar o termo')
                     ->color('primary')
                     ->url(fn (ArquivoDigital $record): ?string => $record->termo
                         ? route('termo.imprimir', ['id' => $record->termo])
@@ -138,7 +140,9 @@ class ValidarTermoResource extends Resource
                     ->openUrlInNewTab(),
 
                 TableColumns::text('arquivo_digital', 'Arquivo Digital')
-                    ->formatStateUsing(fn (?string $state): string => filled($state) ? basename($state) : '-')
+                    ->formatStateUsing(fn (ArquivoDigital $record) : string => $record->arquivo_digital ? 'Arquivo' : '-')
+                    ->iconPosition(IconPosition::After)
+                    ->icon(fn (ArquivoDigital $record) => $record->arquivo_digital ? 'heroicon-o-clipboard' : false)
                     ->color('primary')
                     ->limit(50)
                     ->weight('medium')
