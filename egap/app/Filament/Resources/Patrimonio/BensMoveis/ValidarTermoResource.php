@@ -6,11 +6,8 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
-use App\Models\Almoxarifado\FasePedido;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
-use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Termo;
-use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -218,7 +215,7 @@ class ValidarTermoResource extends Resource
                         $userid = (int) auth()->id();
 
                         foreach ($records as $record) {
-                            if ($record instanceof ArquivoDigital && self::validarArquivoDigital($record, $userid)) {
+                            if ($record instanceof ArquivoDigital && $record->validar($userid)) {
                                 $validados++;
                             }
                         }
@@ -348,7 +345,7 @@ class ValidarTermoResource extends Resource
             ->color('gray')
             ->requiresConfirmation()
             ->action(function (ArquivoDigital $record): void {
-                $validado = self::validarArquivoDigital($record, (int) auth()->id());
+                $validado = $record->validar((int) auth()->id());
 
                 if (! $validado) {
                     Notification::make()
@@ -363,53 +360,6 @@ class ValidarTermoResource extends Resource
                 Notification::make()->title('Termo Validado e Patrimônios Atualizados!')->success()->send();
             })
             ->visible(fn (ArquivoDigital $record): bool => $record->situacao === ArquivoDigital::SITUACAO_PENDENTE);
-    }
-
-    private static function validarArquivoDigital(ArquivoDigital $arquivoDigital, int $userid): bool
-    {
-        if ($arquivoDigital->situacao !== ArquivoDigital::SITUACAO_PENDENTE || blank($arquivoDigital->termo)) {
-            return false;
-        }
-
-        $transferencias = TransferenciaBemMovel::query()
-            ->where('Termo', $arquivoDigital->termo)
-            ->get([
-                'Termo',
-                'NumPatrimonio',
-                'UnidadeAtual',
-                'SetorAtual',
-                'ComplementoAtual',
-            ]);
-
-        if ($transferencias->isEmpty()) {
-            return false;
-        }
-
-        $arquivoDigital->getConnection()->transaction(function () use ($arquivoDigital, $transferencias, $userid) {
-            foreach ($transferencias as $transferencia) {
-                BemMovel::query()
-                    ->whereKey($transferencia->NumPatrimonio)
-                    ->update([
-                        'UnidadeJudiciaria' => $transferencia->UnidadeAtual,
-                        'Setor' => $transferencia->SetorAtual,
-                        'ComplementoSetor' => $transferencia->ComplementoAtual,
-                    ]);
-
-                FasePedido::query()
-                    ->where('id_termo', $transferencia->Termo)
-                    ->update(['idSituacao' => 3]);
-            }
-
-            $arquivoDigital->fill([
-                'atualizado_em' => now(),
-                'data_validacao' => now(),
-                'observacao' => null,
-                'situacao' => ArquivoDigital::SITUACAO_VALIDADO,
-                'validado_por' => $userid,
-            ])->save();
-        });
-
-        return true;
     }
 
     public static function getPages(): array

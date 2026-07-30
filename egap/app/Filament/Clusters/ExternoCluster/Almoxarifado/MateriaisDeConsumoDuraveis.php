@@ -18,7 +18,7 @@ class MateriaisDeConsumoDuraveis extends RequisicaoDeMateriaisPage
 
     protected static ?string $title = 'Requisição de Materiais de Consumo Duráveis';
 
-    protected static string $view = 'filament.pages.externo.almoxarifado.materiais-de-consumo-duraveis';
+    protected static string $view = 'filament.pages.externo.almoxarifado.materiais-de-consumo';
 
     public function tipoMaterial(): string
     {

@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Clusters\AdminEgapCluster\Pages;
+namespace App\Filament\Clusters\AdminEgapCluster;
 
 use App\Filament\Clusters\AdminEgapCluster;
 use Filament\Pages\Page;
 use Filament\Pages\SubNavigationPosition;
 
-class AcessosPermissoesPage extends Page
+class AcessosPermissoes extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static string $view = 'filament.clusters.admin-egap-cluster.pages.acessos-permissoes-page';
+    protected static string $view = 'filament.pages.admin-egap.acessos-permissoes-page';
 
     protected static ?string $title = 'Acessos e Permissões';
 

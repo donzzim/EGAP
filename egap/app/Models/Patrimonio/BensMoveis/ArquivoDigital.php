@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensMoveis;
 
+use App\Models\Almoxarifado\FasePedido;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,12 +42,6 @@ class ArquivoDigital extends Model
         'situacao' => 'integer',
         'web' => 'integer',
     ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relacionamentos
-    |--------------------------------------------------------------------------
-    */
 
     public function termoRel(): BelongsTo
     {
@@ -123,6 +118,59 @@ class ArquivoDigital extends Model
             self::SITUACAO_PENDENTE => 'warning',
             default => 'gray',
         };
+    }
+
+    /**
+     * Valida o termo: efetiva a transferência (Setor/Unidade dos bens) e marca o
+     * arquivo digital como validado. Usado tanto pela validação manual feita pela
+     * Seção de Patrimônio quanto pela assinatura eletrônica do setor destinatário
+     * no Ambiente Externo.
+     */
+    public function validar(int $userId): bool
+    {
+        if ($this->situacao !== self::SITUACAO_PENDENTE || blank($this->termo)) {
+            return false;
+        }
+
+        $transferencias = TransferenciaBemMovel::query()
+            ->where('Termo', $this->termo)
+            ->get([
+                'Termo',
+                'NumPatrimonio',
+                'UnidadeAtual',
+                'SetorAtual',
+                'ComplementoAtual',
+            ]);
+
+        if ($transferencias->isEmpty()) {
+            return false;
+        }
+
+        $this->getConnection()->transaction(function () use ($transferencias, $userId): void {
+            foreach ($transferencias as $transferencia) {
+                BemMovel::query()
+                    ->whereKey($transferencia->NumPatrimonio)
+                    ->update([
+                        'UnidadeJudiciaria' => $transferencia->UnidadeAtual,
+                        'Setor' => $transferencia->SetorAtual,
+                        'ComplementoSetor' => $transferencia->ComplementoAtual,
+                    ]);
+
+                FasePedido::query()
+                    ->where('id_termo', $transferencia->Termo)
+                    ->update(['idSituacao' => 3]);
+            }
+
+            $this->fill([
+                'atualizado_em' => now(),
+                'data_validacao' => now(),
+                'observacao' => null,
+                'situacao' => self::SITUACAO_VALIDADO,
+                'validado_por' => $userId,
+            ])->save();
+        });
+
+        return true;
     }
 
     protected static function booted(): void

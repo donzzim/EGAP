@@ -25,7 +25,7 @@
                 @endforeach
             </div>
 
-            <div class="mt-4 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-white/10">
+            <div class="mt-4 flex items-center justify-between pt-3">
                 <span class="text-sm font-medium text-gray-950 dark:text-white">Total</span>
                 <span class="text-sm font-semibold text-gray-950 dark:text-white">
                     R$ {{ number_format($this->subtotalCarrinho, 2, ',', '.') }}

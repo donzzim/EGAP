@@ -88,7 +88,7 @@ class CarrinhoPedidoForm extends Component implements HasForms
                             ->columnSpan(12),
 
                         Select::make('UnidadeJudiciaria')
-                            ->label('Unidade judiciária')
+                            ->label('Unidade Judiciária')
                             ->required()
                             ->searchable()
                             ->preload()

@@ -25,3 +25,27 @@
 .egap-modal-content .fi-ta-pagination {
     flex-shrink: 0;
 }
+
+.egap-modal-form.egap-modal-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.egap-modal-form .egap-modal-form-inner {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+}
+
+.egap-modal-form .egap-modal-form-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+}
+
+.egap-modal-form .egap-modal-form-footer {
+    flex-shrink: 0;
+}

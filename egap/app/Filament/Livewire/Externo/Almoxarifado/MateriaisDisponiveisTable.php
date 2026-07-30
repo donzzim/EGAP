@@ -79,7 +79,6 @@ class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
                     ->icon('heroicon-m-plus')
                     ->action(fn (DescricaoDetalhada $record) => $this->adicionarAoCarrinho($record)),
             ])
-            ->bulkActions([])
             ->defaultSort('descricao_detalhada')
             ->emptyStateHeading('Nenhum material disponível no momento');
     }
@@ -105,6 +104,11 @@ class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
             quantidade: $quantidade,
             precoUnitario: (float) $record->preco_medio_estoque_atual,
         );
+
+        Notification::make()
+            ->title('Item(ns) adicionado(s) ao carrinho.')
+            ->success()
+            ->send();
 
         unset($this->quantidades[$record->id]);
     }
