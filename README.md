@@ -554,11 +554,11 @@ APP_ENV=local
 APP_URL=http://localhost
 
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=patrimonio
-DB_USERNAME=admin
-DB_PASSWORD=admin
+DB_HOST={your_credentials}
+DB_PORT={your_credentials}
+DB_DATABASE={your_credentials}
+DB_USERNAME={your_credentials}
+DB_PASSWORD={your_credentials}
 
 # Se a conexão legada usar credenciais ou banco diferentes:
 # EGAP_DB_DATABASE=patrimonio
@@ -788,39 +788,5 @@ Authorization: Bearer {token}
   }
 }
 ```
-
----
-
-## 📏 Regras de Negócio Importantes
-
-> ⚠️ Leia com atenção antes de qualquer modificação no backend ou mobile.
-
-- O backend é a **única fonte confiável** para setor, unidade e usuário.
-- O app mobile **não deve enviar** setor/unidade para decidir escopo.
-- Bens do setor usam `UnidadeJudiciaria`, `Setor` e `SituacaoBem IN (1, 7, 8)`.
-- Consulta direta por patrimônio busca no cadastro geral e informa se pertence ao escopo do usuário.
-- Confirmar localização cria/atualiza dados de inventário em transação.
-- Não localizado **exige justificativa**.
-- Divergência **exige observação**.
-- Código lido sem cadastro pode ser registrado como divergência sem criar um bem patrimonial.
-- Atividade finalizada **bloqueia** novas escritas.
-- Finalização só deve ocorrer quando `pode_finalizar = true`.
-- Pedidos de consumo exigem justificativa geral; pedidos permanentes exigem justificativa por item e patrimônio em caso de substituição.
-- O token Sanctum é persistido separado de `auth_user` e não é retornado pelo endpoint `/me`.
-- Histórico local do mobile é conveniência de interface; **não substitui** auditoria no banco.
-
----
-
-## 🔍 Pontos de Atenção Técnica
-
-- Existem textos no projeto com encoding antigo; ao editar arquivos, manter o padrão do arquivo e evitar introduzir mojibake novo.
-- Algumas regras do desktop dependem de **IDs fixos** de setor/complemento/situação. Documente qualquer novo uso desses IDs.
-- O fluxo de atendimento de pedidos usa histórico em `ped_fases`; novas automações devem preservar esse histórico.
-- A numeração de termos baseada em `max(num_termo) + 1` merece cuidado em **concorrência**.
-- Views legadas podem conter filtros de negócio embutidos.
-- Diversos fluxos usam `DB::connection('egap')`; remover ou renomear essa conexão quebra relatórios, pedidos e conferência.
-- Os scripts `migrar_jos_users_para_users*.sql` usam `USE patrimonio`; com `users` em `emes`, ajuste ou qualifique a tabela de destino antes da execução.
-- Em execução web, o armazenamento mobile usa `localStorage`; em dispositivos nativos, usa `expo-secure-store`.
-- O mobile usa ngrok em desenvolvimento; URL expirada causa erro de rede no app.
 
 ---
