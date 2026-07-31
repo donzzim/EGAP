@@ -23,6 +23,7 @@ class PedidosResource extends Resource
 {
     protected static ?string $model = Pedidos::class;
     protected static ?string $cluster = AlmoxarifadoCluster::class;
+    protected static ?string $slug = 'pedidos';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $modelLabel = 'Pedido';
     protected static ?string $pluralModelLabel = 'Pedidos';

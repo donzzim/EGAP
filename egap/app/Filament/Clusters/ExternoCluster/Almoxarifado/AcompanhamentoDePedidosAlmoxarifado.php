@@ -13,6 +13,8 @@ class AcompanhamentoDePedidosAlmoxarifado extends Page
 
     protected static ?string $cluster = ExternoCluster::class;
 
+    protected static ?string $slug = 'almoxarifado/acompanhamento-de-pedidos';
+
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
     protected static ?string $navigationGroup = 'Almoxarifado';

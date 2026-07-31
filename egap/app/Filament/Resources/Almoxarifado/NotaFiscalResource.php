@@ -19,7 +19,7 @@ use Filament\Tables\Table;
 class NotaFiscalResource extends Resource
 {
     protected static ?string $model = NotaFiscal::class;
-
+    protected static ?string $slug = 'notas-fiscais';
     protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $modelLabel = 'Nota Fiscal';

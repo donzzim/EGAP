@@ -20,7 +20,7 @@ class SituacaoNotaFiscalResource extends Resource
     protected static ?string $model = SituacaoNotaFiscal::class;
     protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
-
+    protected static ?string $slug = 'situacao-notas-fiscais';
     protected static ?string $navigationLabel = 'Situação da Nota Fiscal';
     protected static ?string $pluralLabel = 'Situações da Nota Fiscal';
     protected static ?string $pluralModelLabel = 'Situações da Nota Fiscal';

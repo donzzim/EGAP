@@ -28,6 +28,8 @@ class MovimentacaoEstoqueResource extends Resource
 {
     protected static ?string $model = MovimentacaoEstoque::class;
 
+    protected static ?string $slug = 'movimentacao-estoque';
+
     protected static ?string $cluster = AlmoxarifadoCluster::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';

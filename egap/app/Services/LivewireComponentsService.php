@@ -9,6 +9,8 @@ use App\Filament\Livewire\Externo\Almoxarifado\MateriaisDisponiveisTable as Exte
 use App\Filament\Livewire\Externo\Almoxarifado\PedidoItensModal;
 use App\Filament\Livewire\Externo\Almoxarifado\PedidosAlmoxarifadoTable;
 use App\Filament\Livewire\Externo\Patrimonio\BensNoSetorTable;
+use App\Filament\Livewire\Externo\Patrimonio\CarrinhoPedidoPermanenteForm;
+use App\Filament\Livewire\Externo\Patrimonio\MateriaisPermanentesTable;
 use App\Filament\Livewire\Externo\Patrimonio\MovimentacaoDeMateriaisTable;
 use App\Filament\Livewire\Patrimonio\ComissoesModal;
 use App\Filament\Livewire\Patrimonio\EquipesModal;
@@ -42,6 +44,8 @@ class LivewireComponentsService
         Livewire::component('externo-almoxarifado.pedido-itens-modal', PedidoItensModal::class);
         Livewire::component('externo-patrimonio.bens-no-setor-table', BensNoSetorTable::class);
         Livewire::component('externo-patrimonio.movimentacao-de-materiais-table', MovimentacaoDeMateriaisTable::class);
+        Livewire::component('externo-patrimonio.carrinho-pedido-form', CarrinhoPedidoPermanenteForm::class);
+        Livewire::component('externo-patrimonio.materiais-permanentes-disponiveis-table', MateriaisPermanentesTable::class);
         Livewire::component('atendimento-pedidos.pedidos-em-aberto-table', PedidosEmAbertoTable::class);
         Livewire::component('atendimento-pedidos.materiais-disponiveis-table', AtendimentoPedidosMateriaisDisponiveisTable::class);
     }

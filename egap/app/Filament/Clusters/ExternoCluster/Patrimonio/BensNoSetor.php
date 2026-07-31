@@ -16,6 +16,8 @@ class BensNoSetor extends Page
 
     protected static ?string $cluster = ExternoCluster::class;
 
+    protected static ?string $slug = 'patrimonio/inventario';
+
     protected static ?string $navigationGroup = 'Patrimônio';
 
     protected static ?string $navigationLabel = 'Bens no Setor (Inventário)';

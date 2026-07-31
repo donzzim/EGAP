@@ -18,6 +18,8 @@ class MovimentacaoDeMateriais extends Page
 
     protected static ?string $navigationGroup = 'Patrimônio';
 
+    protected static ?string $slug = 'patrimonio/movimentacao-de-materiais';
+
     protected static ?string $navigationLabel = 'Movimentação de Materiais';
 
     protected static ?string $title = 'Movimentação de Materiais';

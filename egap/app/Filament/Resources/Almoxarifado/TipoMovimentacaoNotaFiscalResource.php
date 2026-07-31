@@ -20,7 +20,7 @@ class TipoMovimentacaoNotaFiscalResource extends Resource
     protected static ?string $model = TipoMovimentacaoNotaFiscal::class;
     protected static ?string $cluster = AlmoxarifadoCluster::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
-
+    protected static ?string $slug = 'tipo-movimentacao';
     protected static ?string $navigationLabel = 'Tipo de Movimentação';
     protected static ?string $pluralLabel = 'Tipos de Movimentação';
 

@@ -14,6 +14,8 @@ class MateriaisDeConsumoDuraveis extends RequisicaoDeMateriaisPage
 
     protected static ?string $navigationGroup = 'Almoxarifado';
 
+    protected static ?string $slug = 'almoxarifado/requisicao-de-materiais-de-consumo-duraveis';
+
     protected static ?string $navigationLabel = 'Materiais de Cons. Duráveis';
 
     protected static ?string $title = 'Requisição de Materiais de Consumo Duráveis';

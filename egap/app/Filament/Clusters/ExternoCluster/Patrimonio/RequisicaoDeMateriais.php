@@ -15,13 +15,15 @@ class RequisicaoDeMateriais extends Page
 
     protected static ?string $navigationGroup = 'Patrimônio';
 
-    protected static ?string $navigationLabel = 'Requisição de Materiais';
+    protected static ?string $navigationLabel = 'Requisição de Materiais Permanentes';
 
-    protected static ?string $title = 'Requisição de Materiais';
+    protected static ?string $title = 'Requisição de Materiais Permanentes';
+
+    protected static ?string $slug = 'patrimonio/requisicao-de-materiais-permanentes';
 
     protected static ?int $navigationSort = 3;
 
-    protected static string $view = 'filament.pages.externo.patrimonio.requisicao-de-materiais';
+    protected static string $view = 'filament.pages.externo.patrimonio.requisicao-de-materiais-permanentes';
 
     public function getSubNavigationPosition(): SubNavigationPosition
     {
