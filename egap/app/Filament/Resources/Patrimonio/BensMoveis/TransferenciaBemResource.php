@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
@@ -258,20 +259,11 @@ class TransferenciaBemResource extends Resource
 
     public static function visualizarTermoModal(): Action
     {
-        return Action::make('visualizar_termo')
+        return TableModalAction::make('visualizar_termo')
             ->visible(fn (TransferenciaBemMovel $record): bool => filled($record->Termo))
             ->modalHeading(fn (TransferenciaBemMovel $record): string => $record->termoRel
                 ? "Validar Termo - {$record->termoRel->num_termo}/{$record->termoRel->ano_termo}"
                 : 'Validar Termo')
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (TransferenciaBemMovel $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.validar-termo-modal',

@@ -4,37 +4,28 @@ namespace App\Filament\Livewire\Externo\Almoxarifado;
 
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalComponent;
 use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\UserEgap;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
-use Livewire\Component;
 
 /**
  * Itens de um pedido de materiais de consumo, exibidos no modal aberto a
  * partir de {@see PedidosAlmoxarifadoTable} (legado: modal_pedidos.api.php,
  * ramo do setor responsável = Almoxarifado).
  */
-class PedidoItensModal extends Component implements HasForms, HasTable
+class PedidoItensModal extends TableModalComponent
 {
-    use InteractsWithForms;
-    use InteractsWithTable;
-
     protected const STATUS_PENDENTE = 6;
 
     protected const STATUS_CANCELADO = 4;
@@ -51,26 +42,18 @@ class PedidoItensModal extends Component implements HasForms, HasTable
         return TableDefaults::apply($table)
             ->query($this->getQuery())
             ->columns([
-                TextColumn::make('material_nome')
-                    ->label('Material')
+                TableColumns::text('material_nome', 'Material')
                     ->wrap(),
 
-                TextColumn::make('quantidades')
-                    ->label('Qtde. Solicitada / Atendida')
-                    ->alignCenter()
+                TableColumns::text('quantidades', 'Qtde. Solicitada / Atendida')
                     ->getStateUsing(fn (ItemPedido $record): string => "{$record->quantidade_solicitada} / {$record->quantidade_atendida}"),
 
                 TableColumns::money('valor_material', 'Preço Unitário Médio'),
 
-                TextColumn::make('subtotal_atendido')
-                    ->label('Subtotal Atendido')
-                    ->alignCenter()
-                    ->money('BRL')
+                TableColumns::money('subtotal_atendido', 'Subtotal Atendido')
                     ->getStateUsing(fn (ItemPedido $record): float => (float) $record->valor_material * $record->quantidade_atendida),
 
-                TextColumn::make('ObservacaoItem')
-                    ->label('Observações')
-                    ->default('-')
+                TableColumns::text('ObservacaoItem', 'Observações')
                     ->wrap()
                     ->description(fn (ItemPedido $record): ?string => $this->observacaoDescricao($record)),
 
@@ -255,10 +238,5 @@ class PedidoItensModal extends Component implements HasForms, HasTable
             ->where('idPedido', $this->pedidoId)
             ->with(['descricaoDetalhadaRel', 'materialRel', 'situacaoRef', 'validadoPor', 'canceladoPor'])
             ->orderBy('situacao');
-    }
-
-    public function render(): View
-    {
-        return view('livewire.externo.almoxarifado.pedido-itens-modal');
     }
 }

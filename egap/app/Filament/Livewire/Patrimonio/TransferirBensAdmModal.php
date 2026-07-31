@@ -2,6 +2,7 @@
 
 namespace App\Filament\Livewire\Patrimonio;
 
+use App\Filament\Support\FormModalComponent;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Cadastro\Setores;
@@ -10,26 +11,16 @@ use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 use Throwable;
 
-class TransferirBensAdmModal extends Component implements HasForms
+class TransferirBensAdmModal extends FormModalComponent
 {
-    use InteractsWithForms;
-
-    public ?array $data = [];
-
     public ?BemMovel $bem = null;
-
-    public string $parentLivewireId = '';
 
     public function mount(int $numPatrimonio, string $parentLivewireId): void
     {
@@ -188,6 +179,16 @@ class TransferirBensAdmModal extends Component implements HasForms
             ->statePath('data');
     }
 
+    protected function submitMethod(): string
+    {
+        return 'transferir';
+    }
+
+    protected function submitLabel(): string
+    {
+        return 'Confirmar Transferência';
+    }
+
     public function transferir(): void
     {
         if (! $this->bem) {
@@ -241,20 +242,5 @@ class TransferirBensAdmModal extends Component implements HasForms
 
         $this->dispatch('bem-movel-transferido');
         $this->fecharModal();
-    }
-
-    public function cancelar(): void
-    {
-        $this->fecharModal();
-    }
-
-    private function fecharModal(): void
-    {
-        $this->dispatch('close-modal', id: "{$this->parentLivewireId}-action");
-    }
-
-    public function render(): View
-    {
-        return view('livewire.patrimonio.form');
     }
 }

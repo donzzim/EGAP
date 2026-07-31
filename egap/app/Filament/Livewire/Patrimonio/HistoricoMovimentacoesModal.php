@@ -3,19 +3,11 @@
 namespace App\Filament\Livewire\Patrimonio;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
+use App\Filament\Support\TableModalComponent;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
-use Livewire\Component;
 
-class HistoricoMovimentacoesModal extends Component implements HasForms, HasTable
+class HistoricoMovimentacoesModal extends TableModalComponent
 {
-    use InteractsWithForms;
-    use InteractsWithTable;
-
     public int $numPatrimonio;
 
     public function mount(int $numPatrimonio): void
@@ -30,10 +22,5 @@ class HistoricoMovimentacoesModal extends Component implements HasForms, HasTabl
                 TransferenciaBemResource::getEloquentQuery()
                     ->where('NumPatrimonio', $this->numPatrimonio)
             );
-    }
-
-    public function render(): View
-    {
-        return view('livewire.patrimonio.modal');
     }
 }

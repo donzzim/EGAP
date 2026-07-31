@@ -4,6 +4,7 @@ namespace App\Filament\Livewire\Externo\Almoxarifado;
 
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\Setores;
 use Filament\Forms\Components\Select;
@@ -11,8 +12,6 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\FiltersLayout;
@@ -64,17 +63,12 @@ class PedidosAlmoxarifadoTable extends Component implements HasForms, HasTable
                     ->wrap()
                     ->limit(80),
 
-                TextColumn::make('complemento_setor')
-                    ->label('Complemento do Setor')
-                    ->alignCenter()
-                    ->default('-')
+                TableColumns::text('complemento_setor', 'Complemento do Setor')
                     ->wrap()
                     ->getStateUsing(fn (Pedidos $record): ?string => $record->complementoSetor?->descricao),
 
-                TextColumn::make('itens_count')
-                    ->label('Materiais')
+                TableColumns::text('itens_count', 'Materiais')
                     ->counts('itens')
-                    ->alignCenter()
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn (int $state): string => $state === 1 ? '1 item' : "{$state} itens"),
@@ -158,18 +152,13 @@ class PedidosAlmoxarifadoTable extends Component implements HasForms, HasTable
             ], FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
             ->actions([
-                Action::make('ver_itens')
+                TableModalAction::make('ver_itens')
                     ->label('Ver itens')
                     ->action(function (array $data, $record): void {
                         $record->update($data);
                     })
                     ->icon('heroicon-o-eye')
                     ->modalHeading(fn (Pedidos $record): string => "Pedido Nº {$record->id}/{$record->date_time?->format('Y')}")
-                    ->modalWidth('6xl')
-                    ->stickyModalHeader()
-                    ->stickyModalFooter()
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Fechar')
                     ->modalContent(fn (Pedidos $record): HtmlString => new HtmlString(
                         Livewire::mount(
                             'externo-almoxarifado.pedido-itens-modal',

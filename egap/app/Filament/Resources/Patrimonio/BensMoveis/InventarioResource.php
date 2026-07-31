@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Inventario;
@@ -261,7 +262,7 @@ class InventarioResource extends Resource
                                             ->collapsible()
                                             ->itemLabel(fn (array $state): string => self::rotuloItemUnidadeInventariada($state))
                                             ->addActionLabel('Adicionar unidade'),
-                                    ])
+                                    ]),
                             ]),
 
                         Tabs\Tab::make('Comissões')
@@ -364,7 +365,7 @@ class InventarioResource extends Resource
             ->defaultSort('id', 'desc')
             ->actions([
                 ...TableDefaults::actions(),
-                self::atualizarSituacaoTableAction()
+                self::atualizarSituacaoTableAction(),
             ]);
     }
 
@@ -409,6 +410,7 @@ class InventarioResource extends Resource
             ? self::opcoesSetores()
             : self::opcoesUnidadesOrganizacionais();
     }
+
     private static function opcoesUnidadesOrganizacionais(): array
     {
         return Setores::query()
@@ -448,17 +450,8 @@ class InventarioResource extends Resource
 
     private static function unidadesInventariadasTableAction(): Tables\Actions\Action
     {
-        return Tables\Actions\Action::make('visualizar_unidades_inventario')
+        return TableModalAction::make('visualizar_unidades_inventario')
             ->modalHeading(fn (Inventario $record): string => "Unidades do Inventário {$record->num_inventario}/{$record->ano_inventario}")
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (Inventario $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.inventario-unidades-modal',
@@ -470,17 +463,8 @@ class InventarioResource extends Resource
 
     private static function comissoesTableAction(): Tables\Actions\Action
     {
-        return Tables\Actions\Action::make('visualizar_comissoes_inventario')
+        return TableModalAction::make('visualizar_comissoes_inventario')
             ->modalHeading(fn (Inventario $record): string => "Comissões do Inventário {$record->num_inventario}/{$record->ano_inventario}")
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (Inventario $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.inventario-comissoes-modal',

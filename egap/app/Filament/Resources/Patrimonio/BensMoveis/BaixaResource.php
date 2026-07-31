@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Models\Patrimonio\BensMoveis\Baixa;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\ItemBaixa;
@@ -39,6 +40,8 @@ class BaixaResource extends Resource
     protected static ?string $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Baixa de bens';
+
+    protected static ?string $breadcrumb = 'Baixa de bens';
 
     protected static ?string $modelLabel = 'Baixa';
 
@@ -127,7 +130,7 @@ class BaixaResource extends Resource
                     ->weight('medium'),
                 TableColumns::date('DataBaixa', 'Data da Baixa'),
                 TableColumns::text('Requisitante', 'Requisitante')
-                    ->limit(35)
+                    ->wrap()
                     ->tooltip(fn ($record): ?string => $record->Requisitante),
                 TableColumns::text('RequisitanteCnpj', 'CNPJ')
                     ->badge()
@@ -151,7 +154,7 @@ class BaixaResource extends Resource
                     self::reativarBaixaTableAction(),
                 ]),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('DataBaixa', 'desc');
     }
 
     public static function reativarBaixaTableAction(): Action
@@ -237,16 +240,8 @@ class BaixaResource extends Resource
 
     private static function materiaisTableAction(): Action
     {
-        return Action::make('visualizar_materiais')
+        return TableModalAction::make('visualizar_materiais')
             ->modalHeading(fn (Baixa $record): string => "Materiais da baixa {$record->NumeroProcesso}")
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (Baixa $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.materiais-baixa-modal',

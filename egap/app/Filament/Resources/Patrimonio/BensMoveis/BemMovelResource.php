@@ -4,8 +4,10 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
+use App\Filament\Support\FormModalAction;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Services\Patrimonio\RecalcularDepreciacaoService;
 use Filament\Forms\Form;
@@ -104,18 +106,10 @@ class BemMovelResource extends Resource
 
     private static function transferirBensTableAction(): Action
     {
-        return Action::make('transferir_bens')
+        return FormModalAction::make('transferir_bens')
             ->label('Transferir Bens')
-            ->icon('heroicon-o-bell')
+            ->icon('heroicon-o-arrow-right-circle')
             ->modalHeading(fn (BemMovel $record): string => "Transferir Bem #{$record->NumPatrimonio}")
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->modalSubmitAction(false)
-            ->modalCancelAction(false)
             ->modalContent(fn (BemMovel $record, $livewire): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.transferir-bem-adm-modal',
@@ -130,20 +124,11 @@ class BemMovelResource extends Resource
 
     private static function historicoMovimentacoesTableAction(): Action
     {
-        return Action::make('historico_movimentacoes')
+        return TableModalAction::make('historico_movimentacoes')
             ->label('Histórico de Movimentações')
             ->icon('heroicon-o-arrows-right-left')
             ->color('gray')
             ->modalHeading(fn (BemMovel $record): string => "Histórico de Movimentações - {$record->NumPatrimonio}")
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (BemMovel $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.historico-movimentacoes-modal',

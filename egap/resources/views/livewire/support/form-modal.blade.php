@@ -1,5 +1,5 @@
 <div class="egap-modal-content egap-modal-form w-full">
-    <form wire:submit="transferir" class="egap-modal-form-inner">
+    <form wire:submit="{{ $submitMethod }}" class="egap-modal-form-inner">
         <div class="egap-modal-form-body">
             {{ $this->form }}
         </div>
@@ -16,9 +16,9 @@
 
             <x-filament::button
                 type="submit"
-                icon="heroicon-m-check-circle"
+                :icon="$submitIcon"
             >
-                Confirmar Transferência
+                {{ $submitLabel }}
             </x-filament::button>
         </div>
     </form>

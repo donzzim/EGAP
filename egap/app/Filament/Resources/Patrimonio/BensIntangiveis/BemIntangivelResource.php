@@ -244,31 +244,13 @@ class BemIntangivelResource extends Resource
                     ->copyable()
                     ->copyMessage('Processo copiado'),
                 TableColumns::text('inscricao_generica', 'Inscrição Genérica'),
-                TableColumns::text('atualizadoPorRef.name', 'Atualizado por'),
-                TableColumns::date('atualizado_em', 'Atualizado em'),
+                TableColumns::text('atualizadoPorRef.name', 'Atualizado por')
+                    ->description(fn(BemIntangivel $record) => $record->atualizado_em->format('d/m/Y')),
                 TableColumns::text('observacao', 'Observação')
                     ->limit(50)
                     ->tooltip(fn (BemIntangivel $record): ?string => $record->observacao)
                     ->wrap(),
             ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('id_tipointangivel')
-                    ->label('Tipo de Intangível')
-                    ->relationship('idTipoIntangivelRef', 'descricao')
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\SelectFilter::make('id_fabricante')
-                    ->label('Fabricante')
-                    ->relationship('idFabricanteRef', 'descricao')
-                    ->searchable()
-                    ->preload(),
-                Tables\Filters\SelectFilter::make('classificacao')
-                    ->label('Classificação')
-                    ->options([
-                        'Desktops' => 'Desktops',
-                        'Servidores' => 'Servidores',
-                    ]),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
             ->defaultSort('id', 'desc');
     }
 

@@ -4,21 +4,13 @@ namespace App\Filament\Livewire\Patrimonio;
 
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\InventarioEquipe;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Component;
 
-class EquipesModal extends Component implements HasForms, HasTable
+class EquipesModal extends TableModalComponent
 {
-    use InteractsWithForms;
-    use InteractsWithTable;
-
     public int $unidadeId;
 
     public function mount(int $unidadeId, ?int $inventarioId = null): void
@@ -53,10 +45,5 @@ class EquipesModal extends Component implements HasForms, HasTable
         return InventarioEquipe::query()
             ->where('unidade', $this->unidadeId)
             ->with('integrantesRef');
-    }
-
-    public function render(): View
-    {
-        return view('livewire.patrimonio.modal');
     }
 }

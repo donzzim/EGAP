@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Helper\CpfHelper;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
@@ -13,7 +14,6 @@ use App\Models\Patrimonio\BensMoveis\Termo;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -309,7 +309,7 @@ class TermoResource extends Resource
                     self::gerarNovoArquivoTableAction(),
                     self::corrigirTermoTableAction(),
                     self::encaminharLogisticaTableAction(),
-                    self::validarTermosRedirectTableAction()
+                    self::validarTermosRedirectTableAction(),
                 ])
                     ->hiddenLabel()
                     ->icon('heroicon-m-ellipsis-vertical'),
@@ -319,17 +319,8 @@ class TermoResource extends Resource
 
     private static function materiaisTableAction(): Action
     {
-        return Action::make('visualizar_materiais')
+        return TableModalAction::make('visualizar_materiais')
             ->modalHeading(fn (Termo $record): string => "Materiais do termo {$record->termo_completo}")
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (Termo $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.materiais-termo-modal',

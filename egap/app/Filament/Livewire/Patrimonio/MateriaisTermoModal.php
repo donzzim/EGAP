@@ -4,22 +4,14 @@ namespace App\Filament\Livewire\Patrimonio;
 
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Component;
 
-class MateriaisTermoModal extends Component implements HasForms, HasTable
+class MateriaisTermoModal extends TableModalComponent
 {
-    use InteractsWithForms;
-    use InteractsWithTable;
-
     public int $termoId;
 
     public function mount(int $termoId): void
@@ -114,10 +106,5 @@ class MateriaisTermoModal extends Component implements HasForms, HasTable
         ]);
 
         return $partes ? implode(' / ', $partes) : null;
-    }
-
-    public function render(): View
-    {
-        return view('livewire.patrimonio.modal');
     }
 }

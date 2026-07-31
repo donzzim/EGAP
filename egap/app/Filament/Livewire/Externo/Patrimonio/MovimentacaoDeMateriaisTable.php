@@ -63,12 +63,10 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
         return TableDefaults::apply($table)
             ->query($this->getQuery())
             ->columns([
-                TextColumn::make('num_termo')
-                    ->label('Termo')
+                TableColumns::text('num_termo', 'Termo')
                     ->formatStateUsing(fn (Termo $record): string => $record->termo_completo)
                     ->description(fn (Termo $record): ?string => $record->date_time?->format('d/m/Y'))
                     ->searchable(['num_termo', 'ano_termo'])
-                    ->sortable()
                     ->badge()
                     ->color('primary'),
 
@@ -83,13 +81,10 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                 TableColumns::text('ultimaTransferencia.usuarioRef.name', 'Transferido por')
                     ->wrap(),
 
-                TextColumn::make('transferencias_count')
-                    ->label('Qtd. de Bens')
-                    ->counts('transferencias')
-                    ->alignCenter(),
+                TableColumns::text('transferencias_count', 'Qtd. de Bens')
+                    ->counts('transferencias'),
 
-                TextColumn::make('arquivoDigital.situacao')
-                    ->label('Situação do Termo')
+                TableColumns::text('arquivoDigital.situacao', 'Situação do Termo')
                     ->formatStateUsing(fn ($state): string => ArquivoDigital::situacaoLabel($state))
                     ->description(fn (Termo $record): ?string => in_array((int) ($record->arquivoDigital?->situacao ?? -1), [ArquivoDigital::SITUACAO_INVALIDADO, ArquivoDigital::SITUACAO_CANCELADO], true)
                         ? $record->arquivoDigital?->observacao
@@ -136,6 +131,7 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                     ->hiddenLabel()
                     ->icon('heroicon-m-ellipsis-vertical'),
             ])
+            ->bulkActions([])
             ->defaultSort('id', 'desc')
             ->emptyStateHeading(
                 blank($this->setorAtual)

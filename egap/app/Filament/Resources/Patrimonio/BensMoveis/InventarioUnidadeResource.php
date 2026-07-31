@@ -6,6 +6,7 @@ use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalAction;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
@@ -268,20 +269,11 @@ class InventarioUnidadeResource extends Resource
 
     private static function equipesIntegrantesTableAction(): Tables\Actions\Action
     {
-        return Tables\Actions\Action::make('visualizar_integrantes_equipe')
+        return TableModalAction::make('visualizar_integrantes_equipe')
             ->modalHeading(fn (InventarioUnidade $record): string => sprintf(
                 'Integrantes da unidade %s',
                 $record->unidade?->Setor ?? $record->unidade?->UnidadeOrganizacional ?? $record->unidades
             ))
-            ->modalWidth('full')
-            ->extraModalWindowAttributes([
-                'class' => 'egap-modal-window',
-                'style' => 'width: calc(100vw - 2rem); max-width: 96rem; height: min(82dvh, 860px); overflow: hidden;',
-            ])
-            ->stickyModalHeader()
-            ->stickyModalFooter()
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (InventarioUnidade $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.inventario-equipes-modal',

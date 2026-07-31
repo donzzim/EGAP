@@ -4,22 +4,13 @@ namespace App\Filament\Livewire\Patrimonio;
 
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\ItemBaixa;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Component;
 
-class MateriaisBaixaModal extends Component implements HasForms, HasTable
+class MateriaisBaixaModal extends TableModalComponent
 {
-    use InteractsWithForms;
-    use InteractsWithTable;
-
     public int $baixaId;
 
     public function mount(int $baixaId): void
@@ -32,29 +23,22 @@ class MateriaisBaixaModal extends Component implements HasForms, HasTable
         return TableDefaults::apply($table)
             ->query($this->getMateriaisQuery())
             ->columns([
-                TableColumns::text('bem.NumPatrimonio', 'Patrimônio', isFirstColumn: true)
+                TableColumns::text('bem.NumPatrimonio', 'Processo Baixa', isFirstColumn: true)
                     ->badge()
                     ->color('primary'),
 
-                TextColumn::make('descricao')
-                    ->label('Descrição')
+                TableColumns::text('descricao', 'Descrição')
                     ->getStateUsing(fn (ItemBaixa $record): string => $record->bem?->descricaoDetalhadaRef?->descricao_detalhada
                         ?: $record->bem?->descricao_detalhada
                         ?: '-')
                     ->weight('medium')
                     ->wrap(),
 
-                TableColumns::text('bem.situacaoBemRef.descricao_completa', 'Situação atual')
-                    ->badge()
-                    ->color('gray'),
-
-                TableColumns::text('situacaoDestino.descricao_completa', 'Situação de destino')
+                TableColumns::text('situacaoDestino.descricao_completa', 'Situação')
                     ->badge()
                     ->color(fn (ItemBaixa $record): string => (int) $record->id_situacao === 3 ? 'danger' : 'warning'),
             ])
             ->defaultSort('id')
-            ->defaultPaginationPageOption(15)
-            ->paginated([15])
             ->emptyStateIcon('heroicon-o-archive-box')
             ->emptyStateHeading('Nenhum material está vinculado a esta baixa')
             ->actions([])
@@ -70,10 +54,5 @@ class MateriaisBaixaModal extends Component implements HasForms, HasTable
                 'bem.situacaoBemRef',
                 'situacaoDestino',
             ]);
-    }
-
-    public function render(): View
-    {
-        return view('livewire.patrimonio.modal');
     }
 }
