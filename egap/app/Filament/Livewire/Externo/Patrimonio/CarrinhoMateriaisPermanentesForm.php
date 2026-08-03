@@ -2,7 +2,7 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoPedidoForm;
+use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Cadastro\Setores;
@@ -27,7 +27,7 @@ use Throwable;
  * (legado: pedidos.php), companheiro de {@see MateriaisPermanentesTable}.
  *
  * "Dados do pedido" segue o mesmo padrão de
- * {@see CarrinhoPedidoForm}
+ * {@see CarrinhoMateriaisConsumoForm}
  * (Solicitante/Unidade/Setor/Complemento escolhidos manualmente, sem depender
  * de sessão de setor).
  *
@@ -36,7 +36,7 @@ use Throwable;
  * cálculo do valor do bem, registro de fases) já usada pelo aplicativo mobile
  * para o tipo "permanente", evitando duplicar essa lógica aqui.
  */
-class CarrinhoPedidoPermanenteForm extends Component implements HasForms
+class CarrinhoMateriaisPermanentesForm extends Component implements HasForms
 {
     use InteractsWithForms;
 
@@ -97,7 +97,7 @@ class CarrinhoPedidoPermanenteForm extends Component implements HasForms
                             ->label('Solicitante')
                             ->required()
                             ->searchable()
-                            ->preload()
+                            //->preload()
                             ->native(false)
                             ->options(fn (): array => UserEgap::query()
                                 ->orderBy('name')
@@ -109,7 +109,7 @@ class CarrinhoPedidoPermanenteForm extends Component implements HasForms
                             ->label('Unidade Judiciária')
                             ->required()
                             ->searchable()
-                            ->preload()
+                            //->preload()
                             ->live()
                             ->native(false)
                             ->options(fn (): array => Setores::query()
@@ -124,7 +124,7 @@ class CarrinhoPedidoPermanenteForm extends Component implements HasForms
                             ->label('Setor')
                             ->required()
                             ->searchable()
-                            ->preload()
+                            //->preload()
                             ->live()
                             ->native(false)
                             ->options(fn (Get $get): array => Setores::query()
@@ -143,7 +143,7 @@ class CarrinhoPedidoPermanenteForm extends Component implements HasForms
                             ->label('Complemento do setor de destino')
                             ->required()
                             ->searchable()
-                            ->preload()
+                            //->preload()
                             ->native(false)
                             // Prioriza os complementos já usados em pedidos anteriores desse Setor
                             // (mesma ideia do legado, que restringia a lista pelo setor selecionado).

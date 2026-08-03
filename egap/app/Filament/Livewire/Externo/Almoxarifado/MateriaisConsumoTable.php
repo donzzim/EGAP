@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
+class MateriaisConsumoTable extends Component implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
@@ -79,6 +79,7 @@ class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
                     ->icon('heroicon-m-plus')
                     ->action(fn (DescricaoDetalhada $record) => $this->adicionarAoCarrinho($record)),
             ])
+            ->bulkActions([])
             ->defaultSort('descricao_detalhada')
             ->emptyStateHeading('Nenhum material disponível no momento');
     }

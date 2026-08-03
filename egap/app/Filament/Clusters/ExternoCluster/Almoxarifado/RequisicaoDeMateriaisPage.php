@@ -3,8 +3,8 @@
 namespace App\Filament\Clusters\ExternoCluster\Almoxarifado;
 
 use App\Filament\Clusters\ExternoCluster;
-use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoPedidoForm;
-use App\Filament\Livewire\Externo\Almoxarifado\MateriaisDisponiveisTable;
+use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
+use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use Filament\Pages\Page;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Support\Enums\MaxWidth;
@@ -15,10 +15,10 @@ use Filament\Support\Enums\MaxWidth;
  * negócio — só monta, via blade, os componentes Livewire que fazem o
  * trabalho de verdade:
  *
- * - {@see MateriaisDisponiveisTable}
+ * - {@see MateriaisConsumoTable}
  *   lista/pagina/pesquisa os materiais do tipo e dispara o evento de
  *   "adicionar ao carrinho".
- * - {@see CarrinhoPedidoForm}
+ * - {@see CarrinhoMateriaisConsumoForm}
  *   guarda o carrinho, o formulário de destino/justificativa e envia o pedido.
  *
  * As páginas filhas só diferem pelo tipo de material exposto (Consumo x

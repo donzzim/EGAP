@@ -2,12 +2,13 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use App\Filament\Livewire\Externo\Almoxarifado\MateriaisDisponiveisTable;
+use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -27,10 +28,10 @@ use Livewire\Component;
 /**
  * Lista os materiais permanentes (mat_descricaoresumida.id_tipo_material = 'P')
  * disponíveis para requisição (legado: pedidos.php), companheiro de
- * {@see CarrinhoPedidoPermanenteForm}, que guarda o carrinho e envia o pedido.
+ * {@see CarrinhoMateriaisPermanentesForm}, que guarda o carrinho e envia o pedido.
  *
  * Segue o mesmo padrão de
- * {@see MateriaisDisponiveisTable}:
+ * {@see MateriaisConsumoTable}:
  * a quantidade é digitada direto na tabela; o botão "Adicionar" só abre um
  * modal para os dados que não cabem em coluna (Tipo de solicitação e
  * Justificativa — e o nº do patrimônio, quando for Substituição).
@@ -74,6 +75,7 @@ class MateriaisPermanentesTable extends Component implements HasForms, HasTable
             ->actions([
                 $this->adicionarAction(),
             ])
+            ->bulkActions([])
             ->defaultSort('Descricao')
             ->emptyStateHeading('Nenhum material disponível no momento');
     }

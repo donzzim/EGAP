@@ -23,7 +23,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Throwable;
 
-class CarrinhoPedidoForm extends Component implements HasForms
+class CarrinhoMateriaisConsumoForm extends Component implements HasForms
 {
     use InteractsWithForms;
 
@@ -55,7 +55,21 @@ class CarrinhoPedidoForm extends Component implements HasForms
 
     public function removerItem(int $materialId): void
     {
+        if (! isset($this->carrinho[$materialId])) {
+            Notification::make()
+                ->title('Item não encontrado')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
         unset($this->carrinho[$materialId]);
+
+        Notification::make()
+            ->title('Item removido')
+            ->danger()
+            ->send();
     }
 
     public function limparCarrinho(): void
