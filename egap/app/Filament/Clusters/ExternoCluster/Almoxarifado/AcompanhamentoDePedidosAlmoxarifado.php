@@ -10,7 +10,7 @@ class AcompanhamentoDePedidosAlmoxarifado extends AcompanhamentoDePedidosPage
 
     protected static ?string $slug = 'almoxarifado/acompanhamento-de-pedidos';
 
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
 
     protected static ?string $navigationGroup = 'Almoxarifado';
 

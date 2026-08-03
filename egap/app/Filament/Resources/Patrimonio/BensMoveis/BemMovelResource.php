@@ -128,7 +128,7 @@ class BemMovelResource extends Resource
             ->label('Histórico de Movimentações')
             ->icon('heroicon-o-arrows-right-left')
             ->color('gray')
-            ->modalHeading(fn (BemMovel $record): string => "Histórico de Movimentações - {$record->NumPatrimonio}")
+            ->modalHeading(fn (BemMovel $record): string => "Histórico de Movimentações #{$record->NumPatrimonio}")
             ->modalContent(fn (BemMovel $record): HtmlString => new HtmlString(
                 Livewire::mount(
                     'patrimonio.historico-movimentacoes-modal',
@@ -140,9 +140,21 @@ class BemMovelResource extends Resource
 
     private static function vincularBensTableAction(): Action
     {
-        return Action::make('vincular_bens')
+        return FormModalAction::make('vincular_bens')
             ->label('Vincular Bens')
-            ->icon('heroicon-o-plus');
+            ->color('gray')
+            ->icon('heroicon-o-plus')
+            ->modalHeading(fn (BemMovel $record): string => "Vincular Bem #{$record->NumPatrimonio}")
+            ->modalContent(fn (BemMovel $record, $livewire): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.vincular-bem-modal',
+                    [
+                        'numPatrimonio' => (int) $record->NumPatrimonio,
+                        'parentLivewireId' => $livewire->getId(),
+                    ],
+                    "vincular-bens-{$record->getKey()}",
+                )
+            ));
     }
 
     private static function atualizarDadosTableAction(): Action

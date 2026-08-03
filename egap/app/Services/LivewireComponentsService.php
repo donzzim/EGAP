@@ -27,6 +27,7 @@ use App\Filament\Livewire\Patrimonio\MateriaisTermoModal;
 use App\Filament\Livewire\Patrimonio\TransferirBensAdmModal;
 use App\Filament\Livewire\Patrimonio\UnidadesModal;
 use App\Filament\Livewire\Patrimonio\ValidarTermoModal;
+use App\Filament\Livewire\Patrimonio\VincularBemModal;
 use App\Filament\Livewire\PortalTransparencia\AlmoxarifadoCharts;
 use App\Filament\Livewire\PortalTransparencia\PatrimonioCharts;
 use Livewire\Livewire;
@@ -43,6 +44,7 @@ class LivewireComponentsService
         Livewire::component('patrimonio.inventario-unidades-modal', UnidadesModal::class);
         Livewire::component('patrimonio.historico-movimentacoes-modal', HistoricoMovimentacoesModal::class);
         Livewire::component('patrimonio.validar-termo-modal', ValidarTermoModal::class);
+        Livewire::component('patrimonio.vincular-bem-modal', VincularBemModal::class);
         Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
         Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
         Livewire::component('externo-almoxarifado.materiais-disponiveis-table', MateriaisConsumoTable::class);

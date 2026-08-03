@@ -20,7 +20,7 @@
             </x-filament::button>
         </div>
 
-        <div class="fi-tabs mt-4 flex flex-wrap gap-2 print:hidden">
+        <div class="fi-tabs mt-4 flex flex-wrap gap-2 print:hidden mt-3">
             <x-filament::button
                 :color="$secao === 'resumo' ? 'primary' : 'gray'"
                 wire:click="selecionarSecao('resumo')"
