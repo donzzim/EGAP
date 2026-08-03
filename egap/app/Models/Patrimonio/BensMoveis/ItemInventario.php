@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensMoveis;
 
+use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Cadastro\Setores;
 use App\Models\Cadastro\Marcas;
 use App\Models\Cadastro\Modelos;
@@ -40,6 +41,16 @@ class ItemInventario extends Model
     public function idBemRef(): BelongsTo
     {
         return $this->belongsTo(BemMovel::class, 'id_bem', 'id');
+    }
+
+    public function termoRef(): BelongsTo
+    {
+        return $this->belongsTo(Termo::class, 'termo', 'id');
+    }
+
+    public function complementoSetorRef(): BelongsTo
+    {
+        return $this->belongsTo(ComplementoSetor::class, 'id_complementosetor', 'id');
     }
 
     public function unidadesRef(): BelongsTo

@@ -2,42 +2,24 @@
 
 namespace App\Filament\Livewire\Externo\Almoxarifado;
 
+use App\Filament\Livewire\Externo\MateriaisDisponiveis;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Cadastro\DescricaoDetalhada;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\TextInputColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Attributes\On;
-use Livewire\Component;
 
-class MateriaisConsumoTable extends Component implements HasForms, HasTable
+class MateriaisConsumoTable extends MateriaisDisponiveis
 {
-    use InteractsWithForms;
-    use InteractsWithTable;
-
     public string $tipoMaterial;
-
-    /** @var array<int, int|null> quantidade digitada por material, indexada pelo id do material */
-    public array $quantidades = [];
 
     public function mount(string $tipoMaterial): void
     {
         $this->tipoMaterial = $tipoMaterial;
-    }
-
-    #[On('pedido-enviado')]
-    public function limparQuantidades(): void
-    {
-        $this->quantidades = [];
     }
 
     public function table(Table $table): Table
@@ -62,15 +44,7 @@ class MateriaisConsumoTable extends Component implements HasForms, HasTable
                     ->formatStateUsing(fn (string $state): string => number_format((float) $state, 0, ',', '.'))
                     ->color('success'),
 
-                TextInputColumn::make('quantidade')
-                    ->label('Quantidade')
-                    ->alignCenter()
-                    ->type('number')
-                    ->rules(['nullable', 'integer', 'min:0'])
-                    ->state(fn (DescricaoDetalhada $record): ?int => $this->quantidades[$record->id] ?? null)
-                    ->updateStateUsing(function (DescricaoDetalhada $record, $state): void {
-                        $this->quantidades[$record->id] = filled($state) ? (int) $state : null;
-                    }),
+                $this->quantidadeColumn(),
             ])
             ->actions([
                 Action::make('adicionar')
@@ -86,14 +60,9 @@ class MateriaisConsumoTable extends Component implements HasForms, HasTable
 
     protected function adicionarAoCarrinho(DescricaoDetalhada $record): void
     {
-        $quantidade = (int) ($this->quantidades[$record->id] ?? 0);
+        $quantidade = $this->validarQuantidade($record->id);
 
-        if ($quantidade < 1) {
-            Notification::make()
-                ->title('Informe uma quantidade válida antes de adicionar.')
-                ->warning()
-                ->send();
-
+        if ($quantidade === null) {
             return;
         }
 
@@ -135,6 +104,6 @@ class MateriaisConsumoTable extends Component implements HasForms, HasTable
 
     public function render(): View
     {
-        return view('livewire.externo.almoxarifado.materiais-disponiveis-table');
+        return view('livewire.externo.table');
     }
 }

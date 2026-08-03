@@ -14,6 +14,7 @@ use App\Models\Cadastro\Modelos;
 use App\Models\Cadastro\Setores;
 use App\Models\Cadastro\UnidadesDeMedida;
 use App\Models\UserEgap;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -130,10 +131,26 @@ class BemMovel extends Model
         return $this->belongsTo(ElementoDespesa::class, 'Produto', 'id');
     }
 
+    public function inventarioRef(): BelongsTo
+    {
+        return $this->belongsTo(Inventario::class, 'id_inventario', 'id');
+    }
+
     public function ultimaTransferencia(): HasOne
     {
         return $this->hasOne(TransferenciaBemMovel::class, 'NumPatrimonio', 'NumPatrimonio')
             ->latestOfMany('id');
+    }
+
+    public function ultimaTransferenciaValidada(): HasOne
+    {
+        return $this->hasOne(TransferenciaBemMovel::class, 'NumPatrimonio', 'NumPatrimonio')
+            ->ofMany(['id' => 'max'], function (Builder $query): void {
+                $query->whereHas(
+                    'termoRel.arquivoDigital',
+                    fn (Builder $query) => $query->where('situacao', ArquivoDigital::SITUACAO_VALIDADO)
+                );
+            });
     }
 
     protected static function booted(): void

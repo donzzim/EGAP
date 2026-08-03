@@ -2,44 +2,36 @@
 
 namespace App\Filament\Livewire\Externo\Almoxarifado;
 
+use App\Filament\Livewire\Externo\Carrinho;
 use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
-use App\Models\Cadastro\ComplementoSetor;
-use App\Models\Cadastro\Setores;
-use App\Models\UserEgap;
+use App\Services\Mobile\PedidosMobileService;
 use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
-use Livewire\Component;
 use Throwable;
 
-class CarrinhoMateriaisConsumoForm extends Component implements HasForms
+/**
+ * Carrinho e envio do pedido de materiais de consumo do Ambiente Externo
+ * (legado: pedidos_consumo.php), companheiro de {@see MateriaisConsumoTable}.
+ *
+ * Grava o pedido direto (transação local com {@see Pedidos}/{@see ItemPedido}/
+ * {@see FasePedido}) — ao contrário do fluxo de materiais permanentes, que
+ * delega para {@see PedidosMobileService}.
+ */
+class CarrinhoMateriaisConsumoForm extends Carrinho
 {
-    use InteractsWithForms;
-
     protected const STATUS_EM_ANALISE = 6;
 
     protected const SETOR_ALMOXARIFADO = 799;
 
     /** @var array<int, array{material_id: int, descricao_resumida_id: int, descricao: string, quantidade: int, preco_unitario: float}> */
     public array $carrinho = [];
-
-    public ?array $data = [];
-
-    public function mount(): void
-    {
-        $this->form->fill($this->getDefaultFormState());
-    }
 
     #[On('item-adicionado-ao-carrinho')]
     public function onItemAdicionado(int $materialId, int $descricaoResumidaId, string $descricao, int $quantidade, float $precoUnitario): void
@@ -72,97 +64,13 @@ class CarrinhoMateriaisConsumoForm extends Component implements HasForms
             ->send();
     }
 
-    public function limparCarrinho(): void
-    {
-        $this->carrinho = [];
-    }
-
-    public function getSubtotalCarrinhoProperty(): float
-    {
-        return collect($this->carrinho)
-            ->sum(fn (array $item): float => $item['quantidade'] * $item['preco_unitario']);
-    }
-
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Grid::make(12)
                     ->schema([
-                        Select::make('Solicitante')
-                            ->label('Solicitante')
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->native(false)
-                            ->options(fn (): array => UserEgap::query()
-                                ->orderBy('name')
-                                ->pluck('name', 'id')
-                                ->toArray())
-                            ->columnSpan(12),
-
-                        Select::make('UnidadeJudiciaria')
-                            ->label('Unidade Judiciária')
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->live()
-                            ->native(false)
-                            ->options(fn (): array => Setores::query()
-                                ->whereColumn('id', 'CodigoPai')
-                                ->orderBy('UnidadeOrganizacional')
-                                ->pluck('UnidadeOrganizacional', 'CodigoPai')
-                                ->toArray())
-                            ->afterStateUpdated(fn (Set $set) => $set('Setor', null))
-                            ->columnSpan(12),
-
-                        Select::make('Setor')
-                            ->label('Setor')
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->live()
-                            ->native(false)
-                            ->options(fn (Get $get): array => Setores::query()
-                                ->when(
-                                    $get('UnidadeJudiciaria'),
-                                    fn ($query, $codigoPai) => $query->where('CodigoPai', $codigoPai)
-                                )
-                                ->orderBy('Setor')
-                                ->pluck('Setor', 'id')
-                                ->toArray())
-                            ->disabled(fn (Get $get): bool => blank($get('UnidadeJudiciaria')))
-                            ->afterStateUpdated(fn (Set $set) => $set('ComplementoSetor', null))
-                            ->columnSpan(6),
-
-                        Select::make('ComplementoSetor')
-                            ->label('Complemento do setor de destino')
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->native(false)
-                            // Prioriza os complementos já usados em pedidos anteriores desse Setor
-                            // (mesma ideia do legado, que restringia a lista pelo setor selecionado).
-                            // Sem histórico para o Setor, cai para a lista completa.
-                            ->options(function (Get $get): array {
-                                $setorId = $get('Setor');
-
-                                $usados = filled($setorId)
-                                    ? Pedidos::query()
-                                        ->where('Setor', $setorId)
-                                        ->whereNotNull('ComplementoSetor')
-                                        ->distinct()
-                                        ->pluck('ComplementoSetor')
-                                    : collect();
-
-                                return ComplementoSetor::query()
-                                    ->when($usados->isNotEmpty(), fn ($query) => $query->whereIn('id', $usados))
-                                    ->orderBy('descricao')
-                                    ->pluck('descricao', 'id')
-                                    ->toArray();
-                            })
-                            ->disabled(fn (Get $get): bool => blank($get('Setor')))
-                            ->columnSpan(6),
+                        ...$this->camposDestinoSchema(),
 
                         Textarea::make('justificativa')
                             ->label('Justificativa')
@@ -220,24 +128,9 @@ class CarrinhoMateriaisConsumoForm extends Component implements HasForms
                 return $pedido;
             });
 
-            Notification::make()
-                ->title("Pedido #{$pedido->id} criado com sucesso.")
-                ->body('O pedido e os itens foram enviados ao almoxarifado.')
-                ->success()
-                ->send();
-
-            $this->limparCarrinho();
-            $this->form->fill($this->getDefaultFormState());
-
-            $this->dispatch('pedido-enviado');
+            $this->finalizarEnvioComSucesso($pedido->id, 'ao almoxarifado');
         } catch (Throwable $exception) {
-            report($exception);
-
-            Notification::make()
-                ->title('Erro ao enviar pedido.')
-                ->body($exception->getMessage())
-                ->danger()
-                ->send();
+            $this->notificarErro($exception);
         }
     }
 
@@ -257,16 +150,13 @@ class CarrinhoMateriaisConsumoForm extends Component implements HasForms
     protected function getDefaultFormState(): array
     {
         return [
-            'Solicitante' => null,
-            'UnidadeJudiciaria' => null,
-            'Setor' => null,
-            'ComplementoSetor' => null,
+            ...parent::getDefaultFormState(),
             'justificativa' => null,
         ];
     }
 
     public function render(): View
     {
-        return view('livewire.externo.almoxarifado.carrinho-pedido-form');
+        return view('livewire.externo.carrinho-pedido-form');
     }
 }

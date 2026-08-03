@@ -6,20 +6,29 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">Nenhum material adicionado ainda.</p>
         @else
             <div class="space-y-3">
-                @foreach ($this->carrinho as $item)
+                @foreach ($this->carrinho as $index => $item)
                     <div class="flex items-start justify-between gap-3 rounded-lg border border-gray-200 p-3 dark:border-white/10">
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-gray-950 dark:text-white truncate">{{ $item['descricao'] }}</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ $item['quantidade'] }} x R$ {{ number_format($item['preco_unitario'], 2, ',', '.') }}
                             </p>
+                            @isset ($item['tipo_atendimento'])
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    @if ($item['tipo_atendimento'] === 'substituicao')
+                                        Substituição do patrimônio {{ $item['patrimonio_substituido'] }}
+                                    @else
+                                        Adição
+                                    @endif
+                                </p>
+                            @endisset
                         </div>
 
                         <x-filament::icon-button
                             icon="heroicon-o-trash"
                             color="danger"
                             label="Remover"
-                            wire:click="removerItem({{ $item['material_id'] }})"
+                            wire:click="removerItem({{ $index }})"
                         />
                     </div>
                 @endforeach

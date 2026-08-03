@@ -2,12 +2,9 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Almoxarifado;
 
-use App\Filament\Clusters\ExternoCluster;
+use App\Filament\Clusters\ExternoCluster\RequisicaoPage;
 use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
 use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
-use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
 
 /**
  * Página "casca" do fluxo de requisição de materiais de consumo do Ambiente
@@ -24,19 +21,7 @@ use Filament\Support\Enums\MaxWidth;
  * As páginas filhas só diferem pelo tipo de material exposto (Consumo x
  * Consumo Durável).
  */
-abstract class RequisicaoDeMateriaisPage extends Page
+abstract class RequisicaoDeMateriaisPage extends RequisicaoPage
 {
-    protected static ?string $cluster = ExternoCluster::class;
-
     abstract public function tipoMaterial(): string;
-
-    public function getSubNavigationPosition(): SubNavigationPosition
-    {
-        return SubNavigationPosition::Top;
-    }
-
-    public function getMaxContentWidth(): MaxWidth
-    {
-        return MaxWidth::Full;
-    }
 }

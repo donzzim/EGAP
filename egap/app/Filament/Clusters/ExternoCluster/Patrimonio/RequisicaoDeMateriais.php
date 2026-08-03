@@ -2,16 +2,11 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Patrimonio;
 
-use App\Filament\Clusters\ExternoCluster;
-use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
+use App\Filament\Clusters\ExternoCluster\RequisicaoPage;
 
-class RequisicaoDeMateriais extends Page
+class RequisicaoDeMateriais extends RequisicaoPage
 {
     protected static ?string $navigationIcon = 'heroicon-o-cube';
-
-    protected static ?string $cluster = ExternoCluster::class;
 
     protected static ?string $navigationGroup = 'Patrimônio';
 
@@ -24,14 +19,4 @@ class RequisicaoDeMateriais extends Page
     protected static ?int $navigationSort = 3;
 
     protected static string $view = 'filament.pages.externo.patrimonio.requisicao-de-materiais-permanentes';
-
-    public function getSubNavigationPosition(): SubNavigationPosition
-    {
-        return SubNavigationPosition::Top;
-    }
-
-    public function getMaxContentWidth(): MaxWidth
-    {
-        return MaxWidth::Full;
-    }
 }

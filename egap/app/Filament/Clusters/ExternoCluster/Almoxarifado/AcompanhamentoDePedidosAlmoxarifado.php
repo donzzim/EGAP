@@ -2,16 +2,11 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Almoxarifado;
 
-use App\Filament\Clusters\ExternoCluster;
-use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
+use App\Filament\Clusters\ExternoCluster\AcompanhamentoDePedidosPage;
 
-class AcompanhamentoDePedidosAlmoxarifado extends Page
+class AcompanhamentoDePedidosAlmoxarifado extends AcompanhamentoDePedidosPage
 {
     protected static ?int $navigationSort = 3;
-
-    protected static ?string $cluster = ExternoCluster::class;
 
     protected static ?string $slug = 'almoxarifado/acompanhamento-de-pedidos';
 
@@ -24,14 +19,4 @@ class AcompanhamentoDePedidosAlmoxarifado extends Page
     protected static ?string $title = 'Acompanhamento de Pedidos';
 
     protected static string $view = 'filament.pages.externo.almoxarifado.acompanhamento-de-pedidos';
-
-    public function getSubNavigationPosition(): SubNavigationPosition
-    {
-        return SubNavigationPosition::Top;
-    }
-
-    public function getMaxContentWidth(): MaxWidth
-    {
-        return MaxWidth::Full;
-    }
 }

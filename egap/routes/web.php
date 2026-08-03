@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DepreciacaoController;
 use App\Http\Controllers\BaixaImpressaoController;
 use App\Http\Controllers\PedidosPrintController;
+use App\Http\Controllers\TermoInventarioPrintController;
 use App\Http\Controllers\TermosPrintController;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 
@@ -24,6 +25,9 @@ Route::prefix('egap')->group(function () {
 
         Route::get('/bens-moveis/termos/{id}/print', [TermosPrintController::class, 'print'])
             ->name('termo.imprimir');
+
+        Route::get('/inventario/termos/{id}/imprimir', [TermoInventarioPrintController::class, 'print'])
+            ->name('termo-inventario.imprimir');
 
         Route::get('/bens-selecionados/{ids}/imprimir', function ($ids) {
             $itemIds = explode(',', $ids);

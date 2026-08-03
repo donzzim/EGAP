@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Almoxarifado;
+namespace App\Filament\Livewire\Externo\Patrimonio;
 
 use App\Filament\Livewire\Externo\PedidosTable;
-use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
@@ -12,16 +11,22 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 
 /**
- * Lista os pedidos de materiais de consumo do Ambiente Externo cujo setor
- * responsável pelo atendimento é o Almoxarifado (legado: consultar_pedidos.php
- * + status_pedidos.api.php, com setorresponsavel = 799).
+ * Lista os pedidos de materiais permanentes do Ambiente Externo cujo setor
+ * responsável pelo atendimento é a Seção de Patrimônio (legado:
+ * consultar_pedidos.php + status_pedidos.api.php, com setorresponsavel =
+ * 1239).
+ *
+ * Diferente do Almoxarifado, não exibe coluna de Justificativa no nível do
+ * pedido — a justificativa é registrada por item (ver
+ * {@see PedidoItensModal}) — e os status são agrupados em só dois filtros
+ * (Pendentes/Concluídos), como no legado.
  *
  * O detalhe dos itens de cada pedido é aberto em modal, delegado ao
  * {@see PedidoItensModal} (legado: modal_pedidos.api.php).
  */
-class PedidosAlmoxarifadoTable extends PedidosTable
+class PedidosPatrimonioTable extends PedidosTable
 {
-    protected const SETOR_ALMOXARIFADO = 799;
+    protected const SETOR_PATRIMONIO = 1239;
 
     #[On('pedido-item-cancelado')]
     public function refreshTable(): void
@@ -37,11 +42,6 @@ class PedidosAlmoxarifadoTable extends PedidosTable
                 $this->colunaNumeroPedido(),
                 $this->colunaData(),
                 $this->colunaSolicitante(),
-
-                TableColumns::text('Observacao', 'Justificativa da Necessidade')
-                    ->wrap()
-                    ->limit(80),
-
                 $this->colunaComplementoSetor(),
                 $this->colunaMateriais(),
                 $this->colunaStatus($this->statusColor(...)),
@@ -50,15 +50,13 @@ class PedidosAlmoxarifadoTable extends PedidosTable
                 SelectFilter::make('situacao_grupo')
                     ->label('Situação')
                     ->options([
-                        'pendente' => 'Em análise',
-                        'atendido' => 'Atendidos',
-                        'cancelado' => 'Cancelados',
+                        'pendente' => 'Pendentes',
+                        'concluido' => 'Concluídos',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return match ($data['value'] ?? null) {
-                            'pendente' => $query->where('idSituacao', 6),
-                            'atendido' => $query->whereIn('idSituacao', [3, 7]),
-                            'cancelado' => $query->where('idSituacao', 4),
+                            'pendente' => $query->whereIn('idSituacao', [6, 8, 9, 10]),
+                            'concluido' => $query->whereIn('idSituacao', [3, 4, 5, 7]),
                             default => $query,
                         };
                     }),
@@ -67,7 +65,7 @@ class PedidosAlmoxarifadoTable extends PedidosTable
             ], FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
             ->actions([
-                $this->acaoVerItens('externo-almoxarifado.pedido-itens-modal'),
+                $this->acaoVerItens('externo-patrimonio.pedido-itens-modal'),
             ])
             ->bulkActions([])
             ->defaultSort('date_time', 'desc')
@@ -78,14 +76,16 @@ class PedidosAlmoxarifadoTable extends PedidosTable
     {
         return match ($status) {
             3, 7 => 'success',
-            4, 5 => 'danger',
-            6 => 'warning',
+            4, 10 => 'gray',
+            5 => 'danger',
+            6, 9 => 'warning',
+            8 => 'info',
             default => 'gray',
         };
     }
 
     protected function setorResponsavel(): int
     {
-        return self::SETOR_ALMOXARIFADO;
+        return self::SETOR_PATRIMONIO;
     }
 }

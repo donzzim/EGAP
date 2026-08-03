@@ -3,12 +3,15 @@
 namespace App\Filament\Clusters\ExternoCluster\Patrimonio;
 
 use App\Filament\Clusters\ExternoCluster;
+use App\Filament\Clusters\ExternoCluster\Concerns\SelecionaSetorAtual;
 use Filament\Pages\Page;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Support\Enums\MaxWidth;
 
 class LevantamentoComissao extends Page
 {
+    use SelecionaSetorAtual;
+
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $cluster = ExternoCluster::class;
     protected static ?string $navigationGroup = 'Patrimônio';
@@ -26,5 +29,12 @@ class LevantamentoComissao extends Page
     public function getMaxContentWidth(): MaxWidth
     {
         return MaxWidth::Full;
+    }
+
+    public function getHeaderActions(): array
+    {
+        return [
+            $this->selecionarSetorHeaderAction(),
+        ];
     }
 }

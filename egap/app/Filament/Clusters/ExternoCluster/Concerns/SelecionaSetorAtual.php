@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Clusters\ExternoCluster\Patrimonio\Concerns;
+namespace App\Filament\Clusters\ExternoCluster\Concerns;
 
 use App\Filament\Support\SetorSelecionado;
 use App\Models\Cadastro\Setores;
