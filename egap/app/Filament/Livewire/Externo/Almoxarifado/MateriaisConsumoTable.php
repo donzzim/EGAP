@@ -9,9 +9,11 @@ use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Cadastro\DescricaoDetalhada;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 class MateriaisConsumoTable extends MateriaisDisponiveis
 {
@@ -40,6 +42,12 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
                     ->badge()
                     ->color('success')
                     ->sortable(false),
+
+                ImageColumn::make('imagem')
+                    ->label('Imagem ilustrativa')
+                    ->disk('public')
+                    ->defaultImageUrl(asset('descricao/1.jpg'))
+                    ->isSquare(),
 
                 $this->quantidadeColumn(),
             ])
@@ -83,6 +91,28 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
     protected function emEstoque(DescricaoDetalhada $record): bool
     {
         return ((float) $record->quantidade_estoque_atual) > 0;
+    }
+
+    /**
+     * `imagem` guarda o formato legado do Joomla: um JSON com o caminho do
+     * arquivo prefixado por `/images/` (ex.: `/images/descricaodetalhada/x.jpg`),
+     * que corresponde ao mesmo arquivo dentro do disco `public`.
+     */
+    protected function imagemPath(?string $imagem): ?string
+    {
+        if (! is_string($imagem) || trim($imagem) === '') {
+            return null;
+        }
+
+        $decoded = json_decode($imagem);
+
+        if (! is_array($decoded) || empty($decoded[0]->file)) {
+            return null;
+        }
+
+        $path = preg_replace('#^/?images/#', '', (string) $decoded[0]->file);
+
+        return Storage::disk('public')->exists($path) ? $path : null;
     }
 
     protected function getQuery(): Builder
