@@ -119,6 +119,7 @@ class MateriaisPermanentesTable extends MateriaisDisponiveis
     {
         return DescricaoResumida::query()
             ->where('id_tipo_material', 'P')
+            ->whereIn('visibilidade', $this->visibilidadesPermitidas())
             ->select('mat_descricaoresumida.*')
             ->addSelect(['valor' => BemMovel::query()
                 ->selectRaw('IF(DatadeIncorporacao > DatadaReavaliacao, ValorAquisicao, ValordaReavaliacao)')

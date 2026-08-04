@@ -4,6 +4,8 @@ namespace App\Filament\Livewire\Externo;
 
 use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Livewire\Externo\Patrimonio\MateriaisPermanentesTable;
+use App\Models\UserEgap;
+use App\Services\Almoxarifado\VisibilidadeMaterial;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -37,6 +39,25 @@ abstract class MateriaisDisponiveis extends Component implements HasForms, HasTa
     public function limparQuantidades(): void
     {
         $this->quantidades = [];
+    }
+
+    /**
+     * Valores permitidos para a coluna `visibilidade` dos materiais, de
+     * acordo com a Unidade Judiciária de lotação do usuário autenticado.
+     * Replica a regra do sistema legado (pedidos_consumo.php).
+     *
+     * @return array<int>
+     */
+    protected function visibilidadesPermitidas(): array
+    {
+        return VisibilidadeMaterial::permitidas($this->unidadeJudiciariaAtual());
+    }
+
+    private function unidadeJudiciariaAtual(): ?int
+    {
+        $unidade = UserEgap::currentAuthenticated()?->lotacoes()->first()?->unidade_judiciaria;
+
+        return $unidade === null ? null : (int) $unidade;
     }
 
     protected function quantidadeColumn(): TextInputColumn

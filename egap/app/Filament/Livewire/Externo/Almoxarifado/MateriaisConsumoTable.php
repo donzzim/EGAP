@@ -26,8 +26,10 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
     {
         return TableDefaults::apply($table)
             ->query($this->getQuery())
+            ->recordClasses(fn (DescricaoDetalhada $record): ?string => $this->emEstoque($record) ? null : 'opacity-50 grayscale')
             ->columns([
                 TableColumns::text('descricao_detalhada', 'Material', isFirstColumn: true)
+                    ->description(fn (DescricaoDetalhada $record): ?string => $this->emEstoque($record) ? null : 'Material indisponível no momento')
                     ->wrap(),
 
                 TableColumns::text('unidadeMedida.Sigla', 'Unidade de Medida')
@@ -35,14 +37,9 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
 
                 TableColumns::money('preco_medio_estoque_atual', 'Preço médio')
                     ->searchable(false)
-                    ->sortable(false),
-
-                TableColumns::text('quantidade_estoque_atual', 'Estoque')
-                    ->searchable(false)
-                    ->sortable(false)
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 0, ',', '.'))
-                    ->color('success'),
+                    ->color('success')
+                    ->sortable(false),
 
                 $this->quantidadeColumn(),
             ])
@@ -83,10 +80,16 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
         unset($this->quantidades[$record->id]);
     }
 
+    protected function emEstoque(DescricaoDetalhada $record): bool
+    {
+        return ((float) $record->quantidade_estoque_atual) > 0;
+    }
+
     protected function getQuery(): Builder
     {
         return DescricaoDetalhada::query()
             ->with('unidadeMedida')
+            ->whereIn('mat_descricaodetalhada.visibilidade', $this->visibilidadesPermitidas())
             ->whereHas('descricao_resumida_text', fn (Builder $query) => $query->where('id_tipo_material', $this->tipoMaterial))
             ->leftJoinSub(
                 MovimentacaoEstoque::query()->selectRaw('material, MAX(id) as ultimo_id')->groupBy('material'),
@@ -96,7 +99,6 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
                 'mat_descricaodetalhada.id',
             )
             ->leftJoin('alm_estoque as estoque_atual', 'estoque_atual.id', '=', 'ultimo_estoque.ultimo_id')
-            ->whereRaw('COALESCE(estoque_atual.quantidade_estoque, 0) > 0')
             ->select('mat_descricaodetalhada.*')
             ->selectRaw('COALESCE(estoque_atual.quantidade_estoque, 0) as quantidade_estoque_atual')
             ->selectRaw('ROUND(COALESCE(estoque_atual.preco_medio_estoque, 0), 4) as preco_medio_estoque_atual');

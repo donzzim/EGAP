@@ -68,6 +68,8 @@ abstract class PedidoItensModal extends TableModalComponent
                 ...$this->colunasExtras(),
 
                 TableColumns::text('quantidades', 'Qtde. Solicitada / Atendida')
+                    ->badge()
+                    ->color('primary')
                     ->getStateUsing(fn (ItemPedido $record): string => "{$record->quantidade_solicitada} / {$record->quantidade_atendida}"),
 
                 TableColumns::money('valor_material', 'Preço Unitário Médio'),

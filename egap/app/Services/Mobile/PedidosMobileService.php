@@ -11,6 +11,7 @@ use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\UserMobile;
+use App\Services\Almoxarifado\VisibilidadeMaterial;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -496,9 +497,7 @@ class PedidosMobileService
      */
     private function visibilidadesPermitidas(int $unidadeJudiciaria): array
     {
-        return in_array($unidadeJudiciaria, [766, 866], true)
-            ? [2, 3]
-            : [1, 3];
+        return VisibilidadeMaterial::permitidas($unidadeJudiciaria);
     }
 
     private function filledInteger(mixed $value): ?int

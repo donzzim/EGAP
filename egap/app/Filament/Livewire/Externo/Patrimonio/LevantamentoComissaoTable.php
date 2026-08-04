@@ -78,10 +78,7 @@ class LevantamentoComissaoTable extends Component implements HasForms, HasTable
 
                 TableColumns::text('descricao_detalhada', 'Descrição')
                     ->wrap()
-                    ->description(fn (ItemInventario $record): ?string => collect([
-                        filled($record->marca) ? "Marca: {$record->marca}" : null,
-                        filled($record->modelo) ? "Modelo: {$record->modelo}" : null,
-                    ])->filter()->implode(' • ') ?: null),
+                    ->description(fn (ItemInventario $record): ?string => $record->marca ?? null),
 
                 TableColumns::text('estado_conservacao', 'Estado')
                     ->badge()

@@ -3,6 +3,9 @@
 namespace App\Filament\Resources\Agendamento;
 
 use App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
+use Filament\Tables\Actions\Action;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
@@ -20,6 +23,7 @@ class AgendamentoResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Agendamento';
+    protected static ?string $slug = 'agendamento/agendamento-de-veiculos';
     protected static ?string $modelLabel = 'Solicitação';
     protected static ?string $pluralModelLabel = 'Solicitações';
     protected static ?string $navigationLabel = 'Agendamento de Veículos';
@@ -227,25 +231,12 @@ class AgendamentoResource extends Resource
     }
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
-            ->striped()
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('Nº')
-                    ->sortable()
-                    ->alignCenter()
-                    ->weight('bold')
-                    ->copyable(),
+                TableColumns::text('id', '#', true),
 
-                Tables\Columns\TextColumn::make('idSituacaoRef.Descricao')
-                    ->label('Situação')
+                TableColumns::text('idSituacaoRef.Descricao', 'Situação')
                     ->badge()
-                    ->sortable()
-                    ->searchable()
                     ->color(fn (?string $state) => match (mb_strtolower($state ?? '')) {
                         'pendente' => 'warning',
                         'aprovado', 'deferido', 'ativo' => 'success',
@@ -253,116 +244,34 @@ class AgendamentoResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('idSolicitanteRef.name')
-                    ->label('Solicitante')
-                    ->sortable()
-                    ->searchable()
-                    ->wrap(),
+                TableColumns::text('idSolicitanteRef.name', 'Solicitante'),
 
-                Tables\Columns\TextColumn::make('unidadeSolicitanteRef.UnidadeOrganizacional')
-                    ->label('Unidade')
-                    ->sortable()
-                    ->alignCenter()
-                    ->searchable()
-                    ->wrap()
-                    ->toggleable(),
+                TableColumns::text('unidadeSolicitanteRef.UnidadeOrganizacional', 'Unidade')
+                    ->description(fn ($record) :string => $record->setorSolicitanteRef->Setor ?? '-'),
 
-                Tables\Columns\TextColumn::make('setorSolicitanteRef.Setor')
-                    ->label('Setor')
-                    ->sortable()
-                    ->alignCenter()
-                    ->searchable()
-                    ->wrap()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('regiaoRef.sigla')
-                    ->label('Região')
+                TableColumns::text('regiaoRef.sigla', 'Região')
                     ->badge()
-                    ->sortable()
-                    ->alignCenter()
                     ->color('info'),
 
-                Tables\Columns\TextColumn::make('data_inicio')
-                    ->label('Data início')
-                    ->date('d/m/Y')
-                    ->alignCenter()
-                    ->sortable()
-                    ->alignCenter(),
+                TableColumns::date('data_inicio', 'Data início'),
 
-                Tables\Columns\TextColumn::make('local_saida')
-                    ->label('Local de saída')
-                    ->sortable()
-                    ->alignCenter()
-                    ->searchable()
-                    ->limit(30)
-                    ->tooltip(fn ($state) => $state)
-                    ->wrap()
-                    ->toggleable(),
+                TableColumns::text('local_saida', 'Local de saída'),
 
-                Tables\Columns\TextColumn::make('justificativa_lista')
-                    ->label('Detalhamento')
-                    ->formatStateUsing(fn ($state) => filled($state) ? nl2br(e($state)) : '-')
-                    ->html()
-                    ->wrap()
-                    ->limit(120)
-                    ->tooltip(fn ($state) => $state)
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TableColumns::text('justificativa', 'Detalhamento'),
             ])
-            ->filters([
-                Tables\Filters\Filter::make('periodo')
-                    ->label('Período')
-                    ->form([
-                        Forms\Components\DatePicker::make('data_inicio')
-                            ->label('De')
-                            ->native(false),
-
-                        Forms\Components\DatePicker::make('data_termino')
-                            ->label('Até')
-                            ->native(false),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query
-                            ->when(
-                                $data['data_inicio'] ?? null,
-                                fn ($q, $date) => $q->whereDate('data_inicio', '>=', $date)
-                            )
-                            ->when(
-                                $data['data_termino'] ?? null,
-                                fn ($q, $date) => $q->whereDate('data_termino', '<=', $date)
-                            );
-                    }),
-
-                Tables\Filters\SelectFilter::make('id_situacao')
-                    ->label('Situação')
-                    ->relationship('idSituacaoRef', 'Descricao')
-                    ->searchable()
-                    ->preload(),
-
-                Tables\Filters\SelectFilter::make('regiao')
-                    ->label('Região')
-                    ->relationship('regiaoRef', 'sigla')
-                    ->searchable()
-                    ->preload(),
-            ])
-            ->filtersFormColumns(3)
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
+                ...TableDefaults::actions(),
+                self::agendarTableAction()
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('id', 'desc')
-            ->emptyStateHeading('Nenhuma solicitação encontrada')
-            ->emptyStateDescription('Não há registros cadastrados para os filtros atuais.');
+            ->defaultSort('date_time', 'desc');
+    }
+
+    private static function agendarTableAction(): Action
+    {
+        return Action::make('agendar_veiculo')
+            ->hiddenLabel()
+            ->tooltip('Agendar')
+            ->icon('heroicon-o-calendar-days');
     }
 
     public static function getPages(): array

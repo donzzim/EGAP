@@ -75,43 +75,6 @@ class Solicitacao extends Model
         return $this->belongsTo(Regiao::class, 'regiao', 'id');
     }
 
-    public function getJustificativaListaAttribute(): string
-    {
-        $data = $this->justificativa;
-
-        if (blank($data) || ! is_array($data)) {
-            return '-';
-        }
-
-        $linhas = [];
-
-        if (!empty($data['telefone'])) {
-            $linhas[] = "Telefone: {$data['telefone']}";
-        }
-
-        if (!empty($data['celular'])) {
-            $linhas[] = "Celular: {$data['celular']}";
-        }
-
-        if (!empty($data['passageiros']) && is_array($data['passageiros'])) {
-            $linhas[] = "Passageiros: " . implode(', ', $data['passageiros']);
-        }
-
-        if (!empty($data['destino']) && is_array($data['destino'])) {
-            $linhas[] = "Destino: " . implode(', ', $data['destino']);
-        }
-
-        if (!empty($data['justificativa'])) {
-            $linhas[] = "Justificativa: {$data['justificativa']}";
-        }
-
-        if (!empty($data['justificativa_motorista'])) {
-            $linhas[] = "Motorista: {$data['justificativa_motorista']}";
-        }
-
-        return '• ' . implode("\n• ", $linhas);
-    }
-
     protected static function booted(): void
     {
         static::saving(function (self $model): void {
