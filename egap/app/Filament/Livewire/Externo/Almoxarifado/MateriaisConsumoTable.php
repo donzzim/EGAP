@@ -45,9 +45,10 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
 
                 ImageColumn::make('imagem')
                     ->label('Imagem ilustrativa')
+                    ->alignCenter()
                     ->disk('public')
-                    ->defaultImageUrl(asset('descricao/1.jpg'))
-                    ->isSquare(),
+                    ->state(fn (): string => 'descricao/1.jpg')
+                    ->circular(),
 
                 $this->quantidadeColumn(),
             ])
