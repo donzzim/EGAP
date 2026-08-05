@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 class MateriaisConsumoTable extends MateriaisDisponiveis
 {
@@ -46,9 +47,11 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
                 ImageColumn::make('imagem')
                     ->label('Imagem ilustrativa')
                     ->alignCenter()
+                    ->tooltip('Clique para ampliar')
                     ->disk('public')
-                    ->state(fn (): string => 'descricao/1.jpg')
-                    ->circular(),
+                    ->state(fn (DescricaoDetalhada $record): string => $this->imagemPathComFallback($record))
+                    ->circular()
+                    ->action($this->ampliarImagemAction()),
 
                 $this->quantidadeColumn(),
             ])
@@ -92,6 +95,24 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
     protected function emEstoque(DescricaoDetalhada $record): bool
     {
         return ((float) $record->quantidade_estoque_atual) > 0;
+    }
+
+    protected function ampliarImagemAction(): Action
+    {
+        return Action::make('ampliarImagem')
+            ->label('Imagem ampliada')
+            ->modalHeading(fn (DescricaoDetalhada $record): string => $record->descricao_detalhada)
+            ->modalContent(fn (DescricaoDetalhada $record): HtmlString => new HtmlString(
+                '<img src="'.e(Storage::disk('public')->url($this->imagemPathComFallback($record))).'" class="mx-auto max-h-[70vh] w-auto rounded-lg" alt="" />'
+            ))
+            ->modalWidth('lg')
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false);
+    }
+
+    protected function imagemPathComFallback(DescricaoDetalhada $record): string
+    {
+        return $this->imagemPath($record->imagem) ?? 'placeholder.svg';
     }
 
     /**

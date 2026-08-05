@@ -20,14 +20,13 @@ use App\Filament\Livewire\Externo\Patrimonio\MovimentacaoDeMateriaisTable;
 use App\Filament\Livewire\Externo\Patrimonio\PedidoItensModal as PedidoItensModalPatrimonio;
 use App\Filament\Livewire\Externo\Patrimonio\PedidosPatrimonioTable;
 use App\Filament\Livewire\Patrimonio\ComissoesModal;
+use App\Filament\Livewire\Patrimonio\DepreciacaoModal;
 use App\Filament\Livewire\Patrimonio\EquipesModal;
 use App\Filament\Livewire\Patrimonio\HistoricoMovimentacoesModal;
 use App\Filament\Livewire\Patrimonio\MateriaisBaixaModal;
 use App\Filament\Livewire\Patrimonio\MateriaisTermoModal;
-use App\Filament\Livewire\Patrimonio\TransferirBensAdmModal;
 use App\Filament\Livewire\Patrimonio\UnidadesModal;
 use App\Filament\Livewire\Patrimonio\ValidarTermoModal;
-use App\Filament\Livewire\Patrimonio\VincularBemModal;
 use App\Filament\Livewire\PortalTransparencia\AlmoxarifadoCharts;
 use App\Filament\Livewire\PortalTransparencia\PatrimonioCharts;
 use Livewire\Livewire;
@@ -36,15 +35,14 @@ class LivewireComponentsService
 {
     public static function getLivewireComponents(): void
     {
-        Livewire::component('patrimonio.transferir-bem-adm-modal', TransferirBensAdmModal::class);
         Livewire::component('patrimonio.materiais-baixa-modal', MateriaisBaixaModal::class);
         Livewire::component('patrimonio.materiais-termo-modal', MateriaisTermoModal::class);
         Livewire::component('patrimonio.inventario-comissoes-modal', ComissoesModal::class);
         Livewire::component('patrimonio.inventario-equipes-modal', EquipesModal::class);
         Livewire::component('patrimonio.inventario-unidades-modal', UnidadesModal::class);
         Livewire::component('patrimonio.historico-movimentacoes-modal', HistoricoMovimentacoesModal::class);
+        Livewire::component('patrimonio.depreciacao-modal', DepreciacaoModal::class);
         Livewire::component('patrimonio.validar-termo-modal', ValidarTermoModal::class);
-        Livewire::component('patrimonio.vincular-bem-modal', VincularBemModal::class);
         Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
         Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
         Livewire::component('externo-almoxarifado.materiais-disponiveis-table', MateriaisConsumoTable::class);

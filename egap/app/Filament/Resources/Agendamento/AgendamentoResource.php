@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Agendamento;
 
 use App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\Action;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -271,7 +273,24 @@ class AgendamentoResource extends Resource
         return Action::make('agendar_veiculo')
             ->hiddenLabel()
             ->tooltip('Agendar')
-            ->icon('heroicon-o-calendar-days');
+            ->icon('heroicon-o-calendar-days')
+            ->modalHeading(fn ($record) => 'Agendar veículo #' . $record->id)
+            ->modalSubmitActionLabel('Agendar')
+            ->form([
+                TextInput::make('agendar_codigo')
+                    ->label('Código'),
+                TextInput::make('agendar_descricao')
+                    ->label('Descrição'),
+                Select::make('agendar_situacao')
+                    ->label('Situação')
+                    ->options([
+                        "Qualificação Técnica" => "Qualificação Técnica",
+                        "Qualificação Econômico-Financeira" => "Qualificação Econômico-Financeira"
+                    ])
+            ])
+            ->action(function (array $data): void {
+                //
+            });
     }
 
     public static function getPages(): array
