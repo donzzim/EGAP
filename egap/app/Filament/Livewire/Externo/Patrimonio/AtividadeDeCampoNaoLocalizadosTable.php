@@ -178,6 +178,6 @@ class AtividadeDeCampoNaoLocalizadosTable extends Component implements HasForms,
 
     public function render(): View
     {
-        return view('livewire.externo.patrimonio.atividade-de-campo-nao-localizados-table');
+        return view('livewire.externo.table');
     }
 }

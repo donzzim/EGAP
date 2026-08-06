@@ -156,7 +156,6 @@ class ItemInventarioResource extends Resource
             ->columns([
                 TableColumns::text('id', '#', isFirstColumn: true)
                     ->badge(),
-                TableColumns::dateTime('date_time', 'Atualizado em'),
                 TableColumns::text('id_inventario', 'Inventário')
                     ->formatStateUsing(fn ($state, ItemInventario $record): string => $record->idInventarioRef
                         ? "{$record->idInventarioRef->num_inventario}/{$record->idInventarioRef->ano_inventario}"
@@ -211,7 +210,7 @@ class ItemInventarioResource extends Resource
                         default => 'gray',
                     }),
                 TableColumns::text('termo', 'Termo'),
-                TableColumns::text('atualizado_por', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por'),
                 TableColumns::text('num_serie_egap', 'Nº Série eGAP'),
                 TableColumns::text('descricao_detalhada_egap', 'Descrição Detalhada eGAP')
                     ->limit(50)

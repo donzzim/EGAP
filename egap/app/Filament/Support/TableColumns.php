@@ -2,10 +2,26 @@
 
 namespace App\Filament\Support;
 
+use Carbon\Carbon;
 use Filament\Tables\Columns\TextColumn;
 
 class TableColumns
 {
+    public static function updatedBy(
+        string $name,
+        ?string $label = 'Atualizado por',
+        string $dateColumn = 'date_time',
+        string $format = 'd/m/Y H:i',
+    ): TextColumn
+    {
+        return self::text($name, $label)
+            ->description(function ($record) use ($dateColumn, $format) {
+                $value = $record->{$dateColumn} ?? null;
+
+                return filled($value) ? Carbon::parse($value)->format($format) : null;
+            });
+    }
+
     public static function text(string $name, ?string $label = null, bool $isFirstColumn = false): TextColumn
     {
         return self::base($name, $label, $isFirstColumn)

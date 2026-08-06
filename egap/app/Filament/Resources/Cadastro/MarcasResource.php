@@ -48,8 +48,7 @@ class MarcasResource extends Resource
         return TableDefaults::apply($table)
             ->columns([
                 TableColumns::text('descricao', 'Descrição', isFirstColumn: true),
-                TableColumns::dateTime('date_time', 'Atualizado em'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por')
+                TableColumns::updatedBy('atualizado_por.name')
             ]);
     }
 

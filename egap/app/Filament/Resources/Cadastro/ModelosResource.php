@@ -56,8 +56,7 @@ class ModelosResource extends Resource
                 TableColumns::text('marca_ref.descricao', 'Marca', isFirstColumn: true)
                     ->default('Sem marca'),
                 TableColumns::text('descricao', 'Modelo'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->defaultSort('descricao');
     }

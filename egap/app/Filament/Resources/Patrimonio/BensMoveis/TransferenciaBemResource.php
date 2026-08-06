@@ -228,8 +228,7 @@ class TransferenciaBemResource extends Resource
                     ->wrap(),
                 TableColumns::text('complementoAtualRel.descricao', 'Complemento Atual')
                     ->wrap(),
-                TableColumns::text('usuarioRef.name', 'Atualizado por')
-                    ->description(fn (TransferenciaBemMovel $record): ?string => $record->date_time->format('d/m/Y H:i')),
+                TableColumns::updatedBy('usuarioRef.name'),
                 TableColumns::text('TermoVinculado')
                     ->label('Termo Vinculado')
                     ->formatStateUsing(fn (TransferenciaBemMovel $record): string => $record->termoRel

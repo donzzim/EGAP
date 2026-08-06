@@ -76,8 +76,7 @@ class TermoResponsabilidadeResource extends Resource
                     ->formatStateUsing(fn ($state) => $state ? 'Abrir' : '-')
                     ->color('primary')
                     ->weight('bold'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizadoPorRef.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizadoPorRef.name'),
             ]);
     }
 

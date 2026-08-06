@@ -292,6 +292,6 @@ class AtividadeDeCampoEmTransferenciaTable extends Component implements HasForms
 
     public function render(): View
     {
-        return view('livewire.externo.patrimonio.atividade-de-campo-em-transferencia-table');
+        return view('livewire.externo.table');
     }
 }

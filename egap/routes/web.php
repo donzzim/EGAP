@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DepreciacaoController;
-use App\Http\Controllers\BaixaImpressaoController;
-use App\Http\Controllers\PedidosPrintController;
-use App\Http\Controllers\TermoInventarioPrintController;
-use App\Http\Controllers\TermosPrintController;
+use App\Http\Controllers\PrintsControllers\AgendamentoMateriaisPrintController;
+use App\Http\Controllers\PrintsControllers\DepreciacaoController;
+use App\Http\Controllers\PrintsControllers\BaixaImpressaoController;
+use App\Http\Controllers\PrintsControllers\PedidosPrintController;
+use App\Http\Controllers\PrintsControllers\TermoInventarioPrintController;
+use App\Http\Controllers\PrintsControllers\TermosPrintController;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 
 
@@ -15,6 +16,11 @@ Route::get('/', function () {
 
 Route::prefix('egap')->group(function () {
     Route::get('/pedidos/{record}/imprimir', [PedidosPrintController::class, 'show'])->name('impressao_pedido');
+
+    Route::group(['prefix' => 'agendamento'], function () {
+        Route::get('/transporte/{id}/materiais/imprimir', [AgendamentoMateriaisPrintController::class, 'print'])
+            ->name('agendamento.materiais.imprimir');
+    });
 
     Route::group(['prefix' => 'patrimonio'], function () {
         Route::get('/baixa/{id}/imprimir', [BaixaImpressaoController::class, 'imprimir'])

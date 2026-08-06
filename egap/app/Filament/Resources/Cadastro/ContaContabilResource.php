@@ -65,8 +65,7 @@ class ContaContabilResource extends Resource
                     ->limit(50),
                 TableColumns::text('funcao', 'Função')
                     ->wrap(),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->defaultSort('codigo');
     }

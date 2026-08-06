@@ -244,8 +244,7 @@ class BemIntangivelResource extends Resource
                     ->copyable()
                     ->copyMessage('Processo copiado'),
                 TableColumns::text('inscricao_generica', 'Inscrição Genérica'),
-                TableColumns::text('atualizadoPorRef.name', 'Atualizado por')
-                    ->description(fn(BemIntangivel $record) => $record->atualizado_em->format('d/m/Y')),
+                TableColumns::updatedBy('atualizadoPorRef.name', dateColumn: 'atualizado_em', format: 'd/m/Y'),
                 TableColumns::text('observacao', 'Observação')
                     ->limit(50)
                     ->tooltip(fn (BemIntangivel $record): ?string => $record->observacao)

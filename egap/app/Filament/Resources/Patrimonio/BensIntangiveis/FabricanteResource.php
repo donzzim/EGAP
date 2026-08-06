@@ -62,8 +62,7 @@ class FabricanteResource extends Resource
                     ->icon('heroicon-o-building-office')
                     ->weight('medium')
                     ->wrap(),
-                TableColumns::text('atualizadoPorRef.name', 'Atualizado por'),
-                TableColumns::dateTime('date_time', 'Atualizado em'),
+                TableColumns::updatedBy('atualizadoPorRef.name'),
             ])
             ->defaultSort('descricao');
     }

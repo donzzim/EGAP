@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Agendamento;
 
 use App\Filament\Resources\Agendamento\EquipeResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Equipe;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -81,32 +83,18 @@ class EquipeResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('idPessoaRef.name')
-                    ->label('Nome')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('medium')
-                    ->description(fn ($record) => $record->funcao ?: null)
-                    ->wrap(),
-
-                Tables\Columns\TextColumn::make('funcao')
-                    ->label('Função')
-                    ->searchable()
-                    ->sortable()
-                    ->alignCenter()
+                TableColumns::text('funcao', 'Função', true)
                     ->badge()
                     ->color('gray'),
 
-                Tables\Columns\TextColumn::make('contato')
-                    ->label('Contato')
-                    ->searchable()
+                TableColumns::text('idPessoaRef.name', 'Nome')
+                    ->weight('medium')
+                    ->wrap(),
+
+                TableColumns::text('contato', 'Contato')
                     ->copyable()
-                    ->alignCenter()
-                    ->placeholder('-')
                     ->wrap(),
 
                 Tables\Columns\IconColumn::make('disponivel')
@@ -117,50 +105,11 @@ class EquipeResource extends Resource
                 Tables\Columns\IconColumn::make('ativo')
                     ->label('Ativo')
                     ->boolean()
-                    ->alignCenter()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->alignCenter(),
 
-                Tables\Columns\TextColumn::make('idUserRef.name')
-                    ->label('Atualizado por')
-                    ->searchable()
-                    ->sortable()
-                    ->alignCenter()
-                    ->placeholder('-')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->alignCenter()
-                    ->sinceTooltip()
-                    ->toggleable(),
+                TableColumns::updatedBy('idUserRef.name'),
             ])
-            ->filters([
-                Tables\Filters\TernaryFilter::make('disponivel')
-                    ->label('Disponível'),
-
-                Tables\Filters\TernaryFilter::make('ativo')
-                    ->label('Ativo'),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('id', 'desc')
-            ->striped()
-            ->paginated([10, 25, 50, 100]);
+            ->defaultSort('funcao', 'asc');
     }
 
     public static function getPages(): array

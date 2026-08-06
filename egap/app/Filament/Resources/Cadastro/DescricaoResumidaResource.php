@@ -97,8 +97,7 @@ class DescricaoResumidaResource extends Resource
                     ->limit(50),
                 TableColumns::text('codigo_da_classe.DescricaodaClasse', 'Classe'),
                 TableColumns::text('conta_contabil.titulo', 'Conta Contábil'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
                 TableColumns::text('visibilidade')
                     ->getStateUsing(function ($record) {
                         switch ($record->visibilidade) {

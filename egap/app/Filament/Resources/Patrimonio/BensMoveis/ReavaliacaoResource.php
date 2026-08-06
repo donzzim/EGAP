@@ -89,8 +89,7 @@ class ReavaliacaoResource extends Resource
                 TableColumns::text('pub1', 'PUB1'),
                 TableColumns::text('puv', 'PUV'),
                 TableColumns::text('fr', 'FR'),
-                TableColumns::text('responsavel.name', 'Atualizado por'),
-                TableColumns::dateTime('date_time', 'Atualizado em'),
+                TableColumns::updatedBy('responsavel.name'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('patrimonioFilter')

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Agendamento;
 
 use App\Filament\Resources\Agendamento\FrotaResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Frota;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -96,36 +98,20 @@ class FrotaResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('descricao')
-                    ->label('Descrição')
-                    ->searchable()
-                    ->sortable(),
+                TableColumns::text('descricao', 'Descrição', true)
+                    ->badge(),
 
-                Tables\Columns\TextColumn::make('marcaRef.descricao')
-                    ->label('Marca')
-                    ->alignCenter()
-                    ->sortable(),
+                TableColumns::text('marcaRef.descricao', 'Marca'),
 
-                Tables\Columns\TextColumn::make('modeloRef.descricao')
-                    ->label('Modelo')
-                    ->alignCenter()
-                    ->sortable(),
+                TableColumns::text('modeloRef.descricao', 'Modelo'),
 
-                Tables\Columns\TextColumn::make('placa')
-                    ->label('Placa')
-                    ->alignCenter()
-                    ->searchable()
-                    ->sortable(),
+                TableColumns::text('placa', 'Placa')
+                    ->badge()
+                    ->color('gray'),
 
-                Tables\Columns\TextColumn::make('proprietario')
-                    ->label('Proprietário')
-                    ->alignCenter()
-                    ->searchable()
-                    ->sortable(),
+                TableColumns::text('proprietario', 'Proprietário'),
 
                 Tables\Columns\IconColumn::make('disponivel')
                     ->label('Disponível')
@@ -138,42 +124,9 @@ class FrotaResource extends Resource
                     ->alignCenter()
                     ->boolean(),
 
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->alignCenter()
-                    ->dateTime('d/m/Y')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('idUserRef.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->default(' - ')
-                    ->sortable(),
-
+                TableColumns::updatedBy('idUserRef.name'),
             ])
-            ->filters([
-                Tables\Filters\TernaryFilter::make('disponivel')
-                    ->label('Disponível'),
-
-                Tables\Filters\TernaryFilter::make('ativo')
-                    ->label('Ativo'),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('descricao', 'desc');
     }
 
     public static function getPages(): array

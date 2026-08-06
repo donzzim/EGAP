@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\RelationManager;
 
+use App\Filament\Support\TableColumns;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -48,13 +49,7 @@ class TransferenciaRelationManager extends RelationManager
                     ->label('Complemento')
                     ->default(fn ($record) => $record->ComplementoAtual ?? 'NÃO INFORMADO'),
 
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('usuarioRef.name')
-                    ->label('Atualizado por')
+                TableColumns::updatedBy('usuarioRef.name')
                     ->default(fn ($record) => $record->AtualizadoPor ?? 'Seção de Patrimônio'),
             ])
             ->filters([])

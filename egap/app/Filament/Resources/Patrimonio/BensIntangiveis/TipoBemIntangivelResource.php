@@ -62,9 +62,7 @@ class TipoBemIntangivelResource extends Resource
                     ->icon('heroicon-o-tag')
                     ->weight('medium')
                     ->wrap(),
-                TableColumns::text('atualizadoPorRef.name', 'Atualizado por')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TableColumns::dateTime('date_time', 'Atualizado em')
+                TableColumns::updatedBy('atualizadoPorRef.name')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('descricao');

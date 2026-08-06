@@ -302,6 +302,6 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
 
     public function render(): View
     {
-        return view('livewire.externo.patrimonio.movimentacao-de-materiais-table');
+        return view('livewire.externo.table');
     }
 }

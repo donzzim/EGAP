@@ -51,8 +51,7 @@ class SituacaoBemResource extends Resource
                 TableColumns::text('id', '#', isFirstColumn: true),
                 TableColumns::text('descricao', 'Descrição'),
                 TableColumns::text('situacao', 'Status'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->filters([
                 //

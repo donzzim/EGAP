@@ -46,8 +46,7 @@ class ComplementoSetorResource extends Resource
                 TableColumns::text('id', '#', isFirstColumn: true),
                 TableColumns::text('descricao', 'Descrição')
                     ->wrap(),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
-                TableColumns::dateTime('date_time', 'Data Atualização', 'd/m/Y H:i'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->defaultSort('id', 'asc')
             ->filters([

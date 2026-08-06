@@ -3,12 +3,13 @@
 namespace App\Filament\Resources\Agendamento;
 
 use App\Filament\Resources\Agendamento\RegiaoResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Regiao;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
 
 class RegiaoResource extends Resource
@@ -79,73 +80,24 @@ class RegiaoResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                Tables\Columns\TextColumn::make('regiao')
-                    ->label('Região')
-                    ->searchable()
-                    ->sortable()
-                    ->wrap()
+                TableColumns::text('regiao', 'Região', true)
                     ->weight('medium')
+                    ->wrap()
                     ->description(fn ($record) => $record->sigla ? 'Sigla: ' . $record->sigla : null),
 
-                Tables\Columns\TextColumn::make('unidadeRef.UnidadeOrganizacional')
-                    ->label('Unidade')
-                    ->searchable()
-                    ->sortable()
+                TableColumns::text('unidadeRef.UnidadeOrganizacional', 'Unidade')
                     ->badge()
                     ->color('gray'),
 
-                Tables\Columns\TextColumn::make('sigla')
-                    ->label('Sigla')
-                    ->searchable()
-                    ->alignCenter()
-                    ->sortable()
+                TableColumns::text('sigla', 'Sigla')
                     ->badge()
-                    ->color('info')
-                    ->alignCenter(),
+                    ->color('info'),
 
-                Tables\Columns\TextColumn::make('atualizadoPorRef.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->sortable()
-                    ->searchable()
-                    ->placeholder('-')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y')
-                    ->alignCenter()
-                    ->sortable()
-                    ->sinceTooltip()
-                    ->toggleable(),
+                TableColumns::updatedBy('atualizadoPorRef.name'),
             ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('unidade')
-                    ->label('Unidade')
-                    ->relationship('unidadeRef', 'Setor'),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('regiao', 'asc')
-            ->striped()
-            ->paginated([10, 25, 50, 100]);
+            ->defaultSort('regiao', 'asc');
     }
 
     public static function getPages(): array

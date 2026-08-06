@@ -114,8 +114,7 @@ class DescricaoDetalhadaResource extends Resource
                                 return 'Nenhuma';
                         }
                     }),
-                TableColumns::text('atualizado_por_usuario.name', 'Atualizado por'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
+                TableColumns::updatedBy('atualizado_por_usuario.name'),
             ])
             ->defaultSort('id');
     }

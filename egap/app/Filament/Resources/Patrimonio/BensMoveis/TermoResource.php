@@ -211,8 +211,7 @@ class TermoResource extends Resource
                         : null)
                     ->openUrlInNewTab(),
 
-                TableColumns::text('responsavelRef.name', 'Atualizado por')
-                    ->description(fn (Termo $record): string => $record->atualizado_em?->format('d/m/Y H:i') ?? '-'),
+                TableColumns::updatedBy('responsavelRef.name', dateColumn: 'atualizado_em'),
 
                 TableColumns::text('arquivoDigital.validadoPor.name', 'Analisado por'),
 

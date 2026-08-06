@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Almoxarifado;
 
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages;
+use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\SituacaoNotaFiscal;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -51,18 +52,7 @@ class SituacaoNotaFiscalResource extends Resource
                     ->label('Descrição')
                     ->searchable(),
 
-                TextColumn::make('atualizadoPor.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->default(' - ')
-                    ->searchable(),
-
-                TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->alignCenter()
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
+                TableColumns::updatedBy('atualizadoPor.name'),
             ])
             ->filters([
                 //

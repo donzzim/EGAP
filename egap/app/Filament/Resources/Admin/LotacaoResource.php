@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Admin;
 
 use App\Filament\Clusters\AdminEgapCluster;
 use App\Filament\Resources\Admin\LotacaoResource\Pages;
+use App\Filament\Support\TableColumns;
 use App\Models\Admin\Lotacao;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
@@ -124,13 +125,7 @@ class LotacaoResource extends Resource
                     ->label('Unidade Organizacional')
                     ->searchable()
                     ->wrap(),
-                Tables\Columns\TextColumn::make('usuarioRef.name')
-                    ->label('Atualizado por')
-                    ->placeholder('-'),
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
+                TableColumns::updatedBy('usuarioRef.name'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('unidade_judiciaria')

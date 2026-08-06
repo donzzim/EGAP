@@ -87,9 +87,7 @@ class FornecedoresResource extends Resource
                     ->copyable()
                     ->copyMessage('CNPJ copiado'),
 
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('Pessoa')

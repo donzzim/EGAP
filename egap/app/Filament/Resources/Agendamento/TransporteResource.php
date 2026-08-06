@@ -3,17 +3,27 @@
 namespace App\Filament\Resources\Agendamento;
 
 use App\Filament\Resources\Agendamento\TransporteResource\Pages;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
+use App\Models\Agendamento\Equipe;
+use App\Models\Agendamento\Frota;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class TransporteResource extends Resource
 {
@@ -25,12 +35,6 @@ class TransporteResource extends Resource
     protected static ?string $pluralModelLabel = 'Transporte de Carga';
     protected static ?string $navigationLabel = 'Transporte de Carga';
     protected static ?int $navigationSort = 5;
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->where('tipo', 2);
-    }
 
     public static function form(Form $form): Form
     {
@@ -139,22 +143,6 @@ class TransporteResource extends Resource
                                                 ->label('Motivo Cancelamento')
                                                 ->rows(6)
                                                 ->autosize(),
-                                        ]),
-
-                                    Forms\Components\Grid::make(2)
-                                        ->schema([
-                                            Forms\Components\DateTimePicker::make('data_alteracao')
-                                                ->label('Atualizado em')
-                                                ->seconds(false)
-                                                ->native(false),
-
-                                            Forms\Components\Select::make('id_user')
-                                                ->label('Atualizado por')
-                                                ->relationship('idUserRef', 'name')
-                                                ->searchable()
-                                                ->preload()
-                                                ->placeholder('Por favor selecione')
-                                                ->native(false),
                                         ]),
                                 ]),
                         ]),
@@ -290,25 +278,23 @@ class TransporteResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
-            ->striped()
-            ->paginated([10, 25, 50, 100])
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
+            ->modifyQueryUsing(fn (Builder $query, $livewire) => self::hasActiveFilter($livewire)
+                ? $query
+                : $query->whereRaw('1 = 0'))
+            ->emptyStateIcon('heroicon-o-funnel')
+            ->emptyStateHeading(fn ($livewire): string => self::hasActiveFilter($livewire)
+                ? 'Nenhum registro encontrado'
+                : 'Selecione um filtro para começar')
+            ->emptyStateDescription(fn ($livewire): string => self::hasActiveFilter($livewire)
+                ? 'Não há registros para os filtros selecionados.'
+                : 'A tabela só carrega registros após aplicar o filtro de Situação ou Unidade Solicitante.')
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('Nº')
-                    ->sortable()
-                    ->alignCenter()
-                    ->weight('bold')
-                    ->copyable(),
+                TableColumns::text('id', '#', true)
+                    ->badge(),
 
-                Tables\Columns\TextColumn::make('idSituacaoRef.Descricao')
-                    ->label('Situação')
+                TableColumns::text('idSituacaoRef.Descricao', 'Situação')
                     ->badge()
-                    ->sortable()
-                    ->searchable()
                     ->color(fn (?string $state) => match (mb_strtolower($state ?? '')) {
                         'pendente' => 'warning',
                         'aprovado', 'deferido', 'ativo' => 'success',
@@ -316,116 +302,160 @@ class TransporteResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('idSolicitanteRef.name')
-                    ->label('Solicitante')
-                    ->sortable()
-                    ->searchable()
-                    ->wrap(),
+                TableColumns::text('idSolicitanteRef.name', 'Solicitante'),
 
-                Tables\Columns\TextColumn::make('local_saida')
-                    ->label('Local de saída')
-                    ->sortable()
-                    ->alignCenter()
-                    ->searchable()
-                    ->limit(30)
-                    ->tooltip(fn ($state) => $state)
-                    ->wrap()
-                    ->toggleable(),
+                TableColumns::text('setorSolicitanteRef.Setor', 'Setor'),
 
-                Tables\Columns\TextColumn::make('local_destino')
-                    ->label('Local de destino')
-                    ->sortable()
-                    ->default(' - ')
-                    ->alignCenter()
-                    ->searchable()
-                    ->limit(30)
-                    ->tooltip(fn ($state) => $state)
-                    ->wrap()
-                    ->toggleable(),
+                TableColumns::text('local_saida', 'Local de saída'),
 
-                Tables\Columns\TextColumn::make('justificativa_lista')
-                    ->label('Detalhamento')
-                    ->formatStateUsing(fn ($state) => filled($state) ? nl2br(e($state)) : '-')
-                    ->html()
-                    ->wrap()
-                    ->limit(120)
-                    ->tooltip(fn ($state) => $state)
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TableColumns::text('local_destino', 'Local de destino'),
 
-                Tables\Columns\TextColumn::make('data_inicio')
-                    ->label('Data de início')
-                    ->sortable()
-                    ->searchable()
-                    ->date('d/m/Y')
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TableColumns::text('justificativa_lista', 'Detalhamento')
+                    ->tooltip(fn ($state) => $state),
 
-                Tables\Columns\TextColumn::make('requisicao')
-                    ->label('Requisição')
-                    ->alignCenter()
-                    ->default(' / ')
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TableColumns::date('data_inicio', 'Data de início'),
 
-                Tables\Columns\TextColumn::make('termo')
-                    ->label('Termo')
-                    ->alignCenter()
-                    ->default(' / ')
-                    ->toggleable(isToggledHiddenByDefault: false),
+                TableColumns::text('requisicao', 'Requisição'),
+
+                TableColumns::text('termo', 'Termo'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('periodo')
-                    ->label('Período')
-                    ->form([
-                        Forms\Components\DatePicker::make('data_inicio')
-                            ->label('De')
-                            ->native(false),
-
-                        Forms\Components\DatePicker::make('data_termino')
-                            ->label('Até')
-                            ->native(false),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query
-                            ->when(
-                                $data['data_inicio'] ?? null,
-                                fn ($q, $date) => $q->whereDate('data_inicio', '>=', $date)
-                            )
-                            ->when(
-                                $data['data_termino'] ?? null,
-                                fn ($q, $date) => $q->whereDate('data_termino', '<=', $date)
-                            );
-                    }),
-
-                Tables\Filters\SelectFilter::make('id_situacao')
+                SelectFilter::make('id_situacao')
                     ->label('Situação')
-                    ->relationship('idSituacaoRef', 'Descricao')
-                    ->searchable()
-                    ->preload(),
+                    ->options([
+                        "8" => "Agendado",
+                        "6" => "Em análise"
+                    ]),
+                SelectFilter::make('unidade_solicitante')
+                    ->label('Unidade Solicitante')
+                    ->columnSpan(2)
+                    ->options(fn () => Setores::query()
+                        ->whereColumn('id', 'CodigodaUO')
+                        ->orderBy('UnidadeOrganizacional')
+                        ->pluck('UnidadeOrganizacional', 'CodigoPai')
+                        ->toArray()
+                    )
+                    ->searchable(),
 
-                Tables\Filters\SelectFilter::make('regiao')
-                    ->label('Região')
-                    ->relationship('regiaoRef', 'sigla')
-                    ->searchable()
-                    ->preload(),
-            ])
-            ->filtersFormColumns(3)
+            ], Tables\Enums\FiltersLayout::AboveContent)
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
+                ...TableDefaults::actions(),
+                ActionGroup::make([
+                    self::agendarTableAction(),
+                    self::imprimirMateriaisTableAction(),
+                ]),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->defaultSort('id', 'desc');
+    }
+
+    private static function hasActiveFilter($livewire): bool
+    {
+        return collect(['id_situacao', 'unidade_solicitante'])
+            ->contains(fn (string $filter) => filled(data_get($livewire, "tableFilters.{$filter}.value")));
+    }
+
+    private static function agendarTableAction(): Action
+    {
+        return Action::make('agendar')
+            ->hiddenLabel()
+            ->tooltip('Agendar')
+            ->icon('heroicon-o-calendar')
+            ->modalWidth('4xl')
+            ->modalHeading(fn ($record) => 'Agendamento - Transporte de carga #' . $record->id)
+            ->modalDescription('Defina o período, a equipe e os veículos que atenderão esta solicitação.')
+            ->modalSubmitActionLabel('Agendar')
+            ->form([
+                Section::make('Período do Agendamento')
+                    ->description('Informe o intervalo de datas em que o transporte será realizado.')
+                    ->icon('heroicon-o-calendar-days')
+                    ->schema([
+                        DatePicker::make('data_inicio')
+                            ->label('Data início')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->required()
+                            ->columnSpan(1),
+
+                        DatePicker::make('data_fim')
+                            ->label('Data fim')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->required()
+                            ->afterOrEqual('data_inicio')
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2),
+
+                Section::make('Recursos Alocados')
+                    ->description('Selecione os motoristas/carregadores e os veículos que atenderão este transporte.')
+                    ->icon('heroicon-o-truck')
+                    ->schema([
+                        Select::make('motoristas_carregadores')
+                            ->label('Motoristas e Carregadores')
+                            ->placeholder('Selecione um ou mais integrantes da equipe')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->required()
+                            ->options(fn () => Equipe::query()
+                                ->with('idPessoaRef')
+                                ->get()
+                                ->sortBy(fn (Equipe $equipe) => $equipe->idPessoaRef->name ?? '')
+                                ->mapWithKeys(fn (Equipe $equipe) => [
+                                    $equipe->id => trim(($equipe->idPessoaRef->name ?? '-') . ' - ' . $equipe->funcao),
+                                ])
+                                ->toArray()
+                            )
+                            ->columnSpan(1),
+
+                        Select::make('veiculos')
+                            ->label('Veículos')
+                            ->placeholder('Selecione um ou mais veículos')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->required()
+                            ->options(fn () => Frota::query()
+                                ->orderBy('descricao')
+                                ->get()
+                                ->mapWithKeys(fn (Frota $frota) => [
+                                    $frota->id => $frota->descricao . ' - ' . ($frota->placa ?? 'Sem placa'),
+                                ])
+                                ->toArray()
+                            )
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2),
+
+                Section::make('Observações')
+                    ->description('Adicione informações complementares sobre o agendamento, se necessário.')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->schema([
+                        Textarea::make('observacao')
+                            ->label('')
+                            ->placeholder('Digite aqui alguma observação ou informação adicional...')
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(false),
             ])
-            ->defaultSort('id', 'desc')
-            ->emptyStateHeading('Nenhuma solicitação encontrada')
-            ->emptyStateDescription('Não há registros cadastrados para os filtros atuais.');
+            ->action(function (array $data): void {
+
+            });
+    }
+
+    private static function imprimirMateriaisTableAction(): Action
+    {
+        return Action::make('imprimir_materiais')
+            ->hiddenLabel()
+            ->tooltip('Imprimir materiais')
+            ->icon('heroicon-o-printer')
+            ->visible(fn (Solicitacao $record): bool => $record->materiaisRef()->exists())
+            ->url(fn (Solicitacao $record): string => route('agendamento.materiais.imprimir', ['id' => $record->id]))
+            ->openUrlInNewTab();
     }
 
     public static function getPages(): array

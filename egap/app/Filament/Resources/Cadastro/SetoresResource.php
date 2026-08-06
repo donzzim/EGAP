@@ -231,8 +231,7 @@ class SetoresResource extends Resource
                     ->wrap(),
                 TableColumns::text('SetorDescricao', 'Descrição')
                     ->wrap(),
-                TableColumns::dateTime('date_time', 'Atualizado em'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('unidade_organizacional')

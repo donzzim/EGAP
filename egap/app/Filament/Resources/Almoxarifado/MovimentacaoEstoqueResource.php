@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Almoxarifado;
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
 use App\Filament\Support\MoneyInput;
+use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
@@ -284,10 +285,7 @@ class MovimentacaoEstoqueResource extends Resource
                     ->alignCenter()
                     ->sortable(),
 
-                TextColumn::make('atualizadoPor.name')
-                    ->label('Atualizado por')
-                    ->alignCenter()
-                    ->searchable(),
+                TableColumns::updatedBy('atualizadoPor.name'),
             ])
             ->filters([
                 //

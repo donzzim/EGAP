@@ -176,6 +176,6 @@ class HistoricoDeInventarioOnlineTable extends Component implements HasForms, Ha
 
     public function render(): View
     {
-        return view('livewire.externo.patrimonio.historico-de-inventario-online-table');
+        return view('livewire.externo.table');
     }
 }

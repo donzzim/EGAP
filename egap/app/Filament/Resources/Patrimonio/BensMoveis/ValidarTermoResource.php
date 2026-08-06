@@ -151,8 +151,7 @@ class ValidarTermoResource extends Resource
                     })
                     ->openUrlInNewTab(),
 
-                TableColumns::text('atualizadoPor.name', 'Atualizado por')
-                    ->description(fn ($record): string => $record->atualizado_em?->format('d/m/Y H:i') ?? '-'),
+                TableColumns::updatedBy('atualizadoPor.name', dateColumn: 'atualizado_em'),
 
                 TableColumns::text('observacao', 'Observação')
                     ->limit(80)

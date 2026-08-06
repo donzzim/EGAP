@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Processo;
 
 use App\Filament\Resources\Processo\MateriaisResource\Pages;
+use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Patrimonio\BensImoveis\Processo;
 use App\Models\Processo\ProMaterial;
@@ -198,16 +199,7 @@ class MateriaisResource extends Resource
                     ->alignCenter()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('atualizadoPorRelacaoRef.name')
-                    ->label('Atualizado por')
-                    ->searchable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('date_time')
-                    ->label('Atualizado em')
-                    ->dateTime('d/m/Y H:i')
-                    ->alignCenter()
-                    ->sortable()
+                TableColumns::updatedBy('atualizadoPorRelacaoRef.name')
                     ->toggleable(),
             ])
             ->filters([

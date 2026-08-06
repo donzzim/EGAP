@@ -70,8 +70,7 @@ class ElementoDespesaResource extends Resource
                 TableColumns::text('Despesa')
                     ->badge(),
                 TableColumns::text('VidaUtil', 'Vida Útil'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizado_por.name', 'Usuário'),
+                TableColumns::updatedBy('atualizado_por.name', 'Usuário'),
                 TableColumns::money('ValorResidual')
             ])
             ->defaultSort('CodigodaClasse');

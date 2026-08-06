@@ -52,8 +52,7 @@ class UnidadesDeMedidaResource extends Resource
             ->columns([
                 TableColumns::text('Sigla', isFirstColumn: true),
                 TableColumns::text('Unidade'),
-                TableColumns::dateTime('date_time', 'Atualizado em', 'd/m/Y H:i'),
-                TableColumns::text('atualizado_por.name', 'Atualizado por'),
+                TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->defaultSort('Sigla')
             ->filters([

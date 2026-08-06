@@ -7,6 +7,7 @@ use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Solicitacao extends Model
 {
@@ -65,6 +66,11 @@ class Solicitacao extends Model
         return $this->belongsTo(Setores::class, 'unidade_solicitante', 'id');
     }
 
+    public function materiaisRef(): HasMany
+    {
+        return $this->hasMany(Materiais::class, 'id_solicitacao', 'id');
+    }
+
     public function setorSolicitanteRef() : BelongsTo
     {
         return $this->belongsTo(Setores::class, 'setor_solicitante', 'id');
@@ -79,6 +85,7 @@ class Solicitacao extends Model
     {
         static::saving(function (self $model): void {
             $model->date_time = now();
+            $model->data_alteracao = now();
             $model->id_user = auth()->id();
         });
     }

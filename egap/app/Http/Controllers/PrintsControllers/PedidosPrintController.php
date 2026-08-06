@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\PrintsControllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Almoxarifado\Pedidos;
 
 class PedidosPrintController extends Controller
