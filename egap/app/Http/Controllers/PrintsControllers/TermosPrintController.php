@@ -8,7 +8,7 @@ use App\Models\Patrimonio\BensMoveis\Termo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-class TermosPrintController extends Controller
+class TermosPrintController extends PrintController
 {
     public function print($id)
     {

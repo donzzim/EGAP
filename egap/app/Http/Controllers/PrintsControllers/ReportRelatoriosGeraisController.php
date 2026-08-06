@@ -26,7 +26,7 @@ use App\Models\Cadastro\Setores;
 
 class ReportRelatoriosGeraisController extends Controller
 {
-    public function imprimir(Request $request)
+    public function print(Request $request)
     {
         $filtros = $request->all();
         $nomeFormatado = str($filtros['relatorio'] ?? '')->studly();
