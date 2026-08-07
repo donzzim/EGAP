@@ -397,14 +397,15 @@
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
                     <div class="egap-form-card">
-                        <x-filament-panels::form id="form" wire:submit="authenticate">
+                        <form id="form" wire:submit="authenticate" class="space-y-6">
                             {{ $this->form }}
 
-                            <x-filament-panels::form.actions
-                                :actions="$this->getCachedFormActions()"
-                                :full-width="$this->hasFullWidthFormActions()"
-                            />
-                        </x-filament-panels::form>
+                            <div @class(['flex flex-col gap-3', 'w-full [&>*]:w-full' => $this->hasFullWidthFormActions()])>
+                                @foreach ($this->getFormActions() as $action)
+                                    {{ $action }}
+                                @endforeach
+                            </div>
+                        </form>
                     </div>
 
                     {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, scopes: $this->getRenderHookScopes()) }}
