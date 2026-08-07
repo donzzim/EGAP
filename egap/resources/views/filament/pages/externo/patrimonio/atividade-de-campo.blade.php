@@ -2,7 +2,7 @@
     <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div class="w-full max-w-xs">
-                <label for="inventarioId" class="fi-fo-field-wrp-label text-sm font-medium text-gray-950 dark:text-white">
+                <label for="inventarioId" class="fi-fo-field-label text-sm font-medium text-gray-950 dark:text-white">
                     Inventário
                 </label>
                 <x-filament::input.wrapper class="mt-1">

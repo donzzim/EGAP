@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -v)",
+      "Bash(composer dump-autoload *)",
+      "Bash(php artisan *)",
+      "Bash(vendor/bin/pint --test app/Filament/Clusters/ExternoCluster/RequisicaoPage.php app/Filament/Clusters/ExternoCluster/AcompanhamentoDePedidosPage.php app/Filament/Clusters/ExternoCluster/Almoxarifado/RequisicaoDeMateriaisPage.php app/Filament/Clusters/ExternoCluster/Patrimonio/RequisicaoDeMateriais.php app/Filament/Clusters/ExternoCluster/Almoxarifado/AcompanhamentoDePedidosAlmoxarifado.php app/Filament/Clusters/ExternoCluster/Patrimonio/AcompanhamentoDePedidosPatrimonio.php app/Filament/Livewire/Externo/Carrinho.php app/Filament/Livewire/Externo/MateriaisDisponiveis.php app/Filament/Livewire/Externo/PedidosTable.php app/Filament/Livewire/Externo/PedidoItensModal.php app/Filament/Livewire/Externo/Almoxarifado/CarrinhoMateriaisConsumoForm.php app/Filament/Livewire/Externo/Almoxarifado/MateriaisConsumoTable.php app/Filament/Livewire/Externo/Almoxarifado/PedidosAlmoxarifadoTable.php app/Filament/Livewire/Externo/Almoxarifado/PedidoItensModal.php app/Filament/Livewire/Externo/Patrimonio/CarrinhoMateriaisPermanentesForm.php app/Filament/Livewire/Externo/Patrimonio/MateriaisPermanentesTable.php app/Filament/Livewire/Externo/Patrimonio/PedidosPatrimonioTable.php app/Filament/Livewire/Externo/Patrimonio/PedidoItensModal.php app/Services/LivewireComponentsService.php)",
+      "Bash(vendor/bin/pint app/Filament/Clusters/ExternoCluster/RequisicaoPage.php app/Filament/Clusters/ExternoCluster/AcompanhamentoDePedidosPage.php app/Filament/Clusters/ExternoCluster/Almoxarifado/RequisicaoDeMateriaisPage.php app/Filament/Clusters/ExternoCluster/Patrimonio/RequisicaoDeMateriais.php app/Filament/Clusters/ExternoCluster/Almoxarifado/AcompanhamentoDePedidosAlmoxarifado.php app/Filament/Clusters/ExternoCluster/Patrimonio/AcompanhamentoDePedidosPatrimonio.php app/Filament/Livewire/Externo/Carrinho.php app/Filament/Livewire/Externo/MateriaisDisponiveis.php app/Filament/Livewire/Externo/PedidosTable.php app/Filament/Livewire/Externo/PedidoItensModal.php app/Filament/Livewire/Externo/Almoxarifado/CarrinhoMateriaisConsumoForm.php app/Filament/Livewire/Externo/Almoxarifado/MateriaisConsumoTable.php app/Filament/Livewire/Externo/Almoxarifado/PedidosAlmoxarifadoTable.php app/Filament/Livewire/Externo/Almoxarifado/PedidoItensModal.php app/Filament/Livewire/Externo/Patrimonio/CarrinhoMateriaisPermanentesForm.php app/Filament/Livewire/Externo/Patrimonio/MateriaisPermanentesTable.php app/Filament/Livewire/Externo/Patrimonio/PedidosPatrimonioTable.php app/Filament/Livewire/Externo/Patrimonio/PedidoItensModal.php app/Services/LivewireComponentsService.php)",
+      "Bash(php -l app/Filament/Resources/Patrimonio/BensMoveis/BemMovelResource.php)",
+      "Bash(php -l app/Filament/Livewire/Patrimonio/VincularBemModal.php)",
+      "Bash(php -l app/Services/LivewireComponentsService.php)",
+      "Bash(vendor/bin/pint --test app/Filament/Resources/Patrimonio/BensMoveis/BemMovelResource.php app/Filament/Livewire/Patrimonio/VincularBemModal.php app/Services/LivewireComponentsService.php)",
+      "Bash(git checkout *)",
+      "Bash(php -l app/Filament/Livewire/Externo/Almoxarifado/MateriaisConsumoTable.php)",
+      "Bash(php -l app/Filament/Resources/Agendamento/AgendamentoResource.php)",
+      "Bash(php -l app/Filament/Livewire/Agendamento/AgendarVeiculoModal.php)",
+      "Bash(cd /c/dev/EGAP/egap && echo \"--- TransferirBensAdmModal ---\"; cat -A /dev/null 2>/dev/null; sed -n '1,80p' app/Filament/Livewire/Patrimonio/TransferirBensAdmModal.php 2>/dev/null | head -80 *)",
+      "Read(//dev/**)",
+      "Bash(rm -v app/Filament/Livewire/Patrimonio/TransferirBensAdmModal.php app/Filament/Livewire/Patrimonio/VincularBemModal.php app/Filament/Livewire/Agendamento/AgendarVeiculoModal.php app/Filament/Support/FormModalAction.php app/Filament/Support/FormModalComponent.php resources/views/livewire/support/form-modal.blade.php)",
+      "Bash(rmdir app/Filament/Livewire/Agendamento)",
+      "Bash(vendor/bin/pint --test app/Filament/Resources/Patrimonio/BensMoveis/BemMovelResource.php app/Filament/Resources/Agendamento/AgendamentoResource.php app/Services/LivewireComponentsService.php)",
+      "Bash(vendor/bin/pint -v --test app/Filament/Resources/Agendamento/AgendamentoResource.php)",
+      "Bash(php -l app/Filament/Support/ModalWindow.php)"
+    ]
+  }
+}

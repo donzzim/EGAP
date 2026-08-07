@@ -138,6 +138,7 @@ class AtividadeDeCampoResumoTable extends Component implements HasActions, HasFo
             ])
             ->defaultGroup('Setor')
             ->defaultSort('Setor')
+            ->defaultKeySort(false)
             ->paginated(false)
             ->emptyStateHeading(
                 blank($this->inventarioId)
