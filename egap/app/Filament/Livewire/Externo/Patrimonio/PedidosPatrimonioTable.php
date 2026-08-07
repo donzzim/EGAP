@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Livewire\Externo\PedidosTable;
 use App\Filament\Support\TableDefaults;
 use Filament\Tables\Enums\FiltersLayout;
@@ -24,8 +26,9 @@ use Livewire\Attributes\On;
  * O detalhe dos itens de cada pedido é aberto em modal, delegado ao
  * {@see PedidoItensModal} (legado: modal_pedidos.api.php).
  */
-class PedidosPatrimonioTable extends PedidosTable
+class PedidosPatrimonioTable extends PedidosTable implements HasActions
 {
+    use InteractsWithActions;
     protected const SETOR_PATRIMONIO = 1239;
 
     #[On('pedido-item-cancelado')]
@@ -64,10 +67,10 @@ class PedidosPatrimonioTable extends PedidosTable
                 $this->filtroLocalizacao(),
             ], FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
-            ->actions([
+            ->recordActions([
                 $this->acaoVerItens('externo-patrimonio.pedido-itens-modal'),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort('date_time', 'desc')
             ->emptyStateHeading('Nenhum pedido encontrado');
     }

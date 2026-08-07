@@ -6,9 +6,9 @@ use App\Filament\Clusters\ExternoCluster\RequisicaoPage;
 
 class RequisicaoDeMateriais extends RequisicaoPage
 {
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
 
-    protected static ?string $navigationGroup = 'Patrimônio';
+    protected static string | \UnitEnum | null $navigationGroup = 'Patrimônio';
 
     protected static ?string $navigationLabel = 'Requisição de Materiais Permanentes';
 
@@ -18,5 +18,5 @@ class RequisicaoDeMateriais extends RequisicaoPage
 
     protected static ?int $navigationSort = 3;
 
-    protected static string $view = 'filament.pages.externo.patrimonio.requisicao-de-materiais-permanentes';
+    protected string $view = 'filament.pages.externo.patrimonio.requisicao-de-materiais-permanentes';
 }

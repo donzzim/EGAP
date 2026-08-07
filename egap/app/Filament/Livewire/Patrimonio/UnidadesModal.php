@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
@@ -10,8 +12,9 @@ use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class UnidadesModal extends TableModalComponent
+class UnidadesModal extends TableModalComponent implements HasActions
 {
+    use InteractsWithActions;
     public int $inventarioId;
 
     public function mount(int $inventarioId): void
@@ -49,8 +52,8 @@ class UnidadesModal extends TableModalComponent
             ->paginated([15])
             ->emptyStateIcon('heroicon-o-building-office')
             ->emptyStateHeading('Nenhuma unidade vinculada a este inventário')
-            ->actions([])
-            ->bulkActions([]);
+            ->recordActions([])
+            ->toolbarActions([]);
     }
 
     private function getUnidadesQuery(): Builder

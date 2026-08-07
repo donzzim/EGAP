@@ -2,20 +2,25 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Enums\FiltersLayout;
+use App\Filament\Resources\Cadastro\SetoresResource\Pages\ListSetores;
+use App\Filament\Resources\Cadastro\SetoresResource\Pages\CreateSetores;
+use App\Filament\Resources\Cadastro\SetoresResource\Pages\EditSetores;
 use App\Filament\Resources\Cadastro\SetoresResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Setores;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -24,17 +29,17 @@ class SetoresResource extends Resource
 {
     protected static ?string $model = Setores::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
     protected static ?string $navigationLabel = 'Setores';
     protected static ?string $modelLabel = 'Setor';
     protected static ?string $pluralModelLabel = 'Setores';
-    protected static ?string $navigationGroup = 'Cadastro';
+    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Identificação')
                     ->description('Dados principais usados para identificar e organizar o setor.')
                     ->schema([
@@ -234,7 +239,7 @@ class SetoresResource extends Resource
                 TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('unidade_organizacional')
+                SelectFilter::make('unidade_organizacional')
                     ->label('Unidade Organizacional')
                     ->attribute('CodigoPai')
                     ->columnSpan(3)
@@ -245,16 +250,16 @@ class SetoresResource extends Resource
                         ->orderBy('UnidadeOrganizacional')
                         ->pluck('UnidadeOrganizacional', 'id')
                         ->toArray()),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
+            ], layout: FiltersLayout::AboveContent)
             ->defaultSort('UnidadeOrganizacional');
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSetores::route('/'),
-            'create' => Pages\CreateSetores::route('/create'),
-            'edit' => Pages\EditSetores::route('/{record}/edit'),
+            'index' => ListSetores::route('/'),
+            'create' => CreateSetores::route('/create'),
+            'edit' => EditSetores::route('/{record}/edit'),
         ];
     }
 }

@@ -2,13 +2,15 @@
 
 namespace App\Filament\Livewire\Externo\Almoxarifado;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Filament\Livewire\Externo\MateriaisDisponiveis;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Cadastro\DescricaoDetalhada;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
@@ -16,8 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
-class MateriaisConsumoTable extends MateriaisDisponiveis
+class MateriaisConsumoTable extends MateriaisDisponiveis implements HasActions
 {
+    use InteractsWithActions;
     public string $tipoMaterial;
 
     public function mount(string $tipoMaterial): void
@@ -55,14 +58,14 @@ class MateriaisConsumoTable extends MateriaisDisponiveis
 
                 $this->quantidadeColumn(),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('adicionar')
                     ->label('Adicionar')
                     ->button()
                     ->icon('heroicon-m-plus')
                     ->action(fn (DescricaoDetalhada $record) => $this->adicionarAoCarrinho($record)),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort('descricao_detalhada')
             ->emptyStateHeading('Nenhum material disponível no momento');
     }

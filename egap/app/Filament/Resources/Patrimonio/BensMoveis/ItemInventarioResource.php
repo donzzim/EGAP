@@ -2,6 +2,17 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
+use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\ListItemInventarios;
+use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\CreateItemInventario;
+use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\EditItemInventario;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
 use App\Filament\Support\TableColumns;
@@ -14,14 +25,10 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\ItemInventario;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -32,11 +39,11 @@ class ItemInventarioResource extends Resource
 {
     protected static ?string $model = ItemInventario::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Itens Inventariados';
 
@@ -48,12 +55,12 @@ class ItemInventarioResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/itens-inventariados';
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Itens Inventariados')
                     ->description('Registre a identificação, localização e conferência física do material.')
                     ->icon('heroicon-o-clipboard-document-list')
@@ -224,22 +231,22 @@ class ItemInventarioResource extends Resource
                 TableColumns::text('imagem_enviada', 'Imagem Enviada'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('id_inventario')
+                SelectFilter::make('id_inventario')
                     ->label('Inventário')
                     ->relationship('idInventarioRef', 'num_inventario')
                     ->getOptionLabelFromRecordUsing(fn ($record): string => "{$record->num_inventario}/{$record->ano_inventario}")
                     ->searchable()
                     ->preload(),
-                Tables\Filters\SelectFilter::make('unidades')
+                SelectFilter::make('unidades')
                     ->label('Unidade')
                     ->relationship('unidadesRef', 'UnidadeOrganizacional')
                     ->getOptionLabelFromRecordUsing(fn (Setores $record): string => $record->rotuloInventario())
                     ->searchable()
                     ->preload(),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
-            ->actions([
+            ], layout: FiltersLayout::AboveContent)
+            ->recordActions([
                 ...TableDefaults::actions(),
-                Tables\Actions\ActionGroup::make([
+                ActionGroup::make([
                     self::finalizarLevantamentoTableAction(),
                     self::localizarItemTableAction(),
                 ])
@@ -249,9 +256,9 @@ class ItemInventarioResource extends Resource
             ->defaultSort('id', 'desc');
     }
 
-    private static function finalizarLevantamentoTableAction() : Tables\Actions\Action
+    private static function finalizarLevantamentoTableAction() : Action
     {
-        return Tables\Actions\Action::make('finalizar_levantamento')
+        return Action::make('finalizar_levantamento')
             ->hiddenLabel()
             ->tooltip('Finalizar levantamento')
             ->icon('heroicon-o-check-circle')
@@ -286,9 +293,9 @@ class ItemInventarioResource extends Resource
             });
     }
 
-    private static function localizarItemTableAction() : Tables\Actions\Action
+    private static function localizarItemTableAction() : Action
     {
-        return Tables\Actions\Action::make('localizar_item')
+        return Action::make('localizar_item')
             ->hiddenLabel()
             ->tooltip('Localizar item')
             ->icon('heroicon-o-map-pin')
@@ -610,9 +617,9 @@ class ItemInventarioResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListItemInventarios::route('/'),
-            'create' => Pages\CreateItemInventario::route('/create'),
-            'edit' => Pages\EditItemInventario::route('/{record}/edit'),
+            'index' => ListItemInventarios::route('/'),
+            'create' => CreateItemInventario::route('/create'),
+            'edit' => EditItemInventario::route('/{record}/edit'),
         ];
     }
 }

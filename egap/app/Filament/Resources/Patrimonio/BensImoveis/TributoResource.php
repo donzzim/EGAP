@@ -2,6 +2,19 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Repeater;
+use App\Filament\Resources\Patrimonio\BensImoveis\TributoResource\Pages\ListTributos;
+use App\Filament\Resources\Patrimonio\BensImoveis\TributoResource\Pages\CreateTributo;
+use App\Filament\Resources\Patrimonio\BensImoveis\TributoResource\Pages\EditTributo;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TributoResource\Pages;
 use App\Filament\Support\MoneyInput;
@@ -9,41 +22,39 @@ use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Tributo;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class TributoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Tributo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Tributos';
     protected static ?string $modelLabel = 'Tributo';
     protected static ?string $pluralModelLabel = 'Tributos';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
     protected static ?int $navigationSort = 6;
     protected static ?string $slug = 'bens-imoveis/tributos';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Tabs::make('Tabs')
+        return $schema
+            ->components([
+                Tabs::make('Tabs')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Tributos')
+                        Tab::make('Tributos')
                             ->icon('heroicon-o-banknotes')
                             ->schema([
-                                Forms\Components\Section::make('Identificação')
+                                Section::make('Identificação')
                                     ->description('Vincule o tributo ao imóvel e informe a natureza da cobrança.')
                                     ->icon('heroicon-o-home-modern')
                                     ->schema([
-                                        Forms\Components\Select::make('Id_imovel')
+                                        Select::make('Id_imovel')
                                             ->label('Imóvel')
                                             ->relationship('imovelRelacaoref', 'descricao')
                                             ->required()
@@ -53,7 +64,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                             ->placeholder('Selecione o imóvel')
                                             ->columnSpan(7),
 
-                                        Forms\Components\Select::make('tipo_tributo')
+                                        Select::make('tipo_tributo')
                                             ->label('Tipo do tributo')
                                             ->relationship('tipoTributoRelacaoref', 'descricao')
                                             ->required()
@@ -65,11 +76,11 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                     ])
                                     ->columns(12),
 
-                                Forms\Components\Section::make('Valores e vencimento')
+                                Section::make('Valores e vencimento')
                                     ->description('Dados financeiros previstos para o tributo.')
                                     ->icon('heroicon-o-calendar-days')
                                     ->schema([
-                                        Forms\Components\DatePicker::make('vencimento')
+                                        DatePicker::make('vencimento')
                                             ->label('Vencimento')
                                             ->required()
                                             ->displayFormat('d/m/Y')
@@ -84,11 +95,11 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                     ])
                                     ->columns(12),
 
-                                Forms\Components\Section::make('Pagamento')
+                                Section::make('Pagamento')
                                     ->description('Preencha quando houver registro de quitação.')
                                     ->icon('heroicon-o-credit-card')
                                     ->schema([
-                                        Forms\Components\DatePicker::make('pago_em')
+                                        DatePicker::make('pago_em')
                                             ->label('Pago em')
                                             ->required()
                                             ->displayFormat('d/m/Y')
@@ -101,7 +112,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                             ->required()
                                             ->columnSpan(4),
 
-                                        Forms\Components\TextInput::make('processo_pagto')
+                                        TextInput::make('processo_pagto')
                                             ->label('Processo de pagamento')
                                             ->required()
                                             ->placeholder('Informe o processo, se houver')
@@ -109,11 +120,11 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                     ])
                                     ->columns(12),
 
-                                Forms\Components\Section::make('Auditoria e observações')
+                                Section::make('Auditoria e observações')
                                     ->description('Controle interno de atualização e informações complementares.')
                                     ->icon('heroicon-o-clipboard-document-list')
                                     ->schema([
-                                        Forms\Components\Select::make('atualizado_por')
+                                        Select::make('atualizado_por')
                                             ->label('Atualizado por')
                                             ->relationship('atualizadoPorRelacaoref', 'name')
                                             ->required()
@@ -123,7 +134,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                             ->native(false)
                                             ->columnSpan(6),
 
-                                        Forms\Components\DatePicker::make('date_time')
+                                        DatePicker::make('date_time')
                                             ->label('Atualizado em')
                                             ->required()
                                             ->default(now())
@@ -133,7 +144,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                             ->dehydrated()
                                             ->columnSpan(6),
 
-                                        Forms\Components\Textarea::make('observacao')
+                                        Textarea::make('observacao')
                                             ->label('Observação')
                                             ->required()
                                             ->rows(4)
@@ -143,17 +154,17 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                     ->columns(12),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Eventos')
+                        Tab::make('Eventos')
                             ->icon('heroicon-o-clock')
                             ->schema([
-                                Forms\Components\Section::make('Histórico de eventos')
+                                Section::make('Histórico de eventos')
                                     ->description('Registre ocorrências relacionadas ao tributo.')
                                     ->icon('heroicon-o-queue-list')
                                     ->schema([
-                                        Forms\Components\Repeater::make('eventos')
+                                        Repeater::make('eventos')
                                             ->required()
                                             ->schema([
-                                                Forms\Components\DatePicker::make('data')
+                                                DatePicker::make('data')
                                                     ->label('Data')
                                                     ->required()
                                                     ->displayFormat('d/m/Y')
@@ -161,7 +172,7 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
                                                     ->placeholder('dd/mm/aaaa')
                                                     ->columnSpanFull(),
 
-                                                Forms\Components\Textarea::make('descricao')
+                                                Textarea::make('descricao')
                                                     ->label('Descrição')
                                                     ->required()
                                                     ->rows(2)
@@ -206,9 +217,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTributos::route('/'),
-            'create' => Pages\CreateTributo::route('/create'),
-            'edit' => Pages\EditTributo::route('/{record}/edit'),
+            'index' => ListTributos::route('/'),
+            'create' => CreateTributo::route('/create'),
+            'edit' => EditTributo::route('/{record}/edit'),
         ];
     }
 }

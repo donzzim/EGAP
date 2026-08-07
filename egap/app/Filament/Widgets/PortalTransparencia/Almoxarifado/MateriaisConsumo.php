@@ -7,7 +7,7 @@ use App\Models\Almoxarifado\MovimentacaoEstoque;
 
 class MateriaisConsumo extends BaseChart
 {
-    protected static ?string $heading = 'Materiais de Consumo Fornecidos por Ano';
+    protected ?string $heading = 'Materiais de Consumo Fornecidos por Ano';
 
     protected function getData(): array
     {

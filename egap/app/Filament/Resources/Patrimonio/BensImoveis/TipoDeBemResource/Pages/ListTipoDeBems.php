@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,7 @@ class ListTipoDeBems extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Tipo de bem')
                 ->modalWidth('md')

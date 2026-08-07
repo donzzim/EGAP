@@ -2,6 +2,19 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DateTimePicker;
+use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\ListReavaliacoes;
+use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\CreateReavaliacao;
+use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\EditReavaliacao;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages;
 use App\Filament\Support\MoneyInput;
@@ -9,54 +22,52 @@ use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\Reavaliacao;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 use Illuminate\Support\Facades\DB;
 
 class ReavaliacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Reavaliacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationLabel = 'Reavaliação';
     protected static ?string $modelLabel = 'Reavaliação';
     protected static ?string $pluralModelLabel = 'Reavaliação';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
     protected static ?int $navigationSort = 3;
     protected static ?string $slug = 'bens-imoveis/reavaliacoes';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        $monthsInput = fn (string $field, string $label) => Forms\Components\TextInput::make($field)
+        $monthsInput = fn (string $field, string $label) => TextInput::make($field)
             ->label($label)
             ->numeric()
             ->suffix('meses')
             ->placeholder('0');
 
-        $yearsInput = fn (string $field, string $label) => Forms\Components\TextInput::make($field)
+        $yearsInput = fn (string $field, string $label) => TextInput::make($field)
             ->label($label)
             ->numeric()
             ->suffix('anos')
             ->placeholder('0');
 
-        return $form
-            ->schema([
-                Forms\Components\Tabs::make('Tabs')
+        return $schema
+            ->components([
+                Tabs::make('Tabs')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Reavaliação')
+                        Tab::make('Reavaliação')
                             ->icon('heroicon-o-banknotes')
                             ->schema([
-                                Forms\Components\Section::make('Identificação do Imóvel')
+                                Section::make('Identificação do Imóvel')
                                     ->icon('heroicon-o-building-office')
                                     ->schema([
-                                        Forms\Components\Select::make('Id_imovel')
+                                        Select::make('Id_imovel')
                                             ->label('Imóvel')
                                             ->relationship('imovelRelacaoref', 'descricao')
                                             ->searchable()
@@ -64,7 +75,7 @@ class ReavaliacaoResource extends Resource
                                             ->placeholder('Selecione o imóvel')
                                             ->columnSpanFull(),
 
-                                        Forms\Components\Select::make('Id_estadoconservacao')
+                                        Select::make('Id_estadoconservacao')
                                             ->label('Estado de Conservação')
                                             ->relationship('estadoConservacaoRelacaoref', 'descEstadoConservacao')
                                             ->searchable()
@@ -74,10 +85,10 @@ class ReavaliacaoResource extends Resource
                                     ])
                                     ->columns(2),
 
-                                Forms\Components\Section::make('Dados da Reavaliação')
+                                Section::make('Dados da Reavaliação')
                                     ->icon('heroicon-o-calculator')
                                     ->schema([
-                                        Forms\Components\DatePicker::make('data_reavaliacao')
+                                        DatePicker::make('data_reavaliacao')
                                             ->label('Data da Reavaliação')
                                             ->default(now())
                                             ->displayFormat('d/m/Y')
@@ -86,7 +97,7 @@ class ReavaliacaoResource extends Resource
                                         MoneyInput::make('valor_reavaliacao')
                                             ->label('Valor da Reavaliação'),
 
-                                        Forms\Components\TextInput::make('vida_util_reavaliacao')
+                                        TextInput::make('vida_util_reavaliacao')
                                             ->label('Vida Útil da Reavaliação')
                                             ->numeric()
                                             ->suffix('meses')
@@ -95,7 +106,7 @@ class ReavaliacaoResource extends Resource
                                         MoneyInput::make('ajuste_contabil')
                                             ->label('Ajuste Contábil'),
 
-                                        Forms\Components\Textarea::make('observacao')
+                                        Textarea::make('observacao')
                                             ->label('Observação')
                                             ->placeholder('Registre informações relevantes sobre a reavaliação')
                                             ->columnSpanFull()
@@ -104,10 +115,10 @@ class ReavaliacaoResource extends Resource
                                     ->columns(2),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Complemento')
+                        Tab::make('Complemento')
                             ->icon('heroicon-o-clipboard-document-list')
                             ->schema([
-                                Forms\Components\Section::make('Valores de Referência')
+                                Section::make('Valores de Referência')
                                     ->icon('heroicon-o-banknotes')
                                     ->schema([
                                         MoneyInput::make('valor_mercado')
@@ -117,7 +128,7 @@ class ReavaliacaoResource extends Resource
                                     ])
                                     ->columns(2),
 
-                                Forms\Components\Section::make('Prazos e Vida Útil')
+                                Section::make('Prazos e Vida Útil')
                                     ->icon('heroicon-o-calendar-days')
                                     ->schema([
                                         $monthsInput('vida_util_siafi', 'Vida Útil SIAFI'),
@@ -130,37 +141,37 @@ class ReavaliacaoResource extends Resource
                                     ])
                                     ->columns(3),
 
-                                Forms\Components\Section::make('Parâmetros Técnicos')
+                                Section::make('Parâmetros Técnicos')
                                     ->icon('heroicon-o-adjustments-horizontal')
                                     ->schema([
-                                        Forms\Components\TextInput::make('PUB1')
+                                        TextInput::make('PUB1')
                                             ->label('PUB1')
                                             ->numeric()
                                             ->placeholder('0'),
 
-                                        Forms\Components\TextInput::make('PUV')
+                                        TextInput::make('PUV')
                                             ->label('PUV')
                                             ->numeric()
                                             ->placeholder('0'),
 
-                                        Forms\Components\TextInput::make('FR')
+                                        TextInput::make('FR')
                                             ->label('FR')
                                             ->numeric()
                                             ->placeholder('0'),
                                     ])
                                     ->columns(3),
 
-                                Forms\Components\Section::make('Controle')
+                                Section::make('Controle')
                                     ->icon('heroicon-o-clipboard-document-list')
                                     ->schema([
-                                        Forms\Components\DateTimePicker::make('data_disponibilizacao')
+                                        DateTimePicker::make('data_disponibilizacao')
                                             ->label('Data de Disponibilização')
                                             ->default(now())
                                             ->columnSpan(1)
                                             ->displayFormat('d/m/Y H:i:s')
                                             ->native(false),
 
-                                        Forms\Components\DateTimePicker::make('data_referencia')
+                                        DateTimePicker::make('data_referencia')
                                             ->label('Data de Referência')
                                             ->default(now())
                                             ->columnSpan(1)
@@ -197,9 +208,9 @@ class ReavaliacaoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReavaliacoes::route('/'),
-            'create' => Pages\CreateReavaliacao::route('/create'),
-            'edit' => Pages\EditReavaliacao::route('/{record}/edit'),
+            'index' => ListReavaliacoes::route('/'),
+            'create' => CreateReavaliacao::route('/create'),
+            'edit' => EditReavaliacao::route('/{record}/edit'),
         ];
     }
 }

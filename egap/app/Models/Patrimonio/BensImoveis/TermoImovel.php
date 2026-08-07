@@ -19,7 +19,7 @@ class TermoImovel extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'imovel', 'Id');
+        return $this->belongsTo(BemImovel::class, 'imovel', 'Id');
     }
 
     protected static function booted(): void

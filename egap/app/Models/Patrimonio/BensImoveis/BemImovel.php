@@ -2,6 +2,9 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\Cadastro\Setores;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Cadastro\ElementoDespesa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,7 +18,7 @@ class BemImovel extends Model
 
     public function setoresRelacaoRef()
     {
-        return $this->belongsTo(\App\Models\Cadastro\Setores::class, 'Id_setores', 'id');
+        return $this->belongsTo(Setores::class, 'Id_setores', 'id');
     }
 
     public function responsavelRelacaoRef()
@@ -45,12 +48,12 @@ class BemImovel extends Model
 
     public function planoContasRelacaoRef()
     {
-        return $this->belongsTo(\App\Models\Cadastro\ContaContabil::class, 'id_planocontas', 'id');
+        return $this->belongsTo(ContaContabil::class, 'id_planocontas', 'id');
     }
 
     public function elementoDespesaRelacaoRef()
     {
-        return $this->belongsTo(\App\Models\Cadastro\ElementoDespesa::class, 'id_elementodespesa', 'id');
+        return $this->belongsTo(ElementoDespesa::class, 'id_elementodespesa', 'id');
     }
 
     public function cidadeRelacaoRef()
@@ -100,16 +103,16 @@ class BemImovel extends Model
 
     public function cedidosRelacaoRef()
     {
-        return $this->hasMany(\App\Models\Patrimonio\BensImoveis\Cedido::class, 'id_imovel', 'Id');
+        return $this->hasMany(Cedido::class, 'id_imovel', 'Id');
     }
 
     public function reavaliacoesRelacaoRef()
     {
-        return $this->hasMany(\App\Models\Patrimonio\BensImoveis\Reavaliacao::class, 'Id_imovel', 'Id');
+        return $this->hasMany(Reavaliacao::class, 'Id_imovel', 'Id');
     }
 
     public function obrasRelacaoRef()
     {
-        return $this->hasMany(\App\Models\Patrimonio\BensImoveis\Obra::class, 'id_imovel', 'Id');
+        return $this->hasMany(Obra::class, 'id_imovel', 'Id');
     }
 }

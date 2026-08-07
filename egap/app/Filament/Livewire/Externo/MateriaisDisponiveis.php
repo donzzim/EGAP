@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Externo;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Livewire\Externo\Patrimonio\MateriaisPermanentesTable;
 use App\Models\UserEgap;
@@ -27,8 +29,9 @@ use Livewire\Component;
  * ficam a cargo de cada subclasse, pois a origem dos materiais e os dados
  * pedidos ao adicionar divergem de verdade (ver docblocks das subclasses).
  */
-abstract class MateriaisDisponiveis extends Component implements HasForms, HasTable
+abstract class MateriaisDisponiveis extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

@@ -2,10 +2,9 @@
 
 namespace App\Filament\Auth;
 
-use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContract;
 use Livewire\Component;
 
-class LoginResponse implements LoginResponseContract
+class LoginResponse implements \Filament\Auth\Http\Responses\Contracts\LoginResponse
 {
     public function toResponse($request)
     {

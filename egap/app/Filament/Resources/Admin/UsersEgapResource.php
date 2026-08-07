@@ -2,6 +2,26 @@
 
 namespace App\Filament\Resources\Admin;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Closure;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Grid;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Admin\UsersEgapResource\Pages\ListUsersEgaps;
+use App\Filament\Resources\Admin\UsersEgapResource\Pages\CreateUsersEgap;
+use App\Filament\Resources\Admin\UsersEgapResource\Pages\EditUsersEgap;
+use Filament\Schemas\Components\Utilities\Set;
 use App\Filament\Clusters\AdminEgapCluster;
 use App\Filament\Resources\Admin\UsersEgapResource\Pages;
 use App\Models\Admin\InfoUser;
@@ -10,14 +30,9 @@ use App\Models\Cadastro\Setores;
 use App\Models\User;
 use App\Models\UserEgap;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
-use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -30,44 +45,44 @@ class UsersEgapResource extends Resource
 
     protected static ?string $model = UserEgap::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Usuários EGAP';
     protected static ?string $cluster = AdminEgapCluster::class;
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?string $slug = 'users-egap';
     protected static ?string $modelLabel = 'Usuário EGAP';
     protected static ?string $pluralModelLabel = 'Usuários EGAP';
     protected static ?int $navigationSort = 1;
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Conta')
+        return $schema
+            ->components([
+                Section::make('Conta')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Nome')
                             ->required()
                             ->maxLength(400),
-                        Forms\Components\TextInput::make('username')
+                        TextInput::make('username')
                             ->label('Login')
                             ->required()
                             ->maxLength(150),
-                        Forms\Components\TextInput::make('email')
+                        TextInput::make('email')
                             ->label('Email')
                             ->required()
                             ->suffix(static::EMAIL_DOMAIN, true)
                             ->helperText('Informe apenas a parte antes de @tjes.jus.br.')
                             ->formatStateUsing(fn (?string $state): ?string => static::extractEmailLocalPart($state))
                             ->dehydrateStateUsing(fn (?string $state): ?string => static::buildInstitutionalEmail($state))
-                            ->rule(fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail): void {
+                            ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail): void {
                                 if (! static::isValidInstitutionalEmailInput($value)) {
                                     $fail('Informe apenas o usuário do e-mail institucional.');
                                 }
                             })
                             ->maxLength(100 - strlen(static::EMAIL_DOMAIN)),
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label('Senha')
                             ->password()
                             ->revealable()
@@ -76,25 +91,25 @@ class UsersEgapResource extends Resource
                             ->maxLength(100),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Acesso')
+                Section::make('Acesso')
                     ->schema([
-                        Forms\Components\Toggle::make('block')
+                        Toggle::make('block')
                             ->label('Bloqueado?'),
-                        Forms\Components\Toggle::make('sendEmail')
+                        Toggle::make('sendEmail')
                             ->label('Recebe email?'),
-                        Forms\Components\Toggle::make('requireReset')
+                        Toggle::make('requireReset')
                             ->label('Exigir reset de senha?'),
                     ])
                     ->columns(3),
-                Forms\Components\Section::make('Dados Pessoais')
+                Section::make('Dados Pessoais')
                     ->schema([
-                        Forms\Components\TextInput::make('cpf')
+                        TextInput::make('cpf')
                             ->label('CPF')
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('matricula')
+                        TextInput::make('matricula')
                             ->label('Matricula')
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('cargo')
+                        TextInput::make('cargo')
                             ->label('Cargo')
                             ->maxLength(255)
                             ->columnSpanFull(),
@@ -110,21 +125,21 @@ class UsersEgapResource extends Resource
             ->defaultPaginationPageOption(25)
             ->defaultSort('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nome')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('username')
+                TextColumn::make('username')
                     ->label('Login')
                     ->searchable()
                     ->badge()
                     ->alignCenter()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
                     ->alignCenter(),
-                Tables\Columns\IconColumn::make('block')
+                IconColumn::make('block')
                     ->label('Acesso')
                     ->alignCenter()
                     ->icon(fn (bool $state): string => $state ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
@@ -134,8 +149,8 @@ class UsersEgapResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\Action::make('lotacao')
+            ->recordActions([
+                Action::make('lotacao')
                     ->color('gray')
                     ->label('Lotação')
                     ->icon('heroicon-o-building-office-2')
@@ -143,7 +158,7 @@ class UsersEgapResource extends Resource
                     ->modalWidth('5xl')
                     ->modalSubmitAction(false)
                     ->extraModalFooterActions([
-                        Tables\Actions\Action::make('visualizar_lotacao')
+                        Action::make('visualizar_lotacao')
                             ->label('Visualizar')
                             ->icon('heroicon-o-eye')
                             ->color('gray')
@@ -151,8 +166,8 @@ class UsersEgapResource extends Resource
                             ->fillForm(fn (UserEgap $record): array => static::getLotacaoViewData($record))
                             ->modalHeading('Visualizar lotação')
                             ->modalSubmitAction(false)
-                            ->form(static::getLotacaoViewFormSchema()),
-                        Tables\Actions\Action::make('editar_lotacao')
+                            ->schema(static::getLotacaoViewFormSchema()),
+                        Action::make('editar_lotacao')
                             ->label('Editar')
                             ->icon('heroicon-o-pencil-square')
                             ->color('warning')
@@ -160,7 +175,7 @@ class UsersEgapResource extends Resource
                             ->fillForm(fn (UserEgap $record): array => static::getLotacaoEditData($record))
                             ->modalHeading('Editar lotação')
                             ->modalSubmitActionLabel('Salvar')
-                            ->form(static::getLotacaoEditFormSchema())
+                            ->schema(static::getLotacaoEditFormSchema())
                             ->action(function (array $data, UserEgap $record): void {
                                 $lotacao = $record->lotacoes()->find($data['lotacao_id'] ?? null);
 
@@ -184,7 +199,7 @@ class UsersEgapResource extends Resource
                                     ->success()
                                     ->send();
                             }),
-                        Tables\Actions\Action::make('excluir_lotacao')
+                        Action::make('excluir_lotacao')
                             ->label('Excluir')
                             ->icon('heroicon-o-trash')
                             ->color('danger')
@@ -193,8 +208,8 @@ class UsersEgapResource extends Resource
                             ->modalHeading('Excluir lotação')
                             ->modalDescription('Selecione a lotação que deve ser removida.')
                             ->requiresConfirmation()
-                            ->form([
-                                Forms\Components\Select::make('lotacao_id')
+                            ->schema([
+                                Select::make('lotacao_id')
                                     ->label('Lotação')
                                     ->options(fn (UserEgap $record): array => static::getLotacaoOptions($record))
                                     ->required(),
@@ -219,7 +234,7 @@ class UsersEgapResource extends Resource
                                     ->send();
                             }),
                     ])
-                    ->infolist([
+                    ->schema([
                         Section::make('Lotações')
                             ->schema([
                                 TextEntry::make('lotacoes_vazias')
@@ -250,7 +265,7 @@ class UsersEgapResource extends Resource
                                     ->visible(fn (UserEgap $record): bool => $record->lotacoes()->exists()),
                             ]),
                     ]),
-                Tables\Actions\Action::make('dados_pessoais')
+                Action::make('dados_pessoais')
                     ->color('gray')
                     ->label('Dados Pessoais')
                     ->icon('heroicon-o-identification')
@@ -258,22 +273,22 @@ class UsersEgapResource extends Resource
                     ->modalWidth('4xl')
                     ->modalSubmitAction(false)
                     ->extraModalFooterActions([
-                        Tables\Actions\Action::make('visualizar_dados_pessoais')
+                        Action::make('visualizar_dados_pessoais')
                             ->label('Visualizar')
                             ->icon('heroicon-o-eye')
                             ->color('gray')
                             ->fillForm(fn (UserEgap $record): array => static::getInfoUserDisplayData($record))
                             ->modalHeading('Visualizar dados pessoais')
                             ->modalSubmitAction(false)
-                            ->form(static::getInfoUserViewFormSchema()),
-                        Tables\Actions\Action::make('editar_dados_pessoais')
+                            ->schema(static::getInfoUserViewFormSchema()),
+                        Action::make('editar_dados_pessoais')
                             ->label('Editar')
                             ->icon('heroicon-o-pencil-square')
                             ->color('warning')
                             ->fillForm(fn (UserEgap $record): array => static::getInfoUserEditData($record))
                             ->modalHeading('Editar dados pessoais')
                             ->modalSubmitActionLabel('Salvar')
-                            ->form(static::getInfoUserEditFormSchema())
+                            ->schema(static::getInfoUserEditFormSchema())
                             ->action(function (array $data, UserEgap $record): void {
                                 $infoUser = $record->infoUser()->updateOrCreate(
                                     ['usuario_id' => $record->id],
@@ -291,7 +306,7 @@ class UsersEgapResource extends Resource
                                     ->success()
                                     ->send();
                             }),
-                        Tables\Actions\Action::make('excluir_dados_pessoais')
+                        Action::make('excluir_dados_pessoais')
                             ->label('Excluir')
                             ->icon('heroicon-o-trash')
                             ->color('danger')
@@ -309,7 +324,7 @@ class UsersEgapResource extends Resource
                                     ->send();
                             }),
                     ])
-                    ->infolist([
+                    ->schema([
                         Section::make('Conta')
                             ->schema([
                                 Grid::make(2)
@@ -346,20 +361,20 @@ class UsersEgapResource extends Resource
                                     ]),
                             ]),
                     ]),
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -379,9 +394,9 @@ class UsersEgapResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsersEgaps::route('/'),
-            'create' => Pages\CreateUsersEgap::route('/create'),
-            'edit' => Pages\EditUsersEgap::route('/{record}/edit'),
+            'index' => ListUsersEgaps::route('/'),
+            'create' => CreateUsersEgap::route('/create'),
+            'edit' => EditUsersEgap::route('/{record}/edit'),
         ];
     }
 
@@ -457,7 +472,7 @@ class UsersEgapResource extends Resource
     protected static function getLotacaoViewFormSchema(): array
     {
         return [
-            Forms\Components\Select::make('lotacao_id')
+            Select::make('lotacao_id')
                 ->label('Lotacao')
                 ->options(fn (UserEgap $record): array => static::getLotacaoOptions($record))
                 ->live()
@@ -465,15 +480,15 @@ class UsersEgapResource extends Resource
                     static::fillLotacaoDisplayFields($state, $set);
                 })
                 ->required(),
-            Forms\Components\TextInput::make('login_label')
+            TextInput::make('login_label')
                 ->label('Login')
                 ->disabled()
                 ->dehydrated(false),
-            Forms\Components\TextInput::make('unidade_judiciaria_label')
+            TextInput::make('unidade_judiciaria_label')
                 ->label('Unidade Judiciaria')
                 ->disabled()
                 ->dehydrated(false),
-            Forms\Components\TextInput::make('setor_label')
+            TextInput::make('setor_label')
                 ->label('Setor')
                 ->disabled()
                 ->dehydrated(false),
@@ -483,7 +498,7 @@ class UsersEgapResource extends Resource
     protected static function getLotacaoEditFormSchema(): array
     {
         return [
-            Forms\Components\Select::make('lotacao_id')
+            Select::make('lotacao_id')
                 ->label('Lotacao')
                 ->options(fn (UserEgap $record): array => static::getLotacaoOptions($record))
                 ->live()
@@ -496,9 +511,9 @@ class UsersEgapResource extends Resource
         ];
     }
 
-    protected static function makeSetorSelect(string $name, string $label): Forms\Components\Select
+    protected static function makeSetorSelect(string $name, string $label): Select
     {
-        return Forms\Components\Select::make($name)
+        return Select::make($name)
             ->label($label)
             ->searchable()
             ->getSearchResultsUsing(fn (string $search): array => static::searchSetores($search))
@@ -566,15 +581,15 @@ class UsersEgapResource extends Resource
     protected static function getInfoUserViewFormSchema(): array
     {
         return [
-            Forms\Components\TextInput::make('cpf')
+            TextInput::make('cpf')
                 ->label('CPF')
                 ->disabled()
                 ->dehydrated(false),
-            Forms\Components\TextInput::make('matricula')
+            TextInput::make('matricula')
                 ->label('Matricula')
                 ->disabled()
                 ->dehydrated(false),
-            Forms\Components\TextInput::make('cargo')
+            TextInput::make('cargo')
                 ->label('Cargo')
                 ->disabled()
                 ->dehydrated(false),
@@ -584,13 +599,13 @@ class UsersEgapResource extends Resource
     protected static function getInfoUserEditFormSchema(): array
     {
         return [
-            Forms\Components\TextInput::make('cpf')
+            TextInput::make('cpf')
                 ->label('CPF')
                 ->maxLength(255),
-            Forms\Components\TextInput::make('matricula')
+            TextInput::make('matricula')
                 ->label('Matricula')
                 ->maxLength(255),
-            Forms\Components\TextInput::make('cargo')
+            TextInput::make('cargo')
                 ->label('Cargo')
                 ->maxLength(255),
         ];

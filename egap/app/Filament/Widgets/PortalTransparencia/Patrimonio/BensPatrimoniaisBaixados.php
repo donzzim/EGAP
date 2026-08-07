@@ -7,7 +7,7 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 
 class BensPatrimoniaisBaixados extends BaseChart
 {
-    protected static ?string $heading = 'Bens Patrimoniais Baixados por Ano';
+    protected ?string $heading = 'Bens Patrimoniais Baixados por Ano';
 
     protected function getData(): array
     {

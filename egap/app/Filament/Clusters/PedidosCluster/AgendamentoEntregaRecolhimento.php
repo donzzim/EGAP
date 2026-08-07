@@ -2,6 +2,21 @@
 
 namespace App\Filament\Clusters\PedidosCluster;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Support\Enums\Width;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Textarea;
+use RuntimeException;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Agendamento\Materiais;
 use App\Models\Agendamento\Regiao;
@@ -13,15 +28,9 @@ use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Models\UserEgap;
 use Filament\Forms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -38,14 +47,14 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     private const SETOR_PATRIMONIO_ID = 1239;
     private const TIPO_TRANSPORTE_CARGA = '2';
     private const SITUACAO_EM_ANALISE = 6;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static string $view = 'filament.pages.pedidos.agendamento-entrega-recolhimento';
+    protected string $view = 'filament.pages.pedidos.agendamento-entrega-recolhimento';
 
     protected static ?string $navigationLabel = 'Agendamento da Entrega/Recolhimento';
 
@@ -54,9 +63,9 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
 
     protected static ?string $slug = 'agendamento-entrega-recolhimento';
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     public function table(Table $table): Table
@@ -64,44 +73,44 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
         return $table
             ->query($this->getTableQuery())
             ->columns([
-                Tables\Columns\TextColumn::make('tipo_fluxo')
+                TextColumn::make('tipo_fluxo')
                     ->label('Entrega/Recolhimento')
                     ->state(fn (Termo $record): string => $this->inferFluxo($record))
                     ->badge()
                     ->color(fn (Termo $record): string => $this->inferFluxo($record) === 'Entrega' ? 'success' : 'warning'),
-                Tables\Columns\TextColumn::make('setor_anterior')
+                TextColumn::make('setor_anterior')
                     ->label('Setor anterior')
                     ->state(fn (Termo $record): string => $this->getSetorAnterior($record))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $this->applySetorAnteriorSearch($query, $search))
                     ->wrap(),
-                Tables\Columns\TextColumn::make('complemento_anterior')
+                TextColumn::make('complemento_anterior')
                     ->label('Complemento Anterior')
                     ->state(fn (Termo $record): ?string => $this->getComplementoAnterior($record))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $this->applyComplementoAnteriorSearch($query, $search))
                     ->toggleable()
                     ->placeholder('-'),
-                Tables\Columns\TextColumn::make('setor_atual')
+                TextColumn::make('setor_atual')
                     ->label('Setor Atual')
                     ->state(fn (Termo $record): string => $this->getSetorAtual($record))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $this->applySetorAtualSearch($query, $search))
                     ->wrap(),
-                Tables\Columns\TextColumn::make('complemento_atual')
+                TextColumn::make('complemento_atual')
                     ->label('Complemento Atual')
                     ->state(fn (Termo $record): ?string => $this->getComplementoAtual($record))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $this->applyComplementoAtualSearch($query, $search))
                     ->toggleable()
                     ->placeholder('-'),
-                Tables\Columns\TextColumn::make('transferencia_atualizada_em')
+                TextColumn::make('transferencia_atualizada_em')
                     ->label('Atualizado em')
                     ->state(fn (Termo $record): mixed => $this->getTransferenciaAtualizadaEm($record))
                     ->dateTime('d/m/Y H:i')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('transferencia_atualizada_por')
+                TextColumn::make('transferencia_atualizada_por')
                     ->label('Atualizado por')
                     ->state(fn (Termo $record): ?string => $this->getTransferenciaAtualizadaPor($record))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $this->applyTransferenciaAtualizadaPorSearch($query, $search))
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('termo_numero')
+                TextColumn::make('termo_numero')
                     ->label('Termo')
                     ->state(fn (Termo $record): string => "{$record->num_termo}/{$record->ano_termo}")
                     ->sortable(query: fn (Builder $query, string $direction): Builder => $query
@@ -113,12 +122,12 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                                 ->where($this->qualifyTermoColumn('num_termo'), 'like', "%{$search}%")
                                 ->orWhere($this->qualifyTermoColumn('ano_termo'), 'like', "%{$search}%");
                         })),
-                Tables\Columns\TextColumn::make('situacao_termo')
+                TextColumn::make('situacao_termo')
                     ->label('Situacao Termo')
                     ->state(fn (Termo $record): string => $this->getArquivoSituacao($record) === 0 ? 'Pendente' : 'Invalidado')
                     ->badge()
                     ->color(fn (Termo $record): string => $this->getArquivoSituacao($record) === 0 ? 'warning' : 'danger'),
-                Tables\Columns\TextColumn::make('arquivo_observacao')
+                TextColumn::make('arquivo_observacao')
                     ->label('Observacao')
                     ->state(fn (Termo $record): ?string => $this->getArquivoObservacao($record))
                     ->limit(40)
@@ -126,7 +135,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                     ->wrap()
                     ->toggleable()
                     ->placeholder('-'),
-                Tables\Columns\TextColumn::make('pedido_no')
+                TextColumn::make('pedido_no')
                     ->label('Pedido')
                     ->state(fn (Termo $record): mixed => $this->getPedidoNo($record))
                     ->alignCenter()
@@ -134,7 +143,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                         ->orderBy($this->getTransferenciaPedidoNoSubquery(), $direction)
                         ->orderBy($this->qualifyTermoColumn('pedido_no'), $direction))
                     ->searchable(query: fn (Builder $query, string $search): Builder => $this->applyPedidoSearch($query, $search)),
-                Tables\Columns\TextColumn::make('id_solicitacao')
+                TextColumn::make('id_solicitacao')
                     ->label('Id Solicitacao')
                     ->state(fn (Termo $record): ?int => $this->getSolicitacaoId($record))
                     ->alignCenter()
@@ -142,7 +151,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                         ->orderBy($this->getSolicitacaoIdSubquery(), $direction))
                     ->placeholder('-')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('situacao_solicitacao')
+                TextColumn::make('situacao_solicitacao')
                     ->label('Situacao da Solicitacao')
                     ->state(fn (Termo $record): ?string => $this->getSituacaoSolicitacaoDescricao($record))
                     ->badge()
@@ -154,7 +163,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                     ->wrap(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('arquivo_situacao')
+                SelectFilter::make('arquivo_situacao')
                     ->label('Situação do termo')
                     ->options([
                         '0' => 'Pendente',
@@ -167,7 +176,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                                 $arquivoQuery->where('situacao', $data['value']);
                             })
                         )),
-                Tables\Filters\SelectFilter::make('tipo_fluxo')
+                SelectFilter::make('tipo_fluxo')
                     ->label('Fluxo')
                     ->options([
                         'Entrega' => 'Entrega',
@@ -178,7 +187,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                             filled($data['value'] ?? null),
                             fn (Builder $builder): Builder => $this->applyFluxoFilter($builder, $data['value'])
                         )),
-                Tables\Filters\SelectFilter::make('situacao_solicitacao_id')
+                SelectFilter::make('situacao_solicitacao_id')
                     ->label('Situação da solicitação')
                     ->options($this->getSituacoesAgendamentoOptions())
                     ->query(fn (Builder $query, array $data): Builder => $query
@@ -197,14 +206,14 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                     ->color('success')
                     ->action(fn (): StreamedResponse => $this->exportCsv()),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('materiais')
                     ->label('Materiais')
                     ->icon('heroicon-o-list-bullet')
                     ->color('gray')
                     ->visible(fn (Termo $record): bool => filled($record->ultimaTransferencia?->id))
                     ->modalHeading(fn (Termo $record): string => "Materiais do termo {$record->num_termo}/{$record->ano_termo}")
-                    ->modalWidth(MaxWidth::SevenExtraLarge)
+                    ->modalWidth(Width::SevenExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Fechar')
                     ->modalContent(fn (Termo $record) => view(
@@ -220,22 +229,22 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                     ->label(fn (Termo $record): string => filled($this->getSolicitacaoId($record)) ? 'Editar agendamento' : 'Encaminhar')
                     ->icon('heroicon-o-truck')
                     ->color('warning')
-                    ->modalWidth(MaxWidth::FiveExtraLarge)
+                    ->modalWidth(Width::FiveExtraLarge)
                     ->modalHeading(fn (Termo $record): string => filled($this->getSolicitacaoId($record))
                         ? "Editar agendamento do termo {$record->num_termo}/{$record->ano_termo}"
                         : "Encaminhar termo {$record->num_termo}/{$record->ano_termo}")
                     ->fillForm(fn (Termo $record): array => $this->getAgendamentoFormData(collect([$record])))
-                    ->form($this->getAgendamentoFormSchema())
+                    ->schema($this->getAgendamentoFormSchema())
                     ->action(function (Termo $record, array $data): void {
                         $this->salvarAgendamento(collect([$record]), $data);
                     }),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkAction::make('encaminharSelecionados')
                     ->label('Encaminhar selecionados')
                     ->icon('heroicon-o-truck')
                     ->color('warning')
-                    ->modalWidth(MaxWidth::FiveExtraLarge)
+                    ->modalWidth(Width::FiveExtraLarge)
                     ->modalHeading('Encaminhar termos selecionados')
                     ->fillForm(fn (Collection $records): array => $this->getAgendamentoFormData($records))
                     ->form($this->getAgendamentoFormSchema())
@@ -280,12 +289,12 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
     protected function getAgendamentoFormSchema(): array
     {
         return [
-            Forms\Components\Grid::make([
+            Grid::make([
                 'default' => 1,
                 'lg' => 3,
             ])
                 ->schema([
-                    Forms\Components\Select::make('id_solicitante')
+                    Select::make('id_solicitante')
                         ->label('Solicitante')
                         ->searchable()
                         ->native(false)
@@ -299,18 +308,18 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                         ->getOptionLabelUsing(fn ($value): ?string => filled($value)
                             ? UserEgap::query()->whereKey($value)->value('name')
                             : null),
-                    Forms\Components\Select::make('id_situacao')
+                    Select::make('id_situacao')
                         ->label('Situacao')
                         ->native(false)
                         ->required()
                         ->options($this->getSituacoesAgendamentoOptions()),
-                    Forms\Components\Select::make('regiao')
+                    Select::make('regiao')
                         ->label('Regiao')
                         ->native(false)
                         ->searchable()
                         ->required()
                         ->options($this->getRegioesOptions()),
-                    Forms\Components\Select::make('unidade_solicitante')
+                    Select::make('unidade_solicitante')
                         ->label('Unidade solicitante')
                         ->native(false)
                         ->searchable()
@@ -326,18 +335,18 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                                     : null,
                             );
                         }),
-                    Forms\Components\Select::make('setor_solicitante')
+                    Select::make('setor_solicitante')
                         ->label('Setor solicitante')
                         ->native(false)
                         ->searchable()
                         ->required()
                         ->disabled(fn (Get $get): bool => blank($get('unidade_solicitante')))
                         ->options(fn (Get $get): array => $this->getSetoresDaUnidadeOptions($get('unidade_solicitante'))),
-                    Forms\Components\TextInput::make('local_saida')
+                    TextInput::make('local_saida')
                         ->label('Local de saida')
                         ->required()
                         ->maxLength(255),
-                    Forms\Components\TextInput::make('local_destino')
+                    TextInput::make('local_destino')
                         ->label('Local de destino')
                         ->required()
                         ->maxLength(255)
@@ -345,22 +354,22 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                             'default' => 1,
                             'lg' => 2,
                         ]),
-                    Forms\Components\DatePicker::make('data_inicio')
+                    DatePicker::make('data_inicio')
                         ->label('Data inicio')
                         ->native(false)
                         ->displayFormat('d/m/Y'),
-                    Forms\Components\TimePicker::make('hora_inicio')
+                    TimePicker::make('hora_inicio')
                         ->label('Hora inicio')
                         ->seconds(false),
-                    Forms\Components\DatePicker::make('data_termino')
+                    DatePicker::make('data_termino')
                         ->label('Data termino')
                         ->native(false)
                         ->displayFormat('d/m/Y'),
-                    Forms\Components\TimePicker::make('hora_termino')
+                    TimePicker::make('hora_termino')
                         ->label('Hora termino')
                         ->seconds(false),
                 ]),
-            Forms\Components\Textarea::make('justificativa_texto')
+            Textarea::make('justificativa_texto')
                 ->label('Justificativa')
                 ->required()
                 ->rows(5)
@@ -452,7 +461,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
                 $usuarioId = auth()->id();
 
                 if (! $usuarioId) {
-                    throw new \RuntimeException('Usuario autenticado nao encontrado.');
+                    throw new RuntimeException('Usuario autenticado nao encontrado.');
                 }
 
                 $record = $records->first();

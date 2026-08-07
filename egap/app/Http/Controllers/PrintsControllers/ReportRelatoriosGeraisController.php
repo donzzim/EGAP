@@ -1062,13 +1062,13 @@ class ReportRelatoriosGeraisController extends Controller
 
                 $dates = [];
                 if ($item->data_aquisicao && $item->data_aquisicao != '0000-00-00 00:00:00') {
-                    $dates[] = \Carbon\Carbon::parse($item->data_aquisicao)->format('d/m/Y');
+                    $dates[] = Carbon::parse($item->data_aquisicao)->format('d/m/Y');
                 }
                 if ($item->data_construcao && $item->data_construcao != '0000-00-00 00:00:00') {
-                    $dates[] = \Carbon\Carbon::parse($item->data_construcao)->format('d/m/Y');
+                    $dates[] = Carbon::parse($item->data_construcao)->format('d/m/Y');
                 }
                 if ($item->data_incorporacao && $item->data_incorporacao != '0000-00-00 00:00:00') {
-                    $dates[] = \Carbon\Carbon::parse($item->data_incorporacao)->format('d/m/Y');
+                    $dates[] = Carbon::parse($item->data_incorporacao)->format('d/m/Y');
                 }
                 $item->datas_concat = implode('/<br>', $dates);
 
@@ -1366,7 +1366,7 @@ class ReportRelatoriosGeraisController extends Controller
                 }
 
                 $item->tipo_doc_desc = $item->tipo_documento == 1 ? 'Nota Fiscal' : 'Nota Fiscal/Doação';
-                $item->data_doc_formatada = $item->data_documento ? \Carbon\Carbon::parse($item->data_documento)->format('d/m/Y') : '';
+                $item->data_doc_formatada = $item->data_documento ? Carbon::parse($item->data_documento)->format('d/m/Y') : '';
                 return $item;
             });
 
@@ -1792,9 +1792,9 @@ class ReportRelatoriosGeraisController extends Controller
             ->orderBy('de.Descricao')
             ->get()
             ->map(function($i) {
-                $i->data_protocolo_formatada = \Carbon\Carbon::parse($i->date_time)->format('d/m/Y');
+                $i->data_protocolo_formatada = Carbon::parse($i->date_time)->format('d/m/Y');
                 $i->validado_em_formatada = ($i->data_validacao && $i->data_validacao != '0000-00-00 00:00:00')
-                    ? \Carbon\Carbon::parse($i->data_validacao)->format('d/m/Y')
+                    ? Carbon::parse($i->data_validacao)->format('d/m/Y')
                     : '';
                 $qtdValidada = ($i->quantidade_validada === null || $i->quantidade_validada === '') ? $i->qtde_solicitada : $i->quantidade_validada;
                 $i->qtde_validada = $qtdValidada;
@@ -1942,7 +1942,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->get()
             ->map(function($item) {
                 $item->grupo_desc = ($item->id_tipo_material == 'C') ? 'Materiais de Consumo' : 'Materiais de Consumo Duráveis';
-                $item->data_formatada = $item->atualizado_em ? \Carbon\Carbon::parse($item->atualizado_em)->format('d/m/Y') : '';
+                $item->data_formatada = $item->atualizado_em ? Carbon::parse($item->atualizado_em)->format('d/m/Y') : '';
                 return $item;
             });
 
@@ -2196,7 +2196,7 @@ class ReportRelatoriosGeraisController extends Controller
             'dadosAgrupados' => $dadosAgrupados,
             'data_inicio_padrao' => $d->iniDate,
             'data_termino_padrao' => $d->fimDate,
-            'periodoStr' => \Carbon\Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . \Carbon\Carbon::parse($d->fimDate)->format('d/m/Y')
+            'periodoStr' => Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . Carbon::parse($d->fimDate)->format('d/m/Y')
         ]);
     }
 
@@ -2259,7 +2259,7 @@ class ReportRelatoriosGeraisController extends Controller
             'dadosAgrupados' => $dadosAgrupados,
             'data_inicio_padrao' => $d->iniDate,
             'data_termino_padrao' => $d->fimDate,
-            'periodoStr' => \Carbon\Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . \Carbon\Carbon::parse($d->fimDate)->format('d/m/Y')
+            'periodoStr' => Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . Carbon::parse($d->fimDate)->format('d/m/Y')
         ]);
     }
 

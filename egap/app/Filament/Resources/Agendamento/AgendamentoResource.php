@@ -2,18 +2,27 @@
 
 namespace App\Filament\Resources\Agendamento;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Actions\Action;
+use App\Filament\Resources\Agendamento\SolicitacaoResource\Pages\ListSolicitacaos;
+use App\Filament\Resources\Agendamento\SolicitacaoResource\Pages\CreateSolicitacao;
+use App\Filament\Resources\Agendamento\SolicitacaoResource\Pages\EditSolicitacao;
 use App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Tables\Actions\Action;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -23,27 +32,27 @@ class AgendamentoResource extends Resource
 {
     protected static ?string $model = Solicitacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Agendamento';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
     protected static ?string $slug = 'agendamento/agendamento-de-veiculos';
     protected static ?string $modelLabel = 'Solicitação';
     protected static ?string $pluralModelLabel = 'Solicitações';
     protected static ?string $navigationLabel = 'Agendamento de Veículos';
     protected static ?int $navigationSort = 4;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-            Forms\Components\Tabs::make('Solicitação')
+        return $schema
+            ->components([
+            Tabs::make('Solicitação')
                 ->tabs([
-                    Forms\Components\Tabs\Tab::make('Dados principais')
+                    Tab::make('Dados principais')
                         ->icon('heroicon-o-identification')
                         ->schema([
-                            Forms\Components\Section::make('Informações gerais')
+                            Section::make('Informações gerais')
                                 ->description('Dados centrais da solicitação e vínculos administrativos.')
                                 ->schema([
-                                    Forms\Components\Select::make('id_solicitante')
+                                    Select::make('id_solicitante')
                                         ->label('Solicitante')
                                         ->relationship('idSolicitanteRef', 'name')
                                         ->searchable()
@@ -53,7 +62,7 @@ class AgendamentoResource extends Resource
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\Select::make('id_situacao')
+                                    Select::make('id_situacao')
                                         ->label('Situação')
                                         ->relationship('idSituacaoRef', 'Descricao')
                                         ->searchable()
@@ -63,7 +72,7 @@ class AgendamentoResource extends Resource
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\Select::make('tipo')
+                                    Select::make('tipo')
                                         ->label('Tipo')
                                         ->options([
                                             '1' => 'Agendamento de Veículos',
@@ -74,7 +83,7 @@ class AgendamentoResource extends Resource
                                         ->markAsRequired()
                                         ->placeholder('Informe o tipo da solicitação'),
 
-                                    Forms\Components\Select::make('regiao')
+                                    Select::make('regiao')
                                         ->label('Região')
                                         ->relationship('regiaoRef', 'regiao')
                                         ->searchable()
@@ -84,7 +93,7 @@ class AgendamentoResource extends Resource
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\Select::make('unidade_solicitante')
+                                    Select::make('unidade_solicitante')
                                         ->label('Unidade Judiciária')
                                         ->required()
                                         ->markAsRequired()
@@ -99,7 +108,7 @@ class AgendamentoResource extends Resource
                                         )
                                         ->afterStateUpdated(fn (Set $set) => $set('setor_solicitante', null)),
 
-                                    Forms\Components\Select::make('setor_solicitante')
+                                    Select::make('setor_solicitante')
                                         ->label('Setor solicitante')
                                         ->required()
                                         ->markAsRequired()
@@ -123,13 +132,13 @@ class AgendamentoResource extends Resource
                                 ]),
                         ]),
 
-                    Forms\Components\Tabs\Tab::make('Período')
+                    Tab::make('Período')
                         ->icon('heroicon-o-calendar-days')
                         ->schema([
-                            Forms\Components\Section::make('Datas e horários')
+                            Section::make('Datas e horários')
                                 ->description('Defina o intervalo previsto para a solicitação.')
                                 ->schema([
-                                    Forms\Components\DatePicker::make('data_inicio')
+                                    DatePicker::make('data_inicio')
                                         ->label('Data início')
                                         ->native(false)
                                         ->displayFormat('d/m/Y')
@@ -137,13 +146,13 @@ class AgendamentoResource extends Resource
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\TimePicker::make('hora_inicio')
+                                    TimePicker::make('hora_inicio')
                                         ->label('Hora início')
                                         ->seconds(false)
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\DatePicker::make('data_termino')
+                                    DatePicker::make('data_termino')
                                         ->label('Data término')
                                         ->native(false)
                                         ->displayFormat('d/m/Y')
@@ -151,7 +160,7 @@ class AgendamentoResource extends Resource
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\TimePicker::make('hora_termino')
+                                    TimePicker::make('hora_termino')
                                         ->label('Hora término')
                                         ->seconds(false)
                                         ->required()
@@ -164,20 +173,20 @@ class AgendamentoResource extends Resource
                                 ]),
                         ]),
 
-                    Forms\Components\Tabs\Tab::make('Locais e observações')
+                    Tab::make('Locais e observações')
                         ->icon('heroicon-o-map-pin')
                         ->schema([
-                            Forms\Components\Section::make('Deslocamento')
+                            Section::make('Deslocamento')
                                 ->description('Informações de origem e destino.')
                                 ->schema([
-                                    Forms\Components\TextInput::make('local_saida')
+                                    TextInput::make('local_saida')
                                         ->label('Local de saída')
                                         ->placeholder('Informe o local de saída')
                                         ->maxLength(255)
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\TextInput::make('local_destino')
+                                    TextInput::make('local_destino')
                                         ->label('Local de destino')
                                         ->placeholder('Informe o local de destino')
                                         ->maxLength(255)
@@ -186,10 +195,10 @@ class AgendamentoResource extends Resource
                                 ])
                                 ->columns(2),
 
-                            Forms\Components\Section::make('Observações e justificativas')
+                            Section::make('Observações e justificativas')
                                 ->description('Detalhamentos complementares da solicitação.')
                                 ->schema([
-                                    Forms\Components\Textarea::make('justificativa')
+                                    Textarea::make('justificativa')
                                         ->label('Justificativa')
                                         ->rows(5)
                                         ->autosize()
@@ -198,28 +207,28 @@ class AgendamentoResource extends Resource
                                         ->required()
                                         ->markAsRequired(),
 
-                                    Forms\Components\Textarea::make('motivo_cancelamento')
+                                    Textarea::make('motivo_cancelamento')
                                         ->label('Motivo do cancelamento')
                                         ->rows(4)
                                         ->autosize()
                                         ->columnSpanFull()
                                         ->placeholder('Informe o motivo do cancelamento, se houver'),
 
-                                    Forms\Components\Textarea::make('motivo_edicao')
+                                    Textarea::make('motivo_edicao')
                                         ->label('Motivo da edição')
                                         ->rows(4)
                                         ->autosize()
                                         ->columnSpanFull()
                                         ->placeholder('Informe o motivo da edição, se houver'),
 
-                                    Forms\Components\Textarea::make('finalizar')
+                                    Textarea::make('finalizar')
                                         ->label('Finalização')
                                         ->rows(4)
                                         ->autosize()
                                         ->columnSpanFull()
                                         ->placeholder('Informações de finalização'),
 
-                                    Forms\Components\TextInput::make('anexo')
+                                    TextInput::make('anexo')
                                         ->label('Anexo')
                                         ->maxLength(255)
                                         ->placeholder('Caminho ou referência do anexo'),
@@ -261,7 +270,7 @@ class AgendamentoResource extends Resource
 
                 TableColumns::text('justificativa', 'Detalhamento'),
             ])
-            ->actions([
+            ->recordActions([
                 ...TableDefaults::actions(),
                 self::agendarTableAction()
             ])
@@ -276,7 +285,7 @@ class AgendamentoResource extends Resource
             ->icon('heroicon-o-calendar-days')
             ->modalHeading(fn ($record) => 'Agendar veículo #' . $record->id)
             ->modalSubmitActionLabel('Agendar')
-            ->form([
+            ->schema([
                 TextInput::make('agendar_codigo')
                     ->label('Código'),
                 TextInput::make('agendar_descricao')
@@ -296,9 +305,9 @@ class AgendamentoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSolicitacaos::route('/'),
-            'create' => Pages\CreateSolicitacao::route('/create'),
-            'edit' => Pages\EditSolicitacao::route('/{record}/edit'),
+            'index' => ListSolicitacaos::route('/'),
+            'create' => CreateSolicitacao::route('/create'),
+            'edit' => EditSolicitacao::route('/{record}/edit'),
         ];
     }
 }

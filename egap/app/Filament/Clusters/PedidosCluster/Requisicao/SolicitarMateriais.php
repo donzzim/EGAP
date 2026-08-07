@@ -2,6 +2,15 @@
 
 namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Support\Enums\Width;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
@@ -13,24 +22,15 @@ use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -49,19 +49,19 @@ class SolicitarMateriais extends Page implements HasForms
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    protected static ?string $navigationIcon = 'heroicon-o-plus-circle';
-    protected static ?string $navigationGroup = 'Requisição';
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-plus-circle';
+    protected static string | \UnitEnum | null $navigationGroup = 'Requisição';
     protected static ?string $title = 'Pedidos - Materiais Permanentes';
     protected static ?string $slug = 'solicitar-materiais';
     protected static ?string $navigationLabel = 'Solicitar Materiais';
-    protected static string $view = 'filament.pages.pedidos.requisicao.solicitar-materiais';
+    protected string $view = 'filament.pages.pedidos.requisicao.solicitar-materiais';
 
     public ?array $data = [];
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     public function mount(): void
@@ -69,10 +69,10 @@ class SolicitarMateriais extends Page implements HasForms
         $this->form->fill($this->getDefaultFormState());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Tabs::make('Solicitação de materiais permanentes')
                     ->persistTabInQueryString()
                     ->tabs([

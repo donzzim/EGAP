@@ -7,7 +7,7 @@ use App\Models\Almoxarifado\Pedidos;
 
 class RequisicoesBensConsumoAtendidas extends BaseChart
 {
-    protected static ?string $heading = 'Requisições de Bens de Consumo Atendidas por Ano';
+    protected ?string $heading = 'Requisições de Bens de Consumo Atendidas por Ano';
 
     protected function getData(): array
     {

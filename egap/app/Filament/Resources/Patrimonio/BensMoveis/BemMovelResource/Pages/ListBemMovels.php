@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -15,7 +16,7 @@ class ListBemMovels extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo'),
         ];
     }
@@ -27,7 +28,7 @@ class ListBemMovels extends ListRecords
     }
 
     // Mantém a identidade estável das linhas durante atualizações do Livewire.
-    public function getTableRecordKey(Model $record): string
+    public function getTableRecordKey(Model|array $record): string
     {
         return (string) $record->id;
     }

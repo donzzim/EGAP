@@ -2,6 +2,9 @@
 
 namespace App\Filament\Clusters\PedidosCluster;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Support\Enums\Width;
+use RuntimeException;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Agendamento\Materiais;
 use App\Models\Agendamento\Regiao;
@@ -17,27 +20,25 @@ use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Models\Views\MaterialDepositoView;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Throwable;
 
 class AtendimentoPedidosPage extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-down-on-square-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-down-on-square-stack';
 
     protected static ?string $title = 'Atendimento de Pedidos';
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationLabel = 'Atendimento de Pedidos';
 
     protected static ?string $slug = 'atendimento-pedidos';
 
-    protected static string $view = 'filament.pages.pedidos.atendimento-pedidos';
+    protected string $view = 'filament.pages.pedidos.atendimento-pedidos';
 
     public ?int $selectedPedidoId = null;
     public ?int $selectedItemPedidoId = null;
@@ -57,9 +58,9 @@ class AtendimentoPedidosPage extends Page
     /** @var array<int> */
     public array $selectedPatrimonios = [];
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     #[On('pedido-selecionado')]
@@ -213,7 +214,7 @@ class AtendimentoPedidosPage extends Page
                 $userId = auth()->id();
 
                 if (! $userId) {
-                    throw new \RuntimeException('Usuário autenticado não encontrado.');
+                    throw new RuntimeException('Usuário autenticado não encontrado.');
                 }
 
                 /** @var Pedidos $pedido */
@@ -235,23 +236,23 @@ class AtendimentoPedidosPage extends Page
                     : max($quantidadeSolicitada - $quantidadeAtendidaAtual, 0);
 
                 if ($quantidadeSelecionada <= 0) {
-                    throw new \RuntimeException('Nenhum patrimônio foi selecionado para o atendimento.');
+                    throw new RuntimeException('Nenhum patrimônio foi selecionado para o atendimento.');
                 }
 
                 if ($quantidadeSelecionada !== $quantidadePendente) {
-                    throw new \RuntimeException('A quantidade de patrimônios selecionados deve ser igual à quantidade pendente do pedido.');
+                    throw new RuntimeException('A quantidade de patrimônios selecionados deve ser igual à quantidade pendente do pedido.');
                 }
 
                 $materialPrimeiraPalavra = $this->resolveMaterialPrimeiraPalavra($itemPedido);
 
                 if (blank($materialPrimeiraPalavra)) {
-                    throw new \RuntimeException('Nao foi possivel identificar a primeira palavra da descricao resumida do item do pedido.');
+                    throw new RuntimeException('Nao foi possivel identificar a primeira palavra da descricao resumida do item do pedido.');
                 }
 
                 $materialResumoId = $this->resolveMaterialResumoId($itemPedido);
 
                 if ($materialResumoId <= 0) {
-                    throw new \RuntimeException('Não foi possível identificar a descrição resumida do item do pedido.');
+                    throw new RuntimeException('Não foi possível identificar a descrição resumida do item do pedido.');
                 }
 
                 $materiaisCompativeis = MaterialDepositoView::query()
@@ -263,7 +264,7 @@ class AtendimentoPedidosPage extends Page
                     ->count();
 
                 if ($materiaisCompativeis !== $quantidadeSelecionada) {
-                    throw new \RuntimeException('Os patrimônios selecionados não correspondem à mesma descrição resumida do item do pedido ou não estão mais disponíveis no depósito.');
+                    throw new RuntimeException('Os patrimônios selecionados não correspondem à mesma descrição resumida do item do pedido ou não estão mais disponíveis no depósito.');
                 }
 
                 $bens = BemMovel::query()
@@ -271,7 +272,7 @@ class AtendimentoPedidosPage extends Page
                     ->get();
 
                 if ($bens->count() !== $quantidadeSelecionada) {
-                    throw new \RuntimeException('Um ou mais patrimônios selecionados não foram encontrados.');
+                    throw new RuntimeException('Um ou mais patrimônios selecionados não foram encontrados.');
                 }
 
                 $anoAtual = now()->year;

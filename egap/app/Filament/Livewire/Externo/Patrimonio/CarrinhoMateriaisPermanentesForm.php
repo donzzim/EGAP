@@ -2,11 +2,13 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Grid;
 use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
 use App\Filament\Livewire\Externo\Carrinho;
 use App\Services\Mobile\PedidosMobileService;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
@@ -27,8 +29,9 @@ use Throwable;
  * cálculo do valor do bem, registro de fases) já usada pelo aplicativo mobile
  * para o tipo "permanente", evitando duplicar essa lógica aqui.
  */
-class CarrinhoMateriaisPermanentesForm extends Carrinho
+class CarrinhoMateriaisPermanentesForm extends Carrinho implements HasActions
 {
+    use InteractsWithActions;
     /** @var array<int, array{material_id: int, descricao: string, quantidade: int, tipo_atendimento: string, patrimonio_substituido: ?string, justificativa: string, preco_unitario: float}> */
     public array $carrinho = [];
 
@@ -58,10 +61,10 @@ class CarrinhoMateriaisPermanentesForm extends Carrinho
         unset($this->carrinho[$index]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make(12)->schema($this->camposDestinoSchema()),
             ])
             ->statePath('data');

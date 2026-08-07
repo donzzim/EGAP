@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class Tributo extends Model
@@ -18,17 +19,17 @@ class Tributo extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
+        return $this->belongsTo(BemImovel::class, 'Id_imovel', 'Id');
     }
 
     public function tipoTributoRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\TipoTributo::class, 'tipo_tributo', 'id');
+        return $this->belongsTo(TipoTributo::class, 'tipo_tributo', 'id');
     }
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted(): void

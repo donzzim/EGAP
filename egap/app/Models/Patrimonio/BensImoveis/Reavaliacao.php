@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class Reavaliacao extends Model
@@ -14,17 +15,17 @@ class Reavaliacao extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'Id_imovel', 'Id');
+        return $this->belongsTo(BemImovel::class, 'Id_imovel', 'Id');
     }
 
     public function estadoConservacaoRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\EstadoConservacao::class, 'Id_estadoconservacao', 'Id');
+        return $this->belongsTo(EstadoConservacao::class, 'Id_estadoconservacao', 'Id');
     }
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted(): void

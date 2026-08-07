@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class GestorCedido extends Model
@@ -14,12 +15,12 @@ class GestorCedido extends Model
 
     public function nomeRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'nome', 'id');
+        return $this->belongsTo(UserEgap::class, 'nome', 'id');
     }
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted(): void

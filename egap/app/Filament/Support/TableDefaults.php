@@ -2,6 +2,10 @@
 
 namespace App\Filament\Support;
 
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -12,8 +16,8 @@ class TableDefaults
         return $table
             ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
-            ->actions(self::actions())
-            ->bulkActions(self::bulkActions())
+            ->recordActions(self::actions())
+            ->toolbarActions(self::bulkActions())
             ->paginated([25, 50, 100])
             ->striped();
     }
@@ -21,13 +25,13 @@ class TableDefaults
     public static function actions(): array
     {
         return [
-            Tables\Actions\EditAction::make()
+            EditAction::make()
                 ->tooltip('Editar')
                 ->hiddenLabel(),
-            Tables\Actions\ViewAction::make()
+            ViewAction::make()
                 ->tooltip('Visualizar')
                 ->hiddenLabel(),
-            Tables\Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->tooltip('Excluir')
                 ->hiddenLabel(),
         ];
@@ -36,7 +40,7 @@ class TableDefaults
     public static function bulkActions(): array
     {
         return [
-            Tables\Actions\DeleteBulkAction::make()
+            DeleteBulkAction::make()
                 ->label('Excluir'),
         ];
     }

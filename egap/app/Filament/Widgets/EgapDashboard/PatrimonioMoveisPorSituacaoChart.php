@@ -12,7 +12,7 @@ class PatrimonioMoveisPorSituacaoChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Bens móveis por situação';
+    protected ?string $heading = 'Bens móveis por situação';
 
     protected static ?int $sort = 2;
 
@@ -22,7 +22,7 @@ class PatrimonioMoveisPorSituacaoChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = app(PatrimonioDashboardService::class)->getMoveisPorSituacao($this->filters);
+        $data = app(PatrimonioDashboardService::class)->getMoveisPorSituacao($this->pageFilters);
 
         return [
             'datasets' => [

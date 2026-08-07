@@ -2,13 +2,15 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -28,8 +30,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * exatamente as regras fixas do legado (setores-polo e listas de unidades por
  * região) para preservar a mesma classificação usada pela Comissão.
  */
-class AtividadeDeCampoEmTransferenciaTable extends Component implements HasForms, HasTable
+class AtividadeDeCampoEmTransferenciaTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

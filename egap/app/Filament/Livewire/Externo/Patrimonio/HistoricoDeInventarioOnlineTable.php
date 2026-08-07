@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\SetorSelecionado;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -30,8 +32,9 @@ use Livewire\Component;
  * localizado, incluir/editar itens) é feita na Atividade de Campo; esta tela é
  * o registro histórico do que já foi apurado.
  */
-class HistoricoDeInventarioOnlineTable extends Component implements HasForms, HasTable
+class HistoricoDeInventarioOnlineTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -134,8 +137,8 @@ class HistoricoDeInventarioOnlineTable extends Component implements HasForms, Ha
                         ])
                         ->toArray()),
             ], FiltersLayout::AboveContent)
-            ->actions([])
-            ->bulkActions([])
+            ->recordActions([])
+            ->toolbarActions([])
             ->defaultSort('num_patrimonio')
             ->emptyStateHeading(
                 blank($this->setorAtual)

@@ -2,13 +2,19 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\Cadastro\ModelosResource\Pages\ListModelos;
+use App\Filament\Resources\Cadastro\ModelosResource\Pages\CreateModelos;
+use App\Filament\Resources\Cadastro\ModelosResource\Pages\EditModelos;
 use App\Filament\Resources\Cadastro\ModelosResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\ModelosResource\RelationManagers;
 use App\Models\Cadastro\Modelos;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,28 +24,28 @@ class ModelosResource extends Resource
 {
     protected static ?string $model = Modelos::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
-    protected static ?string $navigationGroup = 'Cadastro';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
     protected static ?string $navigationLabel = 'Modelos';
     protected static ?string $modelLabel = 'Modelo';
     protected static ?string $pluralModelLabel = 'Modelos';
 
     protected static ?int $navigationSort = 10;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Dados do Modelo')
+        return $schema
+            ->components([
+                Section::make('Dados do Modelo')
                     ->schema([
-                        Forms\Components\Select::make('marca')
+                        Select::make('marca')
                             ->label('Marca')
                             ->relationship('marca_ref', 'descricao')
                             ->searchable()
                             ->preload()
                             ->required(),
 
-                        Forms\Components\TextInput::make('descricao')
+                        TextInput::make('descricao')
                             ->label('Descrição do Modelo')
                             ->required()
                             ->maxLength(255)
@@ -64,9 +70,9 @@ class ModelosResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\ListModelos::route('/'),
-            'create' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\CreateModelos::route('/create'),
-            'edit' => \App\Filament\Resources\Cadastro\ModelosResource\Pages\EditModelos::route('/{record}/edit'),
+            'index' => ListModelos::route('/'),
+            'create' => CreateModelos::route('/create'),
+            'edit' => EditModelos::route('/{record}/edit'),
         ];
     }
 }

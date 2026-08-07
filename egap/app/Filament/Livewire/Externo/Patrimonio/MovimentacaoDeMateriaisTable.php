@@ -2,6 +2,10 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
 use App\Filament\Support\SetorSelecionado;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -12,8 +16,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -37,8 +39,9 @@ use Livewire\Component;
  * validação manual pela Seção de Patrimônio quando o próprio setor destinatário
  * confirma o recebimento.
  */
-class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTable
+class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -120,7 +123,7 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                         };
                     }),
             ], FiltersLayout::AboveContent)
-            ->actions([
+            ->recordActions([
                 $this->visualizarTermoAction(),
                 $this->situacaoEntregaAction(),
                 ActionGroup::make([
@@ -131,7 +134,7 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                     ->hiddenLabel()
                     ->icon('heroicon-m-ellipsis-vertical'),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort('id', 'desc')
             ->emptyStateHeading(
                 blank($this->setorAtual)
@@ -212,7 +215,7 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                 self::SITUACOES_EM_ABERTO,
                 true
             ))
-            ->form([
+            ->schema([
                 FileUpload::make('arquivo')
                     ->label('Comprovante de retirada/entrega (PDF)')
                     ->required()
@@ -244,7 +247,7 @@ class MovimentacaoDeMateriaisTable extends Component implements HasForms, HasTab
                 self::SITUACOES_EM_ABERTO,
                 true
             ))
-            ->form([
+            ->schema([
                 Textarea::make('justificativa')
                     ->label('Justificativa do cancelamento')
                     ->required()

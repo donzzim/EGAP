@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,7 @@ class ListAmortizacaos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo'),
         ];
     }

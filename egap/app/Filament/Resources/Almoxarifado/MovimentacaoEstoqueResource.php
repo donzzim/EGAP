@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\ListMovimentacaoEstoques;
+use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\CreateMovimentacaoEstoque;
+use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\EditMovimentacaoEstoque;
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
 use App\Filament\Support\MoneyInput;
@@ -14,12 +24,9 @@ use App\Models\User;
 use App\Models\UserEgap;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Forms\Set;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -33,7 +40,7 @@ class MovimentacaoEstoqueResource extends Resource
 
     protected static ?string $cluster = AlmoxarifadoCluster::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?string $navigationLabel = 'Movimentação de Estoque';
 
@@ -41,14 +48,14 @@ class MovimentacaoEstoqueResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Movimentações de Estoque';
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Dados da movimentação')
                     ->description('Identifique a data, o tipo de movimentação e o documento fiscal relacionado.')
                     ->icon('heroicon-o-arrows-right-left')
@@ -290,20 +297,20 @@ class MovimentacaoEstoqueResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                DeleteBulkAction::make(),
             ])
             ->defaultSort('id', 'desc');
     }
@@ -311,9 +318,9 @@ class MovimentacaoEstoqueResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMovimentacaoEstoques::route('/'),
-            'create' => Pages\CreateMovimentacaoEstoque::route('/create'),
-            'edit' => Pages\EditMovimentacaoEstoque::route('/{record}/edit'),
+            'index' => ListMovimentacaoEstoques::route('/'),
+            'create' => CreateMovimentacaoEstoque::route('/create'),
+            'edit' => EditMovimentacaoEstoque::route('/{record}/edit'),
         ];
     }
 }

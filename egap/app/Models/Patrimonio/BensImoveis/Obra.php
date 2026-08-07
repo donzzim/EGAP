@@ -2,6 +2,7 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class Obra extends Model
@@ -14,12 +15,12 @@ class Obra extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'id_imovel', 'Id');
+        return $this->belongsTo(BemImovel::class, 'id_imovel', 'Id');
     }
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted(): void

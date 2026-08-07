@@ -2,14 +2,19 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\ListTipoBemIntangivels;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\CreateTipoBemIntangivel;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\EditTipoBemIntangivel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\TipoBemIntagivel;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 
@@ -17,11 +22,11 @@ class TipoBemIntangivelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TipoBemIntagivel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
 
     protected static ?string $navigationLabel = 'Tipos de Intangíveis';
 
@@ -29,21 +34,21 @@ class TipoBemIntangivelResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Tipos de Bens Intangíveis';
 
-    protected static ?string $navigationGroup = 'Bens Intangíveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Intangíveis';
 
     protected static ?int $navigationSort = 3;
 
     protected static ?string $slug = 'bens-intangiveis/tipos';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Identificação do Tipo')
+        return $schema
+            ->components([
+                Section::make('Identificação do Tipo')
                     ->description('Defina a categoria utilizada para classificar os bens intangíveis.')
                     ->icon('heroicon-o-tag')
                     ->schema([
-                        Forms\Components\TextInput::make('descricao')
+                        TextInput::make('descricao')
                             ->label('Descrição')
                             ->placeholder('Ex.: Software, licença, marca ou patente')
                             ->prefixIcon('heroicon-o-tag')
@@ -71,9 +76,9 @@ class TipoBemIntangivelResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTipoBemIntangivels::route('/'),
-            'create' => Pages\CreateTipoBemIntangivel::route('/create'),
-            'edit' => Pages\EditTipoBemIntangivel::route('/{record}/edit'),
+            'index' => ListTipoBemIntangivels::route('/'),
+            'create' => CreateTipoBemIntangivel::route('/create'),
+            'edit' => EditTipoBemIntangivel::route('/{record}/edit'),
         ];
     }
 }

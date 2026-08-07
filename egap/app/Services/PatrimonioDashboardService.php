@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Throwable;
 use App\Models\Patrimonio\BensImoveis\BemImovel;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Carbon\CarbonImmutable;
@@ -170,7 +171,7 @@ class PatrimonioDashboardService
 
         try {
             return CarbonImmutable::parse($value);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }

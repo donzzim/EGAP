@@ -2,21 +2,21 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Patrimonio;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Support\Enums\Width;
 use App\Filament\Clusters\ExternoCluster;
 use App\Filament\Clusters\ExternoCluster\Concerns\SelecionaSetorAtual;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
 
 class MovimentacaoDeMateriais extends Page
 {
     use SelecionaSetorAtual;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?string $cluster = ExternoCluster::class;
 
-    protected static ?string $navigationGroup = 'Patrimônio';
+    protected static string | \UnitEnum | null $navigationGroup = 'Patrimônio';
 
     protected static ?string $slug = 'patrimonio/movimentacao-de-materiais';
 
@@ -26,16 +26,16 @@ class MovimentacaoDeMateriais extends Page
 
     protected static ?int $navigationSort = 2;
 
-    protected static string $view = 'filament.pages.externo.patrimonio.movimentacao-de-materiais';
+    protected string $view = 'filament.pages.externo.patrimonio.movimentacao-de-materiais';
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     public function getHeaderActions(): array
