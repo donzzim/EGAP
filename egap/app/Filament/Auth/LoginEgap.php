@@ -104,27 +104,16 @@ class LoginEgap extends Login
 
     public function form(Schema $schema): Schema
     {
-        return $schema;
+        return $schema
+            ->components([
+                // $this->getEmailFormComponent(),
+                $this->getLoginFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getRememberFormComponent(),
+            ])
+            ->statePath('data');
     }
 
-    /**
-     * @return array<int|string, string|\Filament\Schemas\Schema>
-     */
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(
-                $this->makeSchema()
-                    ->components([
-                        // $this->getEmailFormComponent(),
-                        $this->getLoginFormComponent(),
-                        $this->getPasswordFormComponent(),
-                        $this->getRememberFormComponent(),
-                    ])
-                    ->statePath('data'),
-            ),
-        ];
-    }
     protected function getLoginFormComponent(): Component
     {
         return TextInput::make('login')
