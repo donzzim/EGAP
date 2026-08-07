@@ -3,48 +3,56 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\EstadoConservacaoResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\EstadoConservacaoResource\Pages\CreateEstadoConservacao;
+use App\Filament\Resources\Patrimonio\BensImoveis\EstadoConservacaoResource\Pages\EditEstadoConservacao;
+use App\Filament\Resources\Patrimonio\BensImoveis\EstadoConservacaoResource\Pages\ListEstadoConservacaos;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\EstadoConservacao;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Pages\Page;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class EstadoConservacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = EstadoConservacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
+
     protected static ?string $navigationLabel = 'Estado de Conservação';
+
     protected static ?string $modelLabel = 'Estado de Conservação';
+
     protected static ?string $pluralModelLabel = 'Estados de Conservação';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 12;
+
     protected static ?string $slug = 'bens-imoveis/estado-conservacao';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('descEstadoConservacao')
+                        TextInput::make('descEstadoConservacao')
                             ->label('Estado de Conservação')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
-                    ])
+                    ]),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
@@ -57,9 +65,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListEstadoConservacaos::route('/'),
-            'create' => Pages\CreateEstadoConservacao::route('/create'),
-            'edit' => Pages\EditEstadoConservacao::route('/{record}/edit'),
+            'index' => ListEstadoConservacaos::route('/'),
+            'create' => CreateEstadoConservacao::route('/create'),
+            'edit' => EditEstadoConservacao::route('/{record}/edit'),
         ];
     }
 }

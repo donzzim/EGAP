@@ -8,7 +8,7 @@ use App\Models\Patrimonio\BensMoveis\ItemInventario;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use Illuminate\Support\Carbon;
 
-class TermoInventarioPrintController extends Controller
+class TermoInventarioPrintController extends PrintController
 {
     public function print($id)
     {

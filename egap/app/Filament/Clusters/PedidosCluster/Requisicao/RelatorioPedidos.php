@@ -8,14 +8,14 @@ use App\Models\Almoxarifado\SituacaoPedido;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
-use Filament\Forms\Components\Grid;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -35,11 +35,11 @@ class RelatorioPedidos extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-chart-bar';
 
-    protected static ?string $navigationGroup = 'Requisição';
+    protected static string|\UnitEnum|null $navigationGroup = 'Requisição';
 
     protected static ?string $title = 'Relatório de Pedidos';
 
@@ -47,11 +47,11 @@ class RelatorioPedidos extends Page implements HasTable
 
     protected static ?string $navigationLabel = 'Relatório de Pedidos';
 
-    protected static string $view = 'filament.pages.pedidos.requisicao.relatorio-pedidos';
+    protected string $view = 'filament.pages.pedidos.requisicao.relatorio-pedidos';
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     public function table(Table $table): Table
@@ -268,7 +268,7 @@ class RelatorioPedidos extends Page implements HasTable
 
                 Filter::make('localizacao')
                     ->label('Localização')
-                    ->form([
+                    ->schema([
                         Grid::make(12)
                             ->schema([
                                 Select::make('unidade_judiciaria')
@@ -317,7 +317,7 @@ class RelatorioPedidos extends Page implements HasTable
 
                 Filter::make('mes_referencia')
                     ->label('Mes de referencia')
-                    ->form([
+                    ->schema([
                         Select::make('mes')
                             ->label('Mes')
                             ->options($this->getMesesOptions())
@@ -361,13 +361,13 @@ class RelatorioPedidos extends Page implements HasTable
                     ->color('success')
                     ->action(fn (): StreamedResponse => $this->exportCsv()),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('detalhes')
                     ->label('Detalhes')
                     ->icon('heroicon-o-eye')
                     ->color('gray')
                     ->modalHeading(fn (PedidoModel $record): string => "Relatorio do pedido {$record->id}")
-                    ->modalWidth(MaxWidth::SevenExtraLarge)
+                    ->modalWidth(Width::SevenExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Fechar')
                     ->modalContent(fn (PedidoModel $record) => view(
@@ -395,7 +395,7 @@ class RelatorioPedidos extends Page implements HasTable
         $restantes = $materiais->count() - $visiveis->count();
 
         if ($restantes > 0) {
-            $visiveis->push('+' . $restantes . ' material(is)');
+            $visiveis->push('+'.$restantes.' material(is)');
         }
 
         return $visiveis->implode('<br>');
@@ -408,13 +408,13 @@ class RelatorioPedidos extends Page implements HasTable
             ->first();
 
         $linhas = [
-            'Itens: ' . $record->itens->count(),
-            'Pendentes: ' . $record->itens->filter(fn ($item): bool => $item->quantidade_pendente > 0)->count(),
-            'Ultima fase: ' . ($ultimaFase?->Descricao ?? 'Sem historico registrado'),
+            'Itens: '.$record->itens->count(),
+            'Pendentes: '.$record->itens->filter(fn ($item): bool => $item->quantidade_pendente > 0)->count(),
+            'Ultima fase: '.($ultimaFase?->Descricao ?? 'Sem historico registrado'),
         ];
 
         if ($ultimaFase?->date_time) {
-            $linhas[] = 'Atualizado em: ' . $ultimaFase->date_time->format('d/m/Y H:i');
+            $linhas[] = 'Atualizado em: '.$ultimaFase->date_time->format('d/m/Y H:i');
         }
 
         return collect($linhas)
@@ -453,7 +453,7 @@ class RelatorioPedidos extends Page implements HasTable
     {
         $columns = $this->getVisibleColumnsForExport();
         $records = $this->getFilteredSortedTableQuery()->get();
-        $filename = 'relatorio_pedidos_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'relatorio_pedidos_'.now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function () use ($columns, $records): void {
             $handle = fopen('php://output', 'wb');

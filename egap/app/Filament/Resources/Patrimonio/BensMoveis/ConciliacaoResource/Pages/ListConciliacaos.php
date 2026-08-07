@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListConciliacaos extends ListRecords
@@ -13,8 +13,8 @@ class ListConciliacaos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

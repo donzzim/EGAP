@@ -6,24 +6,23 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
+use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\InteractsWithFormActions;
-use Filament\Pages\Auth\Login as BaseLogin;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @property Form $form
+ * @property Schema $form
  */
-class LoginEgap extends BaseLogin
+class LoginEgap extends Login
 {
     use InteractsWithFormActions;
     use WithRateLimiting;
@@ -31,7 +30,7 @@ class LoginEgap extends BaseLogin
     /**
      * @var view-string
      */
-    protected static string $view = 'filament.login';
+    protected string $view = 'filament.login';
 
     /**
      * @var array<string, mixed> | null
@@ -50,7 +49,6 @@ class LoginEgap extends BaseLogin
     public function authenticate(): ?LoginResponse
     {
 
-
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException $exception) {
@@ -61,7 +59,7 @@ class LoginEgap extends BaseLogin
 
         $data = $this->form->getState();
 
-        if (!Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
+        if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
             $this->throwFailureValidationException();
         }
 
@@ -69,7 +67,7 @@ class LoginEgap extends BaseLogin
 
         if (
             ($user instanceof FilamentUser) &&
-            (!$user->canAccessPanel(Filament::getCurrentPanel()))
+            (! $user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
         ) {
             Filament::auth()->logout();
 
@@ -103,29 +101,18 @@ class LoginEgap extends BaseLogin
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form;
+        return $schema
+            ->components([
+                // $this->getEmailFormComponent(),
+                $this->getLoginFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getRememberFormComponent(),
+            ])
+            ->statePath('data');
     }
 
-    /**
-     * @return array<int | string, string | Form>
-     */
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(
-                $this->makeForm()
-                    ->schema([
-                        // $this->getEmailFormComponent(),
-                        $this->getLoginFormComponent(),
-                        $this->getPasswordFormComponent(),
-                        $this->getRememberFormComponent(),
-                    ])
-                    ->statePath('data'),
-            ),
-        ];
-    }
     protected function getLoginFormComponent(): Component
     {
         return TextInput::make('login')
@@ -137,6 +124,7 @@ class LoginEgap extends BaseLogin
             ->hintColor('sky')
             ->extraInputAttributes(['tabindex' => 1]);
     }
+
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')
@@ -160,7 +148,7 @@ class LoginEgap extends BaseLogin
 
         if (filament()->hasPasswordReset()) {
             $component->hintAction(
-                FormAction::make('requestPasswordReset')
+                Action::make('requestPasswordReset')
                     ->label(__('filament-panels::pages/auth/login.actions.request_password_reset.label'))
                     ->link()
                     ->url(filament()->getRequestPasswordResetUrl())
@@ -232,11 +220,12 @@ class LoginEgap extends BaseLogin
     {
         if (filter_var($data['login'], FILTER_VALIDATE_EMAIL)) {
             $login_type = 'email';
-        } else if (is_numeric($data['login'])) {
+        } elseif (is_numeric($data['login'])) {
             $login_type = 'cpf';
         } else {
             $login_type = 'login';
         }
+
         // $login_type = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
         return [
             $login_type => $data['login'],

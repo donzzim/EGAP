@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListCondicaoUsos extends ListRecords
@@ -13,7 +13,7 @@ class ListCondicaoUsos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar')
                 ->modalWidth('md')

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages;
 
 use App\Filament\Resources\Cadastro\ElementoDespesaResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListElementoDespesas extends ListRecords
@@ -13,8 +13,8 @@ class ListElementoDespesas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

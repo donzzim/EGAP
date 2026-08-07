@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Admin\UsersEgapResource\Pages;
 
 use App\Filament\Resources\Admin\UsersEgapResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUsersEgaps extends ListRecords
@@ -13,7 +13,7 @@ class ListUsersEgaps extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->visible(fn (): bool => in_array(auth()->user()?->login, ['admin', 'admin2'], true)),
         ];

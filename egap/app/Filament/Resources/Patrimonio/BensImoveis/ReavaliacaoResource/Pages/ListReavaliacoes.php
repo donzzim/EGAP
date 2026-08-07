@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListReavaliacoes extends ListRecords
@@ -13,7 +13,7 @@ class ListReavaliacoes extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Reavaliação')
                 ->modalWidth('7xl')

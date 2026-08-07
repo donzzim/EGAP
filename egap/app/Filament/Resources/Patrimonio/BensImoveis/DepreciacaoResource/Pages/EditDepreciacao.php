@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditDepreciacao extends EditRecord
@@ -15,7 +15,7 @@ class EditDepreciacao extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            DeleteAction::make()->label('Excluir'),
         ];
     }
 }

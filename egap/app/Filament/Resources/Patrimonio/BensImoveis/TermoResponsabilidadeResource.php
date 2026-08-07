@@ -3,50 +3,59 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\CreateTermoResponsabilidade;
+use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\EditTermoResponsabilidade;
+use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\ListTermoResponsabilidades;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\TermoResponsabilidade;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class TermoResponsabilidadeResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TermoResponsabilidade::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-check';
+
     protected static ?string $navigationLabel = 'Termos de Responsabilidade';
+
     protected static ?string $modelLabel = 'Termo de Responsabilidade';
+
     protected static ?string $pluralModelLabel = 'Termos de Responsabilidade';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 7;
+
     protected static ?string $slug = 'bens-imoveis/termo-responsabilidade-imoveis';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('num_termo')
+                        TextInput::make('num_termo')
                             ->label('Termo Nº')
                             ->disabled(fn (string $operation): ?int => $operation === 'create' ? true : false)
                             ->default(fn (string $operation): ?int => $operation === 'create' ? self::getNextNumTermo() : null)
                             ->numeric(),
 
-                        Forms\Components\TextInput::make('ano_termo')
+                        TextInput::make('ano_termo')
                             ->label('Ano')
                             ->numeric(),
 
-                        Forms\Components\FileUpload::make('arquivo')
+                        FileUpload::make('arquivo')
                             ->label('Arquivo')
                             ->columnSpanFull(),
                     ])->columns(2),
@@ -83,9 +92,9 @@ class TermoResponsabilidadeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTermoResponsabilidades::route('/'),
-            'create' => Pages\CreateTermoResponsabilidade::route('/create'),
-            'edit' => Pages\EditTermoResponsabilidade::route('/{record}/edit'),
+            'index' => ListTermoResponsabilidades::route('/'),
+            'create' => CreateTermoResponsabilidade::route('/create'),
+            'edit' => EditTermoResponsabilidade::route('/{record}/edit'),
         ];
     }
 }

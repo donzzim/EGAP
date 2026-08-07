@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Agendamento\TransporteResource\Pages;
 
 use App\Filament\Resources\Agendamento\TransporteResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTransporte extends EditRecord
@@ -13,7 +13,7 @@ class EditTransporte extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

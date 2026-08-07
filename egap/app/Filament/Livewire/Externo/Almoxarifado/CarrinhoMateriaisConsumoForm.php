@@ -7,10 +7,12 @@ use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Services\Mobile\PedidosMobileService;
-use Filament\Forms\Components\Grid;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
@@ -24,8 +26,10 @@ use Throwable;
  * {@see FasePedido}) — ao contrário do fluxo de materiais permanentes, que
  * delega para {@see PedidosMobileService}.
  */
-class CarrinhoMateriaisConsumoForm extends Carrinho
+class CarrinhoMateriaisConsumoForm extends Carrinho implements HasActions
 {
+    use InteractsWithActions;
+
     protected const STATUS_EM_ANALISE = 6;
 
     protected const SETOR_ALMOXARIFADO = 799;
@@ -64,10 +68,10 @@ class CarrinhoMateriaisConsumoForm extends Carrinho
             ->send();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Grid::make(12)
                     ->schema([
                         ...$this->camposDestinoSchema(),

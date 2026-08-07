@@ -8,6 +8,8 @@ use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\ItemInventario;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -30,8 +32,9 @@ use Livewire\Component;
  * localizado, incluir/editar itens) é feita na Atividade de Campo; esta tela é
  * o registro histórico do que já foi apurado.
  */
-class HistoricoDeInventarioOnlineTable extends Component implements HasForms, HasTable
+class HistoricoDeInventarioOnlineTable extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -134,8 +137,8 @@ class HistoricoDeInventarioOnlineTable extends Component implements HasForms, Ha
                         ])
                         ->toArray()),
             ], FiltersLayout::AboveContent)
-            ->actions([])
-            ->bulkActions([])
+            ->recordActions([])
+            ->toolbarActions([])
             ->defaultSort('num_patrimonio')
             ->emptyStateHeading(
                 blank($this->setorAtual)

@@ -2,37 +2,47 @@
 
 namespace App\Filament\Resources\Agendamento;
 
-use App\Filament\Resources\Agendamento\RegiaoResource\Pages;
+use App\Filament\Resources\Agendamento\RegiaoResource\Pages\CreateRegiao;
+use App\Filament\Resources\Agendamento\RegiaoResource\Pages\EditRegiao;
+use App\Filament\Resources\Agendamento\RegiaoResource\Pages\ListRegiaos;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Regiao;
 use App\Models\Cadastro\Setores;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class RegiaoResource extends Resource
 {
     protected static ?string $model = Regiao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-map';
-    protected static ?string $navigationGroup = 'Agendamento';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Agendamento';
+
     protected static ?string $modelLabel = 'Região';
+
     protected static ?string $pluralModelLabel = 'Regiões';
+
     protected static ?string $navigationLabel = 'Regiões';
+
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Dados da região')
+        return $schema->components([
+            Section::make('Dados da região')
                 ->description('Informe a descrição da região, sua sigla e a unidade vinculada.')
                 ->icon('heroicon-o-map')
                 ->schema([
-                    Forms\Components\Grid::make(12)
+                    Grid::make(12)
                         ->schema([
-                            Forms\Components\Select::make('regiao')
+                            Select::make('regiao')
                                 ->label('Região')
                                 ->options([
                                     '1' => 'Região 1',
@@ -50,14 +60,14 @@ class RegiaoResource extends Resource
                                 ->placeholder('Selecione a região atendida')
                                 ->columnSpan(12),
 
-                            Forms\Components\TextInput::make('sigla')
+                            TextInput::make('sigla')
                                 ->label('Sigla')
                                 ->required()
                                 ->maxLength(255)
                                 ->placeholder('Ex: GV, SUL, NORTE')
                                 ->columnSpan(4),
 
-                            Forms\Components\Select::make('unidade')
+                            Select::make('unidade')
                                 ->label('Unidade Judiciária')
                                 ->required()
                                 ->searchable()
@@ -85,7 +95,7 @@ class RegiaoResource extends Resource
                 TableColumns::text('regiao', 'Região', true)
                     ->weight('medium')
                     ->wrap()
-                    ->description(fn ($record) => $record->sigla ? 'Sigla: ' . $record->sigla : null),
+                    ->description(fn ($record) => $record->sigla ? 'Sigla: '.$record->sigla : null),
 
                 TableColumns::text('unidadeRef.UnidadeOrganizacional', 'Unidade')
                     ->badge()
@@ -103,9 +113,9 @@ class RegiaoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRegiaos::route('/'),
-            'create' => Pages\CreateRegiao::route('/create'),
-            'edit' => Pages\EditRegiao::route('/{record}/edit'),
+            'index' => ListRegiaos::route('/'),
+            'create' => CreateRegiao::route('/create'),
+            'edit' => EditRegiao::route('/{record}/edit'),
         ];
     }
 }

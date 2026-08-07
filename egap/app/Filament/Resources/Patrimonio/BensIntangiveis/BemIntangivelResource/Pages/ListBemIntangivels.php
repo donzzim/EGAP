@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListBemIntangivels extends ListRecords
@@ -13,7 +13,7 @@ class ListBemIntangivels extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo'),
         ];
     }

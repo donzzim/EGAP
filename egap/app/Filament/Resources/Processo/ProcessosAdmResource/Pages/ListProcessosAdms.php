@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Processo\ProcessosAdmResource\Pages;
 
 use App\Filament\Resources\Processo\ProcessosAdmResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListProcessosAdms extends ListRecords
@@ -13,7 +13,7 @@ class ListProcessosAdms extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Processo')
                 ->modalWidth('4xl')

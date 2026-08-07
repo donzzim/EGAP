@@ -2,45 +2,56 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Resources\Cadastro\FornecedoresResource\Pages;
+use App\Filament\Resources\Cadastro\FornecedoresResource\Pages\CreateFornecedores;
+use App\Filament\Resources\Cadastro\FornecedoresResource\Pages\EditFornecedores;
+use App\Filament\Resources\Cadastro\FornecedoresResource\Pages\ListFornecedores;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Fornecedores;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class FornecedoresResource extends Resource
 {
     protected static ?string $model = Fornecedores::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
+
     protected static ?string $navigationLabel = 'Fornecedores';
-    protected static ?string $navigationGroup = 'Cadastro';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?string $modelLabel = 'Fornecedor';
+
     protected static ?string $pluralModelLabel = 'Fornecedores';
+
     protected static ?int $navigationSort = 8;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Identificação do fornecedor')
+        return $schema
+            ->components([
+                Section::make('Identificação do fornecedor')
                     ->description('Cadastre os dados principais usados em pedidos, notas fiscais e consultas administrativas.')
                     ->icon('heroicon-o-building-storefront')
                     ->schema([
-                        Forms\Components\Grid::make(12)
+                        Grid::make(12)
                             ->schema([
-                                Forms\Components\TextInput::make('NomeFornecedor')
+                                TextInput::make('NomeFornecedor')
                                     ->label('Nome do Fornecedor')
                                     ->placeholder('Ex.: Empresa Modelo Ltda')
                                     ->required()
                                     ->maxLength(255)
                                     ->columnSpan(8),
 
-                                Forms\Components\Select::make('Pessoa')
+                                Select::make('Pessoa')
                                     ->label('Tipo de Pessoa')
                                     ->placeholder('Selecione o tipo')
                                     ->native(false)
@@ -52,7 +63,7 @@ class FornecedoresResource extends Resource
                                     ->required()
                                     ->columnSpan(4),
 
-                                Forms\Components\TextInput::make('CNPJ')
+                                TextInput::make('CNPJ')
                                     ->label('CNPJ')
                                     ->placeholder('00.000.000/0000-00')
                                     ->mask('99.999.999/9999-99')
@@ -90,14 +101,14 @@ class FornecedoresResource extends Resource
                 TableColumns::updatedBy('atualizado_por.name'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('Pessoa')
+                SelectFilter::make('Pessoa')
                     ->columnSpan(3)
                     ->label('Tipo de Pessoa')
                     ->options([
                         'Jurídica' => 'Jurídica',
                         'Física' => 'Física',
                     ]),
-            ], Tables\Enums\FiltersLayout::AboveContent)
+            ], FiltersLayout::AboveContent)
             ->defaultSort('NomeFornecedor');
     }
 
@@ -115,9 +126,9 @@ class FornecedoresResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFornecedores::route('/'),
-            'create' => Pages\CreateFornecedores::route('/create'),
-            'edit' => Pages\EditFornecedores::route('/{record}/edit'),
+            'index' => ListFornecedores::route('/'),
+            'create' => CreateFornecedores::route('/create'),
+            'edit' => EditFornecedores::route('/{record}/edit'),
         ];
     }
 }

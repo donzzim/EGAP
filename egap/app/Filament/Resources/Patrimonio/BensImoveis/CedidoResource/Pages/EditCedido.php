@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCedido extends EditRecord
@@ -15,7 +15,7 @@ class EditCedido extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            DeleteAction::make()->label('Excluir'),
         ];
     }
 }

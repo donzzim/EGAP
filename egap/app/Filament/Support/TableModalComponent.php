@@ -2,6 +2,8 @@
 
 namespace App\Filament\Support;
 
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -16,8 +18,9 @@ use Livewire\Component;
  * scroll interno) é sempre o mesmo, definido em
  * resources/views/livewire/support/table-modal.blade.php.
  */
-abstract class TableModalComponent extends Component implements HasForms, HasTable
+abstract class TableModalComponent extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

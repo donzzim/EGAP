@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditFabricante extends EditRecord
@@ -13,7 +13,7 @@ class EditFabricante extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

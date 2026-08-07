@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListDepreciacaos extends ListRecords
@@ -13,7 +13,7 @@ class ListDepreciacaos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo'),
         ];
     }

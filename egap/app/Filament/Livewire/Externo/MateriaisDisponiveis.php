@@ -6,6 +6,8 @@ use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Livewire\Externo\Patrimonio\MateriaisPermanentesTable;
 use App\Models\UserEgap;
 use App\Services\Almoxarifado\VisibilidadeMaterial;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -27,8 +29,9 @@ use Livewire\Component;
  * ficam a cargo de cada subclasse, pois a origem dos materiais e os dados
  * pedidos ao adicionar divergem de verdade (ver docblocks das subclasses).
  */
-abstract class MateriaisDisponiveis extends Component implements HasForms, HasTable
+abstract class MateriaisDisponiveis extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

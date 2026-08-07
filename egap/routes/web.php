@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PrintsControllers\AgendamentoMateriaisPrintController;
-use App\Http\Controllers\PrintsControllers\DepreciacaoController;
-use App\Http\Controllers\PrintsControllers\BaixaImpressaoController;
+use App\Http\Controllers\PrintsControllers\DepreciacaoPrintController;
+use App\Http\Controllers\PrintsControllers\BaixaPrintController;
 use App\Http\Controllers\PrintsControllers\PedidosPrintController;
 use App\Http\Controllers\PrintsControllers\TermoInventarioPrintController;
 use App\Http\Controllers\PrintsControllers\TermosPrintController;
@@ -23,13 +23,13 @@ Route::prefix('egap')->group(function () {
     });
 
     Route::group(['prefix' => 'patrimonio'], function () {
-        Route::get('/baixa/{id}/imprimir', [BaixaImpressaoController::class, 'imprimir'])
+        Route::get('/baixa/{id}/imprimir', [BaixaPrintController::class, 'print'])
             ->name('termo.baixa.imprimir');
 
-        Route::get('/depreciacao/{id}/imprimir', [DepreciacaoController::class, 'imprimir'])
+        Route::get('/depreciacao/{id}/imprimir', [DepreciacaoPrintController::class, 'print'])
             ->name('depreciacao.imprimir');
 
-        Route::get('/bens-moveis/termos/{id}/print', [TermosPrintController::class, 'print'])
+        Route::get('/bens-moveis/termos/{id}/imprimir', [TermosPrintController::class, 'print'])
             ->name('termo.imprimir');
 
         Route::get('/inventario/termos/{id}/imprimir', [TermoInventarioPrintController::class, 'print'])

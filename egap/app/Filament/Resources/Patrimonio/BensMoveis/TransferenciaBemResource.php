@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource\Pages\CreateTransferenciaBem;
+use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource\Pages\EditTransferenciaBem;
+use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource\Pages\ListTransferenciaBems;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
@@ -11,34 +13,37 @@ use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
-use Filament\Forms;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
+use RuntimeException;
+use Throwable;
 
 class TransferenciaBemResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TransferenciaBemMovel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Histórico das movimentações';
 
@@ -50,10 +55,10 @@ class TransferenciaBemResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/movimentacoes';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Identificação da movimentação')
                     ->description('Selecione o bem e, quando houver, vincule o termo e o pedido.')
                     ->icon('heroicon-o-arrows-right-left')
@@ -71,7 +76,7 @@ class TransferenciaBemResource extends Resource
                             ->placeholder('Selecione o patrimônio')
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set): void {
+                            ->afterStateUpdated(function ($state, Set $set): void {
                                 $bem = filled($state)
                                     ? BemMovel::query()->where('NumPatrimonio', $state)->first()
                                     : null;
@@ -117,18 +122,18 @@ class TransferenciaBemResource extends Resource
                             ->required()
                             ->live()
                             ->placeholder('Selecione a unidade anterior')
-                            ->afterStateUpdated(function (Forms\Set $set): void {
+                            ->afterStateUpdated(function (Set $set): void {
                                 $set('SetorAnterior', null);
                             }),
 
                         Select::make('SetorAnterior')
                             ->label('Setor Anterior')
-                            ->options(fn (Forms\Get $get): array => self::setoresOptions($get('UnidadeAnterior')))
+                            ->options(fn (Get $get): array => self::setoresOptions($get('UnidadeAnterior')))
                             ->searchable()
                             ->preload()
                             ->native(false)
                             ->required()
-                            ->disabled(fn (Forms\Get $get): bool => blank($get('UnidadeAnterior')))
+                            ->disabled(fn (Get $get): bool => blank($get('UnidadeAnterior')))
                             ->placeholder('Selecione o setor anterior'),
 
                         Select::make('ComplementoAnterior')
@@ -159,18 +164,18 @@ class TransferenciaBemResource extends Resource
                             ->required()
                             ->live()
                             ->placeholder('Selecione a unidade atual')
-                            ->afterStateUpdated(function (Forms\Set $set): void {
+                            ->afterStateUpdated(function (Set $set): void {
                                 $set('SetorAtual', null);
                             }),
 
                         Select::make('SetorAtual')
                             ->label('Setor Atual')
-                            ->options(fn (Forms\Get $get): array => self::setoresOptions($get('UnidadeAtual')))
+                            ->options(fn (Get $get): array => self::setoresOptions($get('UnidadeAtual')))
                             ->searchable()
                             ->preload()
                             ->native(false)
                             ->required()
-                            ->disabled(fn (Forms\Get $get): bool => blank($get('UnidadeAtual')))
+                            ->disabled(fn (Get $get): bool => blank($get('UnidadeAtual')))
                             ->placeholder('Selecione o setor atual'),
 
                         Select::make('ComplementoAtual')
@@ -245,7 +250,7 @@ class TransferenciaBemResource extends Resource
                     ->formatStateUsing(fn (TransferenciaBemMovel $record): string => $record->pedido_no ? 0 : '-'),
             ])
             ->defaultSort('date_time', 'desc')
-            ->actions([
+            ->recordActions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
                     self::encaminharLogisiticaTableAction(),
@@ -301,7 +306,7 @@ class TransferenciaBemResource extends Resource
                             ->first();
 
                         if (! $dadosOrigem) {
-                            throw new \RuntimeException('Dados do termo não encontrados para originar o transporte.');
+                            throw new RuntimeException('Dados do termo não encontrados para originar o transporte.');
                         }
 
                         $solicitacaoId = DB::connection('egap')
@@ -334,7 +339,7 @@ class TransferenciaBemResource extends Resource
                         ->title('Solicitação encaminhada corretamente!')
                         ->success()
                         ->send();
-                } catch (\Throwable $exception) {
+                } catch (Throwable $exception) {
                     Notification::make()
                         ->title('Erro ao encaminhar')
                         ->body($exception->getMessage())
@@ -350,7 +355,7 @@ class TransferenciaBemResource extends Resource
             ->label('Atualizar dados')
             ->icon('heroicon-m-chevron-double-up')
             ->color('gray')
-            ->form([
+            ->schema([
                 Grid::make(2)->schema([
                     Select::make('elemento')
                         ->label('Elemento')
@@ -362,7 +367,7 @@ class TransferenciaBemResource extends Resource
                         ->live(),
                     Select::make('valor')
                         ->label('Valor')
-                        ->options(function (Forms\Get $get) {
+                        ->options(function (Get $get) {
                             return match ($get('elemento')) {
                                 'UnidadeAtual' => DB::connection('egap')
                                     ->table('mat_setores')
@@ -410,9 +415,9 @@ class TransferenciaBemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTransferenciaBems::route('/'),
-            'create' => Pages\CreateTransferenciaBem::route('/create'),
-            'edit' => Pages\EditTransferenciaBem::route('/{record}/edit'),
+            'index' => ListTransferenciaBems::route('/'),
+            'create' => CreateTransferenciaBem::route('/create'),
+            'edit' => EditTransferenciaBem::route('/{record}/edit'),
         ];
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\EstadoConservacaoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\EstadoConservacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListEstadoConservacaos extends ListRecords
@@ -13,7 +13,7 @@ class ListEstadoConservacaos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Estado de Conservação')
                 ->modalWidth('md')

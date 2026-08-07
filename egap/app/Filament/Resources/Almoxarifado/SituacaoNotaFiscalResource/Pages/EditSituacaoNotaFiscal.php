@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages;
 
 use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSituacaoNotaFiscal extends EditRecord
@@ -13,7 +13,7 @@ class EditSituacaoNotaFiscal extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

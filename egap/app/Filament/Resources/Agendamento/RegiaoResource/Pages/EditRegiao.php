@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Agendamento\RegiaoResource\Pages;
 
 use App\Filament\Resources\Agendamento\RegiaoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditRegiao extends EditRecord
@@ -13,7 +13,7 @@ class EditRegiao extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
 
 use App\Filament\Resources\Cadastro\SituacaoBemResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSituacaoBem extends EditRecord
@@ -13,7 +13,7 @@ class EditSituacaoBem extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

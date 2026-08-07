@@ -2,18 +2,21 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class TipoTributo extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'imo_tipotributo';
+
     protected $guarded = [];
+
     public $timestamps = false;
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted(): void

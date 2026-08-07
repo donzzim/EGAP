@@ -8,12 +8,14 @@ use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableModalAction;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\Setores;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Tables\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -39,8 +41,9 @@ use Livewire\Livewire;
  * os agrupamentos de situação (idSituacao) divergem de verdade entre os dois
  * setores responsáveis.
  */
-abstract class PedidosTable extends Component implements HasForms, HasTable
+abstract class PedidosTable extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -95,7 +98,7 @@ abstract class PedidosTable extends Component implements HasForms, HasTable
             ->label('Unidade Judiciária / Setor')
             ->columns(2)
             ->columnSpan(2)
-            ->form([
+            ->schema([
                 Select::make('unidade_judiciaria')
                     ->label('Unidade Judiciária')
                     ->options(fn (): array => Setores::query()

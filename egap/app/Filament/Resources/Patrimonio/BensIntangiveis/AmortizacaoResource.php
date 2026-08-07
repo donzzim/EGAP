@@ -3,27 +3,33 @@
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\CreateAmortizacao;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\EditAmortizacao;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\ListAmortizacaos;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\Amortizacao;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class AmortizacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Amortizacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar-square';
 
     protected static ?string $navigationLabel = 'Amortizações';
 
@@ -33,19 +39,19 @@ class AmortizacaoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Amortizações';
 
-    protected static ?string $navigationGroup = 'Bens Intangíveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Intangíveis';
 
     protected static ?string $slug = 'bens-intangiveis/amortizacoes';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Identificação e Período')
+        return $schema
+            ->components([
+                Section::make('Identificação e Período')
                     ->description('Vincule o bem intangível e a data base deste cálculo.')
                     ->icon('heroicon-o-calendar-days')
                     ->schema([
-                        Forms\Components\Select::make('id_intangivel')
+                        Select::make('id_intangivel')
                             ->label('Bem Intangível')
                             ->relationship('idIntangivelRef', 'nome')
                             ->placeholder('Selecione o bem intangível')
@@ -54,20 +60,20 @@ class AmortizacaoResource extends Resource
                             ->native(false)
                             ->required(),
 
-                        Forms\Components\DatePicker::make('data_calculo')
+                        DatePicker::make('data_calculo')
                             ->label('Data do Cálculo')
                             ->displayFormat('d/m/Y')
                             ->native(false)
                             ->closeOnDateSelection()
                             ->required(),
 
-                        Forms\Components\TextInput::make('item')
+                        TextInput::make('item')
                             ->label('Item')
                             ->placeholder('Informe a referência do cálculo')
                             ->maxLength(255)
                             ->required(),
 
-                        Forms\Components\TextInput::make('vida_util')
+                        TextInput::make('vida_util')
                             ->label('Vida Útil (em meses)')
                             ->numeric()
                             ->minValue(1)
@@ -76,7 +82,7 @@ class AmortizacaoResource extends Resource
                             ->required(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Valores da Amortização')
+                Section::make('Valores da Amortização')
                     ->description('Valores financeiros correspondentes a este período.')
                     ->icon('heroicon-o-banknotes')
                     ->schema([
@@ -120,21 +126,21 @@ class AmortizacaoResource extends Resource
                     ->suffix(' meses'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('id_intangivel')
+                SelectFilter::make('id_intangivel')
                     ->label('Bem Intangível')
                     ->relationship('idIntangivelRef', 'nome')
                     ->searchable()
                     ->preload(),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
+            ], layout: FiltersLayout::AboveContent)
             ->defaultSort('data_calculo', 'desc');
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAmortizacaos::route('/'),
-            'create' => Pages\CreateAmortizacao::route('/create'),
-            'edit' => Pages\EditAmortizacao::route('/{record}/edit'),
+            'index' => ListAmortizacaos::route('/'),
+            'create' => CreateAmortizacao::route('/create'),
+            'edit' => EditAmortizacao::route('/{record}/edit'),
         ];
     }
 }

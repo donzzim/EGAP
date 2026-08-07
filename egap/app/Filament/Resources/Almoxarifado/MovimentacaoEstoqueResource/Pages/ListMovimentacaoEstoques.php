@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
 
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListMovimentacaoEstoques extends ListRecords
@@ -13,8 +13,8 @@ class ListMovimentacaoEstoques extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

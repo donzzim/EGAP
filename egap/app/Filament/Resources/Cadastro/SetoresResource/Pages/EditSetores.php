@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\SetoresResource\Pages;
 
 use App\Filament\Resources\Cadastro\SetoresResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSetores extends EditRecord
@@ -18,7 +18,7 @@ class EditSetores extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

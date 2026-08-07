@@ -5,6 +5,8 @@ namespace App\Filament\Livewire\Externo\Almoxarifado;
 use App\Filament\Livewire\Externo\PedidosTable;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -19,8 +21,10 @@ use Livewire\Attributes\On;
  * O detalhe dos itens de cada pedido é aberto em modal, delegado ao
  * {@see PedidoItensModal} (legado: modal_pedidos.api.php).
  */
-class PedidosAlmoxarifadoTable extends PedidosTable
+class PedidosAlmoxarifadoTable extends PedidosTable implements HasActions
 {
+    use InteractsWithActions;
+
     protected const SETOR_ALMOXARIFADO = 799;
 
     #[On('pedido-item-cancelado')]
@@ -66,10 +70,10 @@ class PedidosAlmoxarifadoTable extends PedidosTable
                 $this->filtroLocalizacao(),
             ], FiltersLayout::AboveContent)
             ->filtersFormColumns(3)
-            ->actions([
+            ->recordActions([
                 $this->acaoVerItens('externo-almoxarifado.pedido-itens-modal'),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort('date_time', 'desc')
             ->emptyStateHeading('Nenhum pedido encontrado');
     }

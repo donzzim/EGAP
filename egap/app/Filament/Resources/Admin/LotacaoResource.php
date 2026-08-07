@@ -3,40 +3,52 @@
 namespace App\Filament\Resources\Admin;
 
 use App\Filament\Clusters\AdminEgapCluster;
-use App\Filament\Resources\Admin\LotacaoResource\Pages;
+use App\Filament\Resources\Admin\LotacaoResource\Pages\CreateLotacao;
+use App\Filament\Resources\Admin\LotacaoResource\Pages\EditLotacao;
+use App\Filament\Resources\Admin\LotacaoResource\Pages\ListLotacaos;
 use App\Filament\Support\TableColumns;
 use App\Models\Admin\Lotacao;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
-use Filament\Forms;
-use Filament\Forms\Components\Grid;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class LotacaoResource extends Resource
 {
     protected static ?string $model = Lotacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?string $navigationLabel = 'Lotação';
+
     protected static ?string $cluster = AdminEgapCluster::class;
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?string $modelLabel = 'Lotação';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $pluralModelLabel = 'Lotações';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Vínculo')
+        return $schema
+            ->components([
+                Section::make('Vínculo')
                     ->description('Defina o usuário e a estrutura organizacional da lotação.')
                     ->icon('heroicon-o-link')
                     ->schema([
@@ -105,30 +117,30 @@ class LotacaoResource extends Resource
             ->defaultPaginationPageOption(25)
             ->defaultSort('date_time', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('Nome')
                     ->searchable()
                     ->sortable()
                     ->description(fn (Lotacao $record): ?string => $record->user?->username)
                     ->wrap(),
-                Tables\Columns\TextColumn::make('unidadeJudiciaria.Setor')
+                TextColumn::make('unidadeJudiciaria.Setor')
                     ->label('Unidade Judiciaria')
                     ->searchable()
                     ->sortable()
                     ->wrap(),
-                Tables\Columns\TextColumn::make('setorRef.Setor')
+                TextColumn::make('setorRef.Setor')
                     ->label('Setor')
                     ->searchable()
                     ->sortable()
                     ->wrap(),
-                Tables\Columns\TextColumn::make('setorRef.UnidadeOrganizacional')
+                TextColumn::make('setorRef.UnidadeOrganizacional')
                     ->label('Unidade Organizacional')
                     ->searchable()
                     ->wrap(),
                 TableColumns::updatedBy('usuarioRef.name'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('unidade_judiciaria')
+                SelectFilter::make('unidade_judiciaria')
                     ->label('Unidade Judiciária')
                     ->searchable()
                     ->preload()
@@ -138,7 +150,7 @@ class LotacaoResource extends Resource
                         ->pluck('UnidadeOrganizacional', 'CodigoPai')
                         ->toArray()
                     ),
-                Tables\Filters\SelectFilter::make('setor')
+                SelectFilter::make('setor')
                     ->label('Setor')
                     ->searchable()
                     ->preload()
@@ -148,35 +160,35 @@ class LotacaoResource extends Resource
                         ->toArray()
                     ),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                DeleteBulkAction::make(),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListLotacaos::route('/'),
-            'create' => Pages\CreateLotacao::route('/create'),
-            'edit' => Pages\EditLotacao::route('/{record}/edit'),
+            'index' => ListLotacaos::route('/'),
+            'create' => CreateLotacao::route('/create'),
+            'edit' => EditLotacao::route('/{record}/edit'),
         ];
     }
 
-    protected static function makeSetorSelect(string $name, string $label): Forms\Components\Select
+    protected static function makeSetorSelect(string $name, string $label): Select
     {
-        return Forms\Components\Select::make($name)
+        return Select::make($name)
             ->label($label)
             ->searchable()
             ->getSearchResultsUsing(fn (string $search): array => Setores::query()

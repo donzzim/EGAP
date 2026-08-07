@@ -7,7 +7,7 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 
 class SituacaoBensPatrimoniaisEgap extends BaseChart
 {
-    protected static ?string $heading = 'Situação Atual dos Bens Patrimoniais no Sistema E-Gap';
+    protected ?string $heading = 'Situação Atual dos Bens Patrimoniais no Sistema E-Gap';
 
     protected function getData(): array
     {

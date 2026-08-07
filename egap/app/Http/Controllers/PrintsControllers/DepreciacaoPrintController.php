@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Illuminate\Support\Carbon;
 
-class DepreciacaoController extends Controller
+class DepreciacaoPrintController extends PrintController
 {
-    public function imprimir(int $id)
+    public function print(int $id)
     {
         $record = BemMovel::with([
             'contaContabilRef',

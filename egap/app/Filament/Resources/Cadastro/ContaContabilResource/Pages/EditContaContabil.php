@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\ContaContabilResource\Pages;
 
 use App\Filament\Resources\Cadastro\ContaContabilResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditContaContabil extends EditRecord
@@ -13,7 +13,7 @@ class EditContaContabil extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

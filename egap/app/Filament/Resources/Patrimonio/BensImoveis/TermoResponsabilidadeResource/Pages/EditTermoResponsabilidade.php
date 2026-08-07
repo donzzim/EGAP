@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTermoResponsabilidade extends EditRecord
@@ -13,7 +13,7 @@ class EditTermoResponsabilidade extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->label('Excluir'),
         ];
     }

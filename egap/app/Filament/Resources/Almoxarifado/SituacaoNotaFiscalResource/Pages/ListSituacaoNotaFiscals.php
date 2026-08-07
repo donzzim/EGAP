@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages;
 
 use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSituacaoNotaFiscals extends ListRecords
@@ -13,8 +13,8 @@ class ListSituacaoNotaFiscals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

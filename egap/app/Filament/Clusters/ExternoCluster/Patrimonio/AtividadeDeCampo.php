@@ -4,9 +4,9 @@ namespace App\Filament\Clusters\ExternoCluster\Patrimonio;
 
 use App\Filament\Clusters\ExternoCluster;
 use App\Models\Patrimonio\BensMoveis\Inventario;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Enums\Width;
 
 /**
  * Painel de gestão do inventário online (legado: atividades.php +
@@ -23,27 +23,34 @@ use Filament\Support\Enums\MaxWidth;
  */
 class AtividadeDeCampo extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
+
     protected static ?string $cluster = ExternoCluster::class;
+
     protected static ?string $slug = 'patrimonio/atividade-de-campo';
-    protected static ?string $navigationGroup = 'Patrimônio';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Patrimônio';
+
     protected static ?string $navigationLabel = 'Ativididade de Campo';
+
     protected static ?string $title = 'Ativididade de Campo';
+
     protected static ?int $navigationSort = 6;
-    protected static string $view = 'filament.pages.externo.patrimonio.atividade-de-campo';
+
+    protected string $view = 'filament.pages.externo.patrimonio.atividade-de-campo';
 
     public ?int $inventarioId = null;
 
     public string $secao = 'resumo';
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     public function updatedInventarioId(): void

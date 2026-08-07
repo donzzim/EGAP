@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditAmortizacao extends EditRecord
@@ -13,7 +13,7 @@ class EditAmortizacao extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

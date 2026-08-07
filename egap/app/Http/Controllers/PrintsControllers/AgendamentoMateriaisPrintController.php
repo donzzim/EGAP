@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agendamento\Solicitacao;
 use Illuminate\Support\Carbon;
 
-class AgendamentoMateriaisPrintController extends Controller
+class AgendamentoMateriaisPrintController extends PrintController
 {
     public function print(int $id)
     {

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages;
 
 use App\Filament\Resources\Cadastro\ComplementoSetorResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditComplementoSetor extends EditRecord
@@ -13,7 +13,7 @@ class EditComplementoSetor extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

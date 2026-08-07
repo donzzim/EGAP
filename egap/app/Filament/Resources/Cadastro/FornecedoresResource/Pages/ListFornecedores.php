@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\FornecedoresResource\Pages;
 
 use App\Filament\Resources\Cadastro\FornecedoresResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFornecedores extends ListRecords
@@ -13,8 +13,8 @@ class ListFornecedores extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

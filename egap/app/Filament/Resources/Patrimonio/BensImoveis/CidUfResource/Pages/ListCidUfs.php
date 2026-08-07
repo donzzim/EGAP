@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListCidUfs extends ListRecords
@@ -13,7 +13,7 @@ class ListCidUfs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Cidade/UF')
                 ->modalWidth('md')

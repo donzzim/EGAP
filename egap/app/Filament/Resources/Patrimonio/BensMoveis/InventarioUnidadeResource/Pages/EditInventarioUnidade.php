@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditInventarioUnidade extends EditRecord
@@ -13,7 +13,7 @@ class EditInventarioUnidade extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

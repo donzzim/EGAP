@@ -7,9 +7,9 @@ use App\Models\Patrimonio\BensMoveis\Baixa;
 use App\Models\Patrimonio\BensMoveis\ItemBaixa;
 use Illuminate\Support\Facades\DB;
 
-class BaixaImpressaoController extends Controller
+class BaixaPrintController extends PrintController
 {
-    public function imprimir($id)
+    public function print($id)
     {
         $baixa = Baixa::where('id', $id)
             ->first();

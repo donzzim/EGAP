@@ -3,37 +3,46 @@
 namespace App\Filament\Resources\Almoxarifado;
 
 use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages;
+use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\CreateSituacaoNotaFiscal;
+use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\EditSituacaoNotaFiscal;
+use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\ListSituacaoNotaFiscals;
 use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\SituacaoNotaFiscal;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class SituacaoNotaFiscalResource extends Resource
 {
     protected static ?string $model = SituacaoNotaFiscal::class;
+
     protected static ?string $cluster = AlmoxarifadoCluster::class;
-    protected static ?string $navigationIcon = 'heroicon-o-queue-list';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-queue-list';
+
     protected static ?string $slug = 'situacao-notas-fiscais';
+
     protected static ?string $navigationLabel = 'Situação da Nota Fiscal';
+
     protected static ?string $pluralLabel = 'Situações da Nota Fiscal';
+
     protected static ?string $pluralModelLabel = 'Situações da Nota Fiscal';
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 4;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 TextInput::make('descricao')
                     ->label('Descrição')
                     ->required()
@@ -57,19 +66,19 @@ class SituacaoNotaFiscalResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 DeleteBulkAction::make(),
             ]);
     }
@@ -82,9 +91,9 @@ class SituacaoNotaFiscalResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSituacaoNotaFiscals::route('/'),
-            'create' => Pages\CreateSituacaoNotaFiscal::route('/create'),
-            'edit' => Pages\EditSituacaoNotaFiscal::route('/{record}/edit'),
+            'index' => ListSituacaoNotaFiscals::route('/'),
+            'create' => CreateSituacaoNotaFiscal::route('/create'),
+            'edit' => EditSituacaoNotaFiscal::route('/{record}/edit'),
         ];
     }
 }

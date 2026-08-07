@@ -3,40 +3,41 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages\CreateAtividadeInventario;
+use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages\EditAtividadeInventario;
+use App\Filament\Resources\Patrimonio\BensMoveis\AtividadeInventarioResource\Pages\ListAtividadeInventarios;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\AtividadeInventario;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\UserEgap;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class AtividadeInventarioResource extends Resource
 {
     protected static ?string $model = AtividadeInventario::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-list-bullet';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'bens-moveis/atividades-inventario';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Atividades do Inventário';
 
@@ -46,16 +47,16 @@ class AtividadeInventarioResource extends Resource
 
     protected static ?int $navigationSort = 14;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Tabs::make('Atividade do Inventário')
                     ->persistTabInQueryString()
                     ->tabs([
-                        Tabs\Tab::make('Dados da Atividade')
+                        Tab::make('Dados da Atividade')
                             ->icon('heroicon-m-clipboard-document-list')
                             ->schema([
                                 Section::make('Inventário e Localização')
@@ -124,7 +125,7 @@ class AtividadeInventarioResource extends Resource
                                     ]),
                             ]),
 
-                        Tabs\Tab::make('Execução')
+                        Tab::make('Execução')
                             ->icon('heroicon-m-calendar-days')
                             ->schema([
                                 Section::make('Período e Situação')
@@ -308,9 +309,9 @@ class AtividadeInventarioResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAtividadeInventarios::route('/'),
-            'create' => Pages\CreateAtividadeInventario::route('/create'),
-            'edit' => Pages\EditAtividadeInventario::route('/{record}/edit'),
+            'index' => ListAtividadeInventarios::route('/'),
+            'create' => CreateAtividadeInventario::route('/create'),
+            'edit' => EditAtividadeInventario::route('/{record}/edit'),
         ];
     }
 }

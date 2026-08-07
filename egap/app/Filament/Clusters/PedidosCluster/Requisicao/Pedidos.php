@@ -4,10 +4,10 @@ namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Almoxarifado\Pedidos as PedidoModel;
+use Filament\Actions\Action;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -19,11 +19,11 @@ class Pedidos extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Requisição';
+    protected static string|\UnitEnum|null $navigationGroup = 'Requisição';
 
     protected static ?string $title = 'Pedido - Materiais Permanentes';
 
@@ -31,7 +31,7 @@ class Pedidos extends Page implements HasTable
 
     protected static ?string $navigationLabel = 'Pedidos';
 
-    protected static string $view = 'filament.pages.pedidos.requisicao.pedidos';
+    protected string $view = 'filament.pages.pedidos.requisicao.pedidos';
 
     public function table(Table $table): Table
     {
@@ -116,13 +116,13 @@ class Pedidos extends Page implements HasTable
                     ->wrap(),
             ])
             ->defaultSort('id', 'desc')
-            ->actions([
+            ->recordActions([
                 Action::make('itens')
                     ->label('Itens')
                     ->icon('heroicon-o-list-bullet')
                     ->color('gray')
                     ->modalHeading(fn (PedidoModel $record): string => "Itens do pedido {$record->id}")
-                    ->modalWidth(MaxWidth::SevenExtraLarge)
+                    ->modalWidth(Width::SevenExtraLarge)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Fechar')
                     ->modalContent(fn (PedidoModel $record) => view(

@@ -2,42 +2,49 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\CreateUnidadesDeMedida;
+use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\EditUnidadesDeMedida;
+use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\ListUnidadesDeMedida;
 use App\Filament\Support\TableColumns;
-use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\RelationManagers;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\UnidadesDeMedida;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class UnidadesDeMedidaResource extends Resource
 {
     protected static ?string $model = UnidadesDeMedida::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-scale';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-scale';
+
     protected static ?string $navigationLabel = 'Unidades de Medida';
+
     protected static ?string $modelLabel = 'Unidade de Medida';
+
     protected static ?string $pluralModelLabel = 'Unidades de Medida';
-    protected static ?string $navigationGroup = 'Cadastro';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?int $navigationSort = 11;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\Grid::make(1)
+                        Grid::make(1)
                             ->schema([
-                                Forms\Components\TextInput::make('Sigla')
+                                TextInput::make('Sigla')
                                     ->label('Sigla')
                                     ->required()
                                     ->maxLength(2),
 
-                                Forms\Components\TextInput::make('Unidade')
+                                TextInput::make('Unidade')
                                     ->label('Descrição da Unidade')
                                     ->required()
                                     ->maxLength(100),
@@ -46,6 +53,7 @@ class UnidadesDeMedidaResource extends Resource
                     ->columns(),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
@@ -63,9 +71,9 @@ class UnidadesDeMedidaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\ListUnidadesDeMedida::route('/'),
-            'create' => \App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\CreateUnidadesDeMedida::route('/create'),
-            'edit' => \App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages\EditUnidadesDeMedida::route('/{record}/edit'),
+            'index' => ListUnidadesDeMedida::route('/'),
+            'create' => CreateUnidadesDeMedida::route('/create'),
+            'edit' => EditUnidadesDeMedida::route('/{record}/edit'),
         ];
     }
 }

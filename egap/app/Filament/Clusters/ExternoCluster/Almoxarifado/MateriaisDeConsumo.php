@@ -10,9 +10,9 @@ class MateriaisDeConsumo extends RequisicaoDeMateriaisPage
 
     protected static ?string $cluster = ExternoCluster::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-inbox';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox';
 
-    protected static ?string $navigationGroup = 'Almoxarifado';
+    protected static string|\UnitEnum|null $navigationGroup = 'Almoxarifado';
 
     protected static ?string $slug = 'almoxarifado/requisicao-de-materiais-de-consumo';
 
@@ -20,7 +20,7 @@ class MateriaisDeConsumo extends RequisicaoDeMateriaisPage
 
     protected static ?string $title = 'Requisição de Materiais de Consumo';
 
-    protected static string $view = 'filament.pages.externo.almoxarifado.materiais-de-consumo';
+    protected string $view = 'filament.pages.externo.almoxarifado.materiais-de-consumo';
 
     public function tipoMaterial(): string
     {

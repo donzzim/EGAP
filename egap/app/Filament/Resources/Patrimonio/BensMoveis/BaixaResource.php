@@ -3,26 +3,28 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages\CreateBaixa;
+use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages\EditBaixa;
+use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages\ListBaixas;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
 use App\Models\Patrimonio\BensMoveis\Baixa;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\ItemBaixa;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
@@ -31,13 +33,13 @@ class BaixaResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Baixa::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box-x-mark';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box-x-mark';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Baixa de bens';
 
@@ -51,10 +53,10 @@ class BaixaResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/baixas';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Dados da Baixa')
                     ->description('Informe o processo, a data e os dados do requisitante.')
                     ->icon('heroicon-o-archive-box-x-mark')
@@ -146,7 +148,7 @@ class BaixaResource extends Resource
                     ])
                     ->action(self::materiaisTableAction()),
             ])
-            ->actions([
+            ->recordActions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
                     self::baixarBensProcessoTableAction(),
@@ -254,9 +256,9 @@ class BaixaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBaixas::route('/'),
-            'create' => Pages\CreateBaixa::route('/create'),
-            'edit' => Pages\EditBaixa::route('/{record}/edit'),
+            'index' => ListBaixas::route('/'),
+            'create' => CreateBaixa::route('/create'),
+            'edit' => EditBaixa::route('/{record}/edit'),
         ];
     }
 }

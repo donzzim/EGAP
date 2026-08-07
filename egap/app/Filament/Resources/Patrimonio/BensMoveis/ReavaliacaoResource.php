@@ -3,28 +3,31 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages\CreateReavaliacao;
+use App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages\EditReavaliacao;
+use App\Filament\Resources\Patrimonio\BensMoveis\ReavaliacaoResource\Pages\ListReavaliacaos;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Reavaliacao;
-use Filament\Forms;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Forms\Components\Select;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 
 class ReavaliacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Reavaliacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-line';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Reavaliação';
 
@@ -92,11 +95,11 @@ class ReavaliacaoResource extends Resource
                 TableColumns::updatedBy('responsavel.name'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('patrimonioFilter')
+                Filter::make('patrimonioFilter')
                     ->columnSpan(2)
                     ->label('Patrimônio')
-                    ->form([
-                        Forms\Components\Select::make('patrimonio')
+                    ->schema([
+                        Select::make('patrimonio')
                             ->label('Patrimônio')
                             ->placeholder('Busque pelo número do patrimônio')
                             ->getSearchResultsUsing(fn (string $search): array => BemMovel::query()
@@ -124,18 +127,18 @@ class ReavaliacaoResource extends Resource
                             fn ($query) => $query->where('patrimonio', $data['patrimonio']),
                             fn ($query) => $query->whereRaw('1 = 0'),
                         )),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
-            ->actions([])
-            ->bulkActions([])
+            ], layout: FiltersLayout::AboveContent)
+            ->recordActions([])
+            ->toolbarActions([])
             ->defaultSort('data_reavaliacao', 'desc');
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReavaliacaos::route('/'),
-            'create' => Pages\CreateReavaliacao::route('/create'),
-            'edit' => Pages\EditReavaliacao::route('/{record}/edit'),
+            'index' => ListReavaliacaos::route('/'),
+            'create' => CreateReavaliacao::route('/create'),
+            'edit' => EditReavaliacao::route('/{record}/edit'),
         ];
     }
 }

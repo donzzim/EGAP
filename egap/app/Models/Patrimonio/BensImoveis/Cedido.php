@@ -2,14 +2,18 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class Cedido extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'imo_cedidos';
+
     protected $primaryKey = 'id';
+
     protected $guarded = ['id'];
+
     public $timestamps = false;
 
     protected $casts = [
@@ -23,17 +27,17 @@ class Cedido extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'id_imovel', 'Id');
+        return $this->belongsTo(BemImovel::class, 'id_imovel', 'Id');
     }
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     public function tipoTributoRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\TipoTributo::class, 'tipo_tributo', 'id');
+        return $this->belongsTo(TipoTributo::class, 'tipo_tributo', 'id');
     }
 
     protected static function booted(): void

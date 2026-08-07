@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages;
 
 use App\Filament\Resources\Cadastro\ElementoDespesaResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditElementoDespesa extends EditRecord
@@ -13,7 +13,7 @@ class EditElementoDespesa extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

@@ -9,11 +9,13 @@ use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\UserEgap;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -32,8 +34,10 @@ use Illuminate\Support\Collection;
  * o Patrimônio precisa de uma coluna extra de Justificativa por item (a
  * justificativa geral do Almoxarifado fica no pedido, não no item).
  */
-abstract class PedidoItensModal extends TableModalComponent
+abstract class PedidoItensModal extends TableModalComponent implements HasActions
 {
+    use InteractsWithActions;
+
     protected const STATUS_PENDENTE = 6;
 
     protected const STATUS_CANCELADO = 4;
@@ -85,10 +89,10 @@ abstract class PedidoItensModal extends TableModalComponent
                     ->badge()
                     ->color(fn (ItemPedido $record): string => $this->statusColor((int) $record->situacao)),
             ])
-            ->actions([
+            ->recordActions([
                 $this->cancelarItemAction(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 $this->cancelarItensBulkAction(),
             ])
             ->checkIfRecordIsSelectableUsing(
@@ -109,7 +113,7 @@ abstract class PedidoItensModal extends TableModalComponent
             ->modalHeading('Cancelar item do pedido')
             ->modalDescription('Informe o motivo do cancelamento. Essa ação não pode ser desfeita.')
             ->modalSubmitActionLabel('Confirmar cancelamento')
-            ->form([
+            ->schema([
                 Select::make('cancelado_por')
                     ->label('Responsável pelo cancelamento')
                     ->required()

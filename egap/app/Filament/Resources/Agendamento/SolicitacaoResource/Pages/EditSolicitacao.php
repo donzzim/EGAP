@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
 
 use App\Filament\Resources\Agendamento\AgendamentoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSolicitacao extends EditRecord
@@ -13,7 +13,7 @@ class EditSolicitacao extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

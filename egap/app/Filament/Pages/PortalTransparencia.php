@@ -6,7 +6,7 @@ use Filament\Pages\Page;
 
 class PortalTransparencia extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-line';
 
     protected static ?string $navigationLabel = 'Portal Transparência';
 
@@ -14,5 +14,5 @@ class PortalTransparencia extends Page
 
     protected static ?string $title = 'Portal Transparência';
 
-    protected static string $view = 'filament.pages.portal-transparencia';
+    protected string $view = 'filament.pages.portal-transparencia';
 }

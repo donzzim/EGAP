@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFabricantes extends ListRecords
@@ -13,8 +13,8 @@ class ListFabricantes extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

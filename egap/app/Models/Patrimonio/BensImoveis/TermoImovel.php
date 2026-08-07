@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class TermoImovel extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'imo_termosimoveis';
+
     protected $primaryKey = 'id';
+
     protected $guarded = [];
+
     public $timestamps = false;
 
     public function termoRelacaoref()
@@ -19,7 +22,7 @@ class TermoImovel extends Model
 
     public function imovelRelacaoref()
     {
-        return $this->belongsTo(\App\Models\Patrimonio\BensImoveis\BemImovel::class, 'imovel', 'Id');
+        return $this->belongsTo(BemImovel::class, 'imovel', 'Id');
     }
 
     protected static function booted(): void

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Support;
 
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 
 /**
  * Padroniza as Actions que abrem um modal contendo uma tabela (ex.: "Ver itens",

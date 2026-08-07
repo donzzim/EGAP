@@ -3,58 +3,81 @@
 namespace App\Filament\Resources\Almoxarifado;
 
 use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
+use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\CreatePedidos;
+use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\EditPedidos;
+use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\ListPedidos;
+use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\PrintPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Almoxarifado\SituacaoPedido;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
-use Filament\Forms;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class PedidosResource extends Resource
 {
     protected static ?string $model = Pedidos::class;
+
     protected static ?string $cluster = AlmoxarifadoCluster::class;
+
     protected static ?string $slug = 'pedidos';
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $modelLabel = 'Pedido';
+
     protected static ?string $pluralModelLabel = 'Pedidos';
+
     protected static ?string $navigationLabel = 'Requisição de Materiais';
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
             Tabs::make('TabsPedido')
                 ->columnSpanFull()
                 ->tabs([
-                    Tabs\Tab::make('Dados Gerais')
+                    Tab::make('Dados Gerais')
                         ->icon('heroicon-m-information-circle')
                         ->schema([
-                            Forms\Components\Grid::make(3)
+                            Grid::make(3)
                                 ->schema([
-                                    Forms\Components\TextInput::make('num_protocolo')
+                                    TextInput::make('num_protocolo')
                                         ->label('Núm. Protocolo')
                                         ->numeric()
                                         ->mask('****.**.***.***')
                                         ->maxLength(255),
 
-                                    Forms\Components\DatePicker::make('date_time')
+                                    DatePicker::make('date_time')
                                         ->label('Data pedido')
                                         ->default(fn () => now())
                                         ->displayFormat('d/m/Y')
                                         ->native(false),
 
-                                    Forms\Components\Select::make('idSituacao')
+                                    Select::make('idSituacao')
                                         ->label('Situação')
                                         ->relationship('situacao', 'Descricao')
                                         ->searchable()
@@ -62,9 +85,9 @@ class PedidosResource extends Resource
                                         ->native(false),
                                 ]),
 
-                            Forms\Components\Grid::make(2)
+                            Grid::make(2)
                                 ->schema([
-                                    Forms\Components\Select::make('Solicitante')
+                                    Select::make('Solicitante')
                                         ->label('Solicitante')
                                         ->required()
                                         ->relationship('solicitante_get', 'name')
@@ -72,16 +95,16 @@ class PedidosResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->native(false),
-                                    Forms\Components\Select::make('ResponsavelAtendimento')
+                                    Select::make('ResponsavelAtendimento')
                                         ->label('Responsável pelo Atendimento')
                                         ->relationship('responsavel_atendimento', 'name')
                                         ->searchable()
                                         ->preload()
                                         ->native(false),
                                 ]),
-                            Forms\Components\Grid::make(2)
+                            Grid::make(2)
                                 ->schema([
-                                    Forms\Components\Select::make('UnidadeJudiciaria')
+                                    Select::make('UnidadeJudiciaria')
                                         ->label('Unidade Judiciária')
                                         ->required()
                                         ->searchable()
@@ -95,7 +118,7 @@ class PedidosResource extends Resource
                                             ->toArray()
                                         )
                                         ->afterStateUpdated(fn (Set $set) => $set('Setor', null)),
-                                    Forms\Components\Select::make('Setor')
+                                    Select::make('Setor')
                                         ->label('Setor')
                                         ->required()
                                         ->searchable()
@@ -111,55 +134,55 @@ class PedidosResource extends Resource
                                         )
                                         ->disabled(fn (Get $get) => blank($get('UnidadeJudiciaria'))),
                                 ]),
-                            Forms\Components\Grid::make(2)
+                            Grid::make(2)
                                 ->schema([
-                                    Forms\Components\Select::make('setor_responsavel')
+                                    Select::make('setor_responsavel')
                                         ->label('Setor Responsável')
                                         ->relationship('setorResponsavel', 'Setor')
                                         ->searchable()
                                         ->preload()
                                         ->native(false),
-                                    Forms\Components\Select::make('ComplementoSetor')
+                                    Select::make('ComplementoSetor')
                                         ->label('Complemento Setor')
                                         ->relationship('complementoSetor', 'descricao')
                                         ->searchable()
                                         ->preload()
                                         ->native(false),
                                 ]),
-                            Forms\Components\FileUpload::make('arquivo')
+                            FileUpload::make('arquivo')
                                 ->label('Arquivo')
                                 ->directory('pedidos')
                                 ->disk('public')
                                 ->visibility('public')
                                 ->columnSpanFull(),
-                            Forms\Components\Textarea::make('Observacao')
+                            Textarea::make('Observacao')
                                 ->label('Observação')
                                 ->columnSpanFull()
                                 ->rows(3),
 
-                            Forms\Components\Textarea::make('justificativa')
+                            Textarea::make('justificativa')
                                 ->label('Justificativa')
                                 ->columnSpanFull()
                                 ->rows(3),
                         ]),
-                    Tabs\Tab::make('Itens do Pedido')
+                    Tab::make('Itens do Pedido')
                         ->icon('heroicon-m-shopping-cart')
                         ->schema([
-                            Forms\Components\TextInput::make('valor_total_pedido')
+                            TextInput::make('valor_total_pedido')
                                 ->label('Valor Total do Pedido')
                                 ->readOnly()
                                 ->dehydrated(false)
                                 ->default(0)
                                 ->prefix('R$')
                                 ->extraInputAttributes(['class' => 'text-xl font-bold']),
-                            Forms\Components\Repeater::make('itens')
+                            Repeater::make('itens')
                                 ->relationship('itens')
                                 ->label('Itens do Pedido')
                                 ->addActionLabel('Adicionar novo item')
                                 ->columns(12)
                                 ->live()
                                 ->schema([
-                                    Forms\Components\Select::make('material')
+                                    Select::make('material')
                                         ->label('Material')
                                         ->relationship('materialRel', 'Descricao')
                                         ->searchable()
@@ -167,18 +190,18 @@ class PedidosResource extends Resource
                                         ->required()
                                         ->native(false)
                                         ->columnSpan(6),
-                                    Forms\Components\TextInput::make('QuantidadeMaterial')
+                                    TextInput::make('QuantidadeMaterial')
                                         ->label('Quantidade Solicitada')
                                         ->required()
                                         ->numeric()
                                         ->live(onBlur: true)
                                         ->columnSpan(2),
-                                    Forms\Components\TextInput::make('QuantidadeMaterialAtendida')
+                                    TextInput::make('QuantidadeMaterialAtendida')
                                         ->label('Qtd. Atendida')
                                         ->numeric()
                                         ->live(onBlur: true)
                                         ->columnSpan(2),
-                                    Forms\Components\TextInput::make('valor_material')
+                                    TextInput::make('valor_material')
                                         ->label('Valor Material')
                                         ->numeric()
                                         ->inputMode('decimal')
@@ -188,51 +211,51 @@ class PedidosResource extends Resource
                                             self::atualizarTotalPedido($get, $set);
                                         })
                                         ->columnSpan(2),
-                                    Forms\Components\Textarea::make('ObservacaoItem')
+                                    Textarea::make('ObservacaoItem')
                                         ->label('Observação do Item')
                                         ->rows(2)
                                         ->columnSpan(6),
-                                    Forms\Components\Select::make('DescricaoDetalhada')
+                                    Select::make('DescricaoDetalhada')
                                         ->label('Descrição Detalhada')
                                         ->relationship('descricaoDetalhadaRel', 'descricao_detalhada')
                                         ->searchable()
                                         ->preload()
                                         ->native(false)
                                         ->columnSpan(4),
-                                    Forms\Components\TextInput::make('situacao')
+                                    TextInput::make('situacao')
                                         ->label('Situação')
                                         ->numeric()
                                         ->columnSpan(2),
-                                    Forms\Components\TextInput::make('quantidade_validada')
+                                    TextInput::make('quantidade_validada')
                                         ->label('Quantidade Validada')
                                         ->maxLength(255)
                                         ->columnSpan(3),
-                                    Forms\Components\DatePicker::make('data_validacao')
+                                    DatePicker::make('data_validacao')
                                         ->label('Data Validação')
                                         ->displayFormat('d/m/Y')
                                         ->native(false)
                                         ->columnSpan(3),
-                                    Forms\Components\Select::make('validado_por')
+                                    Select::make('validado_por')
                                         ->label('Validado Por')
                                         ->relationship('validadoPor', 'name')
                                         ->searchable()
                                         ->preload()
                                         ->native(false)
                                         ->columnSpan(3),
-                                    Forms\Components\Select::make('cancelado_por')
+                                    Select::make('cancelado_por')
                                         ->label('Cancelado Por')
                                         ->relationship('canceladoPor', 'name')
                                         ->searchable()
                                         ->preload()
                                         ->native(false)
                                         ->columnSpan(3),
-                                    Forms\Components\DatePicker::make('data_cancelado')
+                                    DatePicker::make('data_cancelado')
                                         ->label('Data Cancelamento')
                                         ->displayFormat('d/m/Y')
                                         ->native(false)
                                         ->columnSpan(3),
 
-                                    Forms\Components\Textarea::make('justificativa')
+                                    Textarea::make('justificativa')
                                         ->label('Justificativa do Item')
                                         ->rows(2)
                                         ->columnSpanFull(),
@@ -310,41 +333,41 @@ class PedidosResource extends Resource
             ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('Pedido Nº')
                     ->alignCenter()
                     ->sortable('desc')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('date_time')
+                TextColumn::make('date_time')
                     ->label('Data pedido')
                     ->date('d/m/Y')
                     ->alignCenter()
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('arquivo')
+                TextColumn::make('arquivo')
                     ->label('Requisição')
                     ->alignCenter()
                     ->formatStateUsing(fn ($state) => $state ? 'Abrir PDF' : '-')
                     ->url(function ($record) {
-                        if (!$record->arquivo) {
+                        if (! $record->arquivo) {
                             return null;
                         }
 
-                        return 'https://sistemas.tjes.jus.br/patrimonio' . $record->arquivo;
+                        return 'https://sistemas.tjes.jus.br/patrimonio'.$record->arquivo;
                     })
                     ->openUrlInNewTab()
                     ->color('primary')
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('situacao.Descricao')
+                TextColumn::make('situacao.Descricao')
                     ->label('Situação')
                     ->alignCenter()
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('solicitante_get.name')
+                TextColumn::make('solicitante_get.name')
                     ->label('Solicitante')
                     ->alignCenter()
                     ->default(' - ')
@@ -352,7 +375,7 @@ class PedidosResource extends Resource
                     ->searchable()
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('unidade_judiciaria.UnidadeOrganizacional')
+                TextColumn::make('unidade_judiciaria.UnidadeOrganizacional')
                     ->label('Unidade Judiciária')
                     ->alignCenter()
                     ->default(' - ')
@@ -360,7 +383,7 @@ class PedidosResource extends Resource
                     ->searchable()
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('setor_get.Setor')
+                TextColumn::make('setor_get.Setor')
                     ->label('Setor')
                     ->alignCenter()
                     ->default(' - ')
@@ -368,25 +391,25 @@ class PedidosResource extends Resource
                     ->searchable()
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('Observacao')
+                TextColumn::make('Observacao')
                     ->label('Observação')
                     ->limit(50)
                     ->alignCenter()
-                    ->default(" - ")
+                    ->default(' - ')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('responsavel_atendimento.name')
+                TextColumn::make('responsavel_atendimento.name')
                     ->label('Impresso/Atendido por')
                     ->alignCenter()
-                    ->default(" - ")
+                    ->default(' - ')
                     ->sortable(),
 
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('idSituacao')
+                SelectFilter::make('idSituacao')
                     ->label('Situação do Pedido')
                     ->options(
-                        SituacaoPedido::whereIn('id', [3,4,6,7])
+                        SituacaoPedido::whereIn('id', [3, 4, 6, 7])
                             ->pluck('Descricao', 'id')
                             ->toArray()
                     )
@@ -394,7 +417,7 @@ class PedidosResource extends Resource
                     ->preload()
                     ->native(false),
 
-                Tables\Filters\SelectFilter::make('ResponsavelAtendimento')
+                SelectFilter::make('ResponsavelAtendimento')
                     ->label('Impresso/Atendido por')
                     ->options(fn () => UserEgap::query()
                         ->whereIn(
@@ -418,7 +441,7 @@ class PedidosResource extends Resource
                     ->preload()
                     ->native(false),
 
-                Tables\Filters\SelectFilter::make('itens')
+                SelectFilter::make('itens')
                     ->label('Material')
                     ->relationship(
                         'itens.materialRel',
@@ -429,7 +452,7 @@ class PedidosResource extends Resource
                     ->preload()
                     ->native(false),
 
-                Tables\Filters\SelectFilter::make('UnidadeJudiciaria')
+                SelectFilter::make('UnidadeJudiciaria')
                     ->label('Unidade Judiciária')
                     ->options(fn () => Setores::query()
                         ->whereColumn('id', 'CodigodaUO')
@@ -447,10 +470,10 @@ class PedidosResource extends Resource
                     ->preload()
                     ->native(false),
 
-                Tables\Filters\Filter::make('numero_pedido')
+                Filter::make('numero_pedido')
                     ->label('Nº Pedido')
-                    ->form([
-                        Forms\Components\TextInput::make('pedido')
+                    ->schema([
+                        TextInput::make('pedido')
                             ->label('Nº Pedido')
                             ->numeric(),
                     ])
@@ -461,10 +484,10 @@ class PedidosResource extends Resource
                         );
                     }),
 
-                Tables\Filters\Filter::make('data_validacao')
+                Filter::make('data_validacao')
                     ->label('Data Validação')
-                    ->form([
-                        Forms\Components\DatePicker::make('data_validacao')
+                    ->schema([
+                        DatePicker::make('data_validacao')
                             ->label('Data Validação')
                             ->displayFormat('d/m/Y')
                             ->native(false),
@@ -478,14 +501,14 @@ class PedidosResource extends Resource
                             )
                         );
                     }),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
+            ], layout: FiltersLayout::AboveContent)
             ->filtersFormColumns(6)
-            ->actions([
-                Tables\Actions\ViewAction::make()
+            ->recordActions([
+                ViewAction::make()
                     ->hiddenLabel()
                     ->tooltip('Visualizar'),
 
-                Tables\Actions\Action::make('impressao')
+                Action::make('impressao')
                     ->label('Impressão')
                     ->icon('heroicon-m-printer')
                     ->color('danger')
@@ -494,7 +517,7 @@ class PedidosResource extends Resource
                     ->url(fn (Pedidos $record): string => route('impressao_pedido', $record))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\Action::make('anexar_requisicao')
+                Action::make('anexar_requisicao')
                     ->icon('heroicon-m-paper-clip')
                     ->color('info')
                     ->hiddenLabel()
@@ -504,7 +527,7 @@ class PedidosResource extends Resource
                         $record->update(['idSituacao' => 2]);
                     }),
 
-                Tables\Actions\Action::make('encaminhar_logistica')
+                Action::make('encaminhar_logistica')
                     ->icon('heroicon-m-truck')
                     ->color('warning')
                     ->hiddenLabel()
@@ -514,7 +537,7 @@ class PedidosResource extends Resource
                         $record->update(['idSituacao' => 5]);
                     }),
 
-                Tables\Actions\Action::make('retornar_analise')
+                Action::make('retornar_analise')
                     ->icon('heroicon-m-arrow-uturn-left')
                     ->color('success')
                     ->hiddenLabel()
@@ -538,10 +561,10 @@ class PedidosResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPedidos::route('/'),
-            'create' => Pages\CreatePedidos::route('/create'),
-            'edit' => Pages\EditPedidos::route('/{record}/edit'),
-            'print' => Pages\PrintPedido::route('/{record}/print'),
+            'index' => ListPedidos::route('/'),
+            'create' => CreatePedidos::route('/create'),
+            'edit' => EditPedidos::route('/{record}/edit'),
+            'print' => PrintPedido::route('/{record}/print'),
         ];
     }
 

@@ -12,17 +12,17 @@ class PatrimonioMoveisPorAnoChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Bens móveis por ano de incorporação';
+    protected ?string $heading = 'Bens móveis por ano de incorporação';
 
     protected static ?int $sort = 3;
 
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 2;
+    protected int|string|array $columnSpan = 2;
 
     protected function getData(): array
     {
-        $data = app(PatrimonioDashboardService::class)->getMoveisPorAno($this->filters);
+        $data = app(PatrimonioDashboardService::class)->getMoveisPorAno($this->pageFilters);
 
         return [
             'datasets' => [

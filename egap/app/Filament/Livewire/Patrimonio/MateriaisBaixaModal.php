@@ -6,11 +6,15 @@ use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\ItemBaixa;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class MateriaisBaixaModal extends TableModalComponent
+class MateriaisBaixaModal extends TableModalComponent implements HasActions
 {
+    use InteractsWithActions;
+
     public int $baixaId;
 
     public function mount(int $baixaId): void
@@ -41,8 +45,8 @@ class MateriaisBaixaModal extends TableModalComponent
             ->defaultSort('id')
             ->emptyStateIcon('heroicon-o-archive-box')
             ->emptyStateHeading('Nenhum material está vinculado a esta baixa')
-            ->actions([])
-            ->bulkActions([]);
+            ->recordActions([])
+            ->toolbarActions([]);
     }
 
     private function getMateriaisQuery(): Builder

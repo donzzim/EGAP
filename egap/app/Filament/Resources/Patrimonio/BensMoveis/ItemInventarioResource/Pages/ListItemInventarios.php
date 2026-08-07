@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListItemInventarios extends ListRecords
@@ -13,7 +13,7 @@ class ListItemInventarios extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo'),
         ];
     }

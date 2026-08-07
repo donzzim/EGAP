@@ -2,24 +2,28 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
+use App\Models\UserEgap;
 use Illuminate\Database\Eloquent\Model;
 
 class GestorCedido extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'imo_gestorcedidos';
+
     protected $primaryKey = 'id';
+
     protected $guarded = [];
+
     public $timestamps = false;
 
     public function nomeRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'nome', 'id');
+        return $this->belongsTo(UserEgap::class, 'nome', 'id');
     }
 
     public function atualizadoPorRelacaoref()
     {
-        return $this->belongsTo(\App\Models\UserEgap::class, 'atualizado_por', 'id');
+        return $this->belongsTo(UserEgap::class, 'atualizado_por', 'id');
     }
 
     protected static function booted(): void

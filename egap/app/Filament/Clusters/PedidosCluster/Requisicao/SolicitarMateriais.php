@@ -13,24 +13,23 @@ use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -40,28 +39,40 @@ class SolicitarMateriais extends Page implements HasForms
     use InteractsWithForms;
 
     protected const STATUS_ATENDIDO = 3;
+
     protected const STATUS_CANCELADO = 4;
+
     protected const STATUS_INVALIDADO = 5;
+
     protected const STATUS_EM_ANALISE = 6;
+
     protected const STATUS_VALIDADO = 7;
+
     protected const STATUS_EM_ATENDIMENTO = 9;
+
     protected const STATUS_CONCLUIDO = 12;
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    protected static ?string $navigationIcon = 'heroicon-o-plus-circle';
-    protected static ?string $navigationGroup = 'Requisição';
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-plus-circle';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Requisição';
+
     protected static ?string $title = 'Pedidos - Materiais Permanentes';
+
     protected static ?string $slug = 'solicitar-materiais';
+
     protected static ?string $navigationLabel = 'Solicitar Materiais';
-    protected static string $view = 'filament.pages.pedidos.requisicao.solicitar-materiais';
+
+    protected string $view = 'filament.pages.pedidos.requisicao.solicitar-materiais';
 
     public ?array $data = [];
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 
     public function mount(): void
@@ -69,10 +80,10 @@ class SolicitarMateriais extends Page implements HasForms
         $this->form->fill($this->getDefaultFormState());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Tabs::make('Solicitação de materiais permanentes')
                     ->persistTabInQueryString()
                     ->tabs([
@@ -351,7 +362,7 @@ class SolicitarMateriais extends Page implements HasForms
         try {
             $this->validateBusinessRules($data);
 
-            /** @var \App\Filament\Clusters\PedidosCluster\Requisicao\Pedidos $pedido */
+            /** @var PedidosCluster\Requisicao\Pedidos $pedido */
             $pedido = DB::connection('egap')->transaction(function () use ($data, $userId) {
                 $statusPedido = (int) ($data['idSituacao'] ?? self::STATUS_EM_ANALISE);
 
@@ -537,7 +548,7 @@ class SolicitarMateriais extends Page implements HasForms
         }
 
         foreach ($itens as $index => $itemData) {
-            $prefix = 'data.itens.' . $index;
+            $prefix = 'data.itens.'.$index;
             $statusItem = (int) ($itemData['situacao'] ?? $data['idSituacao'] ?? self::STATUS_EM_ANALISE);
             $quantidadeSolicitada = (int) ($itemData['QuantidadeMaterial'] ?? 0);
             $quantidadeValidada = filled($itemData['quantidade_validada'] ?? null)

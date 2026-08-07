@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCidades extends EditRecord
@@ -13,7 +13,7 @@ class EditCidades extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

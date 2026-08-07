@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\CondicaoUsoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCondicaoUso extends EditRecord
@@ -15,7 +15,7 @@ class EditCondicaoUso extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            DeleteAction::make()->label('Excluir'),
         ];
     }
 }

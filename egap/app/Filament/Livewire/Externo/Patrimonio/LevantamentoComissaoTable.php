@@ -5,15 +5,16 @@ namespace App\Filament\Livewire\Externo\Patrimonio;
 use App\Filament\Support\SetorSelecionado;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
-use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\ItemInventario;
 use App\Models\Patrimonio\BensMoveis\Termo;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Enums\FiltersLayout;
@@ -38,8 +39,9 @@ use Livewire\Component;
  * documento gerado já nasce assinado (sem etapa de validação posterior pela
  * Seção de Patrimônio, diferente do fluxo de transferência de bens).
  */
-class LevantamentoComissaoTable extends Component implements HasForms, HasTable
+class LevantamentoComissaoTable extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -128,8 +130,8 @@ class LevantamentoComissaoTable extends Component implements HasForms, HasTable
             ->headerActions([
                 $this->assinarTermosAction(),
             ])
-            ->actions([])
-            ->bulkActions([])
+            ->recordActions([])
+            ->toolbarActions([])
             ->defaultSort('num_patrimonio')
             ->emptyStateHeading(
                 blank($this->setorAtual)
@@ -148,7 +150,7 @@ class LevantamentoComissaoTable extends Component implements HasForms, HasTable
             ->modalDescription('Será gerado um Termo de Responsabilidade para cada complemento selecionado, reunindo os bens já conferidos e ainda sem termo. A assinatura eletrônica é efetivada imediatamente, em nome do usuário autenticado.')
             ->modalSubmitActionLabel('Assinar')
             ->disabled(fn (): bool => blank($this->setorAtual))
-            ->form([
+            ->schema([
                 Select::make('complementos')
                     ->label('Complemento(s) do Setor')
                     ->required()

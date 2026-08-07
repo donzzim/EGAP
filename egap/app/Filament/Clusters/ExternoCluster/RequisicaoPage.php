@@ -3,21 +3,21 @@
 namespace App\Filament\Clusters\ExternoCluster;
 
 use App\Filament\Clusters\ExternoCluster;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Support\Enums\MaxWidth;
+use Filament\Support\Enums\Width;
 
 abstract class RequisicaoPage extends Page
 {
     protected static ?string $cluster = ExternoCluster::class;
 
-    public function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }
 
-    public function getMaxContentWidth(): MaxWidth
+    public function getMaxContentWidth(): Width
     {
-        return MaxWidth::Full;
+        return Width::Full;
     }
 }

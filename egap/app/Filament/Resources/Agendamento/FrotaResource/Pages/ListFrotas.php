@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Agendamento\FrotaResource\Pages;
 
 use App\Filament\Resources\Agendamento\FrotaResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFrotas extends ListRecords
@@ -13,8 +13,8 @@ class ListFrotas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

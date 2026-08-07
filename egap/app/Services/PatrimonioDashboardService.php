@@ -6,6 +6,7 @@ use App\Models\Patrimonio\BensImoveis\BemImovel;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Throwable;
 
 class PatrimonioDashboardService
 {
@@ -115,10 +116,10 @@ class PatrimonioDashboardService
         }
 
         if ($startDate) {
-            return 'Incorporados a partir de ' . $startDate->format('d/m/Y');
+            return 'Incorporados a partir de '.$startDate->format('d/m/Y');
         }
 
-        return 'Incorporados ate ' . $endDate->format('d/m/Y');
+        return 'Incorporados ate '.$endDate->format('d/m/Y');
     }
 
     protected function movableQuery(array $filters): Builder
@@ -170,7 +171,7 @@ class PatrimonioDashboardService
 
         try {
             return CarbonImmutable::parse($value);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }

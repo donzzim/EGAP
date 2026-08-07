@@ -16,15 +16,15 @@ class PatrimonioOverviewStats extends StatsOverviewWidget
 
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {
         $service = app(PatrimonioDashboardService::class);
-        $summary = $service->getSummary($this->filters);
-        $movableByYear = $service->getMoveisPorAno($this->filters);
+        $summary = $service->getSummary($this->pageFilters);
+        $movableByYear = $service->getMoveisPorAno($this->pageFilters);
         $trend = $movableByYear['values'] !== [] ? $movableByYear['values'] : [0];
-        $periodo = $service->getPeriodoDescricao($this->filters);
+        $periodo = $service->getPeriodoDescricao($this->pageFilters);
 
         return [
             Stat::make('Bens móveis', Number::format($summary['moveis_total'], locale: 'pt_BR'))

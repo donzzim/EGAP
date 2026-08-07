@@ -12,16 +12,18 @@ use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -46,8 +48,9 @@ use Throwable;
  * a localização do bem só é efetivada quando o termo é validado pela Seção
  * de Patrimônio, então esta tela não altera Setor/Unidade do bem diretamente.
  */
-class BensNoSetorTable extends Component implements HasForms, HasTable
+class BensNoSetorTable extends Component implements HasActions, HasForms, HasTable
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -129,10 +132,10 @@ class BensNoSetorTable extends Component implements HasForms, HasTable
                         ->pluck('descricao', 'id')
                         ->toArray()),
             ], FiltersLayout::AboveContent)
-            ->actions([
+            ->recordActions([
                 $this->editarAction(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 $this->transferirBulkAction(),
             ])
             ->checkIfRecordIsSelectableUsing(
@@ -162,7 +165,7 @@ class BensNoSetorTable extends Component implements HasForms, HasTable
                 'ComplementoSetor' => $record->ComplementoSetor,
                 'EstadodeConservacao' => $record->EstadodeConservacao,
             ])
-            ->form([
+            ->schema([
                 TextInput::make('NumerodeSerie')
                     ->label('Número de série')
                     ->maxLength(50),

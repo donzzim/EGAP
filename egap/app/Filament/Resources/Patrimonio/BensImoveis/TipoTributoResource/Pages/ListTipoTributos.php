@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTipoTributos extends ListRecords
@@ -13,7 +13,7 @@ class ListTipoTributos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo'),
         ];
     }

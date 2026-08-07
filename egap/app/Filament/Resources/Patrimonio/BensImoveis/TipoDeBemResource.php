@@ -3,47 +3,56 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages\CreateTipoDeBem;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages\EditTipoDeBem;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages\ListTipoDeBems;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\TipoDeBem;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class TipoDeBemResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TipoDeBem::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube';
+
     protected static ?string $navigationLabel = 'Tipo de bem';
+
     protected static ?string $modelLabel = 'Tipo de bem';
+
     protected static ?string $pluralModelLabel = 'Tipos de bem';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 16;
+
     protected static ?string $slug = 'bens-imoveis/tipos-de-bem';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('Descricao')
+                        TextInput::make('Descricao')
                             ->label('Descrição')
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
-                    ])
+                    ]),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
@@ -56,9 +65,9 @@ class TipoDeBemResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTipoDeBems::route('/'),
-            'create' => Pages\CreateTipoDeBem::route('/create'),
-            'edit' => Pages\EditTipoDeBem::route('/{record}/edit'),
+            'index' => ListTipoDeBems::route('/'),
+            'create' => CreateTipoDeBem::route('/create'),
+            'edit' => EditTipoDeBem::route('/{record}/edit'),
         ];
     }
 }

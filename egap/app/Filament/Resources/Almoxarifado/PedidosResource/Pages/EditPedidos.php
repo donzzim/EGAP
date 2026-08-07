@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
 
 use App\Filament\Resources\Almoxarifado\PedidosResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPedidos extends EditRecord
@@ -20,7 +20,7 @@ class EditPedidos extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

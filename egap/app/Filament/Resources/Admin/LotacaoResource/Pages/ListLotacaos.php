@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Admin\LotacaoResource\Pages;
 
 use App\Filament\Resources\Admin\LotacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListLotacaos extends ListRecords
@@ -13,8 +13,8 @@ class ListLotacaos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

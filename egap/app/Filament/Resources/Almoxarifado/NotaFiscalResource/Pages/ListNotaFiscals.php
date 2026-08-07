@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages;
 
 use App\Filament\Resources\Almoxarifado\NotaFiscalResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListNotaFiscals extends ListRecords
@@ -13,8 +13,8 @@ class ListNotaFiscals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

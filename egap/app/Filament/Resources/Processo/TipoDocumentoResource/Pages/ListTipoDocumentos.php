@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Processo\TipoDocumentoResource\Pages;
 
 use App\Filament\Resources\Processo\TipoDocumentoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTipoDocumentos extends ListRecords
@@ -13,8 +13,8 @@ class ListTipoDocumentos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

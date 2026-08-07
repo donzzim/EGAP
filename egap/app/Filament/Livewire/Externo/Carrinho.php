@@ -8,12 +8,14 @@ use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Livewire\Component;
 use Throwable;
 
@@ -28,8 +30,9 @@ use Throwable;
  * enviado — e como o item é removido do carrinho — fica a cargo de cada
  * subclasse, pois divergem de verdade (ver docblocks das subclasses).
  */
-abstract class Carrinho extends Component implements HasForms
+abstract class Carrinho extends Component implements HasActions, HasForms
 {
+    use InteractsWithActions;
     use InteractsWithForms;
 
     public array $carrinho = [];

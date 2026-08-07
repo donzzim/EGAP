@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\CreateInventarioUnidade;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\EditInventarioUnidade;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\ListInventarioUnidades;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
@@ -11,18 +13,20 @@ use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
 use Carbon\Carbon;
-use Filament\Forms;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
@@ -31,13 +35,13 @@ class InventarioUnidadeResource extends Resource
 {
     protected static ?string $model = InventarioUnidade::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-library';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-library';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'bens-moveis/unidades-inventariadas';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Unidades Inventariadas';
 
@@ -47,16 +51,16 @@ class InventarioUnidadeResource extends Resource
 
     protected static ?int $navigationSort = 13;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Tabs::make('Tabs')
                     ->persistTabInQueryString()
                     ->tabs([
-                        Tabs\Tab::make('Unidades Inventariadas')
+                        Tab::make('Unidades Inventariadas')
                             ->icon('heroicon-m-building-office')
                             ->schema([
                                 Section::make('Planejamento da Unidade')
@@ -87,7 +91,7 @@ class InventarioUnidadeResource extends Resource
                                                 ->afterStateHydrated(function (Select $component, ?InventarioUnidade $record): void {
                                                     $component->state($record?->tipoAbrangencia() ?? 'unidade');
                                                 })
-                                                ->afterStateUpdated(function (Forms\Set $set): void {
+                                                ->afterStateUpdated(function (Set $set): void {
                                                     $set('unidade_pai', null);
                                                     $set('unidades', null);
                                                 })
@@ -102,19 +106,19 @@ class InventarioUnidadeResource extends Resource
                                                 ->native(false)
                                                 ->live()
                                                 ->dehydrated(false)
-                                                ->visible(fn (Forms\Get $get): bool => $get('tipo_abrangencia') === 'setor')
-                                                ->required(fn (Forms\Get $get): bool => $get('tipo_abrangencia') === 'setor')
+                                                ->visible(fn (Get $get): bool => $get('tipo_abrangencia') === 'setor')
+                                                ->required(fn (Get $get): bool => $get('tipo_abrangencia') === 'setor')
                                                 ->afterStateHydrated(function (Select $component, ?InventarioUnidade $record): void {
                                                     if ($record && ! $record->inventariaUnidadeInteira()) {
                                                         $component->state($record->unidadePaiId());
                                                     }
                                                 })
-                                                ->afterStateUpdated(fn (Forms\Set $set) => $set('unidades', null))
+                                                ->afterStateUpdated(fn (Set $set) => $set('unidades', null))
                                                 ->columnSpan(2),
 
                                             Select::make('unidades')
-                                                ->label(fn (Forms\Get $get): string => $get('tipo_abrangencia') === 'setor' ? 'Setor' : 'Unidade Organizacional')
-                                                ->options(fn (Forms\Get $get): array => self::opcoesAbrangencia($get))
+                                                ->label(fn (Get $get): string => $get('tipo_abrangencia') === 'setor' ? 'Setor' : 'Unidade Organizacional')
+                                                ->options(fn (Get $get): array => self::opcoesAbrangencia($get))
                                                 ->placeholder('Selecione a abrangência')
                                                 ->searchable()
                                                 ->preload()
@@ -127,14 +131,14 @@ class InventarioUnidadeResource extends Resource
                                                 ->displayFormat('d/m/Y')
                                                 ->native(false)
                                                 ->live()
-                                                ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDias($get, $set)),
+                                                ->afterStateUpdated(fn ($state, Get $get, Set $set) => self::calcularDias($get, $set)),
 
                                             DatePicker::make('data_termino')
                                                 ->label('Data Término')
                                                 ->displayFormat('d/m/Y')
                                                 ->native(false)
                                                 ->live()
-                                                ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => self::calcularDias($get, $set)),
+                                                ->afterStateUpdated(fn ($state, Get $get, Set $set) => self::calcularDias($get, $set)),
 
                                             TextInput::make('dias')
                                                 ->label('Dias')
@@ -152,7 +156,7 @@ class InventarioUnidadeResource extends Resource
                                     ]),
                             ]),
 
-                        Tabs\Tab::make('Equipes de Campo')
+                        Tab::make('Equipes de Campo')
                             ->icon('heroicon-m-users')
                             ->schema([
                                 Repeater::make('equipes')
@@ -187,7 +191,7 @@ class InventarioUnidadeResource extends Resource
             ]);
     }
 
-    public static function calcularDias(Forms\Get $get, Forms\Set $set): void
+    public static function calcularDias(Get $get, Set $set): void
     {
         $inicio = $get('data_inicio');
         $termino = $get('data_termino');
@@ -210,7 +214,7 @@ class InventarioUnidadeResource extends Resource
             ->toArray();
     }
 
-    private static function opcoesAbrangencia(Forms\Get $get): array
+    private static function opcoesAbrangencia(Get $get): array
     {
         if ($get('tipo_abrangencia') !== 'setor') {
             return self::opcoesUnidadesOrganizacionais();
@@ -267,7 +271,7 @@ class InventarioUnidadeResource extends Resource
             ]);
     }
 
-    private static function equipesIntegrantesTableAction(): Tables\Actions\Action
+    private static function equipesIntegrantesTableAction(): Action
     {
         return TableModalAction::make('visualizar_integrantes_equipe')
             ->modalHeading(fn (InventarioUnidade $record): string => sprintf(
@@ -289,9 +293,9 @@ class InventarioUnidadeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListInventarioUnidades::route('/'),
-            'create' => Pages\CreateInventarioUnidade::route('/create'),
-            'edit' => Pages\EditInventarioUnidade::route('/{record}/edit'),
+            'index' => ListInventarioUnidades::route('/'),
+            'create' => CreateInventarioUnidade::route('/create'),
+            'edit' => EditInventarioUnidade::route('/{record}/edit'),
         ];
     }
 }

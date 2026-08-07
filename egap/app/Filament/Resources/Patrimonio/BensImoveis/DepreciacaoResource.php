@@ -3,42 +3,55 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\CreateDepreciacao;
+use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\EditDepreciacao;
+use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\ListDepreciacaos;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Depreciacao;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class DepreciacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Depreciacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-down';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-down';
+
     protected static ?string $navigationLabel = 'Depreciação';
+
     protected static ?string $modelLabel = 'Depreciação de Imóvel';
+
     protected static ?string $pluralModelLabel = 'Depreciação de Imóveis';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $slug = 'bens-imoveis/depreciacao';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Identificação do Imóvel')
+        return $schema
+            ->components([
+                Section::make('Identificação do Imóvel')
                     ->icon('heroicon-o-building-office')
                     ->schema([
-                        Forms\Components\Select::make('Id_imovel')
+                        Select::make('Id_imovel')
                             ->label('Imóvel')
                             ->relationship('imovelRelacaoref', 'descricao')
                             ->searchable()
@@ -46,7 +59,7 @@ class DepreciacaoResource extends Resource
                             ->placeholder('Selecione o imóvel')
                             ->columnSpanFull(),
 
-                        Forms\Components\Select::make('id_obra')
+                        Select::make('id_obra')
                             ->label('Obras e Ampliações')
                             ->relationship('obraRelacaoref', 'descricao')
                             ->searchable()
@@ -56,20 +69,20 @@ class DepreciacaoResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Parâmetros do Cálculo')
+                Section::make('Parâmetros do Cálculo')
                     ->icon('heroicon-o-calculator')
                     ->schema([
-                        Forms\Components\DatePicker::make('data_calculo')
+                        DatePicker::make('data_calculo')
                             ->label('Data do Cálculo')
                             ->displayFormat('d/m/Y')
                             ->native(false),
 
-                        Forms\Components\DateTimePicker::make('date_time')
+                        DateTimePicker::make('date_time')
                             ->label('Atualizado em')
                             ->displayFormat('d/m/Y H:i')
                             ->native(false),
 
-                        Forms\Components\TextInput::make('vida_util')
+                        TextInput::make('vida_util')
                             ->label('Vida Útil')
                             ->numeric()
                             ->suffix('meses')
@@ -77,7 +90,7 @@ class DepreciacaoResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Valores da Depreciação')
+                Section::make('Valores da Depreciação')
                     ->icon('heroicon-o-banknotes')
                     ->schema([
                         MoneyInput::make('depreciacao_mensal')
@@ -87,7 +100,7 @@ class DepreciacaoResource extends Resource
                         MoneyInput::make('valor_residual')
                             ->label('Valor Residual'),
                         MoneyInput::make('valor_liquido_contabil')
-                            ->label('Valor Líquido Contábil')
+                            ->label('Valor Líquido Contábil'),
                     ])
                     ->columns(2),
             ]);
@@ -108,21 +121,21 @@ class DepreciacaoResource extends Resource
                     ->badge(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('Id_imovel')
+                SelectFilter::make('Id_imovel')
                     ->label('Imóvel')
                     ->columnSpan(6)
                     ->relationship('imovelRelacaoref', 'descricao')
                     ->searchable()
                     ->preload(),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent);
+            ], layout: FiltersLayout::AboveContent);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDepreciacaos::route('/'),
-            'create' => Pages\CreateDepreciacao::route('/create'),
-            'edit' => Pages\EditDepreciacao::route('/{record}/edit'),
+            'index' => ListDepreciacaos::route('/'),
+            'create' => CreateDepreciacao::route('/create'),
+            'edit' => EditDepreciacao::route('/{record}/edit'),
         ];
     }
 }

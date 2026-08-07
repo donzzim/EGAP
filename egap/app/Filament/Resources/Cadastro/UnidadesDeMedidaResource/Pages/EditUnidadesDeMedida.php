@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
 
 use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditUnidadesDeMedida extends EditRecord
@@ -13,7 +13,7 @@ class EditUnidadesDeMedida extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

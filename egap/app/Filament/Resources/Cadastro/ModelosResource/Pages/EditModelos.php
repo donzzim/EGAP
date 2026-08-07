@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\ModelosResource\Pages;
 
 use App\Filament\Resources\Cadastro\ModelosResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditModelos extends EditRecord
@@ -13,7 +13,7 @@ class EditModelos extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

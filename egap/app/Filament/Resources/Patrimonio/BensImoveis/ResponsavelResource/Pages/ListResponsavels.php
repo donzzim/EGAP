@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Patrimonio\BensImoveis\ResponsavelResource\Pages;
 
 use App\Filament\Resources\Patrimonio\BensImoveis\ResponsavelResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListResponsavels extends ListRecords
@@ -13,7 +13,7 @@ class ListResponsavels extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Responsável')
                 ->modalWidth('md')

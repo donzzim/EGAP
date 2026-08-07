@@ -9,11 +9,11 @@ use App\Filament\Widgets\EgapDashboard\PatrimonioOverviewStats;
 use App\Filament\Widgets\EgapDashboard\PatrimonioTopMateriaisValorTable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class EgapDashboard extends Dashboard
 {
@@ -27,12 +27,12 @@ class EgapDashboard extends Dashboard
 
     protected static ?string $navigationLabel = 'Dashboard';
 
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar-square';
 
-    public function filtersForm(Form $form): Form
+    public function filtersForm(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Filtros')
                     ->description('Refina os indicadores por periodo de incorporação de bens moveis e imóveis.')
                     ->schema([
@@ -84,7 +84,7 @@ class EgapDashboard extends Dashboard
 
         while (count($colors) < max($limit, 1)) {
             foreach ($palette as $tone) {
-                $colors[] = 'rgb(' . $color[$tone] . ')';
+                $colors[] = 'rgb('.$color[$tone].')';
 
                 if (count($colors) >= max($limit, 1)) {
                     break;
@@ -95,7 +95,7 @@ class EgapDashboard extends Dashboard
         return $colors;
     }
 
-    public function getColumns(): int | string | array
+    public function getColumns(): int|array
     {
         return [
             'md' => 4,
@@ -109,7 +109,7 @@ class EgapDashboard extends Dashboard
             $firstName = str(auth()->user()->name)->trim()->before(' ')->toString();
 
             Notification::make()
-                ->title('Bem-vindo ao EGAP, '. $firstName .'!')
+                ->title('Bem-vindo ao EGAP, '.$firstName.'!')
                 ->body('Login realizado com sucesso.')
                 ->success()
                 ->send();

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
 
 use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUnidadesDeMedida extends ListRecords
@@ -13,8 +13,8 @@ class ListUnidadesDeMedida extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->label('Novo')
+            CreateAction::make()
+                ->label('Novo'),
         ];
     }
 }

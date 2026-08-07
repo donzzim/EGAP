@@ -3,57 +3,56 @@
 namespace App\Http\Controllers\PrintsControllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use App\Models\Patrimonio\BensImoveis\Obra;
-use App\Models\Patrimonio\BensImoveis\Depreciacao as DepreciacaoImovel;
-use App\Models\Patrimonio\BensMoveis\Depreciacao as DepreciacaoBemMovel;
-use App\Models\Patrimonio\BensMoveis\BemMovel;
-use App\Models\Cadastro\ContaContabil;
-use App\Models\Patrimonio\BensImoveis\Reavaliacao;
-use App\Models\Patrimonio\BensImoveis\BemImovel;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
-use App\Models\Cadastro\DescricaoResumida;
-use App\Models\Cadastro\DescricaoDetalhada;
-use App\Models\Patrimonio\BensIntangiveis\BemIntangivel;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Almoxarifado\Pedidos;
-use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
-use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
+use App\Models\Cadastro\ContaContabil;
+use App\Models\Cadastro\DescricaoDetalhada;
+use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Cadastro\Setores;
-
+use App\Models\Patrimonio\BensImoveis\BemImovel;
+use App\Models\Patrimonio\BensImoveis\Depreciacao as DepreciacaoImovel;
+use App\Models\Patrimonio\BensImoveis\Obra;
+use App\Models\Patrimonio\BensImoveis\Reavaliacao;
+use App\Models\Patrimonio\BensIntangiveis\BemIntangivel;
+use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
+use App\Models\Patrimonio\BensMoveis\Depreciacao as DepreciacaoBemMovel;
+use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportRelatoriosGeraisController extends Controller
 {
-    public function imprimir(Request $request)
+    public function print(Request $request)
     {
         $filtros = $request->all();
         $nomeFormatado = str($filtros['relatorio'] ?? '')->studly();
-        $metodo = 'gerar' . $nomeFormatado;
+        $metodo = 'gerar'.$nomeFormatado;
 
         if (method_exists($this, $metodo)) {
             return $this->$metodo($filtros);
         }
 
-        abort(404, 'Relatório não encontrado: ' . $metodo);
+        abort(404, 'Relatório não encontrado: '.$metodo);
     }
 
     private function getPeriodo($filtros)
     {
-        $inicio = !empty($filtros['data_inicio']) ? Carbon::parse($filtros['data_inicio']) : now();
-        $termino = !empty($filtros['data_termino']) ? Carbon::parse($filtros['data_termino']) : now();
+        $inicio = ! empty($filtros['data_inicio']) ? Carbon::parse($filtros['data_inicio']) : now();
+        $termino = ! empty($filtros['data_termino']) ? Carbon::parse($filtros['data_termino']) : now();
 
         return (object) [
-            'objIni'  => $inicio,
-            'objFim'  => $termino,
-            'ini'     => $inicio->format('Y-m-d 00:00:01'),
-            'fim'     => $termino->format('Y-m-d 23:59:59'),
+            'objIni' => $inicio,
+            'objFim' => $termino,
+            'ini' => $inicio->format('Y-m-d 00:00:01'),
+            'fim' => $termino->format('Y-m-d 23:59:59'),
             'iniDate' => $inicio->format('Y-m-d'),
             'fimDate' => $termino->format('Y-m-d'),
-            'mesRef'  => $termino->format('Y-m'),
-            'mesAnt'  => $inicio->copy()->subMonth()->format('Y-m'),
-            'ano'     => $inicio->format('Y'),
+            'mesRef' => $termino->format('Y-m'),
+            'mesAnt' => $inicio->copy()->subMonth()->format('Y-m'),
+            'ano' => $inicio->format('Y'),
         ];
     }
 
@@ -62,7 +61,7 @@ class ReportRelatoriosGeraisController extends Controller
         $payload = array_merge([
             'dados' => $dados,
             'filtros' => $filtros,
-            'data_emissao' => now()->format('d/m/Y')
+            'data_emissao' => now()->format('d/m/Y'),
         ], $extra);
 
         return view("egap.relatorios.{$viewName}", $payload);
@@ -70,10 +69,10 @@ class ReportRelatoriosGeraisController extends Controller
 
     private function aplicarFiltros($query, $filtros, $colConta = 'pc.id', $colSituacao = 'p.situacao_contabil')
     {
-        $query->when($filtros['conta_contabil'] ?? null, fn($q, $v) => $q->where($colConta, $v));
+        $query->when($filtros['conta_contabil'] ?? null, fn ($q, $v) => $q->where($colConta, $v));
 
         if ($colSituacao) {
-            $query->when($filtros['situacao_contabil'] ?? 'Todos', fn($q, $v) => $v !== 'Todos' ? $q->where($colSituacao, $v) : null);
+            $query->when($filtros['situacao_contabil'] ?? 'Todos', fn ($q, $v) => $v !== 'Todos' ? $q->where($colSituacao, $v) : null);
         }
     }
 
@@ -94,7 +93,7 @@ class ReportRelatoriosGeraisController extends Controller
                 'depreciacao_mensal',
                 'depreciacao_acumulada',
                 'valor_liquido_contabil',
-                'valor_residual'
+                'valor_residual',
             ])
             ->whereRaw("DATE_FORMAT(data_calculo, '%Y-%m') = ?", [$mesRef]);
     }
@@ -113,15 +112,15 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_patrimonio as p', 'p.id', '=', 'd.patrimonio')
             ->where('d.item', '>', 1)
             ->whereBetween('d.data_calculo', [$iniDep, $fimDep])
-            ->whereRaw("((p.DatadeIncorporacao < ? AND p.SituacaoBem NOT IN (2,3,4,5,6,8,9)) OR (p.DataBaixa > ? AND p.SituacaoBem IN (2,3,4,5,6)))", [$iniDep, $d->fim])
+            ->whereRaw('((p.DatadeIncorporacao < ? AND p.SituacaoBem NOT IN (2,3,4,5,6,8,9)) OR (p.DataBaixa > ? AND p.SituacaoBem IN (2,3,4,5,6)))', [$iniDep, $d->fim])
             ->whereRaw("(p.DatadaReavaliacao < ? OR p.DatadaReavaliacao = '0000-00-00 00:00:00')", [$iniDep])
-            ->selectRaw("p.ContaContabil, p.Produto, SUM(d.depreciacao_acumulada) as depreciacao_acumulada")
+            ->selectRaw('p.ContaContabil, p.Produto, SUM(d.depreciacao_acumulada) as depreciacao_acumulada')
             ->groupBy('p.ContaContabil', 'p.Produto');
 
         $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->join('mat_planocontas as pc', 'pc.id', '=', 'pat.ContaContabil')
             ->join('mat_produtos as prod', 'prod.id', '=', 'pat.Produto')
-            ->leftJoinSub($subDepre, 'dep', function($join) {
+            ->leftJoinSub($subDepre, 'dep', function ($join) {
                 $join->on('pat.ContaContabil', '=', 'dep.ContaContabil')
                     ->on('pat.Produto', '=', 'dep.Produto');
             })
@@ -135,15 +134,15 @@ class ReportRelatoriosGeraisController extends Controller
                 SUM(CASE WHEN DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem IN (2,3,4,5,6) THEN $val ELSE 0 END) as saidas,
                 IFNULL(dep.depreciacao_acumulada, 0) as depreciacao
             ")
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
-            ->when($filtros['unidade_gestora'] ?? 'Todos', fn($q, $v) => $v !== 'Todos' ? $q->where('pat.unidade_gestora', $v) : null)
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
+            ->when($filtros['unidade_gestora'] ?? 'Todos', fn ($q, $v) => $v !== 'Todos' ? $q->where('pat.unidade_gestora', $v) : null)
             ->groupBy('pc.codigo', 'prod.CodigodaClasse', 'prod.DescricaodaClasse', 'pat.ContaContabil', 'pat.Produto', 'dep.depreciacao_acumulada')
             ->orderBy('pc.codigo')->orderBy('prod.CodigodaClasse')
             ->toBase()
             ->get()
-            ->map(fn($i) => (object)[... (array)$i,
+            ->map(fn ($i) => (object) [...(array) $i,
                 'saldo_bruto' => ($i->saldo_anterior + $i->entradas) - $i->saidas,
-                'saldo_atual' => ($i->saldo_anterior + $i->entradas - $i->saidas) - $i->depreciacao
+                'saldo_atual' => ($i->saldo_anterior + $i->entradas - $i->saidas) - $i->depreciacao,
             ]);
 
         return $this->render('tce-tabela-10', $dados, $filtros);
@@ -169,14 +168,14 @@ class ReportRelatoriosGeraisController extends Controller
                 SUM(CASE WHEN DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem = 5 THEN $val ELSE 0 END) as sai_perda,
                 SUM(CASE WHEN DataBaixa BETWEEN '{$d->ini}' AND '{$d->fim}' AND SituacaoBem IN (2,4,6) THEN $val ELSE 0 END) as sai_outras
             ")
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
             ->groupBy('pc.codigo', 'prod.CodigodaClasse', 'prod.DescricaodaClasse', 'pat.ContaContabil', 'pat.Produto')
             ->orderBy('pc.codigo')->orderBy('prod.CodigodaClasse')
             ->toBase()
             ->get()
-            ->map(fn($i) => (object)[... (array)$i,
+            ->map(fn ($i) => (object) [...(array) $i,
                 'total_entradas' => $i->ent_incorporadas + $i->ent_doacao + $i->ent_outras,
-                'total_saidas' => $i->sai_alienacao + $i->sai_doacao + $i->sai_perda + $i->sai_outras
+                'total_saidas' => $i->sai_alienacao + $i->sai_doacao + $i->sai_perda + $i->sai_outras,
             ]);
 
         return $this->render('tce-tabela-11', $dados, $filtros);
@@ -189,7 +188,7 @@ class ReportRelatoriosGeraisController extends Controller
         $sa = BemImovel::query()->from('imo_imovel as imo')
             ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->where('data_reavaliacao', '<', $d->ini)
                 ->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
-            ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
+            ->leftJoin('imo_reavaliacao as rea', fn ($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
             ->leftJoinSub(Obra::query()->from('imo_obras as o')->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as d_rea')
                 ->where('data_reavaliacao', '<', $d->ini)->groupBy('Id_imovel'), 'r', 'r.Id_imovel', '=', 'o.Id_imovel')->selectRaw('o.id_imovel, SUM(o.valor) as valor')
                 ->whereRaw("o.data BETWEEN IFNULL(r.d_rea, '1900-01-01') AND ?", [$d->ini])->groupBy('o.id_imovel'), 'obra', 'imo.id', '=', 'obra.id_imovel')
@@ -202,7 +201,7 @@ class ReportRelatoriosGeraisController extends Controller
         $ent = BemImovel::query()->from('imo_imovel as imo')
             ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->whereBetween('data_reavaliacao', [$d->ini, $d->fim])
                 ->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
-            ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
+            ->leftJoin('imo_reavaliacao as rea', fn ($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
             ->leftJoinSub(Obra::query()->selectRaw('Id_imovel, SUM(valor) as valor')->whereBetween('data', [$d->ini, $d->fim])
                 ->groupBy('Id_imovel'), 'oe', 'imo.id', '=', 'oe.Id_imovel')
             ->selectRaw('imo.Id_planocontas as conta, SUM(IF(rea.ajuste_contabil >= 0, rea.ajuste_contabil, 0) + IFNULL(oe.valor, 0)) as entradas,
@@ -215,10 +214,10 @@ class ReportRelatoriosGeraisController extends Controller
         $sai = BemImovel::query()->from('imo_imovel as imo')
             ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->where('data_reavaliacao', '<', $d->ini)
                 ->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
-            ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
+            ->leftJoin('imo_reavaliacao as rea', fn ($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
             ->leftJoinSub(Obra::query()->selectRaw('Id_imovel, MAX(data) as data')->groupBy('Id_imovel'), 'u_obra', 'imo.id', '=', 'u_obra.Id_imovel')
             ->leftJoinSub(Obra::query()->from('imo_obras as o')->leftJoin('imo_reavaliacao as r', 'r.Id_imovel', '=', 'o.Id_imovel')
-                ->selectRaw('o.valor, o.data, o.Id_imovel')->whereRaw('(r.data_reavaliacao < o.data OR r.data_reavaliacao IS NULL)'), 'obra', fn($join) => $join
+                ->selectRaw('o.valor, o.data, o.Id_imovel')->whereRaw('(r.data_reavaliacao < o.data OR r.data_reavaliacao IS NULL)'), 'obra', fn ($join) => $join
                 ->on('u_obra.data', '=', 'obra.data')->on('u_obra.Id_imovel', '=', 'obra.Id_imovel'))
             ->selectRaw('imo.Id_planocontas as conta, SUM(IFNULL(rea.valor_reavaliacao, imo.valor_historico_1a_avaliacao) + IFNULL(obra.valor, 0)) as saidas')
             ->whereBetween('imo.data_baixa', [$d->ini, $d->fim])->groupBy('imo.Id_planocontas');
@@ -240,13 +239,14 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($sai, 'sai', 'pc.id', '=', 'sai.conta')
             ->leftJoinSub($dep, 'dep', 'pc.id', '=', 'dep.conta')
             ->where('imo.id_situacao', 1)
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', null))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', null))
             ->selectRaw('pc.codigo as conta_contabil, pc.titulo as descricao, IFNULL(sa.total, 0) as saldo_anterior, IFNULL(ent.entradas, 0) as entradas,
             (IFNULL(ent.ajustecontabil_saida, 0) + IFNULL(sai.saidas, 0)) as saidas, IFNULL(dep.valor, 0) as depreciacao_acumulada')
             ->distinct()->orderBy('pc.codigo')->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $i->saldo_bruto = ($i->saldo_anterior + $i->entradas) - $i->saidas;
                 $i->saldo_atual = $i->saldo_bruto - $i->depreciacao_acumulada;
+
                 return $i;
             });
 
@@ -256,7 +256,7 @@ class ReportRelatoriosGeraisController extends Controller
     private function gerarTabela13($filtros)
     {
         $d = $this->getPeriodo($filtros);
-        $val = "IF(imo.data_reavaliacao IS NOT NULL, imo.valor_reavaliado, imo.valor_historico_1a_avaliacao)";
+        $val = 'IF(imo.data_reavaliacao IS NOT NULL, imo.valor_reavaliado, imo.valor_historico_1a_avaliacao)';
 
         $agr = BemImovel::query()->from('imo_imovel as imo')
             ->selectRaw('imo.id_planocontas as conta')
@@ -279,7 +279,7 @@ class ReportRelatoriosGeraisController extends Controller
 
         $eo = BemImovel::query()->from('imo_imovel as imo')
             ->leftJoinSub(Reavaliacao::query()->selectRaw('Id_imovel, MAX(data_reavaliacao) as data')->whereBetween('data_reavaliacao', [$d->ini, $d->fim])->groupBy('Id_imovel'), 'u_rea', 'imo.id', '=', 'u_rea.Id_imovel')
-            ->leftJoin('imo_reavaliacao as rea', fn($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
+            ->leftJoin('imo_reavaliacao as rea', fn ($join) => $join->on('u_rea.Id_imovel', '=', 'rea.Id_imovel')->on('u_rea.data', '=', 'rea.data_reavaliacao'))
             ->leftJoinSub($this->subObrasImoveis($d->fim), 'oe', 'imo.id', '=', 'oe.Id_imovel')
             ->selectRaw('imo.Id_planocontas as conta, SUM(IF(rea.ajuste_contabil >= 0, rea.ajuste_contabil, 0) + IFNULL(oe.valor_obra, 0)) as entradas, SUM(IF(rea.ajuste_contabil < 0, ABS(rea.ajuste_contabil), 0)) as ajustecontabil_saida')
             ->where('imo.Id_situacao', 1)->where('imo.data_aquisicao', '<', $d->ini)
@@ -293,14 +293,15 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($obs, 'obs', 'pc.id', '=', 'obs.conta')
             ->leftJoinSub($eo, 'eo', 'pc.id', '=', 'eo.conta')
             ->where('imo.id_situacao', 1)
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', null))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', null))
             ->selectRaw('pc.codigo as conta_contabil, pc.titulo as descricao, IFNULL(agr.e_com, 0) as ent_compras, IFNULL(agr.e_doa, 0) as ent_doacao, (IFNULL(agr.e_con, 0) + IFNULL(obs.valor, 0)) as ent_construcao, IFNULL(agr.e_des, 0) as ent_desapropriacao, IFNULL(eo.entradas, 0) as ent_outras, IFNULL(agr.s_ali, 0) as sai_alienacao, IFNULL(agr.s_doa, 0) as sai_doacao, IFNULL(agr.s_per, 0) as sai_perdas, (IFNULL(agr.s_out_base, 0) + IFNULL(eo.ajustecontabil_saida, 0)) as sai_outras')
             ->distinct()->orderBy('pc.codigo')
             ->toBase()
             ->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $i->total_entradas = $i->ent_compras + $i->ent_doacao + $i->ent_construcao + $i->ent_desapropriacao + $i->ent_outras;
                 $i->total_saidas = $i->sai_alienacao + $i->sai_doacao + $i->sai_perdas + $i->sai_outras;
+
                 return $i;
             });
 
@@ -335,7 +336,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->groupBy('dr.ContaContabil', 'dr.id_produto');
 
         $this->aplicarFiltros($saQuery, $filtros, 'dr.ContaContabil', null);
-        $sa = $saQuery->toBase()->get()->keyBy(fn($item) => $item->id_conta . '_' . $item->id_produto);
+        $sa = $saQuery->toBase()->get()->keyBy(fn ($item) => $item->id_conta.'_'.$item->id_produto);
 
         $movQuery = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->join('mat_descricaodetalhada as dd', 'est.material', '=', 'dd.id')
@@ -343,19 +344,19 @@ class ReportRelatoriosGeraisController extends Controller
             ->whereBetween('est.date_time', [$d->ini, $d->fim])
             ->whereIn('est.tipo_movimentacao', [1, 2])
             ->where('dr.id_tipo_material', '<>', 'P')
-            ->selectRaw("
+            ->selectRaw('
                 dr.ContaContabil as id_conta,
                 dr.id_produto,
                 SUM(CASE WHEN est.tipo_movimentacao = 1 THEN est.valor_total ELSE 0 END) as ValorEntrada,
                 SUM(CASE WHEN est.tipo_movimentacao = 2 THEN est.valor_total ELSE 0 END) as ValorSaida
-            ")
+            ')
             ->groupBy('dr.ContaContabil', 'dr.id_produto');
 
         $this->aplicarFiltros($movQuery, $filtros, 'dr.ContaContabil', null);
-        $mov = $movQuery->toBase()->get()->keyBy(fn($item) => $item->id_conta . '_' . $item->id_produto);
+        $mov = $movQuery->toBase()->get()->keyBy(fn ($item) => $item->id_conta.'_'.$item->id_produto);
 
-        $dados = $base->map(function($item) use ($sa, $mov) {
-            $key = $item->id_conta . '_' . $item->id_produto;
+        $dados = $base->map(function ($item) use ($sa, $mov) {
+            $key = $item->id_conta.'_'.$item->id_produto;
 
             $item->saldo_anterior = $sa->has($key) ? $sa->get($key)->SaldoAnterior : 0;
             $item->entradas = $mov->has($key) ? $mov->get($key)->ValorEntrada : 0;
@@ -392,18 +393,18 @@ class ReportRelatoriosGeraisController extends Controller
 
         $resultados = [];
         foreach ($baseItems as $item) {
-            $key = $item->id_conta . '_' . $item->id_produto;
+            $key = $item->id_conta.'_'.$item->id_produto;
             $resultados[$key] = [
-                'conta_contabil'  => $item->conta_contabil,
+                'conta_contabil' => $item->conta_contabil,
                 'cod_nat_despesa' => $item->cod_nat_despesa,
-                'descricao'       => $item->descricao,
-                'ent_compras'     => 0,
-                'ent_doacao'      => 0,
-                'ent_outras'      => 0,
-                'sai_consumo'     => 0,
-                'sai_doacao'      => 0,
-                'sai_perdas'      => 0,
-                'sai_outras'      => 0,
+                'descricao' => $item->descricao,
+                'ent_compras' => 0,
+                'ent_doacao' => 0,
+                'ent_outras' => 0,
+                'sai_consumo' => 0,
+                'sai_doacao' => 0,
+                'sai_perdas' => 0,
+                'sai_outras' => 0,
             ];
         }
 
@@ -419,11 +420,11 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('alm_notafiscal as nf', 'est.nota_fiscal', '=', 'nf.id')
             ->whereBetween('est.date_time', [$d->ini, $d->fim])
             ->where('est.tipo_movimentacao', 1)
-            ->selectRaw("
+            ->selectRaw('
                 est.material,
                 SUM(CASE WHEN nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as e_compras,
                 SUM(CASE WHEN nf.tipo_documento = 3 THEN est.valor_total ELSE 0 END) as e_outras
-            ")
+            ')
             ->groupBy('est.material')
             ->toBase()
             ->get();
@@ -431,7 +432,7 @@ class ReportRelatoriosGeraisController extends Controller
         $saidas = MovimentacaoEstoque::query()->from('alm_estoque as est')
             ->whereBetween('est.date_time', [$d->ini, $d->fim])
             ->where('est.tipo_movimentacao', 2)
-            ->selectRaw("est.material, SUM(est.valor_total) as s_consumo")
+            ->selectRaw('est.material, SUM(est.valor_total) as s_consumo')
             ->groupBy('est.material')
             ->toBase()
             ->get();
@@ -439,10 +440,10 @@ class ReportRelatoriosGeraisController extends Controller
         foreach ($entradas as $ent) {
             if ($materiais->has($ent->material)) {
                 $mat = $materiais->get($ent->material);
-                $key = $mat->id_conta . '_' . $mat->id_produto;
+                $key = $mat->id_conta.'_'.$mat->id_produto;
                 if (isset($resultados[$key])) {
                     $resultados[$key]['ent_compras'] += (float) $ent->e_compras;
-                    $resultados[$key]['ent_outras']  += (float) $ent->e_outras;
+                    $resultados[$key]['ent_outras'] += (float) $ent->e_outras;
                 }
             }
         }
@@ -450,17 +451,18 @@ class ReportRelatoriosGeraisController extends Controller
         foreach ($saidas as $sai) {
             if ($materiais->has($sai->material)) {
                 $mat = $materiais->get($sai->material);
-                $key = $mat->id_conta . '_' . $mat->id_produto;
+                $key = $mat->id_conta.'_'.$mat->id_produto;
                 if (isset($resultados[$key])) {
                     $resultados[$key]['sai_consumo'] += (float) $sai->s_consumo;
                 }
             }
         }
 
-        $dados = collect($resultados)->map(function($item) {
+        $dados = collect($resultados)->map(function ($item) {
             $obj = (object) $item;
             $obj->total_entradas = $obj->ent_compras + $obj->ent_doacao + $obj->ent_outras;
-            $obj->total_saidas   = $obj->sai_consumo + $obj->sai_doacao + $obj->sai_perdas + $obj->sai_outras;
+            $obj->total_saidas = $obj->sai_consumo + $obj->sai_doacao + $obj->sai_perdas + $obj->sai_outras;
+
             return $obj;
         })->values();
 
@@ -492,18 +494,18 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->whereBetween('est.date_time', [$d->ini, $d->fim])
             ->whereIn('est.tipo_movimentacao', [1, 2])
-            ->selectRaw("
+            ->selectRaw('
                 dr.ContaContabil as id_conta,
                 dr.id_produto,
                 SUM(CASE WHEN est.tipo_movimentacao = 1 THEN est.valor_total ELSE 0 END) as ValorEntrada,
                 SUM(CASE WHEN est.tipo_movimentacao = 2 THEN est.valor_total ELSE 0 END) as ValorSaida
-            ")
+            ')
             ->groupBy('dr.ContaContabil', 'dr.id_produto');
 
         $dados = ContaContabil::query()->fromSub($base, 'conta')
-            ->leftJoinSub($sa, 'sa', fn($j) => $j->on('conta.id_conta', '=', 'sa.id_conta')->on('conta.id_produto', '=', 'sa.id_produto'))
-            ->leftJoinSub($mov, 'mov', fn($j) => $j->on('conta.id_conta', '=', 'mov.id_conta')->on('conta.id_produto', '=', 'mov.id_produto'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'conta.id_conta', null))
+            ->leftJoinSub($sa, 'sa', fn ($j) => $j->on('conta.id_conta', '=', 'sa.id_conta')->on('conta.id_produto', '=', 'sa.id_produto'))
+            ->leftJoinSub($mov, 'mov', fn ($j) => $j->on('conta.id_conta', '=', 'mov.id_conta')->on('conta.id_produto', '=', 'mov.id_produto'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'conta.id_conta', null))
             ->selectRaw('
                 conta.ContaContabil as conta_contabil,
                 conta.Produto as cod_nat_despesa,
@@ -516,8 +518,9 @@ class ReportRelatoriosGeraisController extends Controller
             ->orderBy('conta.Produto')
             ->toBase()
             ->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $i->saldo_atual = $i->saldo_anterior + $i->entradas - $i->saidas;
+
                 return $i;
             });
 
@@ -548,18 +551,18 @@ class ReportRelatoriosGeraisController extends Controller
 
         $resultados = [];
         foreach ($baseItems as $item) {
-            $key = $item->id_conta . '_' . $item->id_produto;
+            $key = $item->id_conta.'_'.$item->id_produto;
             $resultados[$key] = [
-                'conta_contabil'  => $item->conta_contabil,
+                'conta_contabil' => $item->conta_contabil,
                 'cod_nat_despesa' => $item->cod_nat_despesa,
-                'descricao'       => $item->descricao,
-                'ent_compras'     => 0,
-                'ent_doacao'      => 0,
-                'ent_outras'      => 0,
-                'sai_consumo'     => 0,
-                'sai_doacao'      => 0,
-                'sai_perdas'      => 0,
-                'sai_outras'      => 0,
+                'descricao' => $item->descricao,
+                'ent_compras' => 0,
+                'ent_doacao' => 0,
+                'ent_outras' => 0,
+                'sai_consumo' => 0,
+                'sai_doacao' => 0,
+                'sai_perdas' => 0,
+                'sai_outras' => 0,
             ];
         }
 
@@ -575,13 +578,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('alm_notafiscal as nf', 'est.nota_fiscal', '=', 'nf.id')
             ->whereBetween('est.date_time', [$d->ini, $d->fim])
             ->whereIn('est.tipo_movimentacao', [1, 2])
-            ->selectRaw("
+            ->selectRaw('
                 est.material,
                 SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as e_compras,
                 SUM(CASE WHEN est.tipo_movimentacao = 1 AND nf.tipo_documento = 2 THEN est.valor_total ELSE 0 END) as e_doacao,
                 SUM(CASE WHEN est.tipo_movimentacao = 2 AND nf.tipo_documento = 1 THEN est.valor_total ELSE 0 END) as s_consumo,
                 SUM(CASE WHEN est.tipo_movimentacao = 2 AND nf.tipo_documento = 2 THEN est.valor_total ELSE 0 END) as s_doacao
-            ")
+            ')
             ->groupBy('est.material')
             ->toBase()
             ->get();
@@ -589,27 +592,27 @@ class ReportRelatoriosGeraisController extends Controller
         foreach ($movimentacoes as $mov) {
             if ($materiais->has($mov->material)) {
                 $mat = $materiais->get($mov->material);
-                $key = $mat->id_conta . '_' . $mat->id_produto;
+                $key = $mat->id_conta.'_'.$mat->id_produto;
 
                 if (isset($resultados[$key])) {
                     $resultados[$key]['ent_compras'] += (float) $mov->e_compras;
-                    $resultados[$key]['ent_doacao']  += (float) $mov->e_doacao;
+                    $resultados[$key]['ent_doacao'] += (float) $mov->e_doacao;
                     $resultados[$key]['sai_consumo'] += (float) $mov->s_consumo;
-                    $resultados[$key]['sai_doacao']  += (float) $mov->s_doacao;
+                    $resultados[$key]['sai_doacao'] += (float) $mov->s_doacao;
                 }
             }
         }
 
-        $dados = collect($resultados)->map(function($item) {
+        $dados = collect($resultados)->map(function ($item) {
 
             $obj = (object) $item;
             $obj->total_entradas = $obj->ent_compras;
-            $obj->total_saidas   = $obj->sai_consumo;
+            $obj->total_saidas = $obj->sai_consumo;
 
             return $obj;
         })->sortBy([
             ['conta_contabil', 'asc'],
-            ['cod_nat_despesa', 'asc']
+            ['cod_nat_despesa', 'asc'],
         ])->values();
 
         return $this->render('tce-tabela-17', $dados, $filtros);
@@ -629,8 +632,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_modelo as mod', 'p.Modelo', '=', 'mod.id')
             ->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])
             ->whereNotIn('p.SituacaoBem', [8, 9])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->when($filtros['unidade_gestora'] ?? 'Todos', fn($q, $v) => $v !== 'Todos' ? $q->where('p.unidade_gestora', $v) : null)
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
+            ->when($filtros['unidade_gestora'] ?? 'Todos', fn ($q, $v) => $v !== 'Todos' ? $q->where('p.unidade_gestora', $v) : null)
             ->selectRaw(" pc.codigo as conta_contabil, p.NumPatrimonio as patrimonio, dr.Descricao as descricao, m.Descricao as marca, mod.descricao as modelo,
                 p.DatadeIncorporacao as data_incorporacao, $val as valor, p.FormaAquisicao as forma_aquisicao, s.descricao as situacao, set.setor")
             ->orderBy('pc.codigo')
@@ -639,7 +642,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         return $this->render('bens-incorporados', null, $filtros, [
-            'dadosAgrupados' => $dados->groupBy('conta_contabil')
+            'dadosAgrupados' => $dados->groupBy('conta_contabil'),
         ]);
     }
 
@@ -671,7 +674,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_modelo as mo', 'p.Modelo', '=', 'mo.id')
             ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])
             ->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
             ->selectRaw("
                 b.NumeroProcesso as processo, b.Requisitante as requisitante, b.RequisitanteCnpj as cnpj, b.DataBaixa as data_baixa_processo, b.Observacao as observacao,
                 b.Endereco as endereco, pc.codigo as conta_contabil, p.NumPatrimonio as patrimonio, dr.Descricao as descricao, ma.Descricao as marca, mo.descricao as modelo,
@@ -683,20 +686,20 @@ class ReportRelatoriosGeraisController extends Controller
             ->orderBy('p.NumPatrimonio')
             ->toBase()
             ->get()
-            ->map(fn($item) => (object)[... (array)$item,
+            ->map(fn ($item) => (object) [...(array) $item,
                 'depreciacao_acumulada' => $item->depreciacao_acumulada ?? 0,
-                'valor_liquido' => $item->valor_liquido_calc ?? $item->valor_reavaliacao
+                'valor_liquido' => $item->valor_liquido_calc ?? $item->valor_reavaliacao,
             ]);
 
         return $this->render('bens-baixados', null, $filtros, [
             'agrupadoPorProcesso' => $dados->groupBy('processo'),
-            'resumoFinal' => $dados->groupBy(fn($i) => $i->conta_contabil . '|' . $i->processo)->map(fn($group) => (object) [
-                'conta_contabil'        => $group->first()->conta_contabil,
-                'processo'              => $group->first()->processo,
-                'valor_bruto'           => $group->sum('valor_bruto'),
-                'valor_liquido'         => $group->sum('valor_liquido'),
-                'depreciacao_acumulada' => $group->sum('depreciacao_acumulada')
-            ])->sortBy('conta_contabil')->values()
+            'resumoFinal' => $dados->groupBy(fn ($i) => $i->conta_contabil.'|'.$i->processo)->map(fn ($group) => (object) [
+                'conta_contabil' => $group->first()->conta_contabil,
+                'processo' => $group->first()->processo,
+                'valor_bruto' => $group->sum('valor_bruto'),
+                'valor_liquido' => $group->sum('valor_liquido'),
+                'depreciacao_acumulada' => $group->sum('depreciacao_acumulada'),
+            ])->sortBy('conta_contabil')->values(),
         ]);
     }
 
@@ -708,13 +711,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_itembaixa as ib', 'b.id', '=', 'ib.id_baixa')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
             ->whereBetween('b.DataBaixa', [$d->ini, $d->fim])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->selectRaw("
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
+            ->selectRaw('
                 p.ProcessoBaixa as processo,
                 COUNT(ib.id) as quantidade,
                 SUM(p.ValorAquisicao) as valor_aquisicao,
                 SUM(p.ValordaReavaliacao) as valor_reavaliado
-            ")
+            ')
             ->groupBy('p.ProcessoBaixa')
             ->orderBy('p.ProcessoBaixa')
             ->toBase()
@@ -730,7 +733,7 @@ class ReportRelatoriosGeraisController extends Controller
         $dados = BemMovel::query()->from('mat_patrimonio as p')
             ->join('mat_planocontas as pc', 'p.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as pr', 'p.Produto', '=', 'pr.id')
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'p.situacao_contabil'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'p.situacao_contabil'))
             ->selectRaw("
                 pc.codigo as conta_contabil,
                 pr.CodigodaClasse as cod_nat_despesa,
@@ -745,8 +748,9 @@ class ReportRelatoriosGeraisController extends Controller
             ->orderBy('pr.CodigodaClasse')
             ->toBase()
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $item->perda_depreciacao = $item->valor_reavaliado - $item->valor_historico;
+
                 return $item;
             });
 
@@ -760,10 +764,10 @@ class ReportRelatoriosGeraisController extends Controller
         $dados = BemMovel::query()->from('mat_patrimonio as p')
             ->leftJoin('mat_planocontas as c', 'p.ContaContabil', '=', 'c.id')
             ->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->selectRaw("c.codigo as conta_contabil, p.NumPatrimonio as patrimonio, p.DatadeIncorporacao as data_aquisicao, p.ValorAquisicao as valor_entrada,
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
+            ->selectRaw('c.codigo as conta_contabil, p.NumPatrimonio as patrimonio, p.DatadeIncorporacao as data_aquisicao, p.ValorAquisicao as valor_entrada,
                 (IFNULL(p.VidaUtilSIAFi, 0) - IFNULL(p.UtilizacaodoBemMeses, 0)) as vida_util_remanescente, p.DataDisponibilizacao as data_disponibilidade,
-                p.Valor as valor_liquido_contabil, p.ValorResidual as valor_residual, p.ValordaReavaliacao as valor_reavaliado")
+                p.Valor as valor_liquido_contabil, p.ValorResidual as valor_residual, p.ValordaReavaliacao as valor_reavaliado')
             ->orderBy('c.codigo')
             ->orderBy('p.NumPatrimonio')
             ->toBase()
@@ -777,36 +781,36 @@ class ReportRelatoriosGeraisController extends Controller
         $d = $this->getPeriodo($filtros);
 
         $subValor = BemMovel::query()->from('mat_patrimonio as p')
-            ->whereRaw("p.SituacaoBem NOT IN (8,9)")
-            ->where(fn($q) => $q
-                ->where(fn($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1,7]))
-                ->orWhere(fn($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2,3,4,5,6]))
-                ->orWhere(fn($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim]))
+            ->whereRaw('p.SituacaoBem NOT IN (8,9)')
+            ->where(fn ($q) => $q
+                ->where(fn ($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1, 7]))
+                ->orWhere(fn ($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6]))
+                ->orWhere(fn ($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim]))
             )
-            ->selectRaw("
+            ->selectRaw('
                 p.ContaContabil,
                 p.Produto,
                 SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor
-            ")
+            ')
             ->groupBy('p.ContaContabil', 'p.Produto');
 
         $subDep = DepreciacaoBemMovel::query()->from('mat_depreciacao as d')
             ->join('mat_patrimonio as p', 'd.patrimonio', '=', 'p.id')
             ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
             ->where('d.item', '>', 1)
-            ->selectRaw("
+            ->selectRaw('
                 p.ContaContabil,
                 p.Produto,
                 SUM(d.valor_residual) as valor_residual,
                 SUM(d.depreciacao_mensal) as depreciacao_mensal,
                 SUM(d.depreciacao_acumulada) as depreciacao_acumulada
-            ")
+            ')
             ->groupBy('p.ContaContabil', 'p.Produto');
 
         $subSaidas = BemMovel::query()->from('mat_itembaixa as ib')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
             ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])
-            ->whereIn('p.SituacaoBem', [2,3,4,5,6])
+            ->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6])
             ->selectRaw("
                 p.ContaContabil,
                 p.Produto,
@@ -818,13 +822,13 @@ class ReportRelatoriosGeraisController extends Controller
         $dados = BemMovel::query()->from('mat_patrimonio as pat')
             ->join('mat_planocontas as pc', 'pat.ContaContabil', '=', 'pc.id')
             ->join('mat_produtos as prod', 'pat.Produto', '=', 'prod.id')
-            ->leftJoinSub($subValor, 'v', fn($j) => $j->on('pc.id', '=', 'v.ContaContabil')->on('prod.id', '=', 'v.Produto'))
-            ->leftJoinSub($subDep, 'd', fn($j) => $j->on('pc.id', '=', 'd.ContaContabil')->on('prod.id', '=', 'd.Produto'))
-            ->leftJoinSub($subSaidas, 'ds', fn($j) => $j->on('pc.id', '=', 'ds.ContaContabil')->on('prod.id', '=', 'ds.Produto'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
-            ->selectRaw("pc.codigo as conta_contabil, prod.CodigodaClasse as cod_nat_despesa, prod.DescricaodaClasse as descricao, IFNULL(v.valor, 0) as valor_base,
+            ->leftJoinSub($subValor, 'v', fn ($j) => $j->on('pc.id', '=', 'v.ContaContabil')->on('prod.id', '=', 'v.Produto'))
+            ->leftJoinSub($subDep, 'd', fn ($j) => $j->on('pc.id', '=', 'd.ContaContabil')->on('prod.id', '=', 'd.Produto'))
+            ->leftJoinSub($subSaidas, 'ds', fn ($j) => $j->on('pc.id', '=', 'ds.ContaContabil')->on('prod.id', '=', 'ds.Produto'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
+            ->selectRaw('pc.codigo as conta_contabil, prod.CodigodaClasse as cod_nat_despesa, prod.DescricaodaClasse as descricao, IFNULL(v.valor, 0) as valor_base,
                 IFNULL(d.valor_residual, 0) as valor_residual, IFNULL(d.depreciacao_mensal, 0) as dep_mensal, IFNULL(d.depreciacao_acumulada, 0) as dep_acumulada,
-                (IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0)) as valor_liquido, IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas")
+                (IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0)) as valor_liquido, IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas')
             ->distinct()
             ->orderBy('pc.codigo')
             ->orderBy('prod.CodigodaClasse')
@@ -839,14 +843,14 @@ class ReportRelatoriosGeraisController extends Controller
         $d = $this->getPeriodo($filtros);
 
         $subValor = BemMovel::query()->from('mat_patrimonio as p')
-            ->whereRaw("p.SituacaoBem NOT IN (8,9)")
-            ->where(fn($q) => $q
-                ->where(fn($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1,7]))
-                ->orWhere(fn($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2,3,4,5,6]))
-                ->orWhere(fn($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim]))
+            ->whereRaw('p.SituacaoBem NOT IN (8,9)')
+            ->where(fn ($q) => $q
+                ->where(fn ($q1) => $q1->where('p.DatadeIncorporacao', '<', $d->ini)->whereIn('p.SituacaoBem', [1, 7]))
+                ->orWhere(fn ($q2) => $q2->where('p.DatadeIncorporacao', '<', $d->ini)->where('p.DataBaixa', '>=', $d->fim)->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6]))
+                ->orWhere(fn ($q3) => $q3->whereBetween('p.DatadeIncorporacao', [$d->ini, $d->fim]))
             )
-            ->selectRaw("
-                p.ContaContabil, p.Produto, p.Setor, SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor"
+            ->selectRaw('
+                p.ContaContabil, p.Produto, p.Setor, SUM(IF(p.ValordaReavaliacao > 0, ROUND(p.ValordaReavaliacao, 4), ROUND(p.ValorAquisicao, 4))) as valor'
             )
             ->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor');
 
@@ -854,15 +858,15 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_patrimonio as p', 'd.patrimonio', '=', 'p.id')
             ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
             ->where('d.item', '>', 1)
-            ->selectRaw("p.ContaContabil, p.Produto, p.Setor, SUM(d.valor_residual) as valor_residual, SUM(d.depreciacao_mensal) as depreciacao_mensal,
+            ->selectRaw('p.ContaContabil, p.Produto, p.Setor, SUM(d.valor_residual) as valor_residual, SUM(d.depreciacao_mensal) as depreciacao_mensal,
                 SUM(d.depreciacao_acumulada) as depreciacao_acumulada
-            ")
+            ')
             ->groupBy('p.ContaContabil', 'p.Produto', 'p.Setor');
 
         $subSaidas = BemMovel::query()->from('mat_itembaixa as ib')
             ->join('mat_patrimonio as p', 'ib.id_bem', '=', 'p.id')
             ->whereBetween('p.DataBaixa', [$d->ini, $d->fim])
-            ->whereIn('p.SituacaoBem', [2,3,4,5,6])
+            ->whereIn('p.SituacaoBem', [2, 3, 4, 5, 6])
             ->selectRaw("p.ContaContabil, p.Produto, p.Setor, SUM(IFNULL((SELECT d.depreciacao_acumulada FROM mat_depreciacao d WHERE d.patrimonio = p.id AND
                 DATE_FORMAT(d.data_calculo,'%m%Y') = DATE_FORMAT(p.DataBaixa + INTERVAL -1 MONTH,'%m%Y') LIMIT 1), 0)) as dep_acumulada_saidas
             ")
@@ -873,16 +877,16 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_produtos as prod', 'pat.Produto', '=', 'prod.id')
             ->join('mat_setores as s', 'pat.Setor', '=', 's.id')
             ->join('cad_centrocusto as cc', 's.centrocusto', '=', 'cc.codigo')
-            ->leftJoinSub($subValor, 'v', fn($j) => $j->on('pc.id', '=', 'v.ContaContabil')->on('prod.id', '=', 'v.Produto')->on('pat.Setor', '=', 'v.Setor'))
-            ->leftJoinSub($subDep, 'd', fn($j) => $j->on('pc.id', '=', 'd.ContaContabil')->on('prod.id', '=', 'd.Produto')->on('pat.Setor', '=', 'd.Setor'))
-            ->leftJoinSub($subSaidas, 'ds', fn($j) => $j->on('pc.id', '=', 'ds.ContaContabil')->on('prod.id', '=', 'ds.Produto')->on('pat.Setor', '=', 'ds.Setor'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
-            ->when($filtros['centro_custo'] ?? null, fn($q, $v) => $q->where('cc.codigo', $v))
-            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, prod.item_patrimonial, prod.CodigodaClasse as cod_nat_despesa,
+            ->leftJoinSub($subValor, 'v', fn ($j) => $j->on('pc.id', '=', 'v.ContaContabil')->on('prod.id', '=', 'v.Produto')->on('pat.Setor', '=', 'v.Setor'))
+            ->leftJoinSub($subDep, 'd', fn ($j) => $j->on('pc.id', '=', 'd.ContaContabil')->on('prod.id', '=', 'd.Produto')->on('pat.Setor', '=', 'd.Setor'))
+            ->leftJoinSub($subSaidas, 'ds', fn ($j) => $j->on('pc.id', '=', 'ds.ContaContabil')->on('prod.id', '=', 'ds.Produto')->on('pat.Setor', '=', 'ds.Setor'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pc.id', 'pat.situacao_contabil'))
+            ->when($filtros['centro_custo'] ?? null, fn ($q, $v) => $q->where('cc.codigo', $v))
+            ->selectRaw('cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, prod.item_patrimonial, prod.CodigodaClasse as cod_nat_despesa,
                 prod.DescricaodaClasse as descricao, IFNULL(v.valor, 0) as valor_base, IFNULL(d.valor_residual, 0) as valor_residual,
                 IFNULL(d.depreciacao_mensal, 0) as dep_mensal, IFNULL(d.depreciacao_acumulada, 0) as dep_acumulada, (IFNULL(v.valor, 0) - IFNULL(d.depreciacao_acumulada, 0))
                 as valor_liquido, IFNULL(ds.dep_acumulada_saidas, 0) as dep_saidas
-            ")
+            ')
             ->distinct()
             ->orderBy('cc.codigo')
             ->orderBy('pc.codigo')
@@ -891,7 +895,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         return $this->render('depreciacao-mensal-cc', null, $filtros, [
-            'dadosAgrupados' => $dados->groupBy(fn($i) => $i->cc_codigo . ' ' . $i->cc_descricao)
+            'dadosAgrupados' => $dados->groupBy(fn ($i) => $i->cc_codigo.' '.$i->cc_descricao),
         ]);
     }
 
@@ -903,22 +907,22 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_setores as se', 'p.Setor', '=', 'se.id')
             ->leftJoin('mat_fornecedor as fo', 'p.Fornecedor', '=', 'fo.id')
             ->leftJoin('mat_descricaoresumida as de', 'p.DescricaoResumidadoBem', '=', 'de.id')
-            ->when($filtros['numero_processo'] ?? null, fn($q, $v) => $q->where('p.numero_processo', $v))
-            ->when($filtros['nota_fiscal'] ?? null, fn($q, $v) => $q->where('p.NotaFiscal', $v))
-            ->when($filtros['acuracia'] ?? null, fn($q, $v) => $q->where('p.acuracia', $v))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, null, 'p.situacao_contabil'))
-            ->when($filtros['grupo'] ?? null, fn($q, $v) => $v === 'A'
-                ? $q->where(fn($sq) => $sq->whereNotIn('p.grupo', ['B', 'C', 'D', 'E'])->orWhereNull('p.grupo'))
+            ->when($filtros['numero_processo'] ?? null, fn ($q, $v) => $q->where('p.numero_processo', $v))
+            ->when($filtros['nota_fiscal'] ?? null, fn ($q, $v) => $q->where('p.NotaFiscal', $v))
+            ->when($filtros['acuracia'] ?? null, fn ($q, $v) => $q->where('p.acuracia', $v))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, null, 'p.situacao_contabil'))
+            ->when($filtros['grupo'] ?? null, fn ($q, $v) => $v === 'A'
+                ? $q->where(fn ($sq) => $sq->whereNotIn('p.grupo', ['B', 'C', 'D', 'E'])->orWhereNull('p.grupo'))
                 : $q->where('p.grupo', $v))
-            ->selectRaw("p.NumPatrimonio as patrimonio, p.Descricao as descricao, ma.Descricao as marca, mo.descricao as modelo, se.Setor as setor,
+            ->selectRaw('p.NumPatrimonio as patrimonio, p.Descricao as descricao, ma.Descricao as marca, mo.descricao as modelo, se.Setor as setor,
                 p.numero_processo as processo, p.NotaFiscal as nota_fiscal, p.ValorAquisicao as valor_aquisicao, p.DatadeIncorporacao as data_incorporacao,
-                fo.NomeFornecedor as fornecedor, p.grupo, de.Descricao as desc_resumida"
+                fo.NomeFornecedor as fornecedor, p.grupo, de.Descricao as desc_resumida'
             )
             ->orderBy('se.Setor')
             ->orderBy('p.NumPatrimonio')
             ->toBase()
             ->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $g = $i->grupo;
                 if ($g === 'B') {
                     $i->grupo_desc = 'Inventariado antes de 2015';
@@ -933,43 +937,51 @@ class ReportRelatoriosGeraisController extends Controller
                 }
 
                 $i->desc_resumida = $i->desc_resumida ?: 'NÃO INFORMADA';
+
                 return $i;
             });
 
         $resumoBase = BemMovel::query()->from('mat_patrimonio as p')
             ->leftJoin('mat_descricaoresumida as de', 'p.DescricaoResumidadoBem', '=', 'de.id')
             ->where('p.acuracia', 'Bens de TI')
-            ->selectRaw("p.ValorAquisicao as valor_aquisicao, p.grupo, de.Descricao as desc_resumida")
+            ->selectRaw('p.ValorAquisicao as valor_aquisicao, p.grupo, de.Descricao as desc_resumida')
             ->toBase()
             ->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $g = $i->grupo;
-                if ($g === 'B') $i->grupo_desc = 'Inventariado antes de 2015';
-                elseif ($g === 'C') $i->grupo_desc = 'Inventário Online';
-                elseif ($g === 'D') $i->grupo_desc = 'A inventariar';
-                elseif ($g === 'E') $i->grupo_desc = 'Baixados';
-                else $i->grupo_desc = 'Inventariado a partir de 2015';
+                if ($g === 'B') {
+                    $i->grupo_desc = 'Inventariado antes de 2015';
+                } elseif ($g === 'C') {
+                    $i->grupo_desc = 'Inventário Online';
+                } elseif ($g === 'D') {
+                    $i->grupo_desc = 'A inventariar';
+                } elseif ($g === 'E') {
+                    $i->grupo_desc = 'Baixados';
+                } else {
+                    $i->grupo_desc = 'Inventariado a partir de 2015';
+                }
 
                 $i->desc_resumida = $i->desc_resumida ?: 'NÃO INFORMADA';
+
                 return $i;
             });
 
-        $resumo = $resumoBase->groupBy('desc_resumida')->map(fn($itens, $desc) => (object) [
+        $resumo = $resumoBase->groupBy('desc_resumida')->map(fn ($itens, $desc) => (object) [
             'descricao' => $desc,
-            'qtd_a'     => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->count(),
-            'val_a'     => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->sum('valor_aquisicao'),
-            'qtd_b'     => $itens->where('grupo_desc', 'Inventariado antes de 2015')->count(),
-            'val_b'     => $itens->where('grupo_desc', 'Inventariado antes de 2015')->sum('valor_aquisicao'),
-            'qtd_c'     => $itens->where('grupo_desc', 'Inventário Online')->count(),
-            'val_c'     => $itens->where('grupo_desc', 'Inventário Online')->sum('valor_aquisicao'),
-            'qtd_d'     => $itens->where('grupo_desc', 'A inventariar')->count(),
-            'val_d'     => $itens->where('grupo_desc', 'A inventariar')->sum('valor_aquisicao'),
+            'qtd_a' => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->count(),
+            'val_a' => $itens->where('grupo_desc', 'Inventariado a partir de 2015')->sum('valor_aquisicao'),
+            'qtd_b' => $itens->where('grupo_desc', 'Inventariado antes de 2015')->count(),
+            'val_b' => $itens->where('grupo_desc', 'Inventariado antes de 2015')->sum('valor_aquisicao'),
+            'qtd_c' => $itens->where('grupo_desc', 'Inventário Online')->count(),
+            'val_c' => $itens->where('grupo_desc', 'Inventário Online')->sum('valor_aquisicao'),
+            'qtd_d' => $itens->where('grupo_desc', 'A inventariar')->count(),
+            'val_d' => $itens->where('grupo_desc', 'A inventariar')->sum('valor_aquisicao'),
             'qtd_total' => $itens->count(),
         ])->sortBy('descricao')->values();
 
         return $this->render('bens-patrimoniais', $dados, $filtros, [
-            'resumo'    => $resumo,
-            'chartData' => $resumoBase->groupBy('grupo_desc')->map->count()
+            'resumo' => $resumo,
+            'chartData' => $resumoBase->groupBy('grupo_desc')->map->count(),
         ]);
     }
 
@@ -987,11 +999,11 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($subDep, 'dep', 'p.id', '=', 'dep.patrimonio')
             ->whereIn('p.SituacaoBem', [1, 7])
             ->where('p.DatadeIncorporacao', '<=', $d->fim)
-            ->whereRaw("YEAR(p.DatadaReavaliacao) <= ?", [$d->ano])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->selectRaw("pla.titulo as conta_titulo, pla.codigo as conta_codigo, p.NumPatrimonio as patrimonio, p.Descricao as descricao,
+            ->whereRaw('YEAR(p.DatadaReavaliacao) <= ?', [$d->ano])
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
+            ->selectRaw('pla.titulo as conta_titulo, pla.codigo as conta_codigo, p.NumPatrimonio as patrimonio, p.Descricao as descricao,
                 p.DatadeIncorporacao as data_aquisicao, IF(IFNULL(p.ValordaReavaliacao, 0) > 0, p.ValordaReavaliacao, p.ValorAquisicao) as valor_reavaliado,
-                IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada, IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido, se.Setor as setor"
+                IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada, IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido, se.Setor as setor'
             )
             ->orderBy('pla.titulo')
             ->orderBy('p.NumPatrimonio')
@@ -999,7 +1011,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         return $this->render('inventario-bens-moveis', $dados, $filtros, [
-            'ano_inventario' => $d->ano
+            'ano_inventario' => $d->ano,
         ]);
     }
 
@@ -1012,12 +1024,12 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_setores as se', 'p.Setor', '=', 'se.id')
             ->whereIn('p.SituacaoBem', [1, 7])
             ->where('p.DatadeIncorporacao', '<=', $d->fim)
-            ->whereRaw("YEAR(p.DatadaReavaliacao) <= ?", [$d->ano])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
-            ->selectRaw("pla.titulo as conta_titulo, pla.codigo as conta_codigo, p.NumPatrimonio as patrimonio, p.Descricao as descricao,
+            ->whereRaw('YEAR(p.DatadaReavaliacao) <= ?', [$d->ano])
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.ContaContabil', 'p.situacao_contabil'))
+            ->selectRaw('pla.titulo as conta_titulo, pla.codigo as conta_codigo, p.NumPatrimonio as patrimonio, p.Descricao as descricao,
                 p.DatadeIncorporacao as data_aquisicao, IFNULL(p.ValorAquisicao, 0) as valor_aquisicao,
                 IFNULL(p.ValordaReavaliacao, 0) as valor_ajustado, IF(IFNULL(p.ValordaReavaliacao, 0) > 0, p.ValordaReavaliacao, p.ValorAquisicao) as valor_atual,
-                se.Setor as setor"
+                se.Setor as setor'
             )
             ->orderBy('pla.titulo')
             ->orderBy('p.NumPatrimonio')
@@ -1025,7 +1037,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         return $this->render('inventario-bens-moveis-detalhado', $dados, $filtros, [
-            'ano_inventario' => $d->ano
+            'ano_inventario' => $d->ano,
         ]);
     }
 
@@ -1045,36 +1057,36 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('imo_situacao as sit', 'imo.Id_situacao', '=', 'sit.id')
             ->leftJoinSub($subRea, 'rea', 'imo.id', '=', 'rea.Id_imovel')
             ->leftJoinSub($this->subObrasImoveis($d->fim), 'obras', 'imo.id', '=', 'obras.id_imovel')
-            ->where(fn($q) => $q->whereNull('imo.data_baixa')->orWhere('imo.data_baixa', '0000-00-00 00:00:00'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->selectRaw("sit.Descricao as situacao_imovel, imo.num_registro, imo.descricao as denominacao, imo.data_aquisicao, imo.data_construcao, imo.data_incorporacao,
+            ->where(fn ($q) => $q->whereNull('imo.data_baixa')->orWhere('imo.data_baixa', '0000-00-00 00:00:00'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
+            ->selectRaw('sit.Descricao as situacao_imovel, imo.num_registro, imo.descricao as denominacao, imo.data_aquisicao, imo.data_construcao, imo.data_incorporacao,
                 est.descEstadoConservacao as estado_conservacao, pla.codigo as conta_contabil, imo.data_ingresso_contabil, imo.inscricao_generica, imo.end_logradouro,
                 imo.end_numero, imo.end_bairro, imo.end_cidade, imo.end_estado, imo.end_compl_endereco, imo.area, imo.area_edificacao, imo.vida_util,
                 imo.valor_historico_1a_avaliacao, imo.data_reavaliacao, IFNULL(rea.valor_reavaliacao, imo.valor_reavaliado) as valor_reavaliado,
-                IFNULL(obras.valor_obra, 0) as valor_obra"
+                IFNULL(obras.valor_obra, 0) as valor_obra'
             )
             ->orderBy('imo.id_situacao')
             ->orderBy('imo.Id_planocontas')
             ->toBase()
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $item->valor_atualizado = $item->valor_reavaliado + $item->valor_obra;
 
                 $dates = [];
                 if ($item->data_aquisicao && $item->data_aquisicao != '0000-00-00 00:00:00') {
-                    $dates[] = \Carbon\Carbon::parse($item->data_aquisicao)->format('d/m/Y');
+                    $dates[] = Carbon::parse($item->data_aquisicao)->format('d/m/Y');
                 }
                 if ($item->data_construcao && $item->data_construcao != '0000-00-00 00:00:00') {
-                    $dates[] = \Carbon\Carbon::parse($item->data_construcao)->format('d/m/Y');
+                    $dates[] = Carbon::parse($item->data_construcao)->format('d/m/Y');
                 }
                 if ($item->data_incorporacao && $item->data_incorporacao != '0000-00-00 00:00:00') {
-                    $dates[] = \Carbon\Carbon::parse($item->data_incorporacao)->format('d/m/Y');
+                    $dates[] = Carbon::parse($item->data_incorporacao)->format('d/m/Y');
                 }
                 $item->datas_concat = implode('/<br>', $dates);
 
                 $addr = array_filter([
                     $item->end_logradouro, $item->end_numero, $item->end_bairro,
-                    $item->end_cidade, $item->end_estado, $item->end_compl_endereco
+                    $item->end_cidade, $item->end_estado, $item->end_compl_endereco,
                 ]);
                 $item->endereco = implode(', ', $addr);
                 $item->situacao_imovel = $item->situacao_imovel ?: 'Não Classificado';
@@ -1083,7 +1095,7 @@ class ReportRelatoriosGeraisController extends Controller
             });
 
         return $this->render('relacao-bens-imoveis', null, $filtros, [
-            'dadosAgrupados' => $dados->groupBy('situacao_imovel')
+            'dadosAgrupados' => $dados->groupBy('situacao_imovel'),
         ]);
     }
 
@@ -1098,10 +1110,10 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('imo.Id_situacao', 1)
             ->where('d.item', '>', 1)
             ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->selectRaw("pc.codigo as conta_contabil, pc.titulo as descricao_subitem, imo.num_registro, imo.descricao as descricao_imovel, imo.inscricao_generica,
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
+            ->selectRaw('pc.codigo as conta_contabil, pc.titulo as descricao_subitem, imo.num_registro, imo.descricao as descricao_imovel, imo.inscricao_generica,
                 (d.valor + IFNULL(obras.valor_obra, 0)) as valor_atual, d.valor_residual, d.depreciacao_mensal, d.depreciacao_acumulada,
-                (d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido"
+                (d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido'
             )
             ->distinct()
             ->orderBy('pc.codigo')
@@ -1137,13 +1149,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('imo.Id_situacao', 1)
             ->where('d.item', '>', 1)
             ->whereBetween('d.data_calculo', [$d->iniDate, $d->fimDate])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->when($filtros['centro_custo'] ?? null, fn($q, $v) => $q->where('cc.codigo', $v))
-            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao,pc.codigo as conta_contabil, pc.titulo as descricao_subitem,
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
+            ->when($filtros['centro_custo'] ?? null, fn ($q, $v) => $q->where('cc.codigo', $v))
+            ->selectRaw('cc.codigo as cc_codigo, cc.descricao as cc_descricao,pc.codigo as conta_contabil, pc.titulo as descricao_subitem,
                 prod.CodigodaClasse as cod_nat_despesa, prod.item_patrimonial,imo.num_registro, imo.descricao as descricao_imovel, imo.inscricao_generica,
                 (d.valor + IFNULL(obras.valor_obra, 0)) as valor_atual, d.valor_residual, d.depreciacao_mensal, d.depreciacao_acumulada,
                 (d.valor_liquido_contabil + IFNULL(obras.valor_obra, 0)) as valor_liquido,
-                IF(IFNULL(rea.valor_reavaliacao, 0) > 0, IFNULL(dep_ant.depreciacao_acumulada, 0), 0) as dep_acumulada_reavaliacao"
+                IF(IFNULL(rea.valor_reavaliacao, 0) > 0, IFNULL(dep_ant.depreciacao_acumulada, 0), 0) as dep_acumulada_reavaliacao'
             )
             ->distinct()
             ->orderBy('cc.codigo')
@@ -1153,8 +1165,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         return $this->render('depreciacao-mensal-imoveis-cc', null, $filtros, [
-            'dadosAgrupados' => $dados->groupBy(fn($i) => $i->cc_codigo . ' - ' . $i->cc_descricao),
-            'todosDados'     => $dados
+            'dadosAgrupados' => $dados->groupBy(fn ($i) => $i->cc_codigo.' - '.$i->cc_descricao),
+            'todosDados' => $dados,
         ]);
     }
 
@@ -1166,12 +1178,12 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_planocontas as pla', 'p.Id_planocontas', '=', 'pla.id')
             ->leftJoinSub($this->subDepreciacaoImoveis($d->mesRef), 'dep', 'p.id', '=', 'dep.Id_imovel')
             ->leftJoinSub($this->subObrasImoveis($d->fimDate), 'obras', 'p.id', '=', 'obras.id_imovel')
-            ->where(fn($q) => $q->whereNull('p.data_baixa')->orWhere('p.data_baixa', '0000-00-00 00:00:00'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'p.Id_planocontas', null))
-            ->selectRaw("pla.codigo as conta_codigo, pla.titulo as conta_titulo, p.num_registro as patrimonio, p.descricao, p.inscricao_generica, p.inscricao_imobiliaria,
+            ->where(fn ($q) => $q->whereNull('p.data_baixa')->orWhere('p.data_baixa', '0000-00-00 00:00:00'))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'p.Id_planocontas', null))
+            ->selectRaw('pla.codigo as conta_codigo, pla.titulo as conta_titulo, p.num_registro as patrimonio, p.descricao, p.inscricao_generica, p.inscricao_imobiliaria,
                 p.data_incorporacao as data_aquisicao, p.end_logradouro, p.end_numero, p.end_bairro, p.end_cidade, p.end_estado, p.valor_reavaliado as imo_val_reavaliado,
                 obras.valor_obra, dep.depreciacao_acumulada as dep_acumulada, p.depreciacao_acumulada as imo_dep_acumulada, dep.valor_liquido_contabil as dep_val_liquido,
-                p.valor_liquido_contabil as imo_val_liquido"
+                p.valor_liquido_contabil as imo_val_liquido'
             )
             ->orderBy('pla.codigo')
             ->orderBy('pla.titulo')
@@ -1194,8 +1206,8 @@ class ReportRelatoriosGeraisController extends Controller
             });
 
         return $this->render('inventario-bens-imoveis', null, $filtros, [
-            'dadosAgrupados' => $dados->groupBy(fn($i) => $i->conta_codigo . ' - ' . $i->conta_titulo),
-            'ano' => $d->ano
+            'dadosAgrupados' => $dados->groupBy(fn ($i) => $i->conta_codigo.' - '.$i->conta_titulo),
+            'ano' => $d->ano,
         ]);
     }
 
@@ -1214,10 +1226,10 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($subDep, 'dep', 'imo.id', '=', 'dep.Id_imovel')
             ->where('imo.Id_situacao', 1)
             ->whereBetween('rea.data_reavaliacao', [$d->ini, $d->fim])
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->selectRaw("pc.codigo as conta_contabil, pc.titulo as descricao_subitem, imo.id as imovel_id, imo.inscricao_generica, imo.num_registro,
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
+            ->selectRaw('pc.codigo as conta_contabil, pc.titulo as descricao_subitem, imo.id as imovel_id, imo.inscricao_generica, imo.num_registro,
                 imo.descricao as descricao_imovel, imo.valor_historico_1a_avaliacao, dep.valor as dep_valor, IFNULL(dep.depreciacao_acumulada, 0) as depreciacao_acumulada,
-                IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido_contabil, rea.data_reavaliacao, rea.valor_reavaliacao as valor_atual, rea.ajuste_contabil"
+                IFNULL(dep.valor_liquido_contabil, 0) as valor_liquido_contabil, rea.data_reavaliacao, rea.valor_reavaliacao as valor_atual, rea.ajuste_contabil'
             )
             ->orderBy('pc.codigo')
             ->orderBy('imo.descricao')
@@ -1232,10 +1244,15 @@ class ReportRelatoriosGeraisController extends Controller
                     ->value('valor_reavaliacao');
 
                 $valBruto = $item->valor_historico_1a_avaliacao;
-                if ($valorBrutoReavaliacao > 0) $valBruto = $valorBrutoReavaliacao;
-                if ($item->dep_valor > 0) $valBruto = $item->dep_valor;
+                if ($valorBrutoReavaliacao > 0) {
+                    $valBruto = $valorBrutoReavaliacao;
+                }
+                if ($item->dep_valor > 0) {
+                    $valBruto = $item->dep_valor;
+                }
 
                 $item->valor_bruto = $valBruto;
+
                 return $item;
             });
 
@@ -1264,9 +1281,9 @@ class ReportRelatoriosGeraisController extends Controller
             ->where(fn ($q) => $q->whereNull('imo.data_aquisicao')->orWhere('imo.data_aquisicao', '<=', $d->fim))
             ->where(fn ($q) => $q->where('imo.data_situacao', '0000-00-00 00:00:00')->orWhereNull('imo.data_situacao')->orWhere('imo.data_situacao', '<=', $d->fim))
             ->where(fn ($q) => $q->where('imo.data_baixa', '>=', $d->fim)->orWhere('imo.data_baixa', '0000-00-00 00:00:00')->orWhereNull('imo.data_baixa'))
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
-            ->selectRaw("imo.id, imo.descricao, imo.data_aquisicao, imo.valor_historico_1a_avaliacao as valor_historico, imo.data_baixa, imo.data_situacao,
-                sit.Descricao as situacao_descricao"
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'imo.Id_planocontas', null))
+            ->selectRaw('imo.id, imo.descricao, imo.data_aquisicao, imo.valor_historico_1a_avaliacao as valor_historico, imo.data_baixa, imo.data_situacao,
+                sit.Descricao as situacao_descricao'
             )
             ->orderBy('imo.id')
             ->toBase()
@@ -1298,15 +1315,15 @@ class ReportRelatoriosGeraisController extends Controller
                 $imo->ajustecontabil_saida = $ajusteSaida;
                 $imo->data_reavaliacao = $reaData;
                 $imo->valor_reavaliacao = $valReavaliacao;
-                $imo->data_baixa = (!empty($imo->data_baixa) && $imo->data_baixa != '0000-00-00 00:00:00') ? $imo->data_baixa : null;
-                $imo->data_situacao = (!empty($imo->data_situacao) && $imo->data_situacao != '0000-00-00 00:00:00') ? $imo->data_situacao : null;
+                $imo->data_baixa = (! empty($imo->data_baixa) && $imo->data_baixa != '0000-00-00 00:00:00') ? $imo->data_baixa : null;
+                $imo->data_situacao = (! empty($imo->data_situacao) && $imo->data_situacao != '0000-00-00 00:00:00') ? $imo->data_situacao : null;
 
                 return $imo;
             });
 
         return $this->render('saldo-anterior-imoveis', $dados, $filtros, [
             'inicioRaw' => $d->ini,
-            'terminoRaw' => $d->fim
+            'terminoRaw' => $d->fim,
         ]);
     }
 
@@ -1316,9 +1333,9 @@ class ReportRelatoriosGeraisController extends Controller
 
         $dados = BemIntangivel::query()->from('int_intangivel as p')
             ->join('mat_planocontas as pla', 'p.id_planocontas', '=', 'pla.id')
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'pla.id', null))
-            ->selectRaw("pla.codigo as conta_codigo,pla.titulo as conta_titulo,p.inscricao_generica,p.nome as descricao, p.data_aquisicao,p.quantidade,
-                p.valor_aquisicao, p.amortizacao_acumulada, p.valor_liquido_contabil, p.vida_util_remanescente"
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'pla.id', null))
+            ->selectRaw('pla.codigo as conta_codigo,pla.titulo as conta_titulo,p.inscricao_generica,p.nome as descricao, p.data_aquisicao,p.quantidade,
+                p.valor_aquisicao, p.amortizacao_acumulada, p.valor_liquido_contabil, p.vida_util_remanescente'
             )
             ->orderBy('pla.codigo')
             ->orderBy('pla.titulo')
@@ -1326,13 +1343,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->toBase()
             ->get();
 
-        $dadosAgrupados = $dados->groupBy(function($item) {
-            return $item->conta_codigo . ' - ' . $item->conta_titulo;
+        $dadosAgrupados = $dados->groupBy(function ($item) {
+            return $item->conta_codigo.' - '.$item->conta_titulo;
         });
 
         return $this->render('inventario-bens-intangiveis', null, $filtros, [
             'dadosAgrupados' => $dadosAgrupados,
-            'ano' => $d->ano
+            'ano' => $d->ano,
         ]);
     }
 
@@ -1355,7 +1372,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->orderBy('nf.num_documento')
             ->toBase()
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $v = preg_replace('/\D/', '', $item->cnpj);
                 if (strlen($v) === 11) {
                     $item->cnpj_formatado = preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $v);
@@ -1366,18 +1383,19 @@ class ReportRelatoriosGeraisController extends Controller
                 }
 
                 $item->tipo_doc_desc = $item->tipo_documento == 1 ? 'Nota Fiscal' : 'Nota Fiscal/Doação';
-                $item->data_doc_formatada = $item->data_documento ? \Carbon\Carbon::parse($item->data_documento)->format('d/m/Y') : '';
+                $item->data_doc_formatada = $item->data_documento ? Carbon::parse($item->data_documento)->format('d/m/Y') : '';
+
                 return $item;
             });
 
         $resumo = (object) [
-            'qtde_notas'  => $dados->unique('id_notafiscal')->count(),
-            'qtde_itens'  => $dados->sum('quantidade'),
-            'total_notas' => $dados->sum('valor_total')
+            'qtde_notas' => $dados->unique('id_notafiscal')->count(),
+            'qtde_itens' => $dados->sum('quantidade'),
+            'total_notas' => $dados->sum('valor_total'),
         ];
 
         return $this->render('notas-fiscais-fornecedor', $dados, $filtros, [
-            'resumo' => $resumo
+            'resumo' => $resumo,
         ]);
     }
 
@@ -1391,7 +1409,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->whereIn('dr.id_tipo_material', ['C', 'D', 'P'])
             ->when(
                 $filtros['conta_contabil'] ?? null,
-                fn($q, $v) => $q->where('dr.ContaContabil', $v)
+                fn ($q, $v) => $q->where('dr.ContaContabil', $v)
             )
             ->select('dd.id as material_id', 'dd.descricao_detalhada', 'dr.id_tipo_material', 'el.CodigodaClasse as elemento')
             ->toBase()
@@ -1419,8 +1437,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('est.quantidade_estoque', '>', 0);
 
         $subMovimentos = MovimentacaoEstoque::query()->from('alm_estoque')
-            ->selectRaw("material, SUM(IF(tipo_movimentacao = 1, quantidade,  0)) as ent_qtd, SUM(IF(tipo_movimentacao = 1, valor_total, 0)) as ent_valor,
-                SUM(IF(tipo_movimentacao = 2, quantidade,  0)) as sai_qtd, SUM(IF(tipo_movimentacao = 2, valor_total, 0)) as sai_valor"
+            ->selectRaw('material, SUM(IF(tipo_movimentacao = 1, quantidade,  0)) as ent_qtd, SUM(IF(tipo_movimentacao = 1, valor_total, 0)) as ent_valor,
+                SUM(IF(tipo_movimentacao = 2, quantidade,  0)) as sai_qtd, SUM(IF(tipo_movimentacao = 2, valor_total, 0)) as sai_valor'
             )
             ->whereIn('material', $materiaisIds)
             ->whereIn('tipo_movimentacao', [1, 2])
@@ -1436,39 +1454,38 @@ class ReportRelatoriosGeraisController extends Controller
         $movimentosMap = $subMovimentos->toBase()->get()->keyBy('material');
 
         $dados = $materiaisQuery
-            ->filter(fn($item) =>
-                isset($estoqueMap[$item->material_id]) || isset($movimentosMap[$item->material_id])
+            ->filter(fn ($item) => isset($estoqueMap[$item->material_id]) || isset($movimentosMap[$item->material_id])
             )
             ->map(function ($item) use ($estoqueMap, $movimentosMap) {
-                $sa  = $estoqueMap[$item->material_id]  ?? null;
+                $sa = $estoqueMap[$item->material_id] ?? null;
                 $mov = $movimentosMap[$item->material_id] ?? null;
 
-                $sa_qtd   = $sa->sa_qtd    ?? 0;
-                $sa_valor = $sa->sa_valor  ?? 0;
-                $ent_qtd  = $mov->ent_qtd  ?? 0;
-                $ent_valor= $mov->ent_valor ?? 0;
-                $sai_qtd  = $mov->sai_qtd  ?? 0;
-                $sai_valor= $mov->sai_valor ?? 0;
+                $sa_qtd = $sa->sa_qtd ?? 0;
+                $sa_valor = $sa->sa_valor ?? 0;
+                $ent_qtd = $mov->ent_qtd ?? 0;
+                $ent_valor = $mov->ent_valor ?? 0;
+                $sai_qtd = $mov->sai_qtd ?? 0;
+                $sai_valor = $mov->sai_valor ?? 0;
 
                 return (object) [
-                    'id'                => $item->material_id,
+                    'id' => $item->material_id,
                     'descricao_detalhada' => $item->descricao_detalhada,
-                    'id_tipo_material'  => $item->id_tipo_material,
-                    'elemento'          => $item->elemento,
-                    'sa_qtd'            => $sa_qtd,
-                    'sa_valor'          => $sa_valor,
-                    'ent_qtd'           => $ent_qtd,
-                    'ent_valor'         => $ent_valor,
-                    'sai_qtd'           => $sai_qtd,
-                    'sai_valor'         => $sai_valor,
-                    'atual_qtd'         => $sa_qtd  + $ent_qtd  - $sai_qtd,
-                    'atual_valor'       => $sa_valor + $ent_valor - $sai_valor,
-                    'tipo_desc'         => match($item->id_tipo_material) {
+                    'id_tipo_material' => $item->id_tipo_material,
+                    'elemento' => $item->elemento,
+                    'sa_qtd' => $sa_qtd,
+                    'sa_valor' => $sa_valor,
+                    'ent_qtd' => $ent_qtd,
+                    'ent_valor' => $ent_valor,
+                    'sai_qtd' => $sai_qtd,
+                    'sai_valor' => $sai_valor,
+                    'atual_qtd' => $sa_qtd + $ent_qtd - $sai_qtd,
+                    'atual_valor' => $sa_valor + $ent_valor - $sai_valor,
+                    'tipo_desc' => match ($item->id_tipo_material) {
                         'C' => 'Consumo',
                         'D' => 'Consumo Durável',
                         default => 'Permanente',
                     },
-                    'ordem'             => match($item->id_tipo_material) {
+                    'ordem' => match ($item->id_tipo_material) {
                         'C' => 1,
                         'D' => 2,
                         default => 3,
@@ -1518,19 +1535,20 @@ class ReportRelatoriosGeraisController extends Controller
             ->joinSub($subAtual, 'est', 'dd.id', '=', 'est.material')
             ->leftJoinSub($subConsumo, 'con', 'dd.id', '=', 'con.material')
             ->where('dd.item_estoque', 1)
-            ->when(!empty($filtros['materiais']), function($q) use ($filtros) {
+            ->when(! empty($filtros['materiais']), function ($q) use ($filtros) {
                 $q->whereIn('dd.id', $filtros['materiais']);
             })
-            ->selectRaw("dd.id, dd.descricao_detalhada, IFNULL(est.quantidade_estoque, 0) as qtde_atual, IFNULL(con.qtd_consumida, 0) as qtde_consumida")
+            ->selectRaw('dd.id, dd.descricao_detalhada, IFNULL(est.quantidade_estoque, 0) as qtde_atual, IFNULL(con.qtd_consumida, 0) as qtde_consumida')
             ->orderBy('dd.descricao_detalhada')
             ->toBase()
             ->get()
-            ->map(function($item) use ($meses, $dias) {
+            ->map(function ($item) use ($meses, $dias) {
 
                 $item->consumo_medio = $meses == 0 ? 0 : ($item->qtde_consumida / $meses);
 
                 $item->meses = $meses;
                 $item->dias = $dias;
+
                 return $item;
             });
 
@@ -1549,30 +1567,31 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->leftJoin('mat_produtos as el', 'dr.id_produto', '=', 'el.id')
             ->leftJoin('mat_unidades as un', 'dd.unidade_medida', '=', 'un.id')
-            ->leftJoin('alm_estoque as est', function($join) {
+            ->leftJoin('alm_estoque as est', function ($join) {
                 $join->on('iped.idPedido', '=', 'est.id_pedido')
                     ->on('dd.id', '=', 'est.material');
             })
             ->where('ped.setor_responsavel', 799)
             ->where('ped.idSituacao', 7)
             ->whereBetween('ped.date_time', [$d->ini, $d->fim])
-            ->selectRaw("ped.id as pedido_id, se.Setor as setor, usr.name as solicitante, dr.Descricao as descricao_resumida, dd.descricao_detalhada,
+            ->selectRaw('ped.id as pedido_id, se.Setor as setor, usr.name as solicitante, dr.Descricao as descricao_resumida, dd.descricao_detalhada,
                 el.CodigodaClasse as elemento, un.Sigla as sigla, un.Unidade as unidade, iped.QuantidadeMaterial as qtde_solicitada,
-                iped.QuantidadeMaterialAtendida as qtde_atendida, ROUND(IFNULL(est.preco_medio_estoque, 0), 4) as valor_medio"
+                iped.QuantidadeMaterialAtendida as qtde_atendida, ROUND(IFNULL(est.preco_medio_estoque, 0), 4) as valor_medio'
             )
             ->orderBy('ped.id')
             ->toBase()
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $item->numero_formatado = str_pad($item->pedido_id, 8, '0', STR_PAD_LEFT);
                 $item->valor_total = $item->qtde_atendida * $item->valor_medio;
+
                 return $item;
             });
 
         $dadosAgrupados = $dados->groupBy('pedido_id');
 
         return $this->render('pedidos-validados-setor', null, $filtros, [
-            'dadosAgrupados' => $dadosAgrupados
+            'dadosAgrupados' => $dadosAgrupados,
         ]);
     }
 
@@ -1588,7 +1607,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->whereBetween('est.date_time', [$d->ini, $d->fim])
             ->where('dd.item_estoque', 1)
             ->where('est.tipo_movimentacao', 2)
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'dr.ContaContabil', null))
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'dr.ContaContabil', null))
             ->selectRaw("CONCAT(pla.CodigodaClasse, ' - ', pla.DescricaodaClasse) as elemento_despesa, CONCAT(dd.descricao_detalhada, ' (', un.Sigla, ')') as material,
                 SUM(est.quantidade) as qtde,SUM(est.valor_total) as valor"
             )
@@ -1601,7 +1620,7 @@ class ReportRelatoriosGeraisController extends Controller
         $dadosAgrupados = $dados->groupBy('elemento_despesa');
 
         return $this->render('gasto-anual-itens-estoque', null, $filtros, [
-            'dadosAgrupados' => $dadosAgrupados
+            'dadosAgrupados' => $dadosAgrupados,
         ]);
     }
 
@@ -1628,8 +1647,8 @@ class ReportRelatoriosGeraisController extends Controller
             ->joinSub($subConsumo, 'con', 'dd.id', '=', 'con.material')
             ->leftJoinSub($subUltimoPreco, 'preco', 'dd.id', '=', 'preco.material')
             ->where('dd.item_estoque', 1)
-            ->tap(fn($q) => $this->aplicarFiltros($q, $filtros, 'dr.ContaContabil', null))
-            ->selectRaw("el.CodigodaClasse as subelemento, dd.id as id_descricao, dd.descricao_detalhada, con.qtde_consumida, IFNULL(preco.ultimo_preco, 0) as ultimo_preco"
+            ->tap(fn ($q) => $this->aplicarFiltros($q, $filtros, 'dr.ContaContabil', null))
+            ->selectRaw('el.CodigodaClasse as subelemento, dd.id as id_descricao, dd.descricao_detalhada, con.qtde_consumida, IFNULL(preco.ultimo_preco, 0) as ultimo_preco'
             )
             ->orderBy('el.CodigodaClasse')
             ->orderBy('dd.descricao_detalhada')
@@ -1638,19 +1657,20 @@ class ReportRelatoriosGeraisController extends Controller
             ->map(function ($item) {
                 $str = preg_replace('/\D/', '', $item->subelemento);
                 if (strlen($str) >= 8) {
-                    $item->subelemento_formatado = substr($str, 0, 1) . '.' . substr($str, 1, 1) . '.' . substr($str, 2, 2) . '.' . substr($str, 4, 2) . '.' . substr($str, 6, 2);
+                    $item->subelemento_formatado = substr($str, 0, 1).'.'.substr($str, 1, 1).'.'.substr($str, 2, 2).'.'.substr($str, 4, 2).'.'.substr($str, 6, 2);
                 } else {
                     $item->subelemento_formatado = $item->subelemento;
                 }
 
                 $item->subtotal = $item->qtde_consumida * $item->ultimo_preco;
+
                 return $item;
             });
 
         $dadosAgrupados = $dados->groupBy('subelemento_formatado');
 
         return $this->render('consumo-material-subelemento', null, $filtros, [
-            'dadosAgrupados' => $dadosAgrupados
+            'dadosAgrupados' => $dadosAgrupados,
         ]);
     }
 
@@ -1676,9 +1696,9 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_setores as s', 'est.id_setor', '=', 's.id')
             ->join('cad_centrocusto as cc', 's.centrocusto', '=', 'cc.codigo')
             ->where('dr.id_tipo_material', '<>', 'P')
-            ->when($ccFiltro, fn($q, $v) => $q->where('cc.codigo', $v))
-            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, pr.CodigodaClasse as produto, pr.item_patrimonial,
-                pr.DescricaodaClasse as descricao, SUM(est.valor_total_estoque) as sa"
+            ->when($ccFiltro, fn ($q, $v) => $q->where('cc.codigo', $v))
+            ->selectRaw('cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, pr.CodigodaClasse as produto, pr.item_patrimonial,
+                pr.DescricaodaClasse as descricao, SUM(est.valor_total_estoque) as sa'
             )
             ->groupBy('cc.codigo', 'cc.descricao', 'pc.codigo', 'pr.CodigodaClasse', 'pr.item_patrimonial', 'pr.DescricaodaClasse')
             ->toBase()
@@ -1692,12 +1712,12 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_setores as s', 'est.id_setor', '=', 's.id')
             ->join('cad_centrocusto as cc', 's.centrocusto', '=', 'cc.codigo')
             ->where('dr.id_tipo_material', '<>', 'P')
-            ->when($ccFiltro, fn($q, $v) => $q->where('cc.codigo', $v))
+            ->when($ccFiltro, fn ($q, $v) => $q->where('cc.codigo', $v))
             ->whereBetween('est.date_time', [$inicioano, $d->fim])
-            ->selectRaw("cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, pr.CodigodaClasse as produto, pr.item_patrimonial,
+            ->selectRaw('cc.codigo as cc_codigo, cc.descricao as cc_descricao, pc.codigo as conta_contabil, pr.CodigodaClasse as produto, pr.item_patrimonial,
                 pr.DescricaodaClasse as descricao, SUM(CASE WHEN est.tipo_movimentacao = 1 AND est.date_time BETWEEN ? AND ? THEN est.valor_total ELSE 0 END) as entradas,
                 SUM(CASE WHEN est.tipo_movimentacao = 2 AND est.date_time BETWEEN ? AND ? THEN est.valor_total ELSE 0 END) as saidas,
-                SUM(CASE WHEN est.tipo_movimentacao = 2 AND est.date_time >= ? AND est.date_time < ? THEN est.valor_total ELSE 0 END) as saidas_acum",
+                SUM(CASE WHEN est.tipo_movimentacao = 2 AND est.date_time >= ? AND est.date_time < ? THEN est.valor_total ELSE 0 END) as saidas_acum',
                 [$d->ini, $d->fim, $d->ini, $d->fim, $inicioano, $d->ini])
             ->groupBy('cc.codigo', 'cc.descricao', 'pc.codigo', 'pr.CodigodaClasse', 'pr.item_patrimonial', 'pr.DescricaodaClasse')
             ->toBase()
@@ -1710,7 +1730,7 @@ class ReportRelatoriosGeraisController extends Controller
         }
         foreach ($subMov as $r) {
             $key = "{$r->cc_codigo}|{$r->conta_contabil}|{$r->produto}";
-            if (!isset($map[$key])) {
+            if (! isset($map[$key])) {
                 $map[$key] = (array) $r + ['sa' => 0];
             }
             $map[$key]['entradas'] += $r->entradas;
@@ -1718,15 +1738,16 @@ class ReportRelatoriosGeraisController extends Controller
             $map[$key]['saidas_acum'] += $r->saidas_acum;
         }
 
-        $dados = collect(array_values($map))->map(function($i) {
+        $dados = collect(array_values($map))->map(function ($i) {
             $i['saldo_atual'] = $i['sa'] + $i['entradas'] - $i['saidas'];
+
             return (object) $i;
-        })->filter(function($i) {
+        })->filter(function ($i) {
             return $i->sa != 0 || $i->entradas != 0 || $i->saidas != 0 || $i->saidas_acum != 0;
         })->sortBy([
             ['cc_codigo', 'asc'],
             ['conta_contabil', 'asc'],
-            ['produto', 'asc']
+            ['produto', 'asc'],
         ]);
 
         return $this->render('resumo-inventario-almoxarifado-cc', $dados, $filtros);
@@ -1758,43 +1779,43 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_setores as unid', 'ped.UnidadeJudiciaria', '=', 'unid.id')
             ->leftJoin('mat_setores as se', 'ped.Setor', '=', 'se.id')
             ->leftJoin('ped_situacao as sit', 'item.situacao', '=', 'sit.id')
-            ->where(function($q) use ($tipoRelatorio, $d) {
+            ->where(function ($q) use ($tipoRelatorio, $d) {
                 if ($tipoRelatorio == 3) {
                     $q->where('ped.setor_responsavel', 799);
                 } else {
-                    $q->where(fn($sub) => $sub->whereNull('ped.setor_responsavel')->orWhere('ped.setor_responsavel', 1239));
+                    $q->where(fn ($sub) => $sub->whereNull('ped.setor_responsavel')->orWhere('ped.setor_responsavel', 1239));
                 }
 
                 $campoData = ($tipoRelatorio == 2) ? 'item.data_validacao' : 'ped.date_time';
                 $q->whereBetween(DB::raw("DATE_FORMAT($campoData, '%Y-%m-%d')"), [$d->iniDate, $d->fimDate]);
             })
-            ->when($filtros['unidade_judiciaria'] ?? null, function($q, $v) use ($filtros) {
+            ->when($filtros['unidade_judiciaria'] ?? null, function ($q, $v) use ($filtros) {
                 if (empty($filtros['setor_pedido'])) {
-                    $q->where(fn($sq) => $sq->where('unid.CodigoPai', $v)->orWhere('unid.id', $v));
+                    $q->where(fn ($sq) => $sq->where('unid.CodigoPai', $v)->orWhere('unid.id', $v));
                 }
             })
-            ->when($filtros['setor_pedido'] ?? null, fn($q, $v) => $q->where('ped.Setor', $v))
-            ->when($filtros['material_pedido'] ?? null, fn($q, $v) => $q->where('de.id', $v))
-            ->when($filtros['situacao_pedido'] ?? null, function($q, $v) {
+            ->when($filtros['setor_pedido'] ?? null, fn ($q, $v) => $q->where('ped.Setor', $v))
+            ->when($filtros['material_pedido'] ?? null, fn ($q, $v) => $q->where('de.id', $v))
+            ->when($filtros['situacao_pedido'] ?? null, function ($q, $v) {
                 $q->where('item.situacao', $v);
                 if ($v == 7) {
-                    $q->where(fn($sq) => $sq->whereNull('item.QuantidadeMaterialAtendida')->orWhereRaw('IFNULL(item.quantidade_validada, 0) <= item.QuantidadeMaterial'))
+                    $q->where(fn ($sq) => $sq->whereNull('item.QuantidadeMaterialAtendida')->orWhereRaw('IFNULL(item.quantidade_validada, 0) <= item.QuantidadeMaterial'))
                         ->whereRaw('IFNULL(item.quantidade_validada, 0) <> 0');
                 }
             })
-            ->select('ped.id as pedido_id','item.id as item_id','ped.date_time','ped.num_protocolo','unid.Setor as unidade_nome','se.Setor as setor_nome',
-                'de.Descricao as desc_resumida','dd.descricao_detalhada as desc_detalhada','item.justificativa','item.QuantidadeMaterial as qtde_solicitada',
-                'item.quantidade_validada','item.QuantidadeMaterialAtendida as qtde_atendida','ped.Observacao as obs_pedido','item.ObservacaoItem as obs_item',
+            ->select('ped.id as pedido_id', 'item.id as item_id', 'ped.date_time', 'ped.num_protocolo', 'unid.Setor as unidade_nome', 'se.Setor as setor_nome',
+                'de.Descricao as desc_resumida', 'dd.descricao_detalhada as desc_detalhada', 'item.justificativa', 'item.QuantidadeMaterial as qtde_solicitada',
+                'item.quantidade_validada', 'item.QuantidadeMaterialAtendida as qtde_atendida', 'ped.Observacao as obs_pedido', 'item.ObservacaoItem as obs_item',
                 'item.data_validacao', DB::raw('IFNULL(sit.Descricao, "Em análise") as situacao_desc')
             )
             ->orderBy('unid.Setor')
             ->orderBy('se.Setor')
             ->orderBy('de.Descricao')
             ->get()
-            ->map(function($i) {
-                $i->data_protocolo_formatada = \Carbon\Carbon::parse($i->date_time)->format('d/m/Y');
+            ->map(function ($i) {
+                $i->data_protocolo_formatada = Carbon::parse($i->date_time)->format('d/m/Y');
                 $i->validado_em_formatada = ($i->data_validacao && $i->data_validacao != '0000-00-00 00:00:00')
-                    ? \Carbon\Carbon::parse($i->data_validacao)->format('d/m/Y')
+                    ? Carbon::parse($i->data_validacao)->format('d/m/Y')
                     : '';
                 $qtdValidada = ($i->quantidade_validada === null || $i->quantidade_validada === '') ? $i->qtde_solicitada : $i->quantidade_validada;
                 $i->qtde_validada = $qtdValidada;
@@ -1807,9 +1828,10 @@ class ReportRelatoriosGeraisController extends Controller
 
         return $this->render('relatorio-pedidos', $dados, $filtros, [
             'tipoRelatorio' => $tipoRelatorio,
-            'setorResponsavel' => $tipoRelatorio == 3 ? 'Seção de Materiais de Consumo' : 'Seção de Patrimônio'
+            'setorResponsavel' => $tipoRelatorio == 3 ? 'Seção de Materiais de Consumo' : 'Seção de Patrimônio',
         ]);
     }
+
     //
     private function gerarBensSemTrValidos($filtros)
     {
@@ -1832,7 +1854,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_termos as ter', 'ter.id', '=', 'ua.termo')
             ->leftJoin('mat_arquivodigital as arq', 'arq.id', '=', 'ua.max_id')
             ->whereIn('pat.SituacaoBem', [1, 7])
-            ->whereNotIn('pat.id', function($query) {
+            ->whereNotIn('pat.id', function ($query) {
                 $query->select('p.id')
                     ->from('mat_patrimonio as p')
                     ->join('mat_transferencia as t', 'p.id', '=', 't.NumPatrimonio')
@@ -1840,19 +1862,24 @@ class ReportRelatoriosGeraisController extends Controller
                     ->where('a.situacao', 1)
                     ->whereIn('p.SituacaoBem', [1, 7]);
             })
-            ->selectRaw("pat.NumPatrimonio as patrimonio, dr.Descricao as descricao, s.UnidadeOrganizacional as unidade,
+            ->selectRaw('pat.NumPatrimonio as patrimonio, dr.Descricao as descricao, s.UnidadeOrganizacional as unidade,
                 s.Setor as setor, ter.num_termo, ter.ano_termo, arq.observacao, arq.situacao as situacao_id
-            ")
+            ')
             ->orderBy('dr.Descricao')
             ->orderBy('pat.NumPatrimonio')
             ->get()
-            ->map(function($i) {
-                $i->termo_completo = ($i->num_termo && $i->ano_termo) ? $i->num_termo . '/' . $i->ano_termo : '';
+            ->map(function ($i) {
+                $i->termo_completo = ($i->num_termo && $i->ano_termo) ? $i->num_termo.'/'.$i->ano_termo : '';
 
-                if ($i->situacao_id == 1) $i->situacao_desc = 'VALIDADO';
-                elseif ($i->situacao_id == 2) $i->situacao_desc = 'INVALIDADO';
-                elseif ($i->situacao_id == 3) $i->situacao_desc = 'CANCELADO';
-                else $i->situacao_desc = 'PENDENTE';
+                if ($i->situacao_id == 1) {
+                    $i->situacao_desc = 'VALIDADO';
+                } elseif ($i->situacao_id == 2) {
+                    $i->situacao_desc = 'INVALIDADO';
+                } elseif ($i->situacao_id == 3) {
+                    $i->situacao_desc = 'CANCELADO';
+                } else {
+                    $i->situacao_desc = 'PENDENTE';
+                }
 
                 return $i;
             });
@@ -1874,19 +1901,19 @@ class ReportRelatoriosGeraisController extends Controller
             })
             ->whereNotIn('sit.id', [8, 9])
             ->where('pat.ValorAquisicao', '<', 20)
-            ->selectRaw("
+            ->selectRaw('
                 sit.descricao as situacao,
                 COUNT(*) as qtde,
                 SUM(pat.ValordaReavaliacao) as reavaliacao,
                 SUM(pat.ValorAquisicao) as aquisicao,
                 SUM(pat.ValordaReavaliacao - pat.ValorAquisicao) as diferenca
-            ")
+            ')
             ->groupBy('sit.descricao')
             ->orderBy('sit.descricao')
             ->get();
 
         return $this->render('diferenca-contabil', $dados, $filtros, [
-            'totalAtivos' => $totalAtivos
+            'totalAtivos' => $totalAtivos,
         ]);
     }
 
@@ -1910,11 +1937,11 @@ class ReportRelatoriosGeraisController extends Controller
         $percOutros = $totalAtivo > 0 ? ($totalOutros / $totalAtivo) * 100 : 0;
 
         return $this->render('estatico-acuracia-documental', null, $filtros, [
-            'totalAtivo'   => $totalAtivo,
+            'totalAtivo' => $totalAtivo,
             'totalValidos' => $totalValidos,
-            'totalOutros'  => $totalOutros,
-            'percValidos'  => $percValidos,
-            'percOutros'   => $percOutros,
+            'totalOutros' => $totalOutros,
+            'percValidos' => $percValidos,
+            'percOutros' => $percOutros,
         ]);
     }
 
@@ -1934,21 +1961,22 @@ class ReportRelatoriosGeraisController extends Controller
             ->joinSub($subUltimoRegistro, 'ult', 'est.id', '=', 'ult.max_id')
             ->where('dr.id_tipo_material', '<>', 'P')
             ->where('dd.item_estoque', 1)
-            ->selectRaw("dr.id_tipo_material, dd.descricao_detalhada, u.Sigla as sigla, est.quantidade_estoque,
-            est.preco_medio_estoque, est.valor_total_estoque, est.date_time as atualizado_em"
+            ->selectRaw('dr.id_tipo_material, dd.descricao_detalhada, u.Sigla as sigla, est.quantidade_estoque,
+            est.preco_medio_estoque, est.valor_total_estoque, est.date_time as atualizado_em'
             )
             ->orderBy('dr.id_tipo_material')
             ->orderBy('dd.descricao_detalhada')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $item->grupo_desc = ($item->id_tipo_material == 'C') ? 'Materiais de Consumo' : 'Materiais de Consumo Duráveis';
-                $item->data_formatada = $item->atualizado_em ? \Carbon\Carbon::parse($item->atualizado_em)->format('d/m/Y') : '';
+                $item->data_formatada = $item->atualizado_em ? Carbon::parse($item->atualizado_em)->format('d/m/Y') : '';
+
                 return $item;
             });
 
         return $this->render('estoque-atual', null, $filtros, [
             'dadosAgrupados' => $dados->groupBy('grupo_desc'),
-            'totalGeral'     => $dados->sum('valor_total_estoque')
+            'totalGeral' => $dados->sum('valor_total_estoque'),
         ]);
     }
 
@@ -1959,13 +1987,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_descricaodetalhada as dd', 'iped.DescricaoDetalhada', '=', 'dd.id')
             ->join('mat_setores as se', 'ped.Setor', '=', 'se.id')
             ->where('ped.setor_responsavel', 799)
-            ->selectRaw("
+            ->selectRaw('
                 se.UnidadeOrganizacional,
                 se.Setor,
                 dd.descricao_detalhada,
                 SUM(iped.QuantidadeMaterial) as solicitado,
                 SUM(iped.QuantidadeMaterialAtendida) as atendido
-            ")
+            ')
             ->groupBy('se.UnidadeOrganizacional', 'se.Setor', 'dd.descricao_detalhada')
             ->orderBy('se.UnidadeOrganizacional')
             ->orderBy('se.Setor')
@@ -1973,15 +2001,15 @@ class ReportRelatoriosGeraisController extends Controller
             ->get();
 
         return $this->render('qtd-material-setor', null, $filtros, [
-            'dadosAgrupados' => $dados->groupBy('UnidadeOrganizacional')
+            'dadosAgrupados' => $dados->groupBy('UnidadeOrganizacional'),
         ]);
     }
 
     private function gerarQtdInsumosImpressao($filtros)
     {
-        $temDatas = !empty($filtros['data_inicio']) && !empty($filtros['data_termino']);
+        $temDatas = ! empty($filtros['data_inicio']) && ! empty($filtros['data_termino']);
 
-        if (!$temDatas) {
+        if (! $temDatas) {
             return $this->render('qtd-insumos-impressao', collect(), $filtros, ['mostrarDados' => false]);
         }
 
@@ -1998,12 +2026,12 @@ class ReportRelatoriosGeraisController extends Controller
             ->join('mat_setores as unid', 'se.CodigodaUO', '=', 'unid.id')
             ->leftJoinSub($subPreco, 'compra', 'dd.id', '=', 'compra.id_material')
             ->where('ped.setor_responsavel', 799)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereIn('dd.descricao_resumida', [400, 425])
                     ->orWhere('dd.descricao_detalhada', 'LIKE', '%PAPEL A4%');
             })
             ->whereBetween('ped.date_time', [$d->ini, $d->fim])
-            ->selectRaw("
+            ->selectRaw('
                 se.CodigodaUO,
                 unid.UnidadeOrganizacional,
                 se.Setor,
@@ -2011,29 +2039,30 @@ class ReportRelatoriosGeraisController extends Controller
                 dd.descricao_detalhada,
                 IFNULL(compra.valor, 0) as valor_unitario,
                 SUM(iped.QuantidadeMaterialAtendida) as atendido
-            ")
+            ')
             ->groupBy('se.CodigodaUO', 'unid.UnidadeOrganizacional', 'se.Setor', 'dd.id', 'dd.descricao_detalhada', 'compra.valor')
             ->havingRaw('SUM(iped.QuantidadeMaterialAtendida) > 0')
             ->orderBy('unid.UnidadeOrganizacional')
             ->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $i->total = $i->atendido * $i->valor_unitario;
+
                 return $i;
             });
 
-        $resumoGeralMaterial = $dados->groupBy('descricao_detalhada')->map(function($itens, $desc) {
-            return (object)[
+        $resumoGeralMaterial = $dados->groupBy('descricao_detalhada')->map(function ($itens, $desc) {
+            return (object) [
                 'descricao' => $desc,
                 'atendido' => $itens->sum('atendido'),
                 'valor_unitario' => $itens->first()->valor_unitario,
-                'total' => $itens->sum('total')
+                'total' => $itens->sum('total'),
             ];
         })->sortBy('descricao')->values();
 
-        $resumoGeralUnidade = $dados->groupBy('UnidadeOrganizacional')->map(function($itens, $desc) {
-            return (object)[
+        $resumoGeralUnidade = $dados->groupBy('UnidadeOrganizacional')->map(function ($itens, $desc) {
+            return (object) [
                 'descricao' => $desc,
-                'total' => $itens->sum('total')
+                'total' => $itens->sum('total'),
             ];
         })->sortBy('descricao')->values();
 
@@ -2042,13 +2071,13 @@ class ReportRelatoriosGeraisController extends Controller
             'porUO' => $dados->groupBy('UnidadeOrganizacional'),
             'resumoGeralMaterial' => $resumoGeralMaterial,
             'resumoGeralUnidade' => $resumoGeralUnidade,
-            'periodoStr' => $d->iniDate != $d->fimDate ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y') : $d->objIni->format('d/m/Y')
+            'periodoStr' => $d->iniDate != $d->fimDate ? $d->objIni->format('d/m/Y').' a '.$d->objFim->format('d/m/Y') : $d->objIni->format('d/m/Y'),
         ]);
     }
 
     private function gerarQtdMaterialConsumoUnidade($filtros)
     {
-        $temDatas = !empty($filtros['data_inicio']) && !empty($filtros['data_termino']);
+        $temDatas = ! empty($filtros['data_inicio']) && ! empty($filtros['data_termino']);
 
         $setoresRaw = Setores::query()
             ->select('id', 'Setor', 'CodigodaUO')
@@ -2058,13 +2087,13 @@ class ReportRelatoriosGeraisController extends Controller
         $listaUnidades = [];
         foreach ($setoresRaw as $s) {
             $tipo = ($s->id == $s->CodigodaUO) ? 'U' : 'S';
-            $listaUnidades[$s->id . '|' . $tipo] = $s->Setor;
+            $listaUnidades[$s->id.'|'.$tipo] = $s->Setor;
         }
 
-        if (!$temDatas) {
+        if (! $temDatas) {
             return $this->render('qtd-material-consumo-unidade', collect(), $filtros, [
                 'mostrarDados' => false,
-                'listaUnidades' => $listaUnidades
+                'listaUnidades' => $listaUnidades,
             ]);
         }
 
@@ -2084,7 +2113,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoinSub($subPreco, 'compra', 'dd.id', '=', 'compra.id_material')
             ->where('ped.setor_responsavel', 799)
             ->whereBetween('ped.date_time', [$d->ini, $d->fim])
-            ->when($unidadeSelecionada, function($q, $v) use (&$unidDescricao, $listaUnidades) {
+            ->when($unidadeSelecionada, function ($q, $v) use (&$unidDescricao, $listaUnidades) {
                 $parts = explode('|', $v);
                 if (count($parts) == 2) {
                     $id = $parts[0];
@@ -2098,7 +2127,7 @@ class ReportRelatoriosGeraisController extends Controller
                     $unidDescricao = $listaUnidades[$v] ?? '';
                 }
             })
-            ->selectRaw("
+            ->selectRaw('
                 se.CodigodaUO,
                 unid.UnidadeOrganizacional,
                 se.Setor,
@@ -2106,29 +2135,30 @@ class ReportRelatoriosGeraisController extends Controller
                 dd.descricao_detalhada,
                 IFNULL(compra.valor, 0) as valor_unitario,
                 SUM(iped.QuantidadeMaterialAtendida) as atendido
-            ")
+            ')
             ->groupBy('se.CodigodaUO', 'unid.UnidadeOrganizacional', 'se.Setor', 'dd.id', 'dd.descricao_detalhada', 'compra.valor')
             ->havingRaw('SUM(iped.QuantidadeMaterialAtendida) > 0')
             ->orderBy('unid.UnidadeOrganizacional')
             ->get()
-            ->map(function($i) {
+            ->map(function ($i) {
                 $i->total = $i->atendido * $i->valor_unitario;
+
                 return $i;
             });
 
-        $resumoGeralMaterial = $dados->groupBy('descricao_detalhada')->map(function($itens, $desc) {
-            return (object)[
+        $resumoGeralMaterial = $dados->groupBy('descricao_detalhada')->map(function ($itens, $desc) {
+            return (object) [
                 'descricao' => $desc,
                 'atendido' => $itens->sum('atendido'),
                 'valor_unitario' => $itens->first()->valor_unitario,
-                'total' => $itens->sum('total')
+                'total' => $itens->sum('total'),
             ];
         })->sortBy('descricao')->values();
 
-        $resumoGeralUnidade = $dados->groupBy('UnidadeOrganizacional')->map(function($itens, $desc) {
-            return (object)[
+        $resumoGeralUnidade = $dados->groupBy('UnidadeOrganizacional')->map(function ($itens, $desc) {
+            return (object) [
                 'descricao' => $desc,
-                'total' => $itens->sum('total')
+                'total' => $itens->sum('total'),
             ];
         })->sortBy('descricao')->values();
 
@@ -2139,19 +2169,19 @@ class ReportRelatoriosGeraisController extends Controller
             'porUO' => $dados->groupBy('UnidadeOrganizacional'),
             'resumoGeralMaterial' => $resumoGeralMaterial,
             'resumoGeralUnidade' => $resumoGeralUnidade,
-            'periodoStr' => $d->iniDate != $d->fimDate ? $d->objIni->format('d/m/Y') . ' a ' . $d->objFim->format('d/m/Y') : $d->objIni->format('d/m/Y')
+            'periodoStr' => $d->iniDate != $d->fimDate ? $d->objIni->format('d/m/Y').' a '.$d->objFim->format('d/m/Y') : $d->objIni->format('d/m/Y'),
         ]);
     }
 
     private function gerarAquisicaoMateriaisComarca($filtros)
     {
-        $temDatas = !empty($filtros['data_inicio']) && !empty($filtros['data_termino']);
+        $temDatas = ! empty($filtros['data_inicio']) && ! empty($filtros['data_termino']);
 
-        if (!$temDatas) {
+        if (! $temDatas) {
             return $this->render('aquisicao-materiais-comarca', collect(), $filtros, [
                 'mostrarDados' => false,
                 'data_inicio_padrao' => now()->format('Y-m-d'),
-                'data_termino_padrao' => now()->format('Y-m-d')
+                'data_termino_padrao' => now()->format('Y-m-d'),
             ]);
         }
 
@@ -2164,7 +2194,7 @@ class ReportRelatoriosGeraisController extends Controller
             ->where('nf.unidade_judiciaria', 766)
             ->where('nf.situacao', 3)
             ->whereBetween('nf.data_documento', [$d->ini, $d->fim])
-            ->when(!empty($materiaisIds), function($q) use ($materiaisIds) {
+            ->when(! empty($materiaisIds), function ($q) use ($materiaisIds) {
                 $q->whereIn('dd.id', $materiaisIds);
             })
             ->selectRaw("
@@ -2182,12 +2212,13 @@ class ReportRelatoriosGeraisController extends Controller
 
         $mesesNome = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        $dadosAgrupados = $dados->groupBy('mesano')->map(function($itens, $mesano) use ($mesesNome) {
+        $dadosAgrupados = $dados->groupBy('mesano')->map(function ($itens, $mesano) use ($mesesNome) {
             $ano = substr($mesano, 0, 4);
             $mes = (int) substr($mesano, -2);
+
             return (object) [
-                'nome' => $mesesNome[$mes] . '/' . $ano,
-                'itens' => $itens
+                'nome' => $mesesNome[$mes].'/'.$ano,
+                'itens' => $itens,
             ];
         });
 
@@ -2196,19 +2227,19 @@ class ReportRelatoriosGeraisController extends Controller
             'dadosAgrupados' => $dadosAgrupados,
             'data_inicio_padrao' => $d->iniDate,
             'data_termino_padrao' => $d->fimDate,
-            'periodoStr' => \Carbon\Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . \Carbon\Carbon::parse($d->fimDate)->format('d/m/Y')
+            'periodoStr' => Carbon::parse($d->iniDate)->format('d/m/Y').' a '.Carbon::parse($d->fimDate)->format('d/m/Y'),
         ]);
     }
 
     private function gerarAquisicaoMateriaisEstoqueVisivel($filtros)
     {
-        $temDatas = !empty($filtros['data_inicio']) && !empty($filtros['data_termino']);
+        $temDatas = ! empty($filtros['data_inicio']) && ! empty($filtros['data_termino']);
 
-        if (!$temDatas) {
+        if (! $temDatas) {
             return $this->render('aquisicao-materiais-estoque-visivel', collect(), $filtros, [
                 'mostrarDados' => false,
                 'data_inicio_padrao' => now()->format('Y-m-d'),
-                'data_termino_padrao' => now()->format('Y-m-d')
+                'data_termino_padrao' => now()->format('Y-m-d'),
             ]);
         }
 
@@ -2221,13 +2252,13 @@ class ReportRelatoriosGeraisController extends Controller
             ->leftJoin('mat_descricaoresumida as dr', 'dd.descricao_resumida', '=', 'dr.id')
             ->where('nf.unidade_judiciaria', 766)
             ->where('nf.situacao', 3)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('dd.item_estoque', 1)
                     ->orWhere('dd.visibilidade', '<>', 0)
                     ->orWhereNotNull('dd.visibilidade');
             })
             ->whereBetween('nf.data_documento', [$d->ini, $d->fim])
-            ->when(!empty($materiaisIds), function($q) use ($materiaisIds) {
+            ->when(! empty($materiaisIds), function ($q) use ($materiaisIds) {
                 $q->whereIn('dd.id', $materiaisIds);
             })
             ->selectRaw("
@@ -2245,12 +2276,13 @@ class ReportRelatoriosGeraisController extends Controller
 
         $mesesNome = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        $dadosAgrupados = $dados->groupBy('mesano')->map(function($itens, $mesano) use ($mesesNome) {
+        $dadosAgrupados = $dados->groupBy('mesano')->map(function ($itens, $mesano) use ($mesesNome) {
             $ano = substr($mesano, 0, 4);
             $mes = (int) substr($mesano, -2);
+
             return (object) [
-                'nome' => $mesesNome[$mes] . '/' . $ano,
-                'itens' => $itens
+                'nome' => $mesesNome[$mes].'/'.$ano,
+                'itens' => $itens,
             ];
         });
 
@@ -2259,7 +2291,7 @@ class ReportRelatoriosGeraisController extends Controller
             'dadosAgrupados' => $dadosAgrupados,
             'data_inicio_padrao' => $d->iniDate,
             'data_termino_padrao' => $d->fimDate,
-            'periodoStr' => \Carbon\Carbon::parse($d->iniDate)->format('d/m/Y') . ' a ' . \Carbon\Carbon::parse($d->fimDate)->format('d/m/Y')
+            'periodoStr' => Carbon::parse($d->iniDate)->format('d/m/Y').' a '.Carbon::parse($d->fimDate)->format('d/m/Y'),
         ]);
     }
 
@@ -2277,11 +2309,11 @@ class ReportRelatoriosGeraisController extends Controller
             $arrSetores[$s->id] = $s->Setor;
         }
 
-        if (!$ano) {
+        if (! $ano) {
             return $this->render('estatistico-consumo-almoxarifado-meta', collect(), $filtros, [
                 'mostrarDados' => false,
                 'ano_padrao' => date('Y'),
-                'listaSetores' => $listaSetores
+                'listaSetores' => $listaSetores,
             ]);
         }
 
@@ -2318,14 +2350,14 @@ class ReportRelatoriosGeraisController extends Controller
         foreach ($comarcas as $cod => $nomeUnidade) {
             $dados = DescricaoDetalhada::query()->from('mat_descricaodetalhada as dd')
                 ->leftJoin('ped_itempedido as iped', 'dd.id', '=', 'iped.DescricaoDetalhada')
-                ->leftJoin('ped_pedidos as ped', function($join) use ($ano, $anoAnt) {
+                ->leftJoin('ped_pedidos as ped', function ($join) use ($ano, $anoAnt) {
                     $join->on('iped.idPedido', '=', 'ped.id')
                         ->where('ped.setor_responsavel', 799)
                         ->whereIn(DB::raw('YEAR(ped.date_time)'), [$ano, $anoAnt]);
                 })
                 ->leftJoin('mat_setores as se', 'ped.Setor', '=', 'se.id')
                 ->where('dd.item_estoque', 1)
-                ->where(function($q) use ($tipoFiltro, $cod) {
+                ->where(function ($q) use ($tipoFiltro, $cod) {
                     $q->whereNull('ped.id');
                     if ($tipoFiltro == 'S') {
                         $q->orWhere('se.id', $cod);
@@ -2359,12 +2391,15 @@ class ReportRelatoriosGeraisController extends Controller
 
                 $teveForaMeta = false;
 
-                $calc = function($ant, $atu) use (&$teveForaMeta) {
+                $calc = function ($ant, $atu) use (&$teveForaMeta) {
                     $metaQtd = $ant - ($ant * 0.25);
                     $foraDaMeta = ($metaQtd < $atu);
-                    if ($foraDaMeta) $teveForaMeta = true;
+                    if ($foraDaMeta) {
+                        $teveForaMeta = true;
+                    }
 
                     $percent = ($ant == 0) ? ($atu * 100) : (($atu * 100 / $ant) - 100);
+
                     return ['val' => $atu, 'fora' => $foraDaMeta, 'perc' => $percent];
                 };
 
@@ -2374,14 +2409,14 @@ class ReportRelatoriosGeraisController extends Controller
                 $linha->res_q4 = $calc($linha->ant_q4, $linha->atu_q4);
                 $linha->res_total = $calc($linha->ant_total, $linha->atu_total);
 
-                if ($apenasForaMeta && !$teveForaMeta) {
+                if ($apenasForaMeta && ! $teveForaMeta) {
                     continue;
                 }
 
                 $linhas[] = $linha;
             }
 
-            if (!empty($linhas)) {
+            if (! empty($linhas)) {
                 $relatorioFinal[] = (object) ['unidade' => $nomeUnidade, 'itens' => $linhas];
             }
         }
@@ -2392,19 +2427,18 @@ class ReportRelatoriosGeraisController extends Controller
             'ano' => $ano,
             'anoAnt' => $anoAnt,
             'listaSetores' => $listaSetores,
-            'relatorioFinal' => $relatorioFinal
+            'relatorioFinal' => $relatorioFinal,
         ];
 
         if (isset($filtros['excel']) && $filtros['excel'] == 'S') {
-            $filename = "relatorio_meta_069_" . date('Ymd') . ".xls";
+            $filename = 'relatorio_meta_069_'.date('Ymd').'.xls';
             $payload = array_merge(['dados' => null, 'filtros' => $filtros, 'data_emissao' => now()->format('d/m/Y')], $dadosView);
 
             return response()->view('reports.estatistico-consumo-almoxarifado-meta', $payload)
                 ->header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
         }
 
         return $this->render('estatistico-consumo-almoxarifado-meta', null, $filtros, $dadosView);
     }
-
 }

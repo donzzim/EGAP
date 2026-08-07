@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
 use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\CreateBemMovel;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\EditBemMovel;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\ListBemMovels;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -20,21 +22,21 @@ use App\Models\Patrimonio\BensMoveis\ItemBaixa;
 use App\Models\Patrimonio\BensMoveis\SituacaoBemMovel;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Services\Patrimonio\RecalcularDepreciacaoService;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -47,13 +49,13 @@ class BemMovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemMovel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Administração';
 
@@ -67,9 +69,9 @@ class BemMovelResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
             Section::make('Identificação do Bem')
                 ->description('Números de controle patrimonial que identificam o bem.')
                 ->icon('heroicon-o-identification')
@@ -486,7 +488,7 @@ class BemMovelResource extends Resource
                 TableColumns::date('DataDisponibilizacao', 'Data da Disponibilização'),
                 TableColumns::date('DatadaReavaliacao', 'Data da Reavaliação'),
             ])
-            ->actions([
+            ->recordActions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
                     self::imprimirTermoTableAction(),
@@ -501,8 +503,8 @@ class BemMovelResource extends Resource
                     self::corrigirInformacoesTableAction(),
                 ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkAction::make('Imprimir Bens')
+            ->toolbarActions([
+                BulkAction::make('Imprimir Bens')
                     ->icon('heroicon-o-printer'),
                 ...TableDefaults::bulkActions(),
             ]);
@@ -533,7 +535,7 @@ class BemMovelResource extends Resource
                 'Andar' => $record->AndarSetor,
                 'Observacao' => $record->Observacao,
             ])
-            ->form([
+            ->schema([
                 Section::make('Localização do Bem')
                     ->description('Informe a unidade judiciária e o setor onde o bem será transferido.')
                     ->icon('heroicon-o-building-office-2')
@@ -713,7 +715,7 @@ class BemMovelResource extends Resource
             ->fillForm(fn (BemMovel $record): array => [
                 'Detalhes' => $record->Observacao,
             ])
-            ->form([
+            ->schema([
                 Select::make('id_baixa')
                     ->label('Processo')
                     ->placeholder('Selecione o processo de baixa')
@@ -864,9 +866,9 @@ class BemMovelResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBemMovels::route('/'),
-            'create' => Pages\CreateBemMovel::route('/create'),
-            'edit' => Pages\EditBemMovel::route('/{record}/edit'),
+            'index' => ListBemMovels::route('/'),
+            'create' => CreateBemMovel::route('/create'),
+            'edit' => EditBemMovel::route('/{record}/edit'),
         ];
     }
 }
