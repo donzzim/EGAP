@@ -28,7 +28,7 @@ class MovimentacaoDeMateriais extends Page
 
     protected string $view = 'filament.pages.externo.patrimonio.movimentacao-de-materiais';
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

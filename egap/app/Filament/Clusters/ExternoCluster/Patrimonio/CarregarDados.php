@@ -17,7 +17,7 @@ class CarregarDados extends Page
     protected static ?int $navigationSort = 7;
     protected string $view = 'filament.pages.externo.patrimonio.carregar-dados';
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

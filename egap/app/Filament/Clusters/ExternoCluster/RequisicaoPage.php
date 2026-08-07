@@ -11,7 +11,7 @@ abstract class RequisicaoPage extends Page
 {
     protected static ?string $cluster = ExternoCluster::class;
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

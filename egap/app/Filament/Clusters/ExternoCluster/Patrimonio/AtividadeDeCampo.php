@@ -36,7 +36,7 @@ class AtividadeDeCampo extends Page
 
     public string $secao = 'resumo';
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

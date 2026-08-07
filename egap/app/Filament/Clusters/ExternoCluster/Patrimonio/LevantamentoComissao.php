@@ -21,7 +21,7 @@ class LevantamentoComissao extends Page
     protected static ?int $navigationSort = 8;
     protected string $view = 'filament.pages.externo.patrimonio.levantamento-comissao';
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

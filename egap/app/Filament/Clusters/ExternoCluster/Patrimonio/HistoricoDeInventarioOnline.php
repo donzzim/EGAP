@@ -21,7 +21,7 @@ class HistoricoDeInventarioOnline extends Page
     protected static ?int $navigationSort = 5;
     protected string $view = 'filament.pages.externo.patrimonio.historico-de-inventario-online';
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

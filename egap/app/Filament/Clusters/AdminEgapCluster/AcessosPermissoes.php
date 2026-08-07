@@ -16,7 +16,7 @@ class AcessosPermissoes extends Page
 
     protected static ?string $navigationLabel = 'Acessos e Permissões';
     protected static ?string $cluster = AdminEgapCluster::class;
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }

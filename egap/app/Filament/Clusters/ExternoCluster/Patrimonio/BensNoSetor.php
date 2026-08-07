@@ -28,7 +28,7 @@ class BensNoSetor extends Page
 
     protected static ?string $title = 'Bens no Setor';
 
-    function getSubNavigationPosition(): SubNavigationPosition
+    public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return SubNavigationPosition::Top;
     }
