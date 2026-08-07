@@ -114,7 +114,7 @@ class LoginEgap extends Login
     {
         return [
             'form' => $this->form(
-                $this->makeForm()
+                $this->makeSchema()
                     ->components([
                         // $this->getEmailFormComponent(),
                         $this->getLoginFormComponent(),
