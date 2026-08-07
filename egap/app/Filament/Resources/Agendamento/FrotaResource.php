@@ -2,35 +2,37 @@
 
 namespace App\Filament\Resources\Agendamento;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\IconColumn;
-use App\Filament\Resources\Agendamento\FrotaResource\Pages\ListFrotas;
 use App\Filament\Resources\Agendamento\FrotaResource\Pages\CreateFrota;
 use App\Filament\Resources\Agendamento\FrotaResource\Pages\EditFrota;
-use App\Filament\Resources\Agendamento\FrotaResource\Pages;
+use App\Filament\Resources\Agendamento\FrotaResource\Pages\ListFrotas;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Frota;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 
 class FrotaResource extends Resource
 {
     protected static ?string $model = Frota::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-truck';
-    protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-truck';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Agendamento';
+
     protected static ?string $modelLabel = 'Veículo';
+
     protected static ?string $pluralModelLabel = 'Frota';
+
     protected static ?string $navigationLabel = 'Frota de Veículos';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTipoImovel extends EditRecord

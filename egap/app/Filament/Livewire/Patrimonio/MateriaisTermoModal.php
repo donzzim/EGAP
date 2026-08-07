@@ -2,12 +2,12 @@
 
 namespace App\Filament\Livewire\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 class MateriaisTermoModal extends TableModalComponent implements HasActions
 {
     use InteractsWithActions;
+
     public int $termoId;
 
     public function mount(int $termoId): void

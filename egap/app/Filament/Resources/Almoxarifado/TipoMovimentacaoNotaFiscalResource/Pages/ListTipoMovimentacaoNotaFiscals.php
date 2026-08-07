@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTipoMovimentacaoNotaFiscals extends ListRecords
@@ -15,7 +14,7 @@ class ListTipoMovimentacaoNotaFiscals extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

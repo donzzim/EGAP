@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\BaixaResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditBaixa extends EditRecord

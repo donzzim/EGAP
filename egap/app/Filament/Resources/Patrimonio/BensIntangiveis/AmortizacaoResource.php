@@ -2,37 +2,34 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Enums\FiltersLayout;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\ListAmortizacaos;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\CreateAmortizacao;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\EditAmortizacao;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages\ListAmortizacaos;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\Amortizacao;
-use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class AmortizacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Amortizacao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar-square';
 
     protected static ?string $navigationLabel = 'Amortizações';
 
@@ -42,7 +39,7 @@ class AmortizacaoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Amortizações';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Intangíveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Intangíveis';
 
     protected static ?string $slug = 'bens-intangiveis/amortizacoes';
 

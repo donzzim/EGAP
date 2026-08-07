@@ -2,29 +2,32 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\ListElementoDespesas;
 use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\CreateElementoDespesa;
 use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\EditElementoDespesa;
-use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\ElementoDespesaResource\Pages\ListElementoDespesas;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\ElementoDespesa;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class ElementoDespesaResource extends Resource
 {
     protected static ?string $model = ElementoDespesa::class;
+
     protected static ?int $navigationSort = 1;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube';
+
     protected static ?string $navigationLabel = 'Elemento de Despesa';
+
     protected static ?string $modelLabel = 'Elemento de Despesa';
+
     protected static ?string $pluralModelLabel = 'Elementos de Despesa';
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
 
     public static function form(Schema $schema): Schema
     {
@@ -64,6 +67,7 @@ class ElementoDespesaResource extends Resource
             ])
             ->columns(2);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
@@ -75,7 +79,7 @@ class ElementoDespesaResource extends Resource
                     ->badge(),
                 TableColumns::text('VidaUtil', 'Vida Útil'),
                 TableColumns::updatedBy('atualizado_por.name', 'Usuário'),
-                TableColumns::money('ValorResidual')
+                TableColumns::money('ValorResidual'),
             ])
             ->defaultSort('CodigodaClasse');
     }

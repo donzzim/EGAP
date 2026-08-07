@@ -2,23 +2,10 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Grid;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\Action;
-use RuntimeException;
-use Throwable;
-use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\ListTermos;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\CreateTermo;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\EditTermo;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\ListTermos;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
@@ -26,30 +13,41 @@ use App\Helper\CpfHelper;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
+use RuntimeException;
+use Throwable;
 
 class TermoResource extends Resource
 {
     protected static ?string $model = Termo::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Termos de Responsabilidade';
 
@@ -61,7 +59,7 @@ class TermoResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/termos';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Schema $schema): Schema
     {

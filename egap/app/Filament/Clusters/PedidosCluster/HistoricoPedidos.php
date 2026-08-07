@@ -2,17 +2,16 @@
 
 namespace App\Filament\Clusters\PedidosCluster;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Almoxarifado\FasePedido;
 use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 
 class HistoricoPedidos extends Page implements HasTable
@@ -21,13 +20,13 @@ class HistoricoPedidos extends Page implements HasTable
 
     protected static ?string $model = FasePedido::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clock';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
 
     protected static ?string $title = 'Histórico de Pedidos';
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationLabel = 'Histórico de Pedidos';
 
@@ -110,8 +109,7 @@ class HistoricoPedidos extends Page implements HasTable
                     ->query(function ($query, array $data) {
                         return $query->when(
                             $data['termo_id'],
-                            fn ($query, $value) =>
-                            $query->whereHas('termoRef', fn ($q) => $q->where('id', $value))
+                            fn ($query, $value) => $query->whereHas('termoRef', fn ($q) => $q->where('id', $value))
                         );
                     }),
 
@@ -124,13 +122,11 @@ class HistoricoPedidos extends Page implements HasTable
                     ->query(function ($query, array $data) {
                         return $query->when(
                             $data['pedido_id'],
-                            fn ($query, $value) =>
-                            $query->whereHas('pedidoRef', fn ($q) => $q->where('id', $value))
+                            fn ($query, $value) => $query->whereHas('pedidoRef', fn ($q) => $q->where('id', $value))
                         );
                     }),
             ])
             ->filtersLayout(FiltersLayout::AboveContent);
 
     }
-
 }

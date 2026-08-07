@@ -2,39 +2,43 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages\ListObras;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages\CreateObra;
 use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages\EditObra;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
+use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages\ListObras;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Obra;
-use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class ObraResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Obra::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+
     protected static ?string $navigationLabel = 'Obras e Ampliações';
+
     protected static ?string $modelLabel = 'Obra e Ampliação';
+
     protected static ?string $pluralModelLabel = 'Obras e Ampliações';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 4;
+
     protected static ?string $slug = 'bens-imoveis/obras';
 
     public static function form(Schema $schema): Schema
@@ -59,9 +63,9 @@ class ObraResource extends Resource
                             ->default(now())
                             ->displayFormat('d/m/Y'),
 
-                        MoneyInput::make('valor')
+                        MoneyInput::make('valor'),
                     ])
-                    ->columns(2)
+                    ->columns(2),
             ]);
     }
 

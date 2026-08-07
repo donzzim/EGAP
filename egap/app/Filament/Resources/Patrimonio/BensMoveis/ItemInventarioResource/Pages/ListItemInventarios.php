@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListItemInventarios extends ListRecords

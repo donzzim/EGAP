@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\MarcasResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\MarcasResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListMarcas extends ListRecords
@@ -15,7 +14,7 @@ class ListMarcas extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

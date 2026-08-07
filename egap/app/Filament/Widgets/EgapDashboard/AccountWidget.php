@@ -12,5 +12,5 @@ class AccountWidget extends Widget
 
     protected string $view = 'filament.widgets.account-widget';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 }

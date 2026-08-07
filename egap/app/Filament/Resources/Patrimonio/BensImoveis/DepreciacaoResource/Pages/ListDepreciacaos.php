@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListDepreciacaos extends ListRecords

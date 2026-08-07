@@ -2,18 +2,19 @@
 
 namespace App\Filament\Livewire\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\InventarioEquipe;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class EquipesModal extends TableModalComponent implements HasActions
 {
     use InteractsWithActions;
+
     public int $unidadeId;
 
     public function mount(int $unidadeId, ?int $inventarioId = null): void

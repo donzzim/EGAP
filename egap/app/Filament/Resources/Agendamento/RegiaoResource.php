@@ -2,32 +2,35 @@
 
 namespace App\Filament\Resources\Agendamento;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Agendamento\RegiaoResource\Pages\ListRegiaos;
 use App\Filament\Resources\Agendamento\RegiaoResource\Pages\CreateRegiao;
 use App\Filament\Resources\Agendamento\RegiaoResource\Pages\EditRegiao;
-use App\Filament\Resources\Agendamento\RegiaoResource\Pages;
+use App\Filament\Resources\Agendamento\RegiaoResource\Pages\ListRegiaos;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Regiao;
 use App\Models\Cadastro\Setores;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class RegiaoResource extends Resource
 {
     protected static ?string $model = Regiao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-map';
-    protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Agendamento';
+
     protected static ?string $modelLabel = 'Região';
+
     protected static ?string $pluralModelLabel = 'Regiões';
+
     protected static ?string $navigationLabel = 'Regiões';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
@@ -92,7 +95,7 @@ class RegiaoResource extends Resource
                 TableColumns::text('regiao', 'Região', true)
                     ->weight('medium')
                     ->wrap()
-                    ->description(fn ($record) => $record->sigla ? 'Sigla: ' . $record->sigla : null),
+                    ->description(fn ($record) => $record->sigla ? 'Sigla: '.$record->sigla : null),
 
                 TableColumns::text('unidadeRef.UnidadeOrganizacional', 'Unidade')
                     ->badge()

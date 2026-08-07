@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Agendamento\EquipeResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Agendamento\EquipeResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListEquipes extends ListRecords
@@ -15,7 +14,7 @@ class ListEquipes extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Livewire\Externo\PedidosTable;
 use App\Filament\Support\TableDefaults;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -29,6 +29,7 @@ use Livewire\Attributes\On;
 class PedidosPatrimonioTable extends PedidosTable implements HasActions
 {
     use InteractsWithActions;
+
     protected const SETOR_PATRIMONIO = 1239;
 
     #[On('pedido-item-cancelado')]

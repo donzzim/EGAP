@@ -2,33 +2,29 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\ListMovimentacaoEstoques;
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\CreateMovimentacaoEstoque;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\EditMovimentacaoEstoque;
-use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
+use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages\ListMovimentacaoEstoques;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
 use App\Models\Cadastro\Setores;
-use App\Models\User;
 use App\Models\UserEgap;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Utilities\Set;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -40,7 +36,7 @@ class MovimentacaoEstoqueResource extends Resource
 
     protected static ?string $cluster = AlmoxarifadoCluster::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrows-right-left';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?string $navigationLabel = 'Movimentação de Estoque';
 
@@ -48,7 +44,7 @@ class MovimentacaoEstoqueResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Movimentações de Estoque';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 2;
 

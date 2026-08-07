@@ -2,37 +2,40 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\ListSituacaoNotaFiscals;
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\CreateSituacaoNotaFiscal;
 use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\EditSituacaoNotaFiscal;
-use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages;
+use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\ListSituacaoNotaFiscals;
 use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\SituacaoNotaFiscal;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class SituacaoNotaFiscalResource extends Resource
 {
     protected static ?string $model = SituacaoNotaFiscal::class;
+
     protected static ?string $cluster = AlmoxarifadoCluster::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-queue-list';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-queue-list';
+
     protected static ?string $slug = 'situacao-notas-fiscais';
+
     protected static ?string $navigationLabel = 'Situação da Nota Fiscal';
+
     protected static ?string $pluralLabel = 'Situações da Nota Fiscal';
+
     protected static ?string $pluralModelLabel = 'Situações da Nota Fiscal';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?int $navigationSort = 4;
 

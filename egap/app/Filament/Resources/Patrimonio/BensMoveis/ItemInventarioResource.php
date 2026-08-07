@@ -2,19 +2,10 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\Action;
-use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\ListItemInventarios;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\CreateItemInventario;
 use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\EditItemInventario;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages\ListItemInventarios;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\DescricaoResumida;
@@ -24,13 +15,20 @@ use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\ItemInventario;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -39,11 +37,11 @@ class ItemInventarioResource extends Resource
 {
     protected static ?string $model = ItemInventario::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Itens Inventariados';
 
@@ -55,7 +53,7 @@ class ItemInventarioResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/itens-inventariados';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Schema $schema): Schema
     {
@@ -256,7 +254,7 @@ class ItemInventarioResource extends Resource
             ->defaultSort('id', 'desc');
     }
 
-    private static function finalizarLevantamentoTableAction() : Action
+    private static function finalizarLevantamentoTableAction(): Action
     {
         return Action::make('finalizar_levantamento')
             ->hiddenLabel()
@@ -293,7 +291,7 @@ class ItemInventarioResource extends Resource
             });
     }
 
-    private static function localizarItemTableAction() : Action
+    private static function localizarItemTableAction(): Action
     {
         return Action::make('localizar_item')
             ->hiddenLabel()
@@ -460,7 +458,7 @@ class ItemInventarioResource extends Resource
             return [$bem, false];
         }
 
-        $bem = new BemMovel();
+        $bem = new BemMovel;
         $bem->setConnection($item->getConnectionName());
         $bem->forceFill([
             'date_time' => now(),
@@ -534,7 +532,7 @@ class ItemInventarioResource extends Resource
 
     private static function registrarTransferenciaInventario(BemMovel $bem, ItemInventario $item, string $status): void
     {
-        $transferencia = new TransferenciaBemMovel();
+        $transferencia = new TransferenciaBemMovel;
         $transferencia->setConnection($item->getConnectionName());
 
         $attributes = [
@@ -611,7 +609,7 @@ class ItemInventarioResource extends Resource
 
     private static function appendObservacao(?string $observacao, string $complemento): string
     {
-        return rtrim((string) $observacao) . $complemento;
+        return rtrim((string) $observacao).$complemento;
     }
 
     public static function getPages(): array

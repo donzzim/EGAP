@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\DenominacaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\DenominacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListDenominacaos extends ListRecords

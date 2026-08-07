@@ -2,18 +2,10 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
-use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\ListConciliacaos;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\CreateConciliacao;
 use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\EditConciliacao;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\ListConciliacaos;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -21,12 +13,19 @@ use App\Models\Cadastro\Fornecedores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Conciliacao;
 use Carbon\Carbon;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Throwable;
@@ -35,13 +34,13 @@ class ConciliacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Conciliacao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Conciliação';
 

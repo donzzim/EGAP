@@ -2,11 +2,11 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\AtividadeInventario;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -33,7 +33,7 @@ use Livewire\Component;
  * replicado aqui — para números definitivos de um inventário concluído,
  * consulte o Histórico de Inventário Online.
  */
-class AtividadeDeCampoResumoTable extends Component implements HasForms, HasTable, HasActions
+class AtividadeDeCampoResumoTable extends Component implements HasActions, HasForms, HasTable
 {
     use InteractsWithActions;
     use InteractsWithForms;

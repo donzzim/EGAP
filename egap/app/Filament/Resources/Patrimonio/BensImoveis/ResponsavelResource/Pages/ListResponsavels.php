@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\ResponsavelResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\ResponsavelResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListResponsavels extends ListRecords

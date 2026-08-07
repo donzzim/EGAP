@@ -2,21 +2,21 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Patrimonio;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Support\Enums\Width;
 use App\Filament\Clusters\ExternoCluster;
 use App\Filament\Clusters\ExternoCluster\Concerns\SelecionaSetorAtual;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 
 class MovimentacaoDeMateriais extends Page
 {
     use SelecionaSetorAtual;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrows-right-left';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
 
     protected static ?string $cluster = ExternoCluster::class;
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Patrimônio';
+    protected static string|\UnitEnum|null $navigationGroup = 'Patrimônio';
 
     protected static ?string $slug = 'patrimonio/movimentacao-de-materiais';
 

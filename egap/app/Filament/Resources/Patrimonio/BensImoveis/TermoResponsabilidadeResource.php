@@ -2,38 +2,41 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\ListTermoResponsabilidades;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\CreateTermoResponsabilidade;
 use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\EditTermoResponsabilidade;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\ListTermoResponsabilidades;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\TermoResponsabilidade;
-use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class TermoResponsabilidadeResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TermoResponsabilidade::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-check';
+
     protected static ?string $navigationLabel = 'Termos de Responsabilidade';
+
     protected static ?string $modelLabel = 'Termo de Responsabilidade';
+
     protected static ?string $pluralModelLabel = 'Termos de Responsabilidade';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 7;
+
     protected static ?string $slug = 'bens-imoveis/termo-responsabilidade-imoveis';
 
     public static function form(Schema $schema): Schema

@@ -2,18 +2,20 @@
 
 namespace App\Models\Patrimonio\BensImoveis;
 
-use App\Models\Cadastro\Setores;
 use App\Models\Cadastro\ContaContabil;
 use App\Models\Cadastro\ElementoDespesa;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Cadastro\Setores;
 use Illuminate\Database\Eloquent\Model;
 
 class BemImovel extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'imo_imovel';
+
     protected $primaryKey = 'Id';
+
     public $timestamps = false;
+
     protected $guarded = [];
 
     public function setoresRelacaoRef()

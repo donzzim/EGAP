@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\SituacaoBemResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSituacaoBems extends ListRecords
@@ -15,7 +14,7 @@ class ListSituacaoBems extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

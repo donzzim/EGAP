@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListObras extends ListRecords

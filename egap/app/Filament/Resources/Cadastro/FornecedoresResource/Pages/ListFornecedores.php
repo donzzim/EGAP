@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\FornecedoresResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\FornecedoresResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFornecedores extends ListRecords
@@ -15,7 +14,7 @@ class ListFornecedores extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

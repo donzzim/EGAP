@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTransferenciaBem extends EditRecord

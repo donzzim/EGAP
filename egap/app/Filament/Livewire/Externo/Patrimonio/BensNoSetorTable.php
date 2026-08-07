@@ -2,12 +2,6 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource;
 use App\Filament\Support\SetorSelecionado;
 use App\Filament\Support\TableColumns;
@@ -18,12 +12,18 @@ use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -48,7 +48,7 @@ use Throwable;
  * a localização do bem só é efetivada quando o termo é validado pela Seção
  * de Patrimônio, então esta tela não altera Setor/Unidade do bem diretamente.
  */
-class BensNoSetorTable extends Component implements HasForms, HasTable, HasActions
+class BensNoSetorTable extends Component implements HasActions, HasForms, HasTable
 {
     use InteractsWithActions;
     use InteractsWithForms;

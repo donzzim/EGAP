@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Agendamento\TransporteResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Agendamento\TransporteResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTransportes extends ListRecords
@@ -15,7 +14,7 @@ class ListTransportes extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

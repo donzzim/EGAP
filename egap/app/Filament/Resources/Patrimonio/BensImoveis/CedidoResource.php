@@ -2,47 +2,50 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Repeater;
-use Filament\Tables\Enums\FiltersLayout;
-use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages\ListCedidos;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages\CreateCedido;
 use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages\EditCedido;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\CedidoResource\Pages\ListCedidos;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Cedido;
-use Filament\Forms;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 
 class CedidoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Cedido::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationLabel = 'Imóveis Ocupados por Terceiros';
+
     protected static ?string $modelLabel = 'Imóvel Ocupado por Terceiro';
+
     protected static ?string $pluralModelLabel = 'Imóveis Ocupados por Terceiros';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 5;
+
     protected static ?string $slug = 'bens-imoveis/ocupados-por-terceiros';
 
     public static function form(Schema $schema): Schema
@@ -207,7 +210,7 @@ class CedidoResource extends Resource
                                             ])
                                             ->columns(2)
                                             ->columnSpan(1),
-                                    ])->columns(2)
+                                    ])->columns(2),
                             ]),
 
                         Tab::make('Gestores/Fiscais')
@@ -262,9 +265,10 @@ class CedidoResource extends Resource
                                     ]),
                             ]),
                     ])
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

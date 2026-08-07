@@ -2,46 +2,51 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Repeater;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\ListNotaFiscals;
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\CreateNotaFiscal;
 use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\EditNotaFiscal;
-use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages;
+use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\ListNotaFiscals;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Cadastro\Setores;
-use Filament\Forms;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class NotaFiscalResource extends Resource
 {
     protected static ?string $model = NotaFiscal::class;
+
     protected static ?string $slug = 'notas-fiscais';
+
     protected static ?string $cluster = AlmoxarifadoCluster::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
     protected static ?string $modelLabel = 'Nota Fiscal';
+
     protected static ?string $pluralModelLabel = 'Notas Fiscais';
+
     protected static ?string $navigationLabel = 'Nota Fiscal';
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
@@ -266,8 +271,7 @@ class NotaFiscalResource extends Resource
     public static function calcularValorTotal(array $itens): string
     {
         $total = collect($itens)
-            ->sum(fn (array $item) =>
-                self::normalizarValorMonetario($item['quantidade'] ?? 0) *
+            ->sum(fn (array $item) => self::normalizarValorMonetario($item['quantidade'] ?? 0) *
                 self::normalizarValorMonetario($item['preco_unitario'] ?? 0)
             );
 
@@ -342,7 +346,7 @@ class NotaFiscalResource extends Resource
                 TextColumn::make('itens.preco_unitario')
                     ->label('Preço unitário')
                     ->state(fn (NotaFiscal $record): array => $record->itens
-                        ->map(fn ($item) => 'R$ ' . number_format((float) $item->preco_unitario, 2, ',', '.'))
+                        ->map(fn ($item) => 'R$ '.number_format((float) $item->preco_unitario, 2, ',', '.'))
                         ->toArray())
                     ->listWithLineBreaks()
                     ->alignCenter(),
@@ -350,7 +354,7 @@ class NotaFiscalResource extends Resource
                 TextColumn::make('total_item_calculado')
                     ->label('Total item')
                     ->state(fn (NotaFiscal $record): array => $record->itens
-                        ->map(fn ($item) => 'R$ ' . number_format((float) $item->preco_unitario * (float) $item->quantidade, 2, ',', '.'))
+                        ->map(fn ($item) => 'R$ '.number_format((float) $item->preco_unitario * (float) $item->quantidade, 2, ',', '.'))
                         ->toArray())
                     ->listWithLineBreaks()
                     ->alignCenter(),

@@ -2,19 +2,10 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkAction;
-use Filament\Actions\Action;
-use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\ListBemMovels;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\CreateBemMovel;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\EditBemMovel;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\ListBemMovels;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -31,14 +22,21 @@ use App\Models\Patrimonio\BensMoveis\ItemBaixa;
 use App\Models\Patrimonio\BensMoveis\SituacaoBemMovel;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Services\Patrimonio\RecalcularDepreciacaoService;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -51,13 +49,13 @@ class BemMovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemMovel::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-archive-box';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Administração';
 

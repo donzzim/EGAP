@@ -2,12 +2,12 @@
 
 namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Actions\Action;
-use Filament\Support\Enums\Width;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Almoxarifado\Pedidos as PedidoModel;
+use Filament\Actions\Action;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -19,11 +19,11 @@ class Pedidos extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Requisição';
+    protected static string|\UnitEnum|null $navigationGroup = 'Requisição';
 
     protected static ?string $title = 'Pedido - Materiais Permanentes';
 

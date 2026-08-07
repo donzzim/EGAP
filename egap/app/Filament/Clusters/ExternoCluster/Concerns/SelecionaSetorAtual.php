@@ -2,13 +2,13 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Concerns;
 
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Support\SetorSelecionado;
 use App\Models\Cadastro\Setores;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 /**
  * Compartilha, entre as páginas do cluster de Patrimônio do Ambiente Externo, a

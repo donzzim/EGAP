@@ -2,22 +2,10 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Actions\Action;
-use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages\ListInventarios;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages\CreateInventario;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages\EditInventario;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioResource\Pages\ListInventarios;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
@@ -26,15 +14,24 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
 use Carbon\Carbon;
-use Filament\Forms;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
@@ -46,11 +43,11 @@ class InventarioResource extends Resource
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $navigationLabel = 'Gestão do Inventário';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $pluralModelLabel = 'Gestão do Inventário';
 
@@ -60,7 +57,7 @@ class InventarioResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/inventarios';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Schema $schema): Schema
     {

@@ -2,8 +2,6 @@
 
 namespace App\Filament\Auth;
 
-use Livewire\Component;
-
 class LoginResponse implements \Filament\Auth\Http\Responses\Contracts\LoginResponse
 {
     public function toResponse($request)

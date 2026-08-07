@@ -2,9 +2,8 @@
 
 namespace App\Filament\Widgets\EgapDashboard;
 
-use Filament\Tables\Columns\TextColumn;
 use App\Services\PatrimonioDashboardService;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget;
@@ -18,7 +17,7 @@ class PatrimonioTopMateriaisValorTable extends TableWidget
 
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {

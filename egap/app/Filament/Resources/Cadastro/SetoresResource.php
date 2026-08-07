@@ -2,38 +2,40 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Enums\FiltersLayout;
-use App\Filament\Resources\Cadastro\SetoresResource\Pages\ListSetores;
 use App\Filament\Resources\Cadastro\SetoresResource\Pages\CreateSetores;
 use App\Filament\Resources\Cadastro\SetoresResource\Pages\EditSetores;
-use App\Filament\Resources\Cadastro\SetoresResource\Pages;
+use App\Filament\Resources\Cadastro\SetoresResource\Pages\ListSetores;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Setores;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class SetoresResource extends Resource
 {
     protected static ?string $model = Setores::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
+
     protected static ?string $navigationLabel = 'Setores';
+
     protected static ?string $modelLabel = 'Setor';
+
     protected static ?string $pluralModelLabel = 'Setores';
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
@@ -132,7 +134,7 @@ class SetoresResource extends Resource
                                 ->options([
                                     'V' => 'Vara',
                                     'C' => 'Comarca',
-                                    'all' => 'Ambas'
+                                    'all' => 'Ambas',
                                 ]),
                             Toggle::make('presidencia')
                                 ->label('Presidência')

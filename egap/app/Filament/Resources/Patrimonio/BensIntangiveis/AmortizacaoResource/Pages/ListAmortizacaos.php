@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\AmortizacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListAmortizacaos extends ListRecords

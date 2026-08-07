@@ -2,14 +2,14 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
 use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
 use App\Filament\Livewire\Externo\Carrinho;
 use App\Services\Mobile\PedidosMobileService;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\On;
@@ -32,6 +32,7 @@ use Throwable;
 class CarrinhoMateriaisPermanentesForm extends Carrinho implements HasActions
 {
     use InteractsWithActions;
+
     /** @var array<int, array{material_id: int, descricao: string, quantidade: int, tipo_atendimento: string, patrimonio_substituido: ?string, justificativa: string, preco_unitario: float}> */
     public array $carrinho = [];
 

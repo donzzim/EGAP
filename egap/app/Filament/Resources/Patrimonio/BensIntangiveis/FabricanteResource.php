@@ -2,31 +2,29 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages\ListFabricantes;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages\CreateFabricante;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages\EditFabricante;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages\ListFabricantes;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\Fabricante;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class FabricanteResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Fabricante::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
     protected static ?string $navigationLabel = 'Fabricantes';
 
@@ -34,7 +32,7 @@ class FabricanteResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Fabricantes';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Intangíveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Intangíveis';
 
     protected static ?int $navigationSort = 4;
 

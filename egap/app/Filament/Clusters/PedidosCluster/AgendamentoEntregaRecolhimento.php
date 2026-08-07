@@ -2,21 +2,6 @@
 
 namespace App\Filament\Clusters\PedidosCluster;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Support\Enums\Width;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\Textarea;
-use RuntimeException;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Agendamento\Materiais;
 use App\Models\Agendamento\Regiao;
@@ -27,17 +12,30 @@ use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Models\UserEgap;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Support\Enums\Width;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -47,19 +45,21 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     private const SETOR_PATRIMONIO_ID = 1239;
+
     private const TIPO_TRANSPORTE_CARGA = '2';
+
     private const SITUACAO_EM_ANALISE = 6;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
 
     protected string $view = 'filament.pages.pedidos.agendamento-entrega-recolhimento';
 
     protected static ?string $navigationLabel = 'Agendamento da Entrega/Recolhimento';
 
     protected static ?string $title = 'Agendamento da Entrega/Recolhimento';
-
 
     protected static ?string $slug = 'agendamento-entrega-recolhimento';
 
@@ -893,7 +893,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
         }
 
         return mb_strlen($text) > $limit
-            ? mb_substr($text, 0, $limit) . '...'
+            ? mb_substr($text, 0, $limit).'...'
             : $text;
     }
 
@@ -1067,7 +1067,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
 
     protected function qualifyTermoColumn(string $column): string
     {
-        return (new Termo())->qualifyColumn($column);
+        return (new Termo)->qualifyColumn($column);
     }
 
     protected function getSolicitacaoIdSubquery(): Builder
@@ -1092,7 +1092,7 @@ class AgendamentoEntregaRecolhimento extends Page implements HasTable
     public function exportCsv(): StreamedResponse
     {
         $records = $this->getFilteredSortedTableQuery()->get();
-        $filename = 'entrega_recolhimento_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'entrega_recolhimento_'.now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function () use ($records): void {
             $handle = fopen('php://output', 'wb');

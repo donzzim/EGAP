@@ -2,34 +2,31 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\BulkAction;
-use Filament\Actions\Action;
-use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\ListValidarTermos;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\CreateValidarTermo;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\EditValidarTermo;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\ListValidarTermos;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\IconPosition;
-use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -38,13 +35,13 @@ class ValidarTermoResource extends Resource
 {
     protected static ?string $model = ArquivoDigital::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-check-badge';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-check-badge';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'bens-moveis/validar-termos';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Validar Termos';
 
@@ -54,7 +51,7 @@ class ValidarTermoResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Schema $schema): Schema
     {
@@ -152,7 +149,7 @@ class ValidarTermoResource extends Resource
                     ->openUrlInNewTab(),
 
                 TableColumns::text('arquivo_digital', 'Arquivo Digital')
-                    ->formatStateUsing(fn (ArquivoDigital $record) : string => $record->arquivo_digital ? 'Arquivo' : '-')
+                    ->formatStateUsing(fn (ArquivoDigital $record): string => $record->arquivo_digital ? 'Arquivo' : '-')
                     ->iconPosition(IconPosition::After)
                     ->icon(fn (ArquivoDigital $record) => $record->arquivo_digital ? 'heroicon-o-clipboard' : false)
                     ->color('primary')

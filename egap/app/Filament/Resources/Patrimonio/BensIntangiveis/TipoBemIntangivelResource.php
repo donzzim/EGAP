@@ -2,31 +2,29 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\ListTipoBemIntangivels;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\CreateTipoBemIntangivel;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\EditTipoBemIntangivel;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages\ListTipoBemIntangivels;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\TipoBemIntagivel;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class TipoBemIntangivelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TipoBemIntagivel::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
     protected static ?string $navigationLabel = 'Tipos de Intangíveis';
 
@@ -34,7 +32,7 @@ class TipoBemIntangivelResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Tipos de Bens Intangíveis';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Intangíveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Intangíveis';
 
     protected static ?int $navigationSort = 3;
 

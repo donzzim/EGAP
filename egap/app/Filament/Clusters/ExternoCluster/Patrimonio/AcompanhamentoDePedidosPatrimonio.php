@@ -8,9 +8,9 @@ class AcompanhamentoDePedidosPatrimonio extends AcompanhamentoDePedidosPage
 {
     protected static ?string $slug = '/patrimonio/acompanhamento-de-pedidos';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-down-tray';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-down-tray';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Patrimônio';
+    protected static string|\UnitEnum|null $navigationGroup = 'Patrimônio';
 
     protected static ?string $navigationLabel = 'Acompanhamento de Pedidos';
 

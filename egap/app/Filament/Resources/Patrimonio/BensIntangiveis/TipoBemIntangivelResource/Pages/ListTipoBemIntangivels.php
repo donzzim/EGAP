@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\TipoBemIntangivelResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTipoBemIntangivels extends ListRecords
@@ -15,7 +14,7 @@ class ListTipoBemIntangivels extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

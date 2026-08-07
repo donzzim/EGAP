@@ -2,20 +2,10 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Actions\Action;
-use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\ListInventarioUnidades;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\CreateInventarioUnidade;
 use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\EditInventarioUnidade;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\InventarioUnidadeResource\Pages\ListInventarioUnidades;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
@@ -23,13 +13,20 @@ use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\InventarioUnidade;
 use Carbon\Carbon;
-use Filament\Forms;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
@@ -38,13 +35,13 @@ class InventarioUnidadeResource extends Resource
 {
     protected static ?string $model = InventarioUnidade::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-library';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-library';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'bens-moveis/unidades-inventariadas';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Unidades Inventariadas';
 
@@ -54,7 +51,7 @@ class InventarioUnidadeResource extends Resource
 
     protected static ?int $navigationSort = 13;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Schema $schema): Schema
     {

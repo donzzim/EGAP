@@ -2,14 +2,13 @@
 
 namespace App\Filament\Livewire\AtendimentoPedidos;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\Action;
 use App\Models\Views\MaterialDepositoView;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -18,7 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class MateriaisDisponiveisTable extends Component implements HasForms, HasTable, HasActions
+class MateriaisDisponiveisTable extends Component implements HasActions, HasForms, HasTable
 {
     use InteractsWithActions;
     use InteractsWithForms;
@@ -153,7 +152,7 @@ class MateriaisDisponiveisTable extends Component implements HasForms, HasTable,
             ->toolbarActions([])
             ->emptyStateHeading('Nenhum material compatível disponível')
             ->emptyStateDescription($this->selectedMaterialResumo
-                ? "Não há patrimônios no depósito com essa combatibilidade."
+                ? 'Não há patrimônios no depósito com essa combatibilidade.'
                 : 'Selecione um pedido para consultar os materiais compatíveis.'
             );
     }

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\ContaContabilResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\ContaContabilResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListContaContabils extends ListRecords
@@ -15,7 +14,7 @@ class ListContaContabils extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

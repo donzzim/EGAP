@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTipoDeBem extends EditRecord

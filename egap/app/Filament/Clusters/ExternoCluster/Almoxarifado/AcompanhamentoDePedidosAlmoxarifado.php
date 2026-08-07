@@ -10,9 +10,9 @@ class AcompanhamentoDePedidosAlmoxarifado extends AcompanhamentoDePedidosPage
 
     protected static ?string $slug = 'almoxarifado/acompanhamento-de-pedidos';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-down-tray';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-down-tray';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Almoxarifado';
+    protected static string|\UnitEnum|null $navigationGroup = 'Almoxarifado';
 
     protected static ?string $navigationLabel = 'Acompanhamento de Pedidos';
 

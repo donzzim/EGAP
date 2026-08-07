@@ -2,51 +2,56 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Repeater;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Actions\ViewAction;
-use Filament\Actions\Action;
-use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\ListPedidos;
+use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\CreatePedidos;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\EditPedidos;
+use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\ListPedidos;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\PrintPedido;
-use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Almoxarifado\SituacaoPedido;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class PedidosResource extends Resource
 {
     protected static ?string $model = Pedidos::class;
+
     protected static ?string $cluster = AlmoxarifadoCluster::class;
+
     protected static ?string $slug = 'pedidos';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
+
     protected static ?string $modelLabel = 'Pedido';
+
     protected static ?string $pluralModelLabel = 'Pedidos';
+
     protected static ?string $navigationLabel = 'Requisição de Materiais';
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
@@ -346,11 +351,11 @@ class PedidosResource extends Resource
                     ->alignCenter()
                     ->formatStateUsing(fn ($state) => $state ? 'Abrir PDF' : '-')
                     ->url(function ($record) {
-                        if (!$record->arquivo) {
+                        if (! $record->arquivo) {
                             return null;
                         }
 
-                        return 'https://sistemas.tjes.jus.br/patrimonio' . $record->arquivo;
+                        return 'https://sistemas.tjes.jus.br/patrimonio'.$record->arquivo;
                     })
                     ->openUrlInNewTab()
                     ->color('primary')
@@ -390,13 +395,13 @@ class PedidosResource extends Resource
                     ->label('Observação')
                     ->limit(50)
                     ->alignCenter()
-                    ->default(" - ")
+                    ->default(' - ')
                     ->sortable(),
 
                 TextColumn::make('responsavel_atendimento.name')
                     ->label('Impresso/Atendido por')
                     ->alignCenter()
-                    ->default(" - ")
+                    ->default(' - ')
                     ->sortable(),
 
             ])
@@ -404,7 +409,7 @@ class PedidosResource extends Resource
                 SelectFilter::make('idSituacao')
                     ->label('Situação do Pedido')
                     ->options(
-                        SituacaoPedido::whereIn('id', [3,4,6,7])
+                        SituacaoPedido::whereIn('id', [3, 4, 6, 7])
                             ->pluck('Descricao', 'id')
                             ->toArray()
                     )

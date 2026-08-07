@@ -2,28 +2,27 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\ListDescricaoResumidas;
 use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\CreateDescricaoResumida;
 use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\EditDescricaoResumida;
-use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\ListDescricaoResumidas;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\DescricaoResumida;
-use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class DescricaoResumidaResource extends Resource
 {
     protected static ?string $model = DescricaoResumida::class;
+
     protected static ?int $navigationSort = 3;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Descrição Resumida';
 
@@ -31,7 +30,7 @@ class DescricaoResumidaResource extends Resource
 
     protected static ?string $modelLabel = 'Descrição Resumida';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
 
     public static function form(Schema $schema): Schema
     {
@@ -95,6 +94,7 @@ class DescricaoResumidaResource extends Resource
                 ->columns(1),
         ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

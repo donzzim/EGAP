@@ -2,38 +2,35 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages\ListBemIntangivels;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages\CreateBemIntangivel;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages\EditBemIntangivel;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages\ListBemIntangivels;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensIntangiveis\BemIntangivel;
-use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class BemIntangivelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemIntangivel::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Administração';
 
@@ -41,7 +38,7 @@ class BemIntangivelResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Administração dos Bens Intangíveis';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Intangíveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Intangíveis';
 
     protected static ?int $navigationSort = 1;
 

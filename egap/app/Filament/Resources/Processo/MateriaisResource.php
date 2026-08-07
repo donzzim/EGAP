@@ -2,27 +2,24 @@
 
 namespace App\Filament\Resources\Processo;
 
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\DatePicker;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use App\Filament\Resources\Processo\MateriaisResource\Pages\ListMateriais;
-use App\Filament\Resources\Processo\MateriaisResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Patrimonio\BensImoveis\Processo;
 use App\Models\Processo\ProMaterial;
 use App\Models\UserEgap;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
-use Filament\Infolists;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -31,9 +28,9 @@ class MateriaisResource extends Resource
 {
     protected static ?string $model = ProMaterial::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Processos';
+    protected static string|\UnitEnum|null $navigationGroup = 'Processos';
 
     protected static ?string $navigationLabel = 'Materiais/Serviços';
 
@@ -47,108 +44,108 @@ class MateriaisResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-//    public static function form(Form $form): Form
-//    {
-//        return $form
-//            ->schema([
-//                Forms\Components\Section::make('Vinculo e rastreabilidade')
-//                    ->description('Associe o item ao processo e mantenha o histórico de atualização.')
-//                    ->schema([
-//                        Forms\Components\Select::make('processo')
-//                            ->label('Processo')
-//                            ->required()
-//                            ->native(false)
-//                            ->searchable()
-//                            ->placeholder('Selecione o processo')
-//                            ->options(fn (): array => static::getProcessoOptions())
-//                            ->getSearchResultsUsing(fn (string $search): array => static::getProcessoOptions($search))
-//                            ->getOptionLabelUsing(fn ($value): ?string => static::findProcessoLabel($value)),
-//
-//                        Forms\Components\Select::make('material')
-//                            ->label('Material')
-//                            ->required()
-//                            ->native(false)
-//                            ->searchable()
-//                            ->placeholder('Selecione o material')
-//                            ->options(fn (): array => static::getMaterialOptions())
-//                            ->getSearchResultsUsing(fn (string $search): array => static::getMaterialOptions($search))
-//                            ->getOptionLabelUsing(fn ($value): ?string => static::findMaterialLabel($value)),
-//
-//                        Forms\Components\Select::make('atualizado_por')
-//                            ->label('Atualizado por')
-//                            ->native(false)
-//                            ->searchable()
-//                            ->preload()
-//                            ->placeholder('Selecione o usuário responsável')
-//                            ->options(fn (): array => UserEgap::query()
-//                                ->orderBy('name')
-//                                ->pluck('name', 'id')
-//                                ->all()
-//                            )
-//                            ->default(fn (): ?int => auth()->id()),
-//
-//                        Forms\Components\DateTimePicker::make('date_time')
-//                            ->label('Data da atualização')
-//                            ->seconds(false)
-//                            ->native(false)
-//                            ->default(now())
-//                            ->required(),
-//                    ])
-//                    ->columns(2),
-//
-//                Forms\Components\Section::make('Controle do material')
-//                    ->description('Organize faixa de estoque, preço de referencia e identificação do lote.')
-//                    ->schema([
-//                        Forms\Components\TextInput::make('lote')
-//                            ->label('Lote')
-//                            ->maxLength(255)
-//                            ->placeholder('Ex: LT-2026-001')
-//                            ->columnSpan(2),
-//
-//                        Forms\Components\TextInput::make('preco')
-//                            ->label('Preço')
-//                            ->numeric()
-//                            ->inputMode('decimal')
-//                            ->prefix('R$')
-//                            ->step('0.01')
-//                            ->minValue(0)
-//                            ->placeholder('0,00'),
-//
-//                        Forms\Components\TextInput::make('qtde_min')
-//                            ->label('Quantidade minima')
-//                            ->numeric()
-//                            ->inputMode('decimal')
-//                            ->step('0.01')
-//                            ->minValue(0)
-//                            ->placeholder('0,00'),
-//
-//                        Forms\Components\TextInput::make('qtde_max')
-//                            ->label('Quantidade maxima')
-//                            ->numeric()
-//                            ->inputMode('decimal')
-//                            ->step('0.01')
-//                            ->minValue(0)
-//                            ->placeholder('0,00'),
-//
-//                        Forms\Components\TextInput::make('saldo_atual')
-//                            ->label('Saldo atual')
-//                            ->numeric()
-//                            ->inputMode('decimal')
-//                            ->step('0.01')
-//                            ->placeholder('0,00')
-//                            ->helperText('Comparado automaticamente com os limites informados.'),
-//
-//                        Forms\Components\Placeholder::make('status_faixa')
-//                            ->label('Status da faixa')
-//                            ->content(fn ($get): string => static::buildFaixaStatus(
-//                                $get('qtde_min'),
-//                                $get('qtde_max'),
-//                                $get('saldo_atual'),
-//                            )),
-//                    ])
-//                    ->columns(3),
-//            ]);
-//    }
+    //    public static function form(Form $form): Form
+    //    {
+    //        return $form
+    //            ->schema([
+    //                Forms\Components\Section::make('Vinculo e rastreabilidade')
+    //                    ->description('Associe o item ao processo e mantenha o histórico de atualização.')
+    //                    ->schema([
+    //                        Forms\Components\Select::make('processo')
+    //                            ->label('Processo')
+    //                            ->required()
+    //                            ->native(false)
+    //                            ->searchable()
+    //                            ->placeholder('Selecione o processo')
+    //                            ->options(fn (): array => static::getProcessoOptions())
+    //                            ->getSearchResultsUsing(fn (string $search): array => static::getProcessoOptions($search))
+    //                            ->getOptionLabelUsing(fn ($value): ?string => static::findProcessoLabel($value)),
+    //
+    //                        Forms\Components\Select::make('material')
+    //                            ->label('Material')
+    //                            ->required()
+    //                            ->native(false)
+    //                            ->searchable()
+    //                            ->placeholder('Selecione o material')
+    //                            ->options(fn (): array => static::getMaterialOptions())
+    //                            ->getSearchResultsUsing(fn (string $search): array => static::getMaterialOptions($search))
+    //                            ->getOptionLabelUsing(fn ($value): ?string => static::findMaterialLabel($value)),
+    //
+    //                        Forms\Components\Select::make('atualizado_por')
+    //                            ->label('Atualizado por')
+    //                            ->native(false)
+    //                            ->searchable()
+    //                            ->preload()
+    //                            ->placeholder('Selecione o usuário responsável')
+    //                            ->options(fn (): array => UserEgap::query()
+    //                                ->orderBy('name')
+    //                                ->pluck('name', 'id')
+    //                                ->all()
+    //                            )
+    //                            ->default(fn (): ?int => auth()->id()),
+    //
+    //                        Forms\Components\DateTimePicker::make('date_time')
+    //                            ->label('Data da atualização')
+    //                            ->seconds(false)
+    //                            ->native(false)
+    //                            ->default(now())
+    //                            ->required(),
+    //                    ])
+    //                    ->columns(2),
+    //
+    //                Forms\Components\Section::make('Controle do material')
+    //                    ->description('Organize faixa de estoque, preço de referencia e identificação do lote.')
+    //                    ->schema([
+    //                        Forms\Components\TextInput::make('lote')
+    //                            ->label('Lote')
+    //                            ->maxLength(255)
+    //                            ->placeholder('Ex: LT-2026-001')
+    //                            ->columnSpan(2),
+    //
+    //                        Forms\Components\TextInput::make('preco')
+    //                            ->label('Preço')
+    //                            ->numeric()
+    //                            ->inputMode('decimal')
+    //                            ->prefix('R$')
+    //                            ->step('0.01')
+    //                            ->minValue(0)
+    //                            ->placeholder('0,00'),
+    //
+    //                        Forms\Components\TextInput::make('qtde_min')
+    //                            ->label('Quantidade minima')
+    //                            ->numeric()
+    //                            ->inputMode('decimal')
+    //                            ->step('0.01')
+    //                            ->minValue(0)
+    //                            ->placeholder('0,00'),
+    //
+    //                        Forms\Components\TextInput::make('qtde_max')
+    //                            ->label('Quantidade maxima')
+    //                            ->numeric()
+    //                            ->inputMode('decimal')
+    //                            ->step('0.01')
+    //                            ->minValue(0)
+    //                            ->placeholder('0,00'),
+    //
+    //                        Forms\Components\TextInput::make('saldo_atual')
+    //                            ->label('Saldo atual')
+    //                            ->numeric()
+    //                            ->inputMode('decimal')
+    //                            ->step('0.01')
+    //                            ->placeholder('0,00')
+    //                            ->helperText('Comparado automaticamente com os limites informados.'),
+    //
+    //                        Forms\Components\Placeholder::make('status_faixa')
+    //                            ->label('Status da faixa')
+    //                            ->content(fn ($get): string => static::buildFaixaStatus(
+    //                                $get('qtde_min'),
+    //                                $get('qtde_max'),
+    //                                $get('saldo_atual'),
+    //                            )),
+    //                    ])
+    //                    ->columns(3),
+    //            ]);
+    //    }
 
     public static function table(Table $table): Table
     {
@@ -257,7 +254,7 @@ class MateriaisResource extends Resource
                     ->hiddenLabel(),
                 DeleteAction::make()
                     ->tooltip('Excluir')
-                    ->hiddenLabel()
+                    ->hiddenLabel(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -393,9 +390,9 @@ class MateriaisResource extends Resource
         }
 
         return 'Faixa: '
-            . ($min !== null ? number_format($min, thousands_separator: '.') : '-')
-            . ' ate '
-            . ($max !== null ? number_format($max, thousands_separator: '.') : '-');
+            .($min !== null ? number_format($min, thousands_separator: '.') : '-')
+            .' ate '
+            .($max !== null ? number_format($max, thousands_separator: '.') : '-');
     }
 
     protected static function resolveSaldoColor(ProMaterial $record): string

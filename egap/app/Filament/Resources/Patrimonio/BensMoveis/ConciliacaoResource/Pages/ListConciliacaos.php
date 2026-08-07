@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListConciliacaos extends ListRecords
@@ -15,7 +14,7 @@ class ListConciliacaos extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

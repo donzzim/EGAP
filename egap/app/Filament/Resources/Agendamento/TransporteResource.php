@@ -2,36 +2,33 @@
 
 namespace App\Filament\Resources\Agendamento;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Placeholder;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\Action;
-use App\Filament\Resources\Agendamento\TransporteResource\Pages\ListTransportes;
 use App\Filament\Resources\Agendamento\TransporteResource\Pages\CreateTransporte;
 use App\Filament\Resources\Agendamento\TransporteResource\Pages\EditTransporte;
-use App\Filament\Resources\Agendamento\TransporteResource\Pages;
+use App\Filament\Resources\Agendamento\TransporteResource\Pages\ListTransportes;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Equipe;
 use App\Models\Agendamento\Frota;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,11 +37,16 @@ class TransporteResource extends Resource
 {
     protected static ?string $model = Solicitacao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
-    protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Agendamento';
+
     protected static ?string $modelLabel = 'Transporte de Carga';
+
     protected static ?string $pluralModelLabel = 'Transporte de Carga';
+
     protected static ?string $navigationLabel = 'Transporte de Carga';
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
@@ -334,8 +336,8 @@ class TransporteResource extends Resource
                 SelectFilter::make('id_situacao')
                     ->label('Situação')
                     ->options([
-                        "8" => "Agendado",
-                        "6" => "Em análise"
+                        '8' => 'Agendado',
+                        '6' => 'Em análise',
                     ]),
                 SelectFilter::make('unidade_solicitante')
                     ->label('Unidade Solicitante')
@@ -372,7 +374,7 @@ class TransporteResource extends Resource
             ->tooltip('Agendar')
             ->icon('heroicon-o-calendar')
             ->modalWidth('4xl')
-            ->modalHeading(fn ($record) => 'Agendamento - Transporte de carga #' . $record->id)
+            ->modalHeading(fn ($record) => 'Agendamento - Transporte de carga #'.$record->id)
             ->modalDescription('Defina o período, a equipe e os veículos que atenderão esta solicitação.')
             ->modalSubmitActionLabel('Agendar')
             ->schema([
@@ -414,7 +416,7 @@ class TransporteResource extends Resource
                                 ->get()
                                 ->sortBy(fn (Equipe $equipe) => $equipe->idPessoaRef->name ?? '')
                                 ->mapWithKeys(fn (Equipe $equipe) => [
-                                    $equipe->id => trim(($equipe->idPessoaRef->name ?? '-') . ' - ' . $equipe->funcao),
+                                    $equipe->id => trim(($equipe->idPessoaRef->name ?? '-').' - '.$equipe->funcao),
                                 ])
                                 ->toArray()
                             )
@@ -432,7 +434,7 @@ class TransporteResource extends Resource
                                 ->orderBy('descricao')
                                 ->get()
                                 ->mapWithKeys(fn (Frota $frota) => [
-                                    $frota->id => $frota->descricao . ' - ' . ($frota->placa ?? 'Sem placa'),
+                                    $frota->id => $frota->descricao.' - '.($frota->placa ?? 'Sem placa'),
                                 ])
                                 ->toArray()
                             )
@@ -453,9 +455,7 @@ class TransporteResource extends Resource
                     ->collapsible()
                     ->collapsed(false),
             ])
-            ->action(function (array $data): void {
-
-            });
+            ->action(function (array $data): void {});
     }
 
     private static function imprimirMateriaisTableAction(): Action

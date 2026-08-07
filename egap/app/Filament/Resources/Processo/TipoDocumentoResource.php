@@ -2,32 +2,35 @@
 
 namespace App\Filament\Resources\Processo;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\ListTipoDocumentos;
 use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\CreateTipoDocumento;
 use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\EditTipoDocumento;
-use App\Filament\Resources\Processo\TipoDocumentoResource\Pages;
+use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\ListTipoDocumentos;
 use App\Models\Processo\MatTipoDocumento;
-use Filament\Forms;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class TipoDocumentoResource extends Resource
 {
     protected static ?string $model = MatTipoDocumento::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-duplicate';
-    protected static string | \UnitEnum | null $navigationGroup = 'Processos';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-duplicate';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Processos';
+
     protected static ?string $navigationLabel = 'Tipos de Documento';
+
     protected static ?string $modelLabel = 'Tipo de Documento';
+
     protected static ?string $pluralModelLabel = 'Tipos de Documento';
+
     protected static ?string $slug = 'processos/tipos-documento';
 
     public static function form(Schema $schema): Schema
@@ -42,7 +45,7 @@ class TipoDocumentoResource extends Resource
                             ->maxLength(255)
                             ->columnSpanFull(),
                     ])
-                    ->columns(1)
+                    ->columns(1),
             ]);
     }
 

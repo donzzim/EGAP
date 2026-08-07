@@ -2,37 +2,40 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\ListCidUfs;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\CreateCidUf;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\EditCidUf;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\ListCidUfs;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\CidUf;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class CidUfResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = CidUf::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-map';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map';
+
     protected static ?string $navigationLabel = 'Cidade/UF';
+
     protected static ?string $modelLabel = 'Cidade/UF';
+
     protected static ?string $pluralModelLabel = 'Cidades/UF';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 9;
+
     protected static ?string $slug = 'bens-imoveis/cidades-uf';
 
     public static function form(Schema $schema): Schema
@@ -56,9 +59,10 @@ protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosi
                             ->maxLength(20)
                             ->required(),
                     ])
-                    ->columns(1)
+                    ->columns(1),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

@@ -2,32 +2,31 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Cadastro\ModelosResource\Pages\ListModelos;
 use App\Filament\Resources\Cadastro\ModelosResource\Pages\CreateModelos;
 use App\Filament\Resources\Cadastro\ModelosResource\Pages\EditModelos;
-use App\Filament\Resources\Cadastro\ModelosResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\ModelosResource\Pages\ListModelos;
 use App\Filament\Support\TableColumns;
-use App\Filament\Resources\Cadastro\ModelosResource\RelationManagers;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Modelos;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class ModelosResource extends Resource
 {
     protected static ?string $model = Modelos::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?string $navigationLabel = 'Modelos';
+
     protected static ?string $modelLabel = 'Modelo';
+
     protected static ?string $pluralModelLabel = 'Modelos';
 
     protected static ?int $navigationSort = 10;
@@ -55,6 +54,7 @@ class ModelosResource extends Resource
                     ->columns(1),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

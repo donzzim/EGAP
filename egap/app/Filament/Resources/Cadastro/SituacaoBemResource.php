@@ -2,32 +2,33 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\ListSituacaoBems;
 use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\CreateSituacaoBem;
 use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\EditSituacaoBem;
-use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\ListSituacaoBems;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\SituacaoBem;
-use Filament\Forms;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class SituacaoBemResource extends Resource
 {
     protected static ?string $model = SituacaoBem::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-check-circle';
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-check-circle';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?string $navigationLabel = 'Situação do Bem';
+
     protected static ?string $modelLabel = 'Situação do Bem';
+
     protected static ?string $pluralModelLabel = 'Situações do Bem';
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
@@ -50,6 +51,7 @@ class SituacaoBemResource extends Resource
                     ->columns(1),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

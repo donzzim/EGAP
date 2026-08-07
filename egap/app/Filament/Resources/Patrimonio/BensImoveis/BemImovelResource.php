@@ -2,26 +2,19 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\Action;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\ListBemImovels;
-use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\CreateBemImovel;
-use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\EditBemImovel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\CreateBemImovel;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\EditBemImovel;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\ListBemImovels;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\BemImovel;
 use App\Models\Patrimonio\BensImoveis\Depreciacao;
 use Carbon\CarbonImmutable;
-use Filament\Forms;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -30,8 +23,13 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -41,11 +39,11 @@ class BemImovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemImovel::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $recordTitleAttribute = 'descricao';
 
@@ -55,7 +53,7 @@ class BemImovelResource extends Resource
 
     protected static ?string $navigationLabel = 'Administração';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
 
     protected static ?int $navigationSort = 1;
 

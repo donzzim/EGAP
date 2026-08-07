@@ -2,11 +2,10 @@
 
 namespace App\Filament\Support;
 
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Table;
 
 class TableDefaults

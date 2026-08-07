@@ -18,7 +18,7 @@ class PatrimonioImoveisPorContaChart extends ChartWidget
 
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected function getData(): array
     {

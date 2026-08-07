@@ -2,10 +2,10 @@
 
 namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Actions\Action;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Almoxarifado\SituacaoPedido;
+use Filament\Actions\Action;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -18,12 +18,18 @@ class Situacao extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-flag';
-    protected static string | \UnitEnum | null $navigationGroup = 'Requisição';
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-flag';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Requisição';
+
     protected static ?string $title = 'Pedidos - Situação';
+
     protected static ?string $slug = 'situacao-pedidos';
+
     protected static ?string $navigationLabel = 'Situação';
+
     protected string $view = 'filament.pages.pedidos.requisicao.situacao';
 
     public function table(Table $table): Table
@@ -48,7 +54,7 @@ class Situacao extends Page implements HasTable
                     ->label('')
                     ->icon('heroicon-o-trash')
                     ->requiresConfirmation()
-                    ->action(fn (SituacaoPedido $record) => $record->delete())
+                    ->action(fn (SituacaoPedido $record) => $record->delete()),
             ]);
     }
 }

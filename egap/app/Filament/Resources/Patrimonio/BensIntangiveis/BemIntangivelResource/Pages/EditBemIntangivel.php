@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditBemIntangivel extends EditRecord

@@ -2,16 +2,15 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
 use App\Filament\Support\SetorSelecionado;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
-use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\ItemInventario;
 use App\Models\Patrimonio\BensMoveis\Termo;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -40,7 +39,7 @@ use Livewire\Component;
  * documento gerado já nasce assinado (sem etapa de validação posterior pela
  * Seção de Patrimônio, diferente do fluxo de transferência de bens).
  */
-class LevantamentoComissaoTable extends Component implements HasForms, HasTable, HasActions
+class LevantamentoComissaoTable extends Component implements HasActions, HasForms, HasTable
 {
     use InteractsWithActions;
     use InteractsWithForms;

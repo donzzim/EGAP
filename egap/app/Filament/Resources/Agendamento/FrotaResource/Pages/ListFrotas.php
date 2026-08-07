@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Agendamento\FrotaResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Agendamento\FrotaResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFrotas extends ListRecords
@@ -15,7 +14,7 @@ class ListFrotas extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

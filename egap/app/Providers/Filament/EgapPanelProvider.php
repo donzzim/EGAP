@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Support\Enums\Width;
 use App\Filament\Auth\LoginEgap;
 use App\Filament\Auth\LoginResponse;
 use Filament\Http\Middleware\Authenticate;
@@ -14,6 +13,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -30,7 +30,7 @@ class EgapPanelProvider extends PanelProvider
             ->path('/egap')
             ->login(LoginEgap::class)
             ->passwordReset()
-            //->topNavigation()
+            // ->topNavigation()
             ->maxContentWidth(Width::Full)
             ->simplePageMaxContentWidth(Width::Small)
             ->sidebarCollapsibleOnDesktop() // funciona se tirar o topNavigation()

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditFabricante extends EditRecord

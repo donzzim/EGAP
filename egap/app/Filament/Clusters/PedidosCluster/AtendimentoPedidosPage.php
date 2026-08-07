@@ -2,9 +2,6 @@
 
 namespace App\Filament\Clusters\PedidosCluster;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Support\Enums\Width;
-use RuntimeException;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Agendamento\Materiais;
 use App\Models\Agendamento\Regiao;
@@ -19,20 +16,23 @@ use App\Models\Patrimonio\BensMoveis\Termo;
 use App\Models\Patrimonio\BensMoveis\TransferenciaBemMovel;
 use App\Models\Views\MaterialDepositoView;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
+use RuntimeException;
 use Throwable;
 
 class AtendimentoPedidosPage extends Page
 {
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-down-on-square-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-down-on-square-stack';
 
     protected static ?string $title = 'Atendimento de Pedidos';
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $navigationLabel = 'Atendimento de Pedidos';
 
@@ -41,18 +41,27 @@ class AtendimentoPedidosPage extends Page
     protected string $view = 'filament.pages.pedidos.atendimento-pedidos';
 
     public ?int $selectedPedidoId = null;
+
     public ?int $selectedItemPedidoId = null;
+
     public ?int $selectedMaterialId = null;
 
     public ?string $protocolo = null;
+
     public ?string $solicitante = null;
+
     public ?string $destino = null;
+
     public ?string $materialPedido = null;
+
     public ?string $situacaoPedido = null;
 
     public int $quantidadeSolicitada = 0;
+
     public int $quantidadeValidada = 0;
+
     public int $quantidadeAtendida = 0;
+
     public int $quantidadePendente = 0;
 
     /** @var array<int> */

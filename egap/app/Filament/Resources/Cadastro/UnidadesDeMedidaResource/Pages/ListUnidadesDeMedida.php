@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\UnidadesDeMedidaResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\UnidadesDeMedidaResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListUnidadesDeMedida extends ListRecords
@@ -15,7 +14,7 @@ class ListUnidadesDeMedida extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

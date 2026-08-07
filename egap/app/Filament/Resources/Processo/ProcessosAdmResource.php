@@ -2,42 +2,44 @@
 
 namespace App\Filament\Resources\Processo;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
+use App\Filament\Resources\Processo\ProcessosAdmResource\Pages\ListProcessosAdms;
+use App\Models\Patrimonio\BensImoveis\Processo;
+use App\Models\Processo\MatTipoDocumento;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Forms\Components\Repeater;
-use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
-use App\Models\Processo\MatTipoDocumento;
 use Filament\Forms\Components\Placeholder;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Processo\ProcessosAdmResource\Pages\ListProcessosAdms;
-use App\Filament\Resources\Processo\ProcessosAdmResource\Pages;
-use App\Models\Patrimonio\BensImoveis\Processo;
-use Filament\Forms;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 
 class ProcessosAdmResource extends Resource
 {
     protected static ?string $model = Processo::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-folder-open';
-    protected static string | \UnitEnum | null $navigationGroup = 'Processos';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-folder-open';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Processos';
+
     protected static ?string $navigationLabel = 'Processos Administrativos';
+
     protected static ?string $modelLabel = 'Processo Administrativo';
+
     protected static ?string $pluralModelLabel = 'Processos Administrativos';
+
     protected static ?string $slug = 'processos/processos-adm';
 
     public static function form(Schema $schema): Schema
@@ -134,7 +136,7 @@ class ProcessosAdmResource extends Resource
                                     ->columnSpanFull(),
                             ]),
                     ])
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -159,7 +161,6 @@ class ProcessosAdmResource extends Resource
                     ->wrap()
                     ->width('60px'),
 
-
                 TextColumn::make('tipoProcessoRelacaoRef.descricao')
                     ->label('Tipo de Processo')
                     ->sortable()
@@ -167,7 +168,6 @@ class ProcessosAdmResource extends Resource
                     ->alignCenter()
                     ->width('100px')
                     ->wrap(),
-
 
                 TextColumn::make('data_abertura')
                     ->label(new HtmlString('Data de<br>Abertura'))
@@ -204,7 +204,6 @@ class ProcessosAdmResource extends Resource
                     ->searchable()
                     ->width('180px'),
 
-
                 TextColumn::make('gestorTitularRelacaoRef.name')
                     ->label('Gestor Titular')
                     ->sortable()
@@ -230,7 +229,7 @@ class ProcessosAdmResource extends Resource
                     ->tooltip('Materiais')
                     ->icon('heroicon-o-cube')
                     ->color('info')
-                    ->modalHeading(fn (Processo $record) => "Processos Administrativos - Materiais - " . ($record->no_processo_sei ?? $record->num_processo))
+                    ->modalHeading(fn (Processo $record) => 'Processos Administrativos - Materiais - '.($record->no_processo_sei ?? $record->num_processo))
                     ->modalSubmitActionLabel('Salvar alterações')
                     ->modalWidth('7xl')
                     ->schema([
@@ -245,7 +244,7 @@ class ProcessosAdmResource extends Resource
                                     ->label('Processo')
                                     ->options(fn () => DB::connection('egap')
                                         ->table('mat_processos')
-                                        ->selectRaw("id, IFNULL(no_processo_sei, num_processo) as proc_label")
+                                        ->selectRaw('id, IFNULL(no_processo_sei, num_processo) as proc_label')
                                         ->pluck('proc_label', 'id')
                                     )
                                     ->searchable()
@@ -305,7 +304,7 @@ class ProcessosAdmResource extends Resource
                     ->tooltip('Documentos')
                     ->icon('heroicon-o-paper-clip')
                     ->color('info')
-                    ->modalHeading(fn (Processo $record) => "Anexos do Processo - " . ($record->no_processo_sei ?? $record->num_processo))
+                    ->modalHeading(fn (Processo $record) => 'Anexos do Processo - '.($record->no_processo_sei ?? $record->num_processo))
                     ->modalSubmitActionLabel('Salvar alterações')
                     ->modalWidth('7xl')
                     ->schema([
@@ -314,7 +313,7 @@ class ProcessosAdmResource extends Resource
                             ->label('')
                             ->collapsible()
                             ->collapsed()
-                            ->itemLabel(fn (array $state) => ($state['num_documento'] ?? 'Novo Documento') . ($state['data'] ?? false ? ' - ' . date('d/m/Y', strtotime($state['data'])) : ''))
+                            ->itemLabel(fn (array $state) => ($state['num_documento'] ?? 'Novo Documento').($state['data'] ?? false ? ' - '.date('d/m/Y', strtotime($state['data'])) : ''))
                             ->schema([
                                 Select::make('tipo_documento')
                                     ->label('Tipo do Documento')
@@ -338,7 +337,9 @@ class ProcessosAdmResource extends Resource
                                     ->label('Anexo')
                                     ->content(function ($get) {
                                         $file = $get('anexo_documento');
-                                        if (!$file) return 'Nenhum arquivo vinculado';
+                                        if (! $file) {
+                                            return 'Nenhum arquivo vinculado';
+                                        }
 
                                         $fileName = basename($file);
 

@@ -2,17 +2,17 @@
 
 namespace App\Filament\Livewire\Externo\Almoxarifado;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
 use App\Filament\Livewire\Externo\Carrinho;
 use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Services\Mobile\PedidosMobileService;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
@@ -29,6 +29,7 @@ use Throwable;
 class CarrinhoMateriaisConsumoForm extends Carrinho implements HasActions
 {
     use InteractsWithActions;
+
     protected const STATUS_EM_ANALISE = 6;
 
     protected const SETOR_ALMOXARIFADO = 799;

@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Admin\LotacaoResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Admin\LotacaoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditLotacao extends EditRecord

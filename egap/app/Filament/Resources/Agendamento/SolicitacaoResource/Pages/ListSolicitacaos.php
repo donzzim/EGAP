@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Agendamento\AgendamentoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListSolicitacaos extends ListRecords
@@ -15,7 +14,7 @@ class ListSolicitacaos extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

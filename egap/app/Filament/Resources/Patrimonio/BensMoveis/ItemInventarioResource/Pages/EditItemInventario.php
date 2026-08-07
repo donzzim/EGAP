@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\ItemInventarioResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditItemInventario extends EditRecord

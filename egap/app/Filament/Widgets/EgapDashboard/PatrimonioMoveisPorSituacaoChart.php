@@ -18,7 +18,7 @@ class PatrimonioMoveisPorSituacaoChart extends ChartWidget
 
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 2;
+    protected int|string|array $columnSpan = 2;
 
     protected function getData(): array
     {

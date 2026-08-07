@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\FabricanteResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListFabricantes extends ListRecords
@@ -15,7 +14,7 @@ class ListFabricantes extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

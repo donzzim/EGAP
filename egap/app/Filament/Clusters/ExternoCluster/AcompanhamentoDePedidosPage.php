@@ -2,10 +2,10 @@
 
 namespace App\Filament\Clusters\ExternoCluster;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Support\Enums\Width;
 use App\Filament\Clusters\ExternoCluster;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 
 abstract class AcompanhamentoDePedidosPage extends Page
 {

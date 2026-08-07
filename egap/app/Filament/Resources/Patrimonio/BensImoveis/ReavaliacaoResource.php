@@ -2,45 +2,47 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DateTimePicker;
-use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\ListReavaliacoes;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\CreateReavaliacao;
 use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\EditReavaliacao;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensImoveis\ReavaliacaoResource\Pages\ListReavaliacoes;
 use App\Filament\Support\MoneyInput;
-use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Reavaliacao;
-use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
 
 class ReavaliacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Reavaliacao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
+
     protected static ?string $navigationLabel = 'Reavaliação';
+
     protected static ?string $modelLabel = 'Reavaliação';
+
     protected static ?string $pluralModelLabel = 'Reavaliação';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 3;
+
     protected static ?string $slug = 'bens-imoveis/reavaliacoes';
 
     public static function form(Schema $schema): Schema
@@ -181,9 +183,10 @@ class ReavaliacaoResource extends Resource
                                     ->columns(3),
                             ]),
                     ])
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

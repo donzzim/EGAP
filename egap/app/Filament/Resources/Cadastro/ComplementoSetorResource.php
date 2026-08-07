@@ -2,25 +2,22 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\ListComplementoSetors;
 use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\CreateComplementoSetor;
 use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\EditComplementoSetor;
-use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\ComplementoSetorResource\Pages\ListComplementoSetors;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\ComplementoSetor;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class ComplementoSetorResource extends Resource
 {
     protected static ?string $model = ComplementoSetor::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Complemento de Setor';
 
@@ -28,7 +25,7 @@ class ComplementoSetorResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Complementos de Setor';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
 
     protected static ?int $navigationSort = 7;
 
@@ -43,6 +40,7 @@ class ComplementoSetorResource extends Resource
                     ->columnSpanFull(),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

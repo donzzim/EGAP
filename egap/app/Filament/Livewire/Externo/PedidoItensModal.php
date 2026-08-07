@@ -2,10 +2,6 @@
 
 namespace App\Filament\Livewire\Externo;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
@@ -13,6 +9,10 @@ use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\UserEgap;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -37,6 +37,7 @@ use Illuminate\Support\Collection;
 abstract class PedidoItensModal extends TableModalComponent implements HasActions
 {
     use InteractsWithActions;
+
     protected const STATUS_PENDENTE = 6;
 
     protected const STATUS_CANCELADO = 4;

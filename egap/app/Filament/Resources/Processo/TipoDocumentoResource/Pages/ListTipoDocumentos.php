@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Processo\TipoDocumentoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Processo\TipoDocumentoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTipoDocumentos extends ListRecords
@@ -15,7 +14,7 @@ class ListTipoDocumentos extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

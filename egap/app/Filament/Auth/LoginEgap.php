@@ -2,25 +2,25 @@
 
 namespace App\Filament\Auth;
 
-use Filament\Auth\Pages\Login;
-use Filament\Auth\Http\Responses\Contracts\LoginResponse;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Component;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse;
+use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\InteractsWithFormActions;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @property \Filament\Schemas\Schema $form
+ * @property Schema $form
  */
 class LoginEgap extends Login
 {
@@ -49,7 +49,6 @@ class LoginEgap extends Login
     public function authenticate(): ?LoginResponse
     {
 
-
         try {
             $this->rateLimit(5);
         } catch (TooManyRequestsException $exception) {
@@ -60,7 +59,7 @@ class LoginEgap extends Login
 
         $data = $this->form->getState();
 
-        if (!Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
+        if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
             $this->throwFailureValidationException();
         }
 
@@ -68,7 +67,7 @@ class LoginEgap extends Login
 
         if (
             ($user instanceof FilamentUser) &&
-            (!$user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
+            (! $user->canAccessPanel(Filament::getCurrentOrDefaultPanel()))
         ) {
             Filament::auth()->logout();
 
@@ -125,6 +124,7 @@ class LoginEgap extends Login
             ->hintColor('sky')
             ->extraInputAttributes(['tabindex' => 1]);
     }
+
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')
@@ -220,11 +220,12 @@ class LoginEgap extends Login
     {
         if (filter_var($data['login'], FILTER_VALIDATE_EMAIL)) {
             $login_type = 'email';
-        } else if (is_numeric($data['login'])) {
+        } elseif (is_numeric($data['login'])) {
             $login_type = 'cpf';
         } else {
             $login_type = 'login';
         }
+
         // $login_type = filter_var($data['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
         return [
             $login_type => $data['login'],

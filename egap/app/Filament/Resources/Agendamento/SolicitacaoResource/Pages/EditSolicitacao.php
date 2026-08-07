@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Agendamento\SolicitacaoResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Agendamento\AgendamentoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditSolicitacao extends EditRecord

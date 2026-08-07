@@ -2,44 +2,46 @@
 
 namespace App\Filament\Resources\Admin;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Admin\LotacaoResource\Pages\ListLotacaos;
+use App\Filament\Clusters\AdminEgapCluster;
 use App\Filament\Resources\Admin\LotacaoResource\Pages\CreateLotacao;
 use App\Filament\Resources\Admin\LotacaoResource\Pages\EditLotacao;
-use App\Filament\Clusters\AdminEgapCluster;
-use App\Filament\Resources\Admin\LotacaoResource\Pages;
+use App\Filament\Resources\Admin\LotacaoResource\Pages\ListLotacaos;
 use App\Filament\Support\TableColumns;
 use App\Models\Admin\Lotacao;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
-use Filament\Forms;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class LotacaoResource extends Resource
 {
     protected static ?string $model = Lotacao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?string $navigationLabel = 'Lotação';
+
     protected static ?string $cluster = AdminEgapCluster::class;
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?string $modelLabel = 'Lotação';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $pluralModelLabel = 'Lotações';
 
     public static function form(Schema $schema): Schema

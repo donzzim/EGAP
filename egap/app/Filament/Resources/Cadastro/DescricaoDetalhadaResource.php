@@ -2,36 +2,32 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\CreateDescricaoDetalhada;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescricaoDetalhada;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\ListDescricaoDetalhadas;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
+use App\Models\Cadastro\DescricaoDetalhada;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\ListDescricaoDetalhadas;
-use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\CreateDescricaoDetalhada;
-use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescricaoDetalhada;
-use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
-use App\Filament\Support\TableDefaults;
-use App\Filament\Support\TableColumns;
-use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\RelationManagers;
-use App\Models\Cadastro\DescricaoDetalhada;
-use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class DescricaoDetalhadaResource extends Resource
 {
     protected static ?string $model = DescricaoDetalhada::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document';
 
     protected static ?string $navigationLabel = 'Descrição Detalhada';
 
     protected static ?string $pluralModelLabel = 'Descrições Detalhadas';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
 
     protected static ?int $navigationSort = 4;
 
@@ -43,15 +39,15 @@ class DescricaoDetalhadaResource extends Resource
                 ->schema([
                     Select::make('descricao_resumida')
                         ->label('Descrição Resumida')
-                        ->relationship('descricao_resumida_text' , 'Descricao'),
+                        ->relationship('descricao_resumida_text', 'Descricao'),
 
                     Select::make('marca')
                         ->label('Marca')
-                        ->relationship('marca_text' , 'descricao'),
+                        ->relationship('marca_text', 'descricao'),
 
                     Select::make('modelo')
                         ->label('Modelo')
-                        ->relationship('modelo_text' , 'descricao'),
+                        ->relationship('modelo_text', 'descricao'),
 
                     Textarea::make('descricao_detalhada')
                         ->label('Descrição Detalhada')
@@ -94,6 +90,7 @@ class DescricaoDetalhadaResource extends Resource
 
         ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

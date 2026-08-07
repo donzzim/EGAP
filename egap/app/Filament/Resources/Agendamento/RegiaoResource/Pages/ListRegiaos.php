@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Agendamento\RegiaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Agendamento\RegiaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListRegiaos extends ListRecords
@@ -15,7 +14,7 @@ class ListRegiaos extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

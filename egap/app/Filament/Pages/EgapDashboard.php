@@ -2,8 +2,6 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
 use App\Filament\Widgets\EgapDashboard\PatrimonioImoveisPorContaChart;
 use App\Filament\Widgets\EgapDashboard\PatrimonioMoveisPorAnoChart;
 use App\Filament\Widgets\EgapDashboard\PatrimonioMoveisPorSituacaoChart;
@@ -14,6 +12,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class EgapDashboard extends Dashboard
 {
@@ -27,7 +27,7 @@ class EgapDashboard extends Dashboard
 
     protected static ?string $navigationLabel = 'Dashboard';
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar-square';
 
     public function filtersForm(Schema $schema): Schema
     {
@@ -84,7 +84,7 @@ class EgapDashboard extends Dashboard
 
         while (count($colors) < max($limit, 1)) {
             foreach ($palette as $tone) {
-                $colors[] = 'rgb(' . $color[$tone] . ')';
+                $colors[] = 'rgb('.$color[$tone].')';
 
                 if (count($colors) >= max($limit, 1)) {
                     break;
@@ -109,7 +109,7 @@ class EgapDashboard extends Dashboard
             $firstName = str(auth()->user()->name)->trim()->before(' ')->toString();
 
             Notification::make()
-                ->title('Bem-vindo ao EGAP, '. $firstName .'!')
+                ->title('Bem-vindo ao EGAP, '.$firstName.'!')
                 ->body('Login realizado com sucesso.')
                 ->success()
                 ->send();

@@ -2,35 +2,37 @@
 
 namespace App\Filament\Resources\Agendamento;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\IconColumn;
-use App\Filament\Resources\Agendamento\EquipeResource\Pages\ListEquipes;
 use App\Filament\Resources\Agendamento\EquipeResource\Pages\CreateEquipe;
 use App\Filament\Resources\Agendamento\EquipeResource\Pages\EditEquipe;
-use App\Filament\Resources\Agendamento\EquipeResource\Pages;
+use App\Filament\Resources\Agendamento\EquipeResource\Pages\ListEquipes;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Agendamento\Equipe;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 
 class EquipeResource extends Resource
 {
     protected static ?string $model = Equipe::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
-    protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Agendamento';
+
     protected static ?string $modelLabel = 'Equipe de Transporte';
+
     protected static ?string $pluralModelLabel = 'Equipes de Transporte';
+
     protected static ?string $navigationLabel = 'Equipe de Transporte';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

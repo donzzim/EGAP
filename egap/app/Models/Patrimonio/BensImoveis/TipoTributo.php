@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class TipoTributo extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'imo_tipotributo';
+
     protected $guarded = [];
+
     public $timestamps = false;
 
     public function atualizadoPorRelacaoref()

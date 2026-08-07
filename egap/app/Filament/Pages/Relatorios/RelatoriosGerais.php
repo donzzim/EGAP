@@ -2,11 +2,6 @@
 
 namespace App\Filament\Pages\Relatorios;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Actions;
-use Filament\Actions\Action;
 use App\Models\Almoxarifado\SituacaoPedido;
 use App\Models\Cadastro\CentroCusto;
 use App\Models\Cadastro\ContaContabil;
@@ -14,45 +9,56 @@ use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 
 class RelatoriosGerais extends Page implements HasForms
 {
     use InteractsWithForms;
 
     protected string $view = 'filament.pages.relatorios-gerais';
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-chart-bar';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-chart-bar';
+
     protected static ?string $navigationLabel = 'Relatórios Gerais';
+
     protected static ?string $title = 'Relatórios Gerais';
+
     protected static ?string $slug = 'relatorios-gerais';
-    protected static string | \UnitEnum | null $navigationGroup = 'Relatórios';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Relatórios';
+
     protected static ?int $navigationSort = 1;
 
     public ?array $data = [];
 
     const SEM_FILTROS = [
-        'bens_sem_tr_validos', 'diferenca_contabil', 'estatico_acuracia_documental','estoque_atual', 'qtd_material_setor', 'qtd_insumos_impressao',
-        'qtd_material_consumo_unidade', 'aquisicao_materiais_comarca','aquisicao_materiais_estoque_visivel', 'estatistico_consumo_almoxarifado_meta',
+        'bens_sem_tr_validos', 'diferenca_contabil', 'estatico_acuracia_documental', 'estoque_atual', 'qtd_material_setor', 'qtd_insumos_impressao',
+        'qtd_material_consumo_unidade', 'aquisicao_materiais_comarca', 'aquisicao_materiais_estoque_visivel', 'estatistico_consumo_almoxarifado_meta',
     ];
 
     const FILTROS_EXTRAS = [
-        'tabela_10'                      => ['unidade_gestora'],
-        'depreciacao_mensal_cc'          => ['centro_custo'],
-        'depreciacao_mensal_imoveis_cc'  => ['centro_custo'],
+        'tabela_10' => ['unidade_gestora'],
+        'depreciacao_mensal_cc' => ['centro_custo'],
+        'depreciacao_mensal_imoveis_cc' => ['centro_custo'],
         'resumo_inventario_almoxarifado_cc' => ['centro_custo'],
     ];
 
     const FILTROS_PERSONALIZADOS = [
-        'bens_patrimoniais'              => ['situacao_contabil', 'numero_processo', 'nota_fiscal', 'grupo', 'acuracia'],
-        'media_consumo_material'         => ['data', 'materiais'],
-        'pedidos_bens_permanentes'           => ['data', 'pedidos'],
+        'bens_patrimoniais' => ['situacao_contabil', 'numero_processo', 'nota_fiscal', 'grupo', 'acuracia'],
+        'media_consumo_material' => ['data', 'materiais'],
+        'pedidos_bens_permanentes' => ['data', 'pedidos'],
         'pedidos_bens_permanentes_validados' => ['data', 'pedidos'],
-        'pedidos_bens_consumo_duravel'       => ['data', 'pedidos'],
+        'pedidos_bens_consumo_duravel' => ['data', 'pedidos'],
     ];
 
     const FILTROS_COMUNS = ['data', 'situacao_contabil', 'conta_contabil'];
@@ -105,6 +111,7 @@ class RelatoriosGerais extends Page implements HasForms
     private function temFiltro(Get $get, string $filtro): bool
     {
         $relatorio = $get('relatorio');
+
         return $relatorio && in_array($filtro, $this->getFiltrosAtivos($relatorio));
     }
 
@@ -238,52 +245,52 @@ class RelatoriosGerais extends Page implements HasForms
                 'tabela_17' => 'TCE IN 34/43 - Tabela 17 - Demonstrativo Analítico Entradas/Saídas Almoxarifado Permanente',
             ],
             'BENS MÓVEIS' => [
-                'bens_incorporados'                => 'Bens Incorporados [Data da Incorporação]',
-                'bens_baixados'                    => 'Bens Baixados [Data da Baixa]',
-                'bens_baixados_por_processo'       => 'Bens Baixados por Processo [Data da Baixa]',
-                'bens_conciliados'                 => 'Bens Conciliados [Data da Reavaliação]',
-                'analitico_contabil'               => 'Analítico Contábil [Data de Incorporação]',
-                'depreciacao_mensal'               => 'Depreciação Mensal [Data da Disponibilização]',
-                'depreciacao_mensal_cc'            => 'Depreciação Mensal por Centro de Custo [Data da Disponibilização]',
-                'bens_patrimoniais'                => 'Bens Patrimoniais',
-                'inventario_bens_moveis'           => 'Inventário dos Bens Móveis',
+                'bens_incorporados' => 'Bens Incorporados [Data da Incorporação]',
+                'bens_baixados' => 'Bens Baixados [Data da Baixa]',
+                'bens_baixados_por_processo' => 'Bens Baixados por Processo [Data da Baixa]',
+                'bens_conciliados' => 'Bens Conciliados [Data da Reavaliação]',
+                'analitico_contabil' => 'Analítico Contábil [Data de Incorporação]',
+                'depreciacao_mensal' => 'Depreciação Mensal [Data da Disponibilização]',
+                'depreciacao_mensal_cc' => 'Depreciação Mensal por Centro de Custo [Data da Disponibilização]',
+                'bens_patrimoniais' => 'Bens Patrimoniais',
+                'inventario_bens_moveis' => 'Inventário dos Bens Móveis',
                 'inventario_bens_moveis_detalhado' => 'Inventário dos Bens Móveis Detalhado',
             ],
             'BENS IMÓVEIS' => [
-                'relacao_bens_imoveis'          => 'Relação dos Bens Imóveis',
-                'depreciacao_mensal_imoveis'    => 'Depreciação Mensal Imóveis',
+                'relacao_bens_imoveis' => 'Relação dos Bens Imóveis',
+                'depreciacao_mensal_imoveis' => 'Depreciação Mensal Imóveis',
                 'depreciacao_mensal_imoveis_cc' => 'Depreciação Mensal Imóveis por Centro de Custo',
-                'inventario_bens_imoveis'       => 'Inventário dos Bens Imóveis',
-                'ajustes_reavaliacao_imoveis'   => 'Ajustes/Reavaliação Imóveis',
-                'saldo_anterior_imoveis'        => 'Saldo Anterior',
+                'inventario_bens_imoveis' => 'Inventário dos Bens Imóveis',
+                'ajustes_reavaliacao_imoveis' => 'Ajustes/Reavaliação Imóveis',
+                'saldo_anterior_imoveis' => 'Saldo Anterior',
             ],
             'BENS INTANGÍVEIS' => [
                 'inventario_bens_intangiveis' => 'Inventário dos Bens Intangíveis',
             ],
             'ALMOXARIFADO' => [
-                'notas_fiscais_por_fornecedor'           => 'Notas Fiscais por Fornecedor',
-                'balancete_contabil_analitico'           => 'Balancete Contábil - Analítico',
-                'media_consumo_material'                 => 'Média de Consumo por Material',
-                'pedidos_validados_setor'                => 'Pedidos Validados por Setor',
-                'gasto_anual_itens_estoque'              => 'Gasto Anual com Itens de Estoque',
-                'consumo_material_subelemento'           => 'Consumo de Material por Subelemento de Despesa',
-                'resumo_inventario_almoxarifado_cc'      => 'Resumo do Inventário do Almoxarifado por Centro de Custo',
-                'estoque_atual'                          => 'Relatório - Estoque Atual',
-                'aquisicao_materiais_comarca'            => 'Aquisição de Materiais por Comarca/Tribunal',
-                'aquisicao_materiais_estoque_visivel'    => 'Aquisição de Materiais - Item Estoque/Visível',
-                'estatistico_consumo_almoxarifado_meta'  => 'Relatório Estatístico de Consumo do Almoxarifado - Meta',
+                'notas_fiscais_por_fornecedor' => 'Notas Fiscais por Fornecedor',
+                'balancete_contabil_analitico' => 'Balancete Contábil - Analítico',
+                'media_consumo_material' => 'Média de Consumo por Material',
+                'pedidos_validados_setor' => 'Pedidos Validados por Setor',
+                'gasto_anual_itens_estoque' => 'Gasto Anual com Itens de Estoque',
+                'consumo_material_subelemento' => 'Consumo de Material por Subelemento de Despesa',
+                'resumo_inventario_almoxarifado_cc' => 'Resumo do Inventário do Almoxarifado por Centro de Custo',
+                'estoque_atual' => 'Relatório - Estoque Atual',
+                'aquisicao_materiais_comarca' => 'Aquisição de Materiais por Comarca/Tribunal',
+                'aquisicao_materiais_estoque_visivel' => 'Aquisição de Materiais - Item Estoque/Visível',
+                'estatistico_consumo_almoxarifado_meta' => 'Relatório Estatístico de Consumo do Almoxarifado - Meta',
             ],
             'PEDIDOS' => [
-                'pedidos_bens_permanentes'           => 'Pedidos - Bens Permanentes',
+                'pedidos_bens_permanentes' => 'Pedidos - Bens Permanentes',
                 'pedidos_bens_permanentes_validados' => 'Pedidos - Bens Permanentes Validados',
-                'pedidos_bens_consumo_duravel'       => 'Pedidos - Bens de Consumo Duráveis',
-                'qtd_material_setor'                 => 'Quantidade de Materiais por Setor',
-                'qtd_insumos_impressao'              => 'Quantidade de Insumos de Impressão por Setor',
-                'qtd_material_consumo_unidade'       => 'Materiais de Consumo por Setor',
+                'pedidos_bens_consumo_duravel' => 'Pedidos - Bens de Consumo Duráveis',
+                'qtd_material_setor' => 'Quantidade de Materiais por Setor',
+                'qtd_insumos_impressao' => 'Quantidade de Insumos de Impressão por Setor',
+                'qtd_material_consumo_unidade' => 'Materiais de Consumo por Setor',
             ],
             'BENS PERMANENTES' => [
-                'bens_sem_tr_validos'          => 'Bens sem TR Válidos Vinculado',
-                'diferenca_contabil'           => 'Relatório de Diferença Contábil',
+                'bens_sem_tr_validos' => 'Bens sem TR Válidos Vinculado',
+                'diferenca_contabil' => 'Relatório de Diferença Contábil',
                 'estatico_acuracia_documental' => 'Relatório Estático de Acurácia Documental',
             ],
         ];

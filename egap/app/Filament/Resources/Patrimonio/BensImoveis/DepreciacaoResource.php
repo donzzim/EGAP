@@ -2,43 +2,46 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Enums\FiltersLayout;
-use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\ListDepreciacaos;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\CreateDepreciacao;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\EditDepreciacao;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
+use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\ListDepreciacaos;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\Depreciacao;
-use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class DepreciacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Depreciacao::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-trending-down';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-down';
+
     protected static ?string $navigationLabel = 'Depreciação';
+
     protected static ?string $modelLabel = 'Depreciação de Imóvel';
+
     protected static ?string $pluralModelLabel = 'Depreciação de Imóveis';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $slug = 'bens-imoveis/depreciacao';
 
     public static function form(Schema $schema): Schema
@@ -97,7 +100,7 @@ class DepreciacaoResource extends Resource
                         MoneyInput::make('valor_residual')
                             ->label('Valor Residual'),
                         MoneyInput::make('valor_liquido_contabil')
-                            ->label('Valor Líquido Contábil')
+                            ->label('Valor Líquido Contábil'),
                     ])
                     ->columns(2),
             ]);

@@ -2,31 +2,34 @@
 
 namespace App\Filament\Resources\Cadastro;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use App\Filament\Resources\Cadastro\MarcasResource\Pages\ListMarcas;
 use App\Filament\Resources\Cadastro\MarcasResource\Pages\CreateMarcas;
 use App\Filament\Resources\Cadastro\MarcasResource\Pages\EditMarcas;
-use App\Filament\Resources\Cadastro\MarcasResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Cadastro\MarcasResource\Pages\ListMarcas;
 use App\Filament\Support\TableColumns;
-use App\Filament\Resources\Cadastro\MarcasResource\RelationManagers;
+use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\Marcas;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class MarcasResource extends Resource
 {
     protected static ?string $model = Marcas::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-tag';
+
     protected static ?string $recordTitleAttribute = 'descricao';
+
     protected static ?string $modelLabel = 'Marcas ';
+
     protected static ?string $pluralModelLabel = 'Marcas ';
+
     protected static ?string $navigationLabel = 'Marcas ';
-    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastro';
+
     protected static ?int $navigationSort = 9;
 
     public static function form(Schema $schema): Schema
@@ -48,12 +51,13 @@ class MarcasResource extends Resource
                     ->columnSpanFull(),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)
             ->columns([
                 TableColumns::text('descricao', 'Descrição', isFirstColumn: true),
-                TableColumns::updatedBy('atualizado_por.name')
+                TableColumns::updatedBy('atualizado_por.name'),
             ]);
     }
 

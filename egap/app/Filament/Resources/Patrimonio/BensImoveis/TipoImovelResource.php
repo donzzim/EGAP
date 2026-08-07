@@ -2,37 +2,40 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\ListTipoImovels;
+use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\CreateTipoImovel;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\EditTipoImovel;
-use App\Filament\Clusters\PatrimonioCluster;
-use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages;
-use App\Filament\Support\TableDefaults;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\ListTipoImovels;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\TipoImovel;
-use Filament\Forms;
+use Filament\Forms\Components\TextInput;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 
 class TipoImovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TipoImovel::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
+
     protected static ?string $navigationLabel = 'Tipo de Imóvel';
+
     protected static ?string $modelLabel = 'Tipo de Imóvel';
+
     protected static ?string $pluralModelLabel = 'Tipos de Imóvel';
-    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Bens Imóveis';
+
     protected static ?int $navigationSort = 17;
+
     protected static ?string $slug = 'bens-imoveis/tipos-imoveis';
 
     public static function form(Schema $schema): Schema
@@ -46,9 +49,10 @@ protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosi
                             ->required()
                             ->maxLength(255)
                             ->columnSpanFull(),
-                    ])
+                    ]),
             ]);
     }
+
     public static function table(Table $table): Table
     {
         return TableDefaults::apply($table)

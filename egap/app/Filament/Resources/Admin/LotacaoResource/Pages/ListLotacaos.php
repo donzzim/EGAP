@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Admin\LotacaoResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Admin\LotacaoResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListLotacaos extends ListRecords
@@ -15,7 +14,7 @@ class ListLotacaos extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

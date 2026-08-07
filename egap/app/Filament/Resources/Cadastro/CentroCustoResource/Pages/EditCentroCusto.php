@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\CentroCustoResource\Pages;
 
-use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Cadastro\CentroCustoResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCentroCusto extends EditRecord

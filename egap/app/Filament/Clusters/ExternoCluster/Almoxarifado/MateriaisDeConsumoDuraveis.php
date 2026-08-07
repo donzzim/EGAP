@@ -10,9 +10,9 @@ class MateriaisDeConsumoDuraveis extends RequisicaoDeMateriaisPage
 
     protected static ?string $cluster = ExternoCluster::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-inbox-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-inbox-stack';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Almoxarifado';
+    protected static string|\UnitEnum|null $navigationGroup = 'Almoxarifado';
 
     protected static ?string $slug = 'almoxarifado/requisicao-de-materiais-de-consumo-duraveis';
 

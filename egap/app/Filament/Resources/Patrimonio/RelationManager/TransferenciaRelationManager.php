@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources\Patrimonio\RelationManager;
 
+use App\Filament\Support\TableColumns;
+use Filament\Actions\ViewAction;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\ViewAction;
-use App\Filament\Support\TableColumns;
-use Filament\Forms;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
 use Filament\Tables\Table;
 
 class TransferenciaRelationManager extends RelationManager

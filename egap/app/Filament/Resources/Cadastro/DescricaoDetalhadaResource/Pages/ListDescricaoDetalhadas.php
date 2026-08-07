@@ -2,9 +2,8 @@
 
 namespace App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
 
-use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListDescricaoDetalhadas extends ListRecords
@@ -15,7 +14,7 @@ class ListDescricaoDetalhadas extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Novo')
+                ->label('Novo'),
         ];
     }
 }

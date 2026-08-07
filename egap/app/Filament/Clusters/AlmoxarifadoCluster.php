@@ -2,13 +2,14 @@
 
 namespace App\Filament\Clusters;
 
-use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Clusters\Cluster;
+use Filament\Pages\Enums\SubNavigationPosition;
 
 class AlmoxarifadoCluster extends Cluster
 {
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-circle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-circle-stack';
+
     protected static ?string $navigationLabel = 'Almoxarifado';
 
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 }

@@ -2,39 +2,34 @@
 
 namespace App\Filament\Resources\Admin;
 
-use Filament\Pages\Enums\SubNavigationPosition;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Closure;
-use Filament\Forms\Components\Toggle;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Grid;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use App\Filament\Resources\Admin\UsersEgapResource\Pages\ListUsersEgaps;
+use App\Filament\Clusters\AdminEgapCluster;
 use App\Filament\Resources\Admin\UsersEgapResource\Pages\CreateUsersEgap;
 use App\Filament\Resources\Admin\UsersEgapResource\Pages\EditUsersEgap;
-use Filament\Schemas\Components\Utilities\Set;
-use App\Filament\Clusters\AdminEgapCluster;
-use App\Filament\Resources\Admin\UsersEgapResource\Pages;
-use App\Models\Admin\InfoUser;
+use App\Filament\Resources\Admin\UsersEgapResource\Pages\ListUsersEgaps;
 use App\Models\Admin\Lotacao;
 use App\Models\Cadastro\Setores;
-use App\Models\User;
 use App\Models\UserEgap;
-use Filament\Forms;
+use Closure;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -45,14 +40,22 @@ class UsersEgapResource extends Resource
 
     protected static ?string $model = UserEgap::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationLabel = 'Usuários EGAP';
+
     protected static ?string $cluster = AdminEgapCluster::class;
-    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
+    protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+
     protected static ?string $slug = 'users-egap';
+
     protected static ?string $modelLabel = 'Usuário EGAP';
+
     protected static ?string $pluralModelLabel = 'Usuários EGAP';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
@@ -184,6 +187,7 @@ class UsersEgapResource extends Resource
                                         ->title('Lotação não encontrada.')
                                         ->danger()
                                         ->send();
+
                                     return;
                                 }
 
@@ -222,6 +226,7 @@ class UsersEgapResource extends Resource
                                         ->title('Lotação não encontrada.')
                                         ->danger()
                                         ->send();
+
                                     return;
                                 }
 
@@ -628,7 +633,7 @@ class UsersEgapResource extends Resource
             return null;
         }
 
-        return $localPart . static::EMAIL_DOMAIN;
+        return $localPart.static::EMAIL_DOMAIN;
     }
 
     protected static function isValidInstitutionalEmailInput(mixed $value): bool
@@ -645,5 +650,4 @@ class UsersEgapResource extends Resource
 
         return filter_var(static::buildInstitutionalEmail($localPart), FILTER_VALIDATE_EMAIL) !== false;
     }
-
 }
