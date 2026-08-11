@@ -97,34 +97,21 @@ class LoginEgap extends Login
     protected function throwFailureValidationException(): never
     {
         throw ValidationException::withMessages([
-            'data.login' => __('filament-panels::pages/auth/login.messages.failed'),
+            'data.login' =>  __('filament-panels::auth/pages/login.messages.failed'),
             // 'data.email' => __('filament-panels::pages/auth/login.messages.failed'),
         ]);
     }
 
     public function form(Schema $schema): Schema
     {
-        return $schema;
+        return $schema
+            ->components([
+                $this->getLoginFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getRememberFormComponent(),
+            ]);
     }
 
-    /**
-     * @return array<int|string, string|\Filament\Schemas\Schema>
-     */
-    protected function getForms(): array
-    {
-        return [
-            'form' => $this->form(
-                $this->makeForm()
-                    ->components([
-                        // $this->getEmailFormComponent(),
-                        $this->getLoginFormComponent(),
-                        $this->getPasswordFormComponent(),
-                        $this->getRememberFormComponent(),
-                    ])
-                    ->statePath('data'),
-            ),
-        ];
-    }
     protected function getLoginFormComponent(): Component
     {
         return TextInput::make('login')
@@ -149,31 +136,19 @@ class LoginEgap extends Login
 
     protected function getPasswordFormComponent(): Component
     {
-        $component = TextInput::make('password')
-            ->label(__('filament-panels::pages/auth/login.form.password.label'))
+        return TextInput::make('password')
+            ->label(__('filament-panels::auth/pages/login.form.password.label'))
             ->password()
             ->revealable(filament()->arePasswordsRevealable())
             ->autocomplete('current-password')
             ->required()
             ->extraInputAttributes(['tabindex' => 2]);
-
-        if (filament()->hasPasswordReset()) {
-            $component->hintAction(
-                Action::make('requestPasswordReset')
-                    ->label(__('filament-panels::pages/auth/login.actions.request_password_reset.label'))
-                    ->link()
-                    ->url(filament()->getRequestPasswordResetUrl())
-                    ->extraAttributes(['tabindex' => 3]),
-            );
-        }
-
-        return $component;
     }
 
     protected function getRememberFormComponent(): Component
     {
         return Checkbox::make('remember')
-            ->label(__('filament-panels::pages/auth/login.form.remember.label'));
+            ->label(__('filament-panels::auth/pages/login.form.remember.label'));
     }
 
     public function registerAction(): Action

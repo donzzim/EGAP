@@ -394,20 +394,9 @@
                         </p>
                     </div>
 
-                    {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, scopes: $this->getRenderHookScopes()) }}
-
                     <div class="egap-form-card">
-                        <x-filament-panels::form id="form" wire:submit="authenticate">
-                            {{ $this->form }}
-
-                            <x-filament-panels::form.actions
-                                :actions="$this->getCachedFormActions()"
-                                :full-width="$this->hasFullWidthFormActions()"
-                            />
-                        </x-filament-panels::form>
+                        {{ $this->content }}
                     </div>
-
-                    {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, scopes: $this->getRenderHookScopes()) }}
 
                     <p class="egap-footer">
                         © {{ now()->year }} EGAP. Acesso restrito a usuários autorizados.

@@ -31,6 +31,7 @@ class PatrimonioTopMateriaisValorTable extends TableWidget
             ->striped()
             ->paginated(false)
             ->defaultSort('valor_atual', 'desc')
+            ->defaultKeySort(false)
             ->columns([
                 TextColumn::make('descricao_resumida')
                     ->label('Material')
