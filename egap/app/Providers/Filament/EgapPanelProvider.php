@@ -19,6 +19,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class EgapPanelProvider extends PanelProvider
@@ -78,6 +79,7 @@ class EgapPanelProvider extends PanelProvider
             ->widgets([
             ])
             ->assets([
+                Css::make('app', Vite::asset('resources/css/app.css')),
                 Css::make('modal', resource_path('css/modal.css')),
             ])
             ->middleware([

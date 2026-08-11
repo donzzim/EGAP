@@ -84,7 +84,7 @@ class EgapDashboard extends Dashboard
 
         while (count($colors) < max($limit, 1)) {
             foreach ($palette as $tone) {
-                $colors[] = 'rgb(' . $color[$tone] . ')';
+                $colors[] = $color[$tone];
 
                 if (count($colors) >= max($limit, 1)) {
                     break;

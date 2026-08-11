@@ -113,14 +113,11 @@ abstract class Carrinho extends Component implements HasForms, HasActions
                 ->columnSpan(6),
 
             Select::make('ComplementoSetor')
-                ->label('Complemento do setor de destino')
+                ->label('Complemento do setor')
                 ->required()
                 ->searchable()
                 ->preload()
                 ->native(false)
-                // Prioriza os complementos já usados em pedidos anteriores desse Setor
-                // (mesma ideia do legado, que restringia a lista pelo setor selecionado).
-                // Sem histórico para o Setor, cai para a lista completa.
                 ->options(function (Get $get): array {
                     $setorId = $get('Setor');
 
