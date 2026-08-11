@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\DenominacaoResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\DenominacaoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,7 @@ class ListDenominacaos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
                 ->modalHeading('Adicionar Denominação')
                 ->modalWidth('md')

@@ -2,6 +2,23 @@
 
 namespace App\Filament\Resources\Agendamento;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
+use App\Filament\Resources\Agendamento\TransporteResource\Pages\ListTransportes;
+use App\Filament\Resources\Agendamento\TransporteResource\Pages\CreateTransporte;
+use App\Filament\Resources\Agendamento\TransporteResource\Pages\EditTransporte;
 use App\Filament\Resources\Agendamento\TransporteResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -11,43 +28,37 @@ use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 
 class TransporteResource extends Resource
 {
     protected static ?string $model = Solicitacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-    protected static ?string $navigationGroup = 'Agendamento';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
     protected static ?string $modelLabel = 'Transporte de Carga';
     protected static ?string $pluralModelLabel = 'Transporte de Carga';
     protected static ?string $navigationLabel = 'Transporte de Carga';
     protected static ?int $navigationSort = 5;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Tabs::make('Transporte')
+        return $schema->components([
+            Tabs::make('Transporte')
                 ->tabs([
-                    Forms\Components\Tabs\Tab::make('Transporte de Carga')
+                    Tab::make('Transporte de Carga')
                         ->schema([
-                            Forms\Components\Section::make()
+                            Section::make()
                                 ->schema([
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\Select::make('tipo')
+                                            Select::make('tipo')
                                                 ->label('Tipo de Agendamento')
                                                 ->options([
                                                     1 => 'Agendamento de Veículos',
@@ -59,7 +70,7 @@ class TransporteResource extends Resource
                                                 ->native(false)
                                                 ->required(),
 
-                                            Forms\Components\Select::make('id_situacao')
+                                            Select::make('id_situacao')
                                                 ->label('Situação')
                                                 ->relationship('idSituacaoRef', 'Descricao')
                                                 ->searchable()
@@ -68,7 +79,7 @@ class TransporteResource extends Resource
                                                 ->native(false)
                                                 ->required(),
 
-                                            Forms\Components\Select::make('id_solicitante')
+                                            Select::make('id_solicitante')
                                                 ->label('Solicitante')
                                                 ->relationship('idSolicitanteRef', 'name')
                                                 ->searchable()
@@ -77,7 +88,7 @@ class TransporteResource extends Resource
                                                 ->native(false)
                                                 ->required(),
 
-                                            Forms\Components\Select::make('regiao')
+                                            Select::make('regiao')
                                                 ->label('Região')
                                                 ->relationship('regiaoRef', 'regiao')
                                                 ->searchable()
@@ -86,7 +97,7 @@ class TransporteResource extends Resource
                                                 ->native(false)
                                                 ->required(),
 
-                                            Forms\Components\Select::make('unidade_solicitante')
+                                            Select::make('unidade_solicitante')
                                                 ->label('Unidade Solicitante')
                                                 ->required()
                                                 ->searchable()
@@ -102,7 +113,7 @@ class TransporteResource extends Resource
                                                 )
                                                 ->afterStateUpdated(fn (Set $set) => $set('setor_solicitante', null)),
 
-                                            Forms\Components\Select::make('setor_solicitante')
+                                            Select::make('setor_solicitante')
                                                 ->label('Setor Solicitante')
                                                 ->required()
                                                 ->searchable()
@@ -120,26 +131,26 @@ class TransporteResource extends Resource
                                                 )
                                                 ->disabled(fn (Get $get) => blank($get('unidade_solicitante'))),
 
-                                            Forms\Components\TextInput::make('local_saida')
+                                            TextInput::make('local_saida')
                                                 ->label('Local Saída')
                                                 ->maxLength(255)
                                                 ->required(),
 
-                                            Forms\Components\TextInput::make('local_destino')
+                                            TextInput::make('local_destino')
                                                 ->label('Local Destino')
                                                 ->maxLength(255)
                                                 ->required(),
                                         ]),
 
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\Textarea::make('justificativa')
+                                            Textarea::make('justificativa')
                                                 ->label('Detalhamento')
                                                 ->rows(6)
                                                 ->autosize()
                                                 ->required(),
 
-                                            Forms\Components\Textarea::make('motivo_cancelamento')
+                                            Textarea::make('motivo_cancelamento')
                                                 ->label('Motivo Cancelamento')
                                                 ->rows(6)
                                                 ->autosize(),
@@ -147,77 +158,77 @@ class TransporteResource extends Resource
                                 ]),
                         ]),
 
-                    Forms\Components\Tabs\Tab::make('Agendar')
+                    Tab::make('Agendar')
                         ->schema([
-                            Forms\Components\Section::make()
+                            Section::make()
                                 ->schema([
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\DatePicker::make('data_inicio')
+                                            DatePicker::make('data_inicio')
                                                 ->label('Data início')
                                                 ->displayFormat('d/m/Y')
                                                 ->native(false)
                                                 ->required(),
 
-                                            Forms\Components\TimePicker::make('hora_inicio')
+                                            TimePicker::make('hora_inicio')
                                                 ->label('Hora Início')
                                                 ->seconds(false)
                                                 ->required(),
 
-                                            Forms\Components\DatePicker::make('data_termino')
+                                            DatePicker::make('data_termino')
                                                 ->label('Data Término')
                                                 ->displayFormat('d/m/Y')
                                                 ->native(false)
                                                 ->required(),
 
-                                            Forms\Components\TimePicker::make('hora_termino')
+                                            TimePicker::make('hora_termino')
                                                 ->label('Hora Término')
                                                 ->seconds(false)
                                                 ->required(),
                                         ]),
 
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\Textarea::make('finalizar')
+                                            Textarea::make('finalizar')
                                                 ->label('Observação')
                                                 ->rows(6)
                                                 ->autosize(),
 
-                                            Forms\Components\Textarea::make('motivo_edicao')
+                                            Textarea::make('motivo_edicao')
                                                 ->label('Motivo da Edição')
                                                 ->rows(6)
                                                 ->autosize(),
                                         ]),
 
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\TextInput::make('agendamento_pai')
+                                            TextInput::make('agendamento_pai')
                                                 ->label('Agendamento Pai'),
 
-                                            Forms\Components\DateTimePicker::make('date_time')
+                                            DateTimePicker::make('date_time')
                                                 ->label('Data Alteração')
                                                 ->seconds(false)
                                                 ->native(false),
                                         ]),
 
-                                    Forms\Components\TextInput::make('anexo')
+                                    TextInput::make('anexo')
                                         ->label('Anexo')
                                         ->maxLength(255),
                                 ]),
                         ]),
 
-                    Forms\Components\Tabs\Tab::make('Requisição/Termos')
+                    Tab::make('Requisição/Termos')
                         ->schema([
-                            Forms\Components\Section::make()
+                            Section::make()
                                 ->schema([
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\DateTimePicker::make('data_alteracao')
+                                            DateTimePicker::make('data_alteracao')
                                                 ->label('Atualizado em')
                                                 ->seconds(false)
                                                 ->native(false),
 
-                                            Forms\Components\Select::make('id_user')
+                                            Select::make('id_user')
                                                 ->label('Atualizado por')
                                                 ->relationship('idUserRef', 'name')
                                                 ->searchable()
@@ -225,44 +236,44 @@ class TransporteResource extends Resource
                                                 ->placeholder('Por favor selecione')
                                                 ->native(false),
 
-                                            Forms\Components\TextInput::make('requisicao')
+                                            TextInput::make('requisicao')
                                                 ->label('Requisição')
                                                 ->placeholder('Por favor selecione'),
 
-                                            Forms\Components\TextInput::make('termo')
+                                            TextInput::make('termo')
                                                 ->label('Termo')
                                                 ->placeholder('Por favor selecione'),
                                         ]),
                                 ]),
                         ]),
 
-                    Forms\Components\Tabs\Tab::make('age_recursos')
+                    Tab::make('age_recursos')
                         ->schema([
-                            Forms\Components\Section::make()
+                            Section::make()
                                 ->schema([
-                                    Forms\Components\Placeholder::make('age_recursos_info')
+                                    Placeholder::make('age_recursos_info')
                                         ->label('')
                                         ->content('Campos relacionados a age_recursos devem ser vinculados ao model/tabela correspondente.'),
 
-                                    Forms\Components\Grid::make(2)
+                                    Grid::make(2)
                                         ->schema([
-                                            Forms\Components\TextInput::make('age_recursos_id_user')
+                                            TextInput::make('age_recursos_id_user')
                                                 ->label('id user')
                                                 ->dehydrated(false),
 
-                                            Forms\Components\TextInput::make('age_recursos_condutor')
+                                            TextInput::make('age_recursos_condutor')
                                                 ->label('condutor')
                                                 ->dehydrated(false),
 
-                                            Forms\Components\TextInput::make('age_recursos_veiculo')
+                                            TextInput::make('age_recursos_veiculo')
                                                 ->label('veiculo')
                                                 ->dehydrated(false),
 
-                                            Forms\Components\TextInput::make('age_recursos_id_solicitacao')
+                                            TextInput::make('age_recursos_id_solicitacao')
                                                 ->label('id solicitacao')
                                                 ->dehydrated(false),
 
-                                            Forms\Components\Textarea::make('age_recursos_observacao')
+                                            Textarea::make('age_recursos_observacao')
                                                 ->label('observacao')
                                                 ->rows(6)
                                                 ->dehydrated(false)
@@ -337,8 +348,8 @@ class TransporteResource extends Resource
                     )
                     ->searchable(),
 
-            ], Tables\Enums\FiltersLayout::AboveContent)
-            ->actions([
+            ], FiltersLayout::AboveContent)
+            ->recordActions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
                     self::agendarTableAction(),
@@ -364,7 +375,7 @@ class TransporteResource extends Resource
             ->modalHeading(fn ($record) => 'Agendamento - Transporte de carga #' . $record->id)
             ->modalDescription('Defina o período, a equipe e os veículos que atenderão esta solicitação.')
             ->modalSubmitActionLabel('Agendar')
-            ->form([
+            ->schema([
                 Section::make('Período do Agendamento')
                     ->description('Informe o intervalo de datas em que o transporte será realizado.')
                     ->icon('heroicon-o-calendar-days')
@@ -461,9 +472,9 @@ class TransporteResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTransportes::route('/'),
-            'create' => Pages\CreateTransporte::route('/create'),
-            'edit' => Pages\EditTransporte::route('/{record}/edit'),
+            'index' => ListTransportes::route('/'),
+            'create' => CreateTransporte::route('/create'),
+            'edit' => EditTransporte::route('/{record}/edit'),
         ];
     }
 }

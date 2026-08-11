@@ -2,12 +2,12 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Concerns;
 
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Support\SetorSelecionado;
 use App\Models\Cadastro\Setores;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 
 /**
@@ -52,7 +52,7 @@ trait SelecionaSetorAtual
                 'UnidadeJudiciaria' => session(SetorSelecionado::SESSION_KEY.'.unidade'),
                 'Setor' => session(SetorSelecionado::SESSION_KEY.'.setor'),
             ])
-            ->form([
+            ->schema([
                 Select::make('UnidadeJudiciaria')
                     ->label('Unidade Judiciária')
                     ->required()

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\AtividadeInventario;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
@@ -31,8 +33,9 @@ use Livewire\Component;
  * replicado aqui — para números definitivos de um inventário concluído,
  * consulte o Histórico de Inventário Online.
  */
-class AtividadeDeCampoResumoTable extends Component implements HasForms, HasTable
+class AtividadeDeCampoResumoTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 

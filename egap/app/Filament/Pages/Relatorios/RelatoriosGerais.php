@@ -2,6 +2,11 @@
 
 namespace App\Filament\Pages\Relatorios;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
 use App\Models\Almoxarifado\SituacaoPedido;
 use App\Models\Cadastro\CentroCusto;
 use App\Models\Cadastro\ContaContabil;
@@ -9,28 +14,23 @@ use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Cadastro\Setores;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
-use Filament\Forms\Components\Actions;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Pages\Page;
 
 class RelatoriosGerais extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string $view = 'filament.pages.relatorios-gerais';
-    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
+    protected string $view = 'filament.pages.relatorios-gerais';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationLabel = 'Relatórios Gerais';
     protected static ?string $title = 'Relatórios Gerais';
     protected static ?string $slug = 'relatorios-gerais';
-    protected static ?string $navigationGroup = 'Relatórios';
+    protected static string | \UnitEnum | null $navigationGroup = 'Relatórios';
     protected static ?int $navigationSort = 1;
 
     public ?array $data = [];
@@ -62,10 +62,10 @@ class RelatoriosGerais extends Page implements HasForms
         $this->form->fill();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Relatórios Gerais')
                     ->schema([
                         Select::make('relatorio')

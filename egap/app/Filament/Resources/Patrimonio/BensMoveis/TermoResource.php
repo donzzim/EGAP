@@ -2,6 +2,21 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Grid;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
+use RuntimeException;
+use Throwable;
+use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\ListTermos;
+use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\CreateTermo;
+use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\EditTermo;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
 use App\Filament\Support\TableColumns;
@@ -12,20 +27,13 @@ use App\Models\Almoxarifado\Pedidos;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -37,11 +45,11 @@ class TermoResource extends Resource
 {
     protected static ?string $model = Termo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Termos de Responsabilidade';
 
@@ -53,13 +61,13 @@ class TermoResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/termos';
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->columns(3)
-            ->schema([
+            ->components([
                 Section::make('Identificação do Termo')
                     ->description('Informe os dados que identificam o termo de responsabilidade.')
                     ->icon('heroicon-o-document-text')
@@ -245,7 +253,7 @@ class TermoResource extends Resource
                     ->action(self::materiaisTableAction()),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('situacao_entrega')
+                SelectFilter::make('situacao_entrega')
                     ->label('Situação da Entrega')
                     ->options([
                         'Reservado' => 'Reservado',
@@ -253,8 +261,8 @@ class TermoResource extends Resource
                         'Entregue' => 'Entregue',
                         'Encaminhado para Logística' => 'Encaminhado para Logística',
                     ]),
-                Tables\Filters\Filter::make('num_termo')
-                    ->form([
+                Filter::make('num_termo')
+                    ->schema([
                         TextInput::make('num_termo')
                             ->label('Termo')
                             ->placeholder('Informe o número do termo'),
@@ -269,7 +277,7 @@ class TermoResource extends Resource
                             ),
                         )),
 
-                Tables\Filters\SelectFilter::make('situacao_arquivo_filter')
+                SelectFilter::make('situacao_arquivo_filter')
                     ->label('Situação do Arquivo')
                     ->options(ArquivoDigital::situacaoOptions())
                     ->query(function (Builder $query, array $data): Builder {
@@ -285,7 +293,7 @@ class TermoResource extends Resource
                         );
                     }),
 
-                Tables\Filters\SelectFilter::make('web')
+                SelectFilter::make('web')
                     ->label('WEB')
                     ->options([
                         1 => 'Sim',
@@ -299,8 +307,8 @@ class TermoResource extends Resource
                                 fn (Builder $query): Builder => $query->where('web', (int) $data['value']),
                             ),
                         )),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
-            ->actions([
+            ], layout: FiltersLayout::AboveContent)
+            ->recordActions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
                     self::imprimirTermoTableAction(),
@@ -399,7 +407,7 @@ class TermoResource extends Resource
                     $userId = auth()->id();
 
                     if (! $userId) {
-                        throw new \RuntimeException('Usuário autenticado não identificado.');
+                        throw new RuntimeException('Usuário autenticado não identificado.');
                     }
 
                     $novoTermo = $record->getConnection()->transaction(function () use ($record, $userId): Termo {
@@ -408,7 +416,7 @@ class TermoResource extends Resource
                             ->get();
 
                         if ($transferencias->isEmpty()) {
-                            throw new \RuntimeException('O termo não possui materiais para movimentar.');
+                            throw new RuntimeException('O termo não possui materiais para movimentar.');
                         }
 
                         $ano = (int) now()->year;
@@ -451,7 +459,7 @@ class TermoResource extends Resource
                         ->title("Termo {$novoTermo->num_termo}/{$novoTermo->ano_termo} criado corretamente.")
                         ->success()
                         ->send();
-                } catch (\Throwable $exception) {
+                } catch (Throwable $exception) {
                     self::sendActionError('Erro ao criar o termo corretivo', $exception);
                 }
             });
@@ -499,7 +507,7 @@ class TermoResource extends Resource
 
         try {
             if (! auth()->id()) {
-                throw new \RuntimeException('Usuário autenticado não identificado.');
+                throw new RuntimeException('Usuário autenticado não identificado.');
             }
 
             $record->getConnection()->transaction(function () use (
@@ -514,11 +522,11 @@ class TermoResource extends Resource
                     ->first();
 
                 if ($preserveValidation && (int) ($arquivoDigital?->situacao ?? 0) !== 1) {
-                    throw new \RuntimeException('O termo não possui um arquivo validado para correção.');
+                    throw new RuntimeException('O termo não possui um arquivo validado para correção.');
                 }
 
                 if (! $preserveValidation && (int) ($arquivoDigital?->situacao ?? 0) === 1) {
-                    throw new \RuntimeException('O termo já foi validado. Utilize a ação de correção.');
+                    throw new RuntimeException('O termo já foi validado. Utilize a ação de correção.');
                 }
 
                 $arquivoDigital ??= $record->arquivoDigital()->make([
@@ -538,7 +546,7 @@ class TermoResource extends Resource
                 $fileAlreadyExisted = File::exists($absolutePath);
 
                 if (File::put($absolutePath, $html) === false) {
-                    throw new \RuntimeException('Não foi possível gravar o arquivo do termo.');
+                    throw new RuntimeException('Não foi possível gravar o arquivo do termo.');
                 }
 
                 $arquivoDigital->fill([
@@ -556,7 +564,7 @@ class TermoResource extends Resource
             });
 
             Notification::make()->title($successMessage)->success()->send();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             if ($absolutePath && ! $fileAlreadyExisted) {
                 File::delete($absolutePath);
             }
@@ -626,11 +634,11 @@ class TermoResource extends Resource
             ->values();
 
         if ($bens->isEmpty()) {
-            throw new \RuntimeException('O termo não possui materiais para gerar o arquivo.');
+            throw new RuntimeException('O termo não possui materiais para gerar o arquivo.');
         }
 
         if ($preserveValidation && ! $usuarioDestinatario) {
-            throw new \RuntimeException('O usuário que validou o termo não foi encontrado.');
+            throw new RuntimeException('O usuário que validou o termo não foi encontrado.');
         }
 
         $dataEmissao = Carbon::parse($record->date_time ?? now())->format('d/m/Y');
@@ -657,7 +665,7 @@ class TermoResource extends Resource
         ])->render();
     }
 
-    private static function sendActionError(string $title, \Throwable $exception): void
+    private static function sendActionError(string $title, Throwable $exception): void
     {
         report($exception);
 
@@ -671,9 +679,9 @@ class TermoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTermos::route('/'),
-            'create' => Pages\CreateTermo::route('/create'),
-            'edit' => Pages\EditTermo::route('/{record}/edit'),
+            'index' => ListTermos::route('/'),
+            'create' => CreateTermo::route('/create'),
+            'edit' => EditTermo::route('/{record}/edit'),
         ];
     }
 }

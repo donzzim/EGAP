@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Patrimonio\RelationManager;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\ViewAction;
 use App\Filament\Support\TableColumns;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,9 +17,9 @@ class TransferenciaRelationManager extends RelationManager
 
     protected static ?string $title = 'Bens / Materiais Vinculados ao Termo';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([]); // Apenas visualização
+        return $schema->components([]); // Apenas visualização
     }
 
     public function table(Table $table): Table
@@ -27,7 +29,7 @@ class TransferenciaRelationManager extends RelationManager
             ->defaultPaginationPageOption(25)
             ->recordTitleAttribute('id')
             ->columns([
-                Tables\Columns\TextColumn::make('patrimonioRef.NumPatrimonio')
+                TextColumn::make('patrimonioRef.NumPatrimonio')
                     ->label('Num. Patrimônio')
                     ->default(fn ($record) => $record->NumPatrimonio ?? 'Sem Número')
                     ->description(fn ($record) => $record->patrimonioRef?->Descricao ?? $record->MaterialDescricao ?? null)
@@ -35,17 +37,17 @@ class TransferenciaRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('unidadeJudiciariaRef.UnidadeOrganizacional')
+                TextColumn::make('unidadeJudiciariaRef.UnidadeOrganizacional')
                     ->label('Unidade Judiciária Atual')
                     ->default(fn ($record) => $record->UnidadeJudiciariaAtual ?? 'Não Carregado')
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('setorRef.Setor')
+                TextColumn::make('setorRef.Setor')
                     ->label('Setor Atual')
                     ->default(fn ($record) => $record->SetorAtual ?? 'Não Carregado')
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('complementoRef.descricao')
+                TextColumn::make('complementoRef.descricao')
                     ->label('Complemento')
                     ->default(fn ($record) => $record->ComplementoAtual ?? 'NÃO INFORMADO'),
 
@@ -54,9 +56,9 @@ class TransferenciaRelationManager extends RelationManager
             ])
             ->filters([])
             ->headerActions([])
-            ->actions([
-                Tables\Actions\ViewAction::make()->label('Ver'),
+            ->recordActions([
+                ViewAction::make()->label('Ver'),
             ])
-            ->bulkActions([]);
+            ->toolbarActions([]);
     }
 }

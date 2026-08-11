@@ -63,7 +63,7 @@ class UserEgap extends Model
      */
     public static function currentAuthenticated(): ?self
     {
-        $user = Filament::getCurrentPanel()
+        $user = Filament::getCurrentOrDefaultPanel()
             ? Filament::auth()->user()
             : null;
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoTributoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -13,7 +14,7 @@ class EditTipoTributo extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->label('Excluir'),
         ];
     }

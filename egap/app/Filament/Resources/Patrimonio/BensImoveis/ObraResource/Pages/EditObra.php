@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\ObraResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\ObraResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,7 +16,7 @@ class EditObra extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            DeleteAction::make()->label('Excluir'),
         ];
     }
 }

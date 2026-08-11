@@ -7,7 +7,7 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 
 class InventarioOnlineSituacaoContabil extends BaseChart
 {
-    protected static ?string $heading = 'Acompanhamento do Invetário Online Anual - Situação Contábil';
+    protected ?string $heading = 'Acompanhamento do Invetário Online Anual - Situação Contábil';
 
     protected function getData(): array
     {

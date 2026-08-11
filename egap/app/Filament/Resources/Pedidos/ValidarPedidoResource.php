@@ -2,6 +2,26 @@
 
 namespace App\Filament\Resources\Pedidos;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Support\Enums\Width;
+use App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\ListValidarPedidos;
+use App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\CreateValidarPedido;
+use App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\EditValidarPedido;
 use App\Filament\Clusters\PedidosCluster;
 use App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages;
 use App\Models\Almoxarifado\ItemPedido;
@@ -10,22 +30,12 @@ use App\Models\Cadastro\DescricaoDetalhada;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Actions\BulkAction;
-use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -42,11 +52,11 @@ class ValidarPedidoResource extends Resource
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?string $navigationIcon = 'heroicon-o-check-badge';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-check-badge';
 
-    protected static ?string $navigationGroup = 'Requisição';
+    protected static string | \UnitEnum | null $navigationGroup = 'Requisição';
 
     protected static ?string $navigationLabel = 'Validar Pedidos';
 
@@ -58,10 +68,10 @@ class ValidarPedidoResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Item do pedido')
                     ->description('Dados principais do material e quantidades do item.')
                     ->icon('heroicon-o-cube')
@@ -187,13 +197,13 @@ class ValidarPedidoResource extends Resource
             ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('No. Pedido/Solicitante')
                     ->description(fn (ItemPedido $record): string => (string) data_get($record, 'pedido.solicitante_get.name', '-'))
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('material_nome')
+                TextColumn::make('material_nome')
                     ->label('Material')
                     ->limit(50)
                     ->wrap()
@@ -210,31 +220,31 @@ class ValidarPedidoResource extends Resource
                         });
                     }),
 
-                Tables\Columns\TextColumn::make('justificativa')
+                TextColumn::make('justificativa')
                     ->label('Justificativa')
                     ->formatStateUsing(fn (mixed $state): string => self::extractJustificativaText($state) ?: '-')
                     ->default('-')
                     ->wrap()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('QuantidadeMaterial')
+                TextColumn::make('QuantidadeMaterial')
                     ->label('Qtde Solicitada')
                     ->alignCenter()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('quantidade_validada')
+                TextColumn::make('quantidade_validada')
                     ->label('Qtde Validada')
                     ->alignCenter()
                     ->default(0)
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('QuantidadeMaterialAtendida')
+                TextColumn::make('QuantidadeMaterialAtendida')
                     ->label('Qtde Atendida')
                     ->alignCenter()
                     ->default(0)
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('situacaoRef.Descricao')
+                TextColumn::make('situacaoRef.Descricao')
                     ->label('Situação Material')
                     ->default('-')
                     ->alignCenter()
@@ -244,32 +254,32 @@ class ValidarPedidoResource extends Resource
                             $situacaoQuery->where('Descricao', 'like', "%{$search}%");
                         })),
 
-                Tables\Columns\TextColumn::make('date_time')
+                TextColumn::make('date_time')
                     ->label('Atualizada em')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('ObservacaoItem')
+                TextColumn::make('ObservacaoItem')
                     ->label('Observação')
                     ->default('-')
                     ->wrap()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('validadoPor.name')
+                TextColumn::make('validadoPor.name')
                     ->label('Validado por')
                     ->default('-')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('data_validacao')
+                TextColumn::make('data_validacao')
                     ->label('Data Validação')
                     ->dateTime('d/m/Y H:i')
                     ->placeholder('-')
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\Filter::make('no_pedido')
+                Filter::make('no_pedido')
                     ->label('No Pedido')
-                    ->form([
+                    ->schema([
                         TextInput::make('value')
                             ->label('No Pedido')
                             ->placeholder('Digite o número do pedido'),
@@ -280,7 +290,7 @@ class ValidarPedidoResource extends Resource
                             fn (Builder $builder): Builder => $builder->where('idPedido', 'like', '%' . $data['value'] . '%')
                         )),
 
-                Tables\Filters\SelectFilter::make('material')
+                SelectFilter::make('material')
                     ->label('Material')
                     ->searchable()
                     ->options(self::getMaterialOptions())
@@ -300,16 +310,16 @@ class ValidarPedidoResource extends Resource
                         };
                     }),
 
-                Tables\Filters\SelectFilter::make('situacao')
+                SelectFilter::make('situacao')
                     ->label('Situação Material')
                     ->searchable()
                     ->options(self::getSituacaoMaterialOptions()),
-            ], layout: Tables\Enums\FiltersLayout::AboveContentCollapsible)
-            ->actions([
+            ], layout: FiltersLayout::AboveContentCollapsible)
+            ->recordActions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make()
+                    EditAction::make()
                         ->color('gray'),
-                    Tables\Actions\DeleteAction::make()
+                    DeleteAction::make()
                         ->color('gray'),
                     self::makeStatusRecordAction(
                         name: 'validar_materiais',
@@ -363,9 +373,9 @@ class ValidarPedidoResource extends Resource
                     ->icon('heroicon-o-ellipsis-vertical')
                     ->button(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+                    DeleteBulkAction::make()
                         ->color('gray'),
                     self::makeStatusBulkAction(
                         name: 'validar_itens',
@@ -521,7 +531,7 @@ class ValidarPedidoResource extends Resource
             ->icon('heroicon-o-building-office-2')
             ->color('gray')
             ->modalHeading('Materiais do Setor')
-            ->modalWidth(MaxWidth::FiveExtraLarge)
+            ->modalWidth(Width::FiveExtraLarge)
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (ItemPedido $record): HtmlString => new HtmlString(
@@ -537,7 +547,7 @@ class ValidarPedidoResource extends Resource
             ->color('gray')
             ->deselectRecordsAfterCompletion()
             ->modalHeading('Materiais do Setor')
-            ->modalWidth(MaxWidth::FiveExtraLarge)
+            ->modalWidth(Width::FiveExtraLarge)
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Fechar')
             ->modalContent(fn (Collection $records): HtmlString => new HtmlString(
@@ -579,7 +589,7 @@ class ValidarPedidoResource extends Resource
                 'ObservacaoItem' => $record->ObservacaoItem,
                 'data_validacao' => $record->data_validacao,
             ])
-            ->form(self::getUpdateDataFormSchema())
+            ->schema(self::getUpdateDataFormSchema())
             ->action(function (ItemPedido $record, array $data): void {
                 self::updateRecords(
                     records: self::freshRecords([$record->getKey()]),
@@ -1037,9 +1047,9 @@ class ValidarPedidoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\ListValidarPedidos::route('/'),
-            'create' => \App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\CreateValidarPedido::route('/create'),
-            'edit' => \App\Filament\Resources\Pedidos\ValidarPedidoResource\Pages\EditValidarPedido::route('/{record}/edit'),
+            'index' => ListValidarPedidos::route('/'),
+            'create' => CreateValidarPedido::route('/create'),
+            'edit' => EditValidarPedido::route('/{record}/edit'),
         ];
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
@@ -9,8 +11,9 @@ use App\Models\Patrimonio\BensMoveis\InventarioEquipe;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class EquipesModal extends TableModalComponent
+class EquipesModal extends TableModalComponent implements HasActions
 {
+    use InteractsWithActions;
     public int $unidadeId;
 
     public function mount(int $unidadeId, ?int $inventarioId = null): void
@@ -36,8 +39,8 @@ class EquipesModal extends TableModalComponent
             ->paginated([15])
             ->emptyStateIcon('heroicon-o-users')
             ->emptyStateHeading('Nenhum integrante vinculado a esta unidade inventariada')
-            ->actions([])
-            ->bulkActions([]);
+            ->recordActions([])
+            ->toolbarActions([]);
     }
 
     private function getEquipesQuery(): Builder

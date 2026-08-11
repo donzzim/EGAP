@@ -2,10 +2,20 @@
 
 namespace App\Filament\Resources\Processo;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\ListTipoDocumentos;
+use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\CreateTipoDocumento;
+use App\Filament\Resources\Processo\TipoDocumentoResource\Pages\EditTipoDocumento;
 use App\Filament\Resources\Processo\TipoDocumentoResource\Pages;
 use App\Models\Processo\MatTipoDocumento;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,20 +23,20 @@ use Filament\Tables\Table;
 class TipoDocumentoResource extends Resource
 {
     protected static ?string $model = MatTipoDocumento::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
-    protected static ?string $navigationGroup = 'Processos';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-duplicate';
+    protected static string | \UnitEnum | null $navigationGroup = 'Processos';
     protected static ?string $navigationLabel = 'Tipos de Documento';
     protected static ?string $modelLabel = 'Tipo de Documento';
     protected static ?string $pluralModelLabel = 'Tipos de Documento';
     protected static ?string $slug = 'processos/tipos-documento';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('descricao')
+                        TextInput::make('descricao')
                             ->label('Descrição')
                             ->required()
                             ->maxLength(255)
@@ -42,11 +52,11 @@ class TipoDocumentoResource extends Resource
             ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('#')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('descricao')
+                TextColumn::make('descricao')
                     ->label('Descrição')
                     ->searchable()
                     ->alignCenter()
@@ -55,20 +65,20 @@ class TipoDocumentoResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
+            ->toolbarActions([
+                DeleteBulkAction::make()->label('Excluir Selecionados'),
             ])
             ->searchPlaceholder('Entre com a palavra-chave')
             ->paginated([10, 25, 50, 100])
@@ -80,9 +90,9 @@ class TipoDocumentoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTipoDocumentos::route('/'),
-            'create' => Pages\CreateTipoDocumento::route('/create'), // Descomente para usar página separada
-            'edit' => Pages\EditTipoDocumento::route('/{record}/edit'), // Descomente para usar página separada
+            'index' => ListTipoDocumentos::route('/'),
+            'create' => CreateTipoDocumento::route('/create'), // Descomente para usar página separada
+            'edit' => EditTipoDocumento::route('/{record}/edit'), // Descomente para usar página separada
         ];
     }
 }

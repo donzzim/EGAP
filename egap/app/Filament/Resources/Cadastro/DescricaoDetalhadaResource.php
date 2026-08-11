@@ -2,13 +2,21 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\ListDescricaoDetalhadas;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\CreateDescricaoDetalhada;
+use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescricaoDetalhada;
 use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\RelationManagers;
 use App\Models\Cadastro\DescricaoDetalhada;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,47 +25,47 @@ class DescricaoDetalhadaResource extends Resource
 {
     protected static ?string $model = DescricaoDetalhada::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document';
 
     protected static ?string $navigationLabel = 'Descrição Detalhada';
 
     protected static ?string $pluralModelLabel = 'Descrições Detalhadas';
 
-    protected static ?string $navigationGroup = 'Cadastro';
+    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
 
     protected static ?int $navigationSort = 4;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
 
-            Forms\Components\Section::make('Informações Gerais')
+            Section::make('Informações Gerais')
                 ->schema([
-                    Forms\Components\Select::make('descricao_resumida')
+                    Select::make('descricao_resumida')
                         ->label('Descrição Resumida')
                         ->relationship('descricao_resumida_text' , 'Descricao'),
 
-                    Forms\Components\Select::make('marca')
+                    Select::make('marca')
                         ->label('Marca')
                         ->relationship('marca_text' , 'descricao'),
 
-                    Forms\Components\Select::make('modelo')
+                    Select::make('modelo')
                         ->label('Modelo')
                         ->relationship('modelo_text' , 'descricao'),
 
-                    Forms\Components\Textarea::make('descricao_detalhada')
+                    Textarea::make('descricao_detalhada')
                         ->label('Descrição Detalhada')
                         ->required()
                         ->rows(5)
                         ->columnSpanFull(),
 
-                    Forms\Components\TextInput::make('valor_mercado')
+                    TextInput::make('valor_mercado')
                         ->label('Valor de Mercado')
                         ->numeric()
                         ->prefix('R$')
                         ->step('0.01')
                         ->columnSpan(2),
-                    Forms\Components\Select::make('visibilidade')
+                    Select::make('visibilidade')
                         ->options([
                             '0' => 'Ninguém',
                             '1' => 'Comarcas',
@@ -69,15 +77,15 @@ class DescricaoDetalhadaResource extends Resource
                 ])
                 ->columns(3),
 
-            Forms\Components\Section::make('Arquivos')
+            Section::make('Arquivos')
                 ->schema([
 
-                    Forms\Components\FileUpload::make('imagem')
+                    FileUpload::make('imagem')
                         ->image()
                         ->directory('descricoes/imagens')
                         ->imagePreviewHeight('150'),
 
-                    Forms\Components\FileUpload::make('pdf')
+                    FileUpload::make('pdf')
                         ->directory('descricoes/pdfs')
                         ->acceptedFileTypes(['application/pdf']),
 
@@ -122,9 +130,9 @@ class DescricaoDetalhadaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\ListDescricaoDetalhadas::route('/'),
-            'create' => \App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\CreateDescricaoDetalhada::route('/create'),
-            'edit' => \App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescricaoDetalhada::route('/{record}/edit'),
+            'index' => ListDescricaoDetalhadas::route('/'),
+            'create' => CreateDescricaoDetalhada::route('/create'),
+            'edit' => EditDescricaoDetalhada::route('/{record}/edit'),
         ];
     }
 }

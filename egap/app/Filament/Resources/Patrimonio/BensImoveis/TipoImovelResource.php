@@ -2,41 +2,46 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\ListTipoImovels;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\CreateTipoImovel;
+use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages\EditTipoImovel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoImovelResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\TipoImovel;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class TipoImovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = TipoImovel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
     protected static ?string $navigationLabel = 'Tipo de Imóvel';
     protected static ?string $modelLabel = 'Tipo de Imóvel';
     protected static ?string $pluralModelLabel = 'Tipos de Imóvel';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
     protected static ?int $navigationSort = 17;
     protected static ?string $slug = 'bens-imoveis/tipos-imoveis';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('desc_tipo_imovel')
+                        TextInput::make('desc_tipo_imovel')
                             ->label('Descrição')
                             ->required()
                             ->maxLength(255)
@@ -56,9 +61,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTipoImovels::route('/'),
-            'create' => Pages\CreateTipoImovel::route('/create'),
-            'edit' => Pages\EditTipoImovel::route('/{record}/edit'),
+            'index' => ListTipoImovels::route('/'),
+            'create' => CreateTipoImovel::route('/create'),
+            'edit' => EditTipoImovel::route('/{record}/edit'),
         ];
     }
 }

@@ -2,6 +2,10 @@
 
 namespace App\Filament\Livewire\Externo\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Livewire\Externo\MateriaisDisponiveis;
 use App\Filament\Support\TableColumns;
@@ -11,9 +15,7 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,8 +31,9 @@ use Illuminate\Database\Eloquent\Builder;
  * modal para os dados que não cabem em coluna (Tipo de solicitação e
  * Justificativa — e o nº do patrimônio, quando for Substituição).
  */
-class MateriaisPermanentesTable extends MateriaisDisponiveis
+class MateriaisPermanentesTable extends MateriaisDisponiveis implements HasActions
 {
+    use InteractsWithActions;
     public function table(Table $table): Table
     {
         return TableDefaults::apply($table)
@@ -45,10 +48,10 @@ class MateriaisPermanentesTable extends MateriaisDisponiveis
 
                 $this->quantidadeColumn(),
             ])
-            ->actions([
+            ->recordActions([
                 $this->adicionarAction(),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort('Descricao')
             ->emptyStateHeading('Nenhum material disponível no momento');
     }
@@ -61,7 +64,7 @@ class MateriaisPermanentesTable extends MateriaisDisponiveis
             ->icon('heroicon-m-plus')
             ->modalHeading(fn (DescricaoResumida $record): string => "Adicionar - {$record->Descricao}")
             ->modalSubmitActionLabel('Adicionar ao carrinho')
-            ->form([
+            ->schema([
                 Radio::make('tipo_atendimento')
                     ->label('Tipo de solicitação')
                     ->options([

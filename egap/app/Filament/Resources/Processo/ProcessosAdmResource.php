@@ -2,10 +2,28 @@
 
 namespace App\Filament\Resources\Processo;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\Repeater;
+use Illuminate\Support\Facades\DB;
+use Filament\Forms\Components\Hidden;
+use App\Models\Processo\MatTipoDocumento;
+use Filament\Forms\Components\Placeholder;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Processo\ProcessosAdmResource\Pages\ListProcessosAdms;
 use App\Filament\Resources\Processo\ProcessosAdmResource\Pages;
 use App\Models\Patrimonio\BensImoveis\Processo;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,75 +33,75 @@ class ProcessosAdmResource extends Resource
 {
     protected static ?string $model = Processo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-folder-open';
-    protected static ?string $navigationGroup = 'Processos';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-folder-open';
+    protected static string | \UnitEnum | null $navigationGroup = 'Processos';
     protected static ?string $navigationLabel = 'Processos Administrativos';
     protected static ?string $modelLabel = 'Processo Administrativo';
     protected static ?string $pluralModelLabel = 'Processos Administrativos';
     protected static ?string $slug = 'processos/processos-adm';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Tabs::make('Tabs')
+        return $schema
+            ->components([
+                Tabs::make('Tabs')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Processos Administrativos')
+                        Tab::make('Processos Administrativos')
                             ->schema([
-                                Forms\Components\TextInput::make('num_processo')
+                                TextInput::make('num_processo')
                                     ->label('Nº Processo TJES')
                                     ->required()
                                     ->unique(ignoreRecord: true)
                                     ->mask('9999.99.999.999')
                                     ->placeholder('0000.00.000.000'),
 
-                                Forms\Components\TextInput::make('no_processo_sei')
+                                TextInput::make('no_processo_sei')
                                     ->label('No Processo SEI')
                                     ->unique(ignoreRecord: true)
                                     ->mask('9999999-99.9999.9.99.9999')
                                     ->placeholder('0000000-00.0000.0.00.0000'),
 
-                                Forms\Components\Select::make('id_tipo_processo')
+                                Select::make('id_tipo_processo')
                                     ->label('Tipo de Processo')
                                     ->relationship('tipoProcessoRelacaoRef', 'descricao')
                                     ->searchable()
                                     ->preload(),
 
-                                Forms\Components\DatePicker::make('data_abertura')
+                                DatePicker::make('data_abertura')
                                     ->label('Data de Abertura')
                                     ->displayFormat('d/m/Y')
                                     ->native(false),
 
-                                Forms\Components\Select::make('unidade_demandante')
+                                Select::make('unidade_demandante')
                                     ->label('Unidade Requisitante')
                                     ->relationship('unidadeRequisitanteRelacaoRef', 'Setor')
                                     ->searchable()
                                     ->optionsLimit(50),
 
-                                Forms\Components\DatePicker::make('data_vigencia')
+                                DatePicker::make('data_vigencia')
                                     ->label('Data de encerramento da vigência')
                                     ->displayFormat('d/m/Y')
                                     ->native(false),
 
-                                Forms\Components\Textarea::make('descricao')
+                                Textarea::make('descricao')
                                     ->label('Descrição')
                                     ->columnSpan(1)
                                     ->rows(4),
 
-                                Forms\Components\Select::make('id_processo_pai')
+                                Select::make('id_processo_pai')
                                     ->label('Relacionado ao Processo')
                                     ->relationship('processoPaiRelacaoRef', 'num_processo')
                                     ->searchable()
                                     ->optionsLimit(20)
                                     ->columnSpan(1),
 
-                                Forms\Components\Select::make('id_fornecedor')
+                                Select::make('id_fornecedor')
                                     ->label('Fornecedor')
                                     ->relationship('fornecedorRelacaoRef', 'NomeFornecedor')
                                     ->searchable()
                                     ->optionsLimit(50),
 
-                                Forms\Components\Select::make('situacao_atual')
+                                Select::make('situacao_atual')
                                     ->label('Situação Atual')
                                     ->options([
                                         'Aguardando validação' => 'Aguardando validação',
@@ -94,22 +112,22 @@ class ProcessosAdmResource extends Resource
                                     ])
                                     ->searchable(),
 
-                                Forms\Components\Select::make('projeto_atividade')
+                                Select::make('projeto_atividade')
                                     ->label('Projeto/Atividade')
                                     ->relationship('projetoAtividadeRelacaoRef', 'descricao')
                                     ->searchable()
                                     ->columnSpan(1),
                             ])->columns(2),
 
-                        Forms\Components\Tabs\Tab::make('Gestores')
+                        Tab::make('Gestores')
                             ->schema([
-                                Forms\Components\Select::make('gestor_titular')
+                                Select::make('gestor_titular')
                                     ->label('Gestor Titular')
                                     ->relationship('gestorTitularRelacaoRef', 'name')
                                     ->searchable()
                                     ->columnSpanFull(),
 
-                                Forms\Components\Select::make('gestor_substituto')
+                                Select::make('gestor_substituto')
                                     ->label('Gestor Substituto')
                                     ->relationship('gestorSubstitutoRelacaoRef', 'name')
                                     ->searchable()
@@ -126,13 +144,13 @@ class ProcessosAdmResource extends Resource
             ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
-                Tables\Columns\TextColumn::make('num_processo')
+                TextColumn::make('num_processo')
                     ->label(new HtmlString('Nº Processo<br>TJES'))
                     ->sortable()
                     ->searchable()
                     ->width('80px'),
 
-                Tables\Columns\TextColumn::make('no_processo_sei')
+                TextColumn::make('no_processo_sei')
                     ->label('No Processo SEI')
                     ->sortable()
                     ->default('-')
@@ -142,7 +160,7 @@ class ProcessosAdmResource extends Resource
                     ->width('60px'),
 
 
-                Tables\Columns\TextColumn::make('tipoProcessoRelacaoRef.descricao')
+                TextColumn::make('tipoProcessoRelacaoRef.descricao')
                     ->label('Tipo de Processo')
                     ->sortable()
                     ->default('-')
@@ -151,7 +169,7 @@ class ProcessosAdmResource extends Resource
                     ->wrap(),
 
 
-                Tables\Columns\TextColumn::make('data_abertura')
+                TextColumn::make('data_abertura')
                     ->label(new HtmlString('Data de<br>Abertura'))
                     ->date('d/m/Y')
                     ->sortable()
@@ -159,13 +177,13 @@ class ProcessosAdmResource extends Resource
                     ->width('120px')
                     ->extraCellAttributes(['style' => 'padding-right: 16px;']),
 
-                Tables\Columns\TextColumn::make('unidadeRequisitanteRelacaoRef.Setor')
+                TextColumn::make('unidadeRequisitanteRelacaoRef.Setor')
                     ->label(new HtmlString('Unidade<br>Requisitante'))
                     ->sortable()
                     ->width('150px')
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('data_vigencia')
+                TextColumn::make('data_vigencia')
                     ->label(new HtmlString('Data de encerramento<br>da vigência'))
                     ->date('d/m/Y')
                     ->sortable()
@@ -173,21 +191,21 @@ class ProcessosAdmResource extends Resource
                     ->width('90px')
                     ->extraCellAttributes(['style' => 'padding-right:24px;']),
 
-                Tables\Columns\TextColumn::make('descricao')
+                TextColumn::make('descricao')
                     ->label('Descrição')
                     ->sortable()
                     ->searchable()
                     ->width('300px')
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('situacao_atual')
+                TextColumn::make('situacao_atual')
                     ->label('Situação Atual')
                     ->sortable()
                     ->searchable()
                     ->width('180px'),
 
 
-                Tables\Columns\TextColumn::make('gestorTitularRelacaoRef.name')
+                TextColumn::make('gestorTitularRelacaoRef.name')
                     ->label('Gestor Titular')
                     ->sortable()
                     ->width('200px')
@@ -195,19 +213,19 @@ class ProcessosAdmResource extends Resource
 
             ])
             ->filters([])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
 
-                Tables\Actions\EditAction::make('materiais')
+                EditAction::make('materiais')
                     ->hiddenLabel()
                     ->tooltip('Materiais')
                     ->icon('heroicon-o-cube')
@@ -215,17 +233,17 @@ class ProcessosAdmResource extends Resource
                     ->modalHeading(fn (Processo $record) => "Processos Administrativos - Materiais - " . ($record->no_processo_sei ?? $record->num_processo))
                     ->modalSubmitActionLabel('Salvar alterações')
                     ->modalWidth('7xl')
-                    ->form([
-                        Forms\Components\Repeater::make('materiais')
+                    ->schema([
+                        Repeater::make('materiais')
                             ->relationship('materiaisRelacaoRef')
                             ->label('')
                             ->collapsible()
                             ->collapsed()
-                            ->itemLabel(fn (array $state) => $state['material'] ? \Illuminate\Support\Facades\DB::connection('egap')->table('mat_descricaodetalhada')->where('id', $state['material'])->value('descricao_detalhada') : 'Novo Material')
+                            ->itemLabel(fn (array $state) => $state['material'] ? DB::connection('egap')->table('mat_descricaodetalhada')->where('id', $state['material'])->value('descricao_detalhada') : 'Novo Material')
                             ->schema([
-                                Forms\Components\Select::make('processo')
+                                Select::make('processo')
                                     ->label('Processo')
-                                    ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')
+                                    ->options(fn () => DB::connection('egap')
                                         ->table('mat_processos')
                                         ->selectRaw("id, IFNULL(no_processo_sei, num_processo) as proc_label")
                                         ->pluck('proc_label', 'id')
@@ -234,9 +252,9 @@ class ProcessosAdmResource extends Resource
                                     ->default(fn ($livewire) => $livewire->mountedTableActionRecord)
                                     ->columnSpanFull(),
 
-                                Forms\Components\Select::make('material')
+                                Select::make('material')
                                     ->label('Material')
-                                    ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')
+                                    ->options(fn () => DB::connection('egap')
                                         ->table('mat_descricaodetalhada as dd')
                                         ->leftJoin('mat_descricaoresumida as dr', 'dr.id', '=', 'dd.descricao_resumida')
                                         ->leftJoin('mat_produtos as el', 'el.id', '=', 'dr.id_produto')
@@ -246,34 +264,34 @@ class ProcessosAdmResource extends Resource
                                     ->searchable()
                                     ->columnSpanFull(),
 
-                                Forms\Components\TextInput::make('qtde_min')
+                                TextInput::make('qtde_min')
                                     ->label('Qtde Min')
                                     ->numeric(),
 
-                                Forms\Components\TextInput::make('qtde_max')
+                                TextInput::make('qtde_max')
                                     ->label('Qtde Máx')
                                     ->numeric(),
 
-                                Forms\Components\TextInput::make('preco')
+                                TextInput::make('preco')
                                     ->label('Preço')
                                     ->numeric()
                                     ->prefix('R$'),
 
-                                Forms\Components\TextInput::make('saldo_atual')
+                                TextInput::make('saldo_atual')
                                     ->label('Saldo Atual')
                                     ->numeric(),
 
-                                Forms\Components\TextInput::make('lote')
+                                TextInput::make('lote')
                                     ->label('Lote'),
 
-                                Forms\Components\Select::make('atualizado_por')
+                                Select::make('atualizado_por')
                                     ->label('Atualizado por')
                                     ->relationship('atualizadoPorRelacaoRef', 'name')
                                     ->searchable()
                                     ->default(fn () => auth()->id())
                                     ->columnSpanFull(),
 
-                                Forms\Components\Hidden::make('date_time')
+                                Hidden::make('date_time')
                                     ->default(now()),
                             ])
                             ->columns(5)
@@ -282,7 +300,7 @@ class ProcessosAdmResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Tables\Actions\EditAction::make('documentos')
+                EditAction::make('documentos')
                     ->hiddenLabel()
                     ->tooltip('Documentos')
                     ->icon('heroicon-o-paper-clip')
@@ -290,33 +308,33 @@ class ProcessosAdmResource extends Resource
                     ->modalHeading(fn (Processo $record) => "Anexos do Processo - " . ($record->no_processo_sei ?? $record->num_processo))
                     ->modalSubmitActionLabel('Salvar alterações')
                     ->modalWidth('7xl')
-                    ->form([
-                        Forms\Components\Repeater::make('documentacoes')
+                    ->schema([
+                        Repeater::make('documentacoes')
                             ->relationship('documentacoesRelacaoRef')
                             ->label('')
                             ->collapsible()
                             ->collapsed()
                             ->itemLabel(fn (array $state) => ($state['num_documento'] ?? 'Novo Documento') . ($state['data'] ?? false ? ' - ' . date('d/m/Y', strtotime($state['data'])) : ''))
                             ->schema([
-                                Forms\Components\Select::make('tipo_documento')
+                                Select::make('tipo_documento')
                                     ->label('Tipo do Documento')
-                                    ->options(fn () => \App\Models\Processo\MatTipoDocumento::pluck('descricao', 'id'))
+                                    ->options(fn () => MatTipoDocumento::pluck('descricao', 'id'))
                                     ->searchable(),
 
-                                Forms\Components\Select::make('material')
+                                Select::make('material')
                                     ->label('Material')
-                                    ->options(fn () => \Illuminate\Support\Facades\DB::connection('egap')->table('mat_descricaoresumida')->pluck('Descricao', 'id'))
+                                    ->options(fn () => DB::connection('egap')->table('mat_descricaoresumida')->pluck('Descricao', 'id'))
                                     ->searchable(),
 
-                                Forms\Components\DatePicker::make('data')
+                                DatePicker::make('data')
                                     ->label('Data')
                                     ->displayFormat('d/m/Y')
                                     ->native(false),
 
-                                Forms\Components\TextInput::make('num_documento')
+                                TextInput::make('num_documento')
                                     ->label('Documento Nº'),
 
-                                Forms\Components\Placeholder::make('link_anexo')
+                                Placeholder::make('link_anexo')
                                     ->label('Anexo')
                                     ->content(function ($get) {
                                         $file = $get('anexo_documento');
@@ -327,7 +345,7 @@ class ProcessosAdmResource extends Resource
                                         return new HtmlString("<a href='https://sistemas.tjes.jus.br/patrimonio/images/processos/{$fileName}' target='_blank' style='color: #3b82f6; text-decoration: underline; word-break: break-all; max-width: 100%; display: inline-block;'>{$fileName}</a>");
                                     }),
 
-                                Forms\Components\Hidden::make('date_time')
+                                Hidden::make('date_time')
                                     ->default(now()),
                             ])
                             ->columns(3)
@@ -337,9 +355,9 @@ class ProcessosAdmResource extends Resource
                     ]),
 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Excluir Selecionados'),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('Excluir Selecionados'),
                 ]),
             ])
             ->searchPlaceholder('Entre com a palavra-chave')
@@ -353,7 +371,7 @@ class ProcessosAdmResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProcessosAdms::route('/'),
+            'index' => ListProcessosAdms::route('/'),
         ];
     }
 }

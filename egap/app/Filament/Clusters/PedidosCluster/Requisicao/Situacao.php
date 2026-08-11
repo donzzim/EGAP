@@ -2,11 +2,11 @@
 
 namespace App\Filament\Clusters\PedidosCluster\Requisicao;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Actions\Action;
 use App\Filament\Clusters\PedidosCluster;
 use App\Models\Almoxarifado\SituacaoPedido;
 use Filament\Pages\Page;
-use Filament\Pages\SubNavigationPosition;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -18,13 +18,13 @@ class Situacao extends Page implements HasTable
 
     protected static ?string $cluster = PedidosCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
-    protected static ?string $navigationIcon = 'heroicon-o-flag';
-    protected static ?string $navigationGroup = 'Requisição';
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-flag';
+    protected static string | \UnitEnum | null $navigationGroup = 'Requisição';
     protected static ?string $title = 'Pedidos - Situação';
     protected static ?string $slug = 'situacao-pedidos';
     protected static ?string $navigationLabel = 'Situação';
-    protected static string $view = 'filament.pages.pedidos.requisicao.situacao';
+    protected string $view = 'filament.pages.pedidos.requisicao.situacao';
 
     public function table(Table $table): Table
     {
@@ -42,7 +42,7 @@ class Situacao extends Page implements HasTable
                     ->color('gray')
                     ->label('Usuário'),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('delete')
                     ->color('danger')
                     ->label('')

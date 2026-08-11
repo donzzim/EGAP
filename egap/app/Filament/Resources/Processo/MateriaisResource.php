@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources\Processo;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Processo\MateriaisResource\Pages\ListMateriais;
 use App\Filament\Resources\Processo\MateriaisResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\DescricaoDetalhada;
@@ -21,9 +31,9 @@ class MateriaisResource extends Resource
 {
     protected static ?string $model = ProMaterial::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cube';
 
-    protected static ?string $navigationGroup = 'Processos';
+    protected static string | \UnitEnum | null $navigationGroup = 'Processos';
 
     protected static ?string $navigationLabel = 'Materiais/Serviços';
 
@@ -152,25 +162,25 @@ class MateriaisResource extends Resource
             ]))
             ->defaultSort('date_time', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('processoRelacaoRef.num_processo')
+                TextColumn::make('processoRelacaoRef.num_processo')
                     ->label('Processo')
                     ->searchable()
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('materialRelacaoRef.descricao_detalhada')
+                TextColumn::make('materialRelacaoRef.descricao_detalhada')
                     ->label('Material')
                     ->searchable()
                     ->wrap()
                     ->limit(70),
 
-                Tables\Columns\TextColumn::make('lote')
+                TextColumn::make('lote')
                     ->label('Lote')
                     ->badge()
                     ->color('gray')
                     ->placeholder('-')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('saldo_atual')
+                TextColumn::make('saldo_atual')
                     ->label('Saldo')
                     ->numeric(thousandsSeparator: '.')
                     ->alignCenter()
@@ -179,21 +189,21 @@ class MateriaisResource extends Resource
                     ->description(fn (ProMaterial $record): ?string => static::buildSaldoResumo($record))
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('qtde_min')
+                TextColumn::make('qtde_min')
                     ->label('Min.')
                     ->numeric(thousandsSeparator: '.')
                     ->alignCenter()
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('qtde_max')
+                TextColumn::make('qtde_max')
                     ->label('Max.')
                     ->numeric(thousandsSeparator: '.')
                     ->alignCenter()
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('preco')
+                TextColumn::make('preco')
                     ->label('Preço')
                     ->money('BRL', true)
                     ->alignCenter()
@@ -203,17 +213,17 @@ class MateriaisResource extends Resource
                     ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('processo')
+                SelectFilter::make('processo')
                     ->label('Processo')
                     ->searchable()
                     ->options(fn (): array => static::getProcessoOptions(limit: 150)),
 
-                Tables\Filters\SelectFilter::make('material')
+                SelectFilter::make('material')
                     ->label('Material')
                     ->searchable()
                     ->options(fn (): array => static::getMaterialOptions(limit: 150)),
 
-                Tables\Filters\SelectFilter::make('atualizado_por')
+                SelectFilter::make('atualizado_por')
                     ->label('Atualizado por')
                     ->searchable()
                     ->options(fn (): array => UserEgap::query()
@@ -222,13 +232,13 @@ class MateriaisResource extends Resource
                         ->all()
                     ),
 
-                Tables\Filters\Filter::make('periodo')
+                Filter::make('periodo')
                     ->label('Periodo')
-                    ->form([
-                        Forms\Components\DatePicker::make('de')
+                    ->schema([
+                        DatePicker::make('de')
                             ->label('De')
                             ->native(false),
-                        Forms\Components\DatePicker::make('ate')
+                        DatePicker::make('ate')
                             ->label('Ate')
                             ->native(false),
                     ])
@@ -238,20 +248,20 @@ class MateriaisResource extends Resource
                             ->when($data['ate'] ?? null, fn (Builder $subQuery, $date) => $subQuery->whereDate('date_time', '<=', $date));
                     }),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->hiddenLabel()
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->label('Excluir selecionados'),
                 ]),
             ])
@@ -272,7 +282,7 @@ class MateriaisResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMateriais::route('/'),
+            'index' => ListMateriais::route('/'),
         ];
     }
 

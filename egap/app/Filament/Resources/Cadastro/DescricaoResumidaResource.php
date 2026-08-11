@@ -2,12 +2,19 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\ListDescricaoResumidas;
+use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\CreateDescricaoResumida;
+use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\EditDescricaoResumida;
 use App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\DescricaoResumida;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -16,7 +23,7 @@ class DescricaoResumidaResource extends Resource
 {
     protected static ?string $model = DescricaoResumida::class;
     protected static ?int $navigationSort = 3;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Descrição Resumida';
 
@@ -24,14 +31,14 @@ class DescricaoResumidaResource extends Resource
 
     protected static ?string $modelLabel = 'Descrição Resumida';
 
-    protected static ?string $navigationGroup = 'Cadastro';
+    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Informações Gerais')
+        return $schema->components([
+            Section::make('Informações Gerais')
                 ->schema([
-                    Forms\Components\Select::make('id_tipo_material')
+                    Select::make('id_tipo_material')
                         ->label('Tipo Material')
                         ->required()
                         ->options([
@@ -41,12 +48,12 @@ class DescricaoResumidaResource extends Resource
                         ])
                         ->columnSpanFull(),
 
-                    Forms\Components\TextInput::make('Descricao')
+                    TextInput::make('Descricao')
                         ->label('Descrição')
                         ->required()
                         ->columnSpanFull(),
 
-                    Forms\Components\Select::make('ContaContabil')
+                    Select::make('ContaContabil')
                         ->label('Conta Contábil')
                         ->required()
                         ->relationship(
@@ -56,7 +63,7 @@ class DescricaoResumidaResource extends Resource
                         ->searchable()
                         ->preload(),
 
-                    Forms\Components\Select::make('id_produto')
+                    Select::make('id_produto')
                         ->label('Elemento de Despesa')
                         ->required()
                         ->relationship(
@@ -66,7 +73,7 @@ class DescricaoResumidaResource extends Resource
                         ->searchable()
                         ->preload(),
 
-                    Forms\Components\Select::make('visibilidade')
+                    Select::make('visibilidade')
                         ->options([
                             '0' => 'Ninguém',
                             '1' => 'Comarcas',
@@ -78,9 +85,9 @@ class DescricaoResumidaResource extends Resource
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
-            Forms\Components\Section::make('Arquivos')
+            Section::make('Arquivos')
                 ->schema([
-                    Forms\Components\FileUpload::make('imagem')
+                    FileUpload::make('imagem')
                         ->image()
                         ->directory('descricoes/imagens')
                         ->imagePreviewHeight('150'),
@@ -120,9 +127,9 @@ class DescricaoResumidaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\ListDescricaoResumidas::route('/'),
-            'create' => \App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\CreateDescricaoResumida::route('/create'),
-            'edit' => \App\Filament\Resources\Cadastro\DescricaoResumidaResource\Pages\EditDescricaoResumida::route('/{record}/edit'),
+            'index' => ListDescricaoResumidas::route('/'),
+            'create' => CreateDescricaoResumida::route('/create'),
+            'edit' => EditDescricaoResumida::route('/{record}/edit'),
         ];
     }
 

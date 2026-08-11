@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Patrimonio\BensImoveis\TipoDeBemResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -15,7 +16,7 @@ class EditTipoDeBem extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->label('Excluir'),
+            DeleteAction::make()->label('Excluir'),
         ];
     }
 }

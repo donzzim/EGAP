@@ -12,7 +12,7 @@ class PatrimonioImoveisPorContaChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Imóveis por conta contábil';
+    protected ?string $heading = 'Imóveis por conta contábil';
 
     protected static ?int $sort = 4;
 
@@ -22,7 +22,7 @@ class PatrimonioImoveisPorContaChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = app(PatrimonioDashboardService::class)->getImoveisPorContaContabil($this->filters);
+        $data = app(PatrimonioDashboardService::class)->getImoveisPorContaContabil($this->pageFilters);
 
         return [
             'datasets' => [

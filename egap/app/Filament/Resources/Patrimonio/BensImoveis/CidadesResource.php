@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\Pages\ListCidades;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\Pages\CreateCidades;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\Pages\EditCidades;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\Pages;
 use App\Filament\Support\TableDefaults;
@@ -9,29 +15,27 @@ use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidadesResource\RelationManagers;
 use App\Models\Patrimonio\BensImoveis\Cidades;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class CidadesResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Cidades::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
     protected static ?int $navigationSort = 8;
     protected static ?string $slug = 'bens-imoveis/cidades';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('descricao')
+        return $schema
+            ->components([
+                TextInput::make('descricao')
                     ->label('Nome da Cidade')
                     ->maxLength(255)
                     ->required(),
@@ -49,9 +53,9 @@ class CidadesResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCidades::route('/'),
-            'create' => Pages\CreateCidades::route('/create'),
-            'edit' => Pages\EditCidades::route('/{record}/edit'),
+            'index' => ListCidades::route('/'),
+            'create' => CreateCidades::route('/create'),
+            'edit' => EditCidades::route('/{record}/edit'),
         ];
     }
 }

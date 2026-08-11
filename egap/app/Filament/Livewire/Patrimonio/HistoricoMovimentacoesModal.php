@@ -2,12 +2,15 @@
 
 namespace App\Filament\Livewire\Patrimonio;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Resources\Patrimonio\BensMoveis\TransferenciaBemResource;
 use App\Filament\Support\TableModalComponent;
 use Filament\Tables\Table;
 
-class HistoricoMovimentacoesModal extends TableModalComponent
+class HistoricoMovimentacoesModal extends TableModalComponent implements HasActions
 {
+    use InteractsWithActions;
     public int $numPatrimonio;
 
     public function mount(int $numPatrimonio): void

@@ -2,6 +2,10 @@
 
 namespace App\Filament\Livewire\Externo;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
 use App\Filament\Livewire\Externo\Patrimonio\CarrinhoMateriaisPermanentesForm;
 use App\Models\Almoxarifado\Pedidos;
@@ -11,8 +15,6 @@ use App\Models\UserEgap;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Livewire\Component;
 use Throwable;
@@ -28,8 +30,9 @@ use Throwable;
  * enviado — e como o item é removido do carrinho — fica a cargo de cada
  * subclasse, pois divergem de verdade (ver docblocks das subclasses).
  */
-abstract class Carrinho extends Component implements HasForms
+abstract class Carrinho extends Component implements HasForms, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
 
     public array $carrinho = [];

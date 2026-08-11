@@ -2,13 +2,18 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use App\Filament\Resources\Cadastro\MarcasResource\Pages\ListMarcas;
+use App\Filament\Resources\Cadastro\MarcasResource\Pages\CreateMarcas;
+use App\Filament\Resources\Cadastro\MarcasResource\Pages\EditMarcas;
 use App\Filament\Resources\Cadastro\MarcasResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Filament\Resources\Cadastro\MarcasResource\RelationManagers;
 use App\Models\Cadastro\Marcas;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -16,25 +21,25 @@ use Filament\Tables\Table;
 class MarcasResource extends Resource
 {
     protected static ?string $model = Marcas::class;
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
     protected static ?string $recordTitleAttribute = 'descricao';
     protected static ?string $modelLabel = 'Marcas ';
     protected static ?string $pluralModelLabel = 'Marcas ';
     protected static ?string $navigationLabel = 'Marcas ';
-    protected static ?string $navigationGroup = 'Cadastro';
+    protected static string | \UnitEnum | null $navigationGroup = 'Cadastro';
     protected static ?int $navigationSort = 9;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('descricao')
+        return $schema
+            ->components([
+                TextInput::make('descricao')
                     ->label('Descrição')
                     ->required()
                     ->maxLength(255)
                     ->default(null)
                     ->columnSpanFull(),
-                Forms\Components\Select::make('tipobem')
+                Select::make('tipobem')
                     ->label('Tipo do Bem')
                     ->options([
                         '0' => 'Outros',
@@ -62,9 +67,9 @@ class MarcasResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\Cadastro\MarcasResource\Pages\ListMarcas::route('/'),
-            'create' => \App\Filament\Resources\Cadastro\MarcasResource\Pages\CreateMarcas::route('/create'),
-            'edit' => \App\Filament\Resources\Cadastro\MarcasResource\Pages\EditMarcas::route('/{record}/edit'),
+            'index' => ListMarcas::route('/'),
+            'create' => CreateMarcas::route('/create'),
+            'edit' => EditMarcas::route('/{record}/edit'),
         ];
     }
 }

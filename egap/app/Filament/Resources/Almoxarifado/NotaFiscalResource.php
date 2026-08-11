@@ -2,16 +2,32 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Repeater;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\ListNotaFiscals;
+use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\CreateNotaFiscal;
+use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages\EditNotaFiscal;
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\NotaFiscalResource\Pages;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,31 +37,31 @@ class NotaFiscalResource extends Resource
     protected static ?string $model = NotaFiscal::class;
     protected static ?string $slug = 'notas-fiscais';
     protected static ?string $cluster = AlmoxarifadoCluster::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $modelLabel = 'Nota Fiscal';
     protected static ?string $pluralModelLabel = 'Notas Fiscais';
     protected static ?string $navigationLabel = 'Nota Fiscal';
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
             Tabs::make('TabsNotaFiscal')
                 ->columnSpanFull()
                 ->tabs([
-                    Tabs\Tab::make('Dados Gerais')
+                    Tab::make('Dados Gerais')
                         ->icon('heroicon-m-information-circle')
                         ->schema([
 
-                            Forms\Components\Grid::make(3)
+                            Grid::make(3)
                                 ->schema([
-                                    Forms\Components\TextInput::make('num_documento')
+                                    TextInput::make('num_documento')
                                         ->numeric()
                                         ->required()
                                         ->label('Núm. Documento'),
 
-                                    Forms\Components\Select::make('tipo_documento')
+                                    Select::make('tipo_documento')
                                         ->label('Tipo Documento')
                                         ->required()
                                         ->relationship('tipoDocumento', 'descricao')
@@ -53,7 +69,7 @@ class NotaFiscalResource extends Resource
                                         ->preload()
                                         ->native(false),
 
-                                    Forms\Components\DatePicker::make('data_documento')
+                                    DatePicker::make('data_documento')
                                         ->label('Data Documento')
                                         ->default(now())
                                         ->required()
@@ -61,9 +77,9 @@ class NotaFiscalResource extends Resource
                                         ->native(false),
                                 ]),
 
-                            Forms\Components\Grid::make(3)
+                            Grid::make(3)
                                 ->schema([
-                                    Forms\Components\Select::make('fornecedor')
+                                    Select::make('fornecedor')
                                         ->label('Fornecedor')
                                         ->required()
                                         ->relationship('fornecedorRef', 'NomeFornecedor')
@@ -72,7 +88,7 @@ class NotaFiscalResource extends Resource
                                         ->native(false)
                                         ->columnSpan(2),
 
-                                    Forms\Components\Select::make('estoque')
+                                    Select::make('estoque')
                                         ->label('Estoque')
                                         ->required()
                                         ->options([
@@ -82,10 +98,10 @@ class NotaFiscalResource extends Resource
                                         ->native(false),
                                 ]),
 
-                            Forms\Components\Grid::make(2)
+                            Grid::make(2)
                                 ->schema([
 
-                                    Forms\Components\Select::make('unidade_judiciaria')
+                                    Select::make('unidade_judiciaria')
                                         ->label('Unidade Judiciária')
                                         ->required()
                                         ->searchable()
@@ -99,7 +115,7 @@ class NotaFiscalResource extends Resource
                                         )
                                         ->afterStateUpdated(fn (Set $set) => $set('setor', null)),
 
-                                    Forms\Components\Select::make('setor')
+                                    Select::make('setor')
                                         ->label('Setor')
                                         ->required()
                                         ->searchable()
@@ -116,18 +132,18 @@ class NotaFiscalResource extends Resource
                                         ->disabled(fn (Get $get) => blank($get('unidade_judiciaria'))),
                                 ]),
 
-                            Forms\Components\Textarea::make('observacao')
+                            Textarea::make('observacao')
                                 ->label('Observação')
                                 ->required()
                                 ->columnSpanFull()
                                 ->rows(3),
                         ]),
 
-                    Tabs\Tab::make('Itens da Nota')
+                    Tab::make('Itens da Nota')
                         ->icon('heroicon-m-shopping-cart')
                         ->schema([
 
-                            Forms\Components\TextInput::make('valor_total')
+                            TextInput::make('valor_total')
                                 ->numeric()
                                 ->readOnly()
                                 ->dehydrated()
@@ -136,14 +152,14 @@ class NotaFiscalResource extends Resource
                                 ->label('Subtotal / Total da Nota Fiscal')
                                 ->extraInputAttributes(['class' => 'text-xl font-bold']),
 
-                            Forms\Components\Repeater::make('itens')
+                            Repeater::make('itens')
                                 ->relationship('itens')
                                 ->label('Itens da Nota')
                                 ->addActionLabel('Adicionar novo material')
                                 ->columns(12)
                                 ->live()
                                 ->schema([
-                                    Forms\Components\Select::make('id_material')
+                                    Select::make('id_material')
                                         ->label('Material')
                                         ->relationship('material', 'descricao_detalhada')
                                         ->searchable()
@@ -151,7 +167,7 @@ class NotaFiscalResource extends Resource
                                         ->native(false)
                                         ->columnSpan(6),
 
-                                    Forms\Components\TextInput::make('quantidade')
+                                    TextInput::make('quantidade')
                                         ->label('Quantidade')
                                         ->required()
                                         ->numeric()
@@ -163,7 +179,7 @@ class NotaFiscalResource extends Resource
                                         })
                                         ->columnSpan(2),
 
-                                    Forms\Components\TextInput::make('preco_unitario')
+                                    TextInput::make('preco_unitario')
                                         ->label('Preço Unitário')
                                         ->required()
                                         ->numeric()
@@ -176,7 +192,7 @@ class NotaFiscalResource extends Resource
                                         })
                                         ->columnSpan(2),
 
-                                    Forms\Components\TextInput::make('total_item')
+                                    TextInput::make('total_item')
                                         ->label('Total Item')
                                         ->numeric()
                                         ->readOnly()
@@ -191,19 +207,19 @@ class NotaFiscalResource extends Resource
                                 ->columnSpanFull(),
                         ]),
 
-                    Tabs\Tab::make('Situação')
+                    Tab::make('Situação')
                         ->icon('heroicon-m-check-badge')
                         ->schema([
-                            Forms\Components\Grid::make(2)
+                            Grid::make(2)
                                 ->schema([
 
-                                    Forms\Components\Select::make('situacao')
+                                    Select::make('situacao')
                                         ->label('Situação')
                                         ->required()
                                         ->relationship('situacaoRef', 'descricao')
                                         ->native(false),
 
-                                    Forms\Components\DatePicker::make('data_situacao')
+                                    DatePicker::make('data_situacao')
                                         ->label('Data da Situação')
                                         ->required()
                                         ->displayFormat('d/m/Y')
@@ -280,33 +296,33 @@ class NotaFiscalResource extends Resource
             ->emptyStateHeading('Nenhum registro encontrado')
             ->defaultPaginationPageOption(25)
             ->columns([
-                Tables\Columns\TextColumn::make('num_documento')
+                TextColumn::make('num_documento')
                     ->label('Núm. documento')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('data_documento')
+                TextColumn::make('data_documento')
                     ->label('Data documento')
                     ->alignCenter()
                     ->date('d/m/Y')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('fornecedorRef.NomeFornecedor')
+                TextColumn::make('fornecedorRef.NomeFornecedor')
                     ->label('Fornecedor')
                     ->default(' - ')
                     ->alignCenter()
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('valor_total')
+                TextColumn::make('valor_total')
                     ->label('Total da Nota')
                     ->money('BRL', true)
                     ->alignCenter()
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('itens.material.descricao_detalhada')
+                TextColumn::make('itens.material.descricao_detalhada')
                     ->label('Material')
                     ->state(fn ($record) => $record->itens
                         ->pluck('material.descricao_detalhada')
@@ -317,13 +333,13 @@ class NotaFiscalResource extends Resource
                     ->wrap()
                     ->limit(40),
 
-                Tables\Columns\TextColumn::make('itens.quantidade')
+                TextColumn::make('itens.quantidade')
                     ->label('Quantidade')
                     ->state(fn (NotaFiscal $record): array => $record->itens->pluck('quantidade')->toArray())
                     ->listWithLineBreaks()
                     ->alignCenter(),
 
-                Tables\Columns\TextColumn::make('itens.preco_unitario')
+                TextColumn::make('itens.preco_unitario')
                     ->label('Preço unitário')
                     ->state(fn (NotaFiscal $record): array => $record->itens
                         ->map(fn ($item) => 'R$ ' . number_format((float) $item->preco_unitario, 2, ',', '.'))
@@ -331,7 +347,7 @@ class NotaFiscalResource extends Resource
                     ->listWithLineBreaks()
                     ->alignCenter(),
 
-                Tables\Columns\TextColumn::make('total_item_calculado')
+                TextColumn::make('total_item_calculado')
                     ->label('Total item')
                     ->state(fn (NotaFiscal $record): array => $record->itens
                         ->map(fn ($item) => 'R$ ' . number_format((float) $item->preco_unitario * (float) $item->quantidade, 2, ',', '.'))
@@ -339,7 +355,7 @@ class NotaFiscalResource extends Resource
                     ->listWithLineBreaks()
                     ->alignCenter(),
 
-                Tables\Columns\TextColumn::make('situacaoRef.descricao')
+                TextColumn::make('situacaoRef.descricao')
                     ->label('Situação')
                     ->alignCenter()
                     ->default(' - ')
@@ -347,21 +363,21 @@ class NotaFiscalResource extends Resource
                     ->searchable(),
             ])
             ->filters([])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->tooltip('Editar')
                     ->hiddenLabel(),
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->tooltip('Visualizar')
                     ->hiddenLabel(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->tooltip('Excluir')
                     ->modalHeading('Excluir registro')
                     ->hiddenLabel(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->selectCurrentPageOnly()
@@ -379,9 +395,9 @@ class NotaFiscalResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListNotaFiscals::route('/'),
-            'create' => Pages\CreateNotaFiscal::route('/create'),
-            'edit' => Pages\EditNotaFiscal::route('/{record}/edit'),
+            'index' => ListNotaFiscals::route('/'),
+            'create' => CreateNotaFiscal::route('/create'),
+            'edit' => EditNotaFiscal::route('/{record}/edit'),
         ];
     }
 

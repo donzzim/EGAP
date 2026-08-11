@@ -10,11 +10,11 @@ class CadastroManual extends Page
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-pencil-square';
 
     protected static ?string $navigationLabel = 'Cadastro manual do bem';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
 
     protected static ?int $navigationSort = 9;
 

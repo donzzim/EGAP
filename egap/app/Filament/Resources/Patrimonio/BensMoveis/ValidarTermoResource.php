@@ -2,6 +2,22 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
+use Filament\Actions\Action;
+use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\ListValidarTermos;
+use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\CreateValidarTermo;
+use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\EditValidarTermo;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
 use App\Filament\Support\TableColumns;
@@ -10,14 +26,10 @@ use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Termo;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -26,13 +38,13 @@ class ValidarTermoResource extends Resource
 {
     protected static ?string $model = ArquivoDigital::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-check-badge';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-check-badge';
 
     protected static ?string $cluster = PatrimonioCluster::class;
 
     protected static ?string $slug = 'bens-moveis/validar-termos';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Validar Termos';
 
@@ -42,20 +54,20 @@ class ValidarTermoResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->columns(3)
-            ->schema([
-                Forms\Components\Section::make('Documento do Termo')
+            ->components([
+                Section::make('Documento do Termo')
                     ->description('Vincule o termo e mantenha o arquivo digital usado na validação.')
                     ->icon('heroicon-o-document-check')
                     ->columnSpan(2)
                     ->columns(2)
                     ->schema([
-                        Forms\Components\Select::make('termo')
+                        Select::make('termo')
                             ->label('Termo de Responsabilidade')
                             ->relationship('termoRel', 'num_termo')
                             ->getOptionLabelFromRecordUsing(
@@ -70,7 +82,7 @@ class ValidarTermoResource extends Resource
                             ->dehydrated()
                             ->columnSpanFull(),
 
-                        Forms\Components\FileUpload::make('arquivo_digital')
+                        FileUpload::make('arquivo_digital')
                             ->label('Arquivo Digital')
                             ->helperText(fn (string $operation): string => $operation === 'edit'
                                 ? 'Use a ação "Upload do Termo" para substituir o PDF e retornar a situação para Pendente.'
@@ -87,7 +99,7 @@ class ValidarTermoResource extends Resource
                             ->disabled(fn (string $operation): bool => $operation === 'edit')
                             ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('observacao')
+                        Textarea::make('observacao')
                             ->label('Observação')
                             ->placeholder('Registre informações relevantes sobre o envio ou a validação do documento.')
                             ->rows(5)
@@ -95,12 +107,12 @@ class ValidarTermoResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Validação')
+                Section::make('Validação')
                     ->description('Situação atual do arquivo digital.')
                     ->icon('heroicon-o-shield-check')
                     ->columnSpan(1)
                     ->schema([
-                        Forms\Components\Select::make('situacao')
+                        Select::make('situacao')
                             ->label('Situação')
                             ->options(ArquivoDigital::situacaoOptions())
                             ->default(ArquivoDigital::SITUACAO_PENDENTE)
@@ -108,7 +120,7 @@ class ValidarTermoResource extends Resource
                             ->required()
                             ->dehydrated(),
 
-                        Forms\Components\Toggle::make('web')
+                        Toggle::make('web')
                             ->label('Disponível na WEB')
                             ->default(false)
                             ->inline(false),
@@ -173,8 +185,8 @@ class ValidarTermoResource extends Resource
                     ->color(fn ($state): string => (int) $state === 1 ? 'success' : 'danger'),
             ])
             ->filters([
-                Tables\Filters\Filter::make('termo_filter')
-                    ->form([
+                Filter::make('termo_filter')
+                    ->schema([
                         TextInput::make('termo')
                             ->label('Termo')
                             ->placeholder('Informe número do termo'),
@@ -184,20 +196,20 @@ class ValidarTermoResource extends Resource
                         $data['termo'] ?? null,
                     )),
 
-                Tables\Filters\SelectFilter::make('situacao')
+                SelectFilter::make('situacao')
                     ->label('Situação')
                     ->options(ArquivoDigital::situacaoOptions())
                     ->native(false),
 
-                Tables\Filters\SelectFilter::make('web')
+                SelectFilter::make('web')
                     ->label('WEB')
                     ->options([
                         1 => 'Sim',
                         0 => 'Não',
                     ])
                     ->native(false),
-            ], layout: Tables\Enums\FiltersLayout::AboveContent)
-            ->actions([
+            ], layout: FiltersLayout::AboveContent)
+            ->recordActions([
                 ...TableDefaults::actions(),
                 ActionGroup::make([
                     self::uploadTermoTableAction(),
@@ -207,8 +219,8 @@ class ValidarTermoResource extends Resource
                     ->hiddenLabel()
                     ->icon('heroicon-m-ellipsis-vertical'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkAction::make('validar_termos_em_lote')
+            ->toolbarActions([
+                BulkAction::make('validar_termos_em_lote')
                     ->label('Validar')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
@@ -274,8 +286,8 @@ class ValidarTermoResource extends Resource
             ->label('Upload do Termo')
             ->icon('heroicon-o-document-arrow-up')
             ->color('gray')
-            ->form([
-                Forms\Components\FileUpload::make('arquivo')
+            ->schema([
+                FileUpload::make('arquivo')
                     ->label('Selecione o Termo em PDF')
                     ->required()
                     ->acceptedFileTypes(['application/pdf'])
@@ -309,8 +321,8 @@ class ValidarTermoResource extends Resource
             ->label('Invalidar/Cancelar Termo')
             ->icon('heroicon-o-hand-thumb-down')
             ->color('gray')
-            ->form([
-                Forms\Components\Select::make('situacao')
+            ->schema([
+                Select::make('situacao')
                     ->label('Situação')
                     ->options([
                         ArquivoDigital::SITUACAO_INVALIDADO => 'Invalidado',
@@ -318,7 +330,7 @@ class ValidarTermoResource extends Resource
                     ])
                     ->native(false)
                     ->required(),
-                Forms\Components\Textarea::make('observacao')
+                Textarea::make('observacao')
                     ->label('Observação')
                     ->required(),
             ])
@@ -368,9 +380,9 @@ class ValidarTermoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListValidarTermos::route('/'),
-            'create' => Pages\CreateValidarTermo::route('/create'),
-            'edit' => Pages\EditValidarTermo::route('/{record}/edit'),
+            'index' => ListValidarTermos::route('/'),
+            'create' => CreateValidarTermo::route('/create'),
+            'edit' => EditValidarTermo::route('/{record}/edit'),
         ];
     }
 }

@@ -2,19 +2,18 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Support\Enums\Width;
 use App\Filament\Auth\LoginEgap;
 use App\Filament\Auth\LoginResponse;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Http\Responses\Auth\Contracts\LoginResponse as LoginResponseContract;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\MaxWidth;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -32,8 +31,8 @@ class EgapPanelProvider extends PanelProvider
             ->login(LoginEgap::class)
             ->passwordReset()
             //->topNavigation()
-            ->maxContentWidth(MaxWidth::Full)
-            ->simplePageMaxContentWidth(MaxWidth::Small)
+            ->maxContentWidth(Width::Full)
+            ->simplePageMaxContentWidth(Width::Small)
             ->sidebarCollapsibleOnDesktop() // funciona se tirar o topNavigation()
             ->emailVerification()
             ->profile(isSimple: false)
@@ -43,7 +42,7 @@ class EgapPanelProvider extends PanelProvider
                 'primary' => Color::Blue,
             ])
             ->darkMode(true)
-            ->maxContentWidth(MaxWidth::Full)
+            ->maxContentWidth(Width::Full)
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Painel de Controle'),
@@ -101,6 +100,6 @@ class EgapPanelProvider extends PanelProvider
 
     public function boot(): void
     {
-        $this->app->bind(LoginResponseContract::class, LoginResponse::class);
+        $this->app->bind(\Filament\Auth\Http\Responses\Contracts\LoginResponse::class, LoginResponse::class);
     }
 }

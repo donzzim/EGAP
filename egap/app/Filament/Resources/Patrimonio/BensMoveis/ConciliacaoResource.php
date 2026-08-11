@@ -2,6 +2,16 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\ListConciliacaos;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\CreateConciliacao;
+use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages\EditConciliacao;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ConciliacaoResource\Pages;
 use App\Filament\Support\MoneyInput;
@@ -12,17 +22,11 @@ use App\Models\Patrimonio\BensMoveis\BemMovel;
 use App\Models\Patrimonio\BensMoveis\Conciliacao;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Throwable;
@@ -31,13 +35,13 @@ class ConciliacaoResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = Conciliacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static ?string $navigationGroup = 'Bens Móveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Móveis';
 
     protected static ?string $navigationLabel = 'Conciliação';
 
@@ -49,14 +53,14 @@ class ConciliacaoResource extends Resource
 
     protected static ?string $slug = 'bens-moveis/conciliacoes';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Tabs::make('Conciliação')
                     ->persistTabInQueryString()
                     ->tabs([
-                        Tabs\Tab::make('Patrimônio')
+                        Tab::make('Patrimônio')
                             ->icon('heroicon-o-identification')
                             ->schema([
                                 Section::make('Identificação')
@@ -78,7 +82,7 @@ class ConciliacaoResource extends Resource
                                     ->columns(2),
                             ]),
 
-                        Tabs\Tab::make('Aquisição')
+                        Tab::make('Aquisição')
                             ->icon('heroicon-o-receipt-percent')
                             ->schema([
                                 Section::make('Dados de Aquisição')
@@ -107,7 +111,7 @@ class ConciliacaoResource extends Resource
                                     ->columns(2),
                             ]),
 
-                        Tabs\Tab::make('Localização')
+                        Tab::make('Localização')
                             ->icon('heroicon-o-map-pin')
                             ->schema([
                                 Section::make('Localização')
@@ -124,7 +128,7 @@ class ConciliacaoResource extends Resource
                                     ->columns(2),
                             ]),
 
-                        Tabs\Tab::make('Conciliação')
+                        Tab::make('Conciliação')
                             ->icon('heroicon-o-clipboard-document-check')
                             ->schema([
                                 Section::make('Dados da Conciliação')
@@ -203,11 +207,11 @@ class ConciliacaoResource extends Resource
                     ->badge()
                     ->color('warning'),
             ])
-            ->actions([
+            ->recordActions([
                 ...TableDefaults::actions(),
                 self::conciliarTableAction(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 self::conciliarTableBulkAction(),
                 ...TableDefaults::bulkActions(),
             ]);
@@ -427,9 +431,9 @@ class ConciliacaoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListConciliacaos::route('/'),
-            'create' => Pages\CreateConciliacao::route('/create'),
-            'edit' => Pages\EditConciliacao::route('/{record}/edit'),
+            'index' => ListConciliacaos::route('/'),
+            'create' => CreateConciliacao::route('/create'),
+            'edit' => EditConciliacao::route('/{record}/edit'),
         ];
     }
 }

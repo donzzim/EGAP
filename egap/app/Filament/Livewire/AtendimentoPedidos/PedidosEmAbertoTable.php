@@ -2,11 +2,14 @@
 
 namespace App\Filament\Livewire\AtendimentoPedidos;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use App\Models\Almoxarifado\ItemPedido;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -16,8 +19,9 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class PedidosEmAbertoTable extends Component implements HasForms, HasTable
+class PedidosEmAbertoTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -50,7 +54,7 @@ class PedidosEmAbertoTable extends Component implements HasForms, HasTable
                     : '';
             })
             ->columns([
-                Tables\Columns\TextColumn::make('pedido_id')
+                TextColumn::make('pedido_id')
                     ->label('Pedido')
                     ->description(fn (ItemPedido $record) => $record->item_id
                         ? "Item: {$record->item_id}"
@@ -66,7 +70,7 @@ class PedidosEmAbertoTable extends Component implements HasForms, HasTable
                         });
                     }),
 
-                Tables\Columns\TextColumn::make('unidade')
+                TextColumn::make('unidade')
                     ->label('Unidade/Setor')
                     ->description(fn (ItemPedido $record) => $record->setor ?? null)
                     ->wrap()
@@ -79,7 +83,7 @@ class PedidosEmAbertoTable extends Component implements HasForms, HasTable
                         });
                     }),
 
-                Tables\Columns\TextColumn::make('material')
+                TextColumn::make('material')
                     ->label('Material')
                     ->wrap()
                     ->searchable(query: function (Builder $query, string $search): Builder {
@@ -91,28 +95,28 @@ class PedidosEmAbertoTable extends Component implements HasForms, HasTable
                         });
                     }),
 
-                Tables\Columns\TextColumn::make('quantidade')
+                TextColumn::make('quantidade')
                     ->label('Solicitada')
                     ->badge()
                     ->alignEnd(),
 
-                Tables\Columns\TextColumn::make('quantidade_validada')
+                TextColumn::make('quantidade_validada')
                     ->label('Validada')
                     ->badge()
                     ->alignEnd()
                     ->color('info'),
 
-                Tables\Columns\TextColumn::make('quantidade_atendida')
+                TextColumn::make('quantidade_atendida')
                     ->label('Atendida')
                     ->badge()
                     ->alignEnd()
                     ->color('success'),
 
-                Tables\Columns\TextColumn::make('situacao')
+                TextColumn::make('situacao')
                     ->label('Situação')
                     ->badge(),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('selecionar')
                     ->label(function (ItemPedido $record): string {
                         return $this->selectedItemPedidoId === (int) $record->item_id
@@ -179,7 +183,7 @@ class PedidosEmAbertoTable extends Component implements HasForms, HasTable
                         );
                     }),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->emptyStateHeading('Nenhum pedido disponível para atendimento')
             ->emptyStateDescription('A consulta não retornou itens pendentes neste momento.');
     }

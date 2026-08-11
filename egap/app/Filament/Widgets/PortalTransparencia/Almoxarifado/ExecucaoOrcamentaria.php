@@ -8,7 +8,7 @@ use Filament\Support\RawJs;
 
 class ExecucaoOrcamentaria extends BaseChart
 {
-    protected static ?string $heading = 'Execução Orçamentária';
+    protected ?string $heading = 'Execução Orçamentária';
 
     protected function getData(): array
     {

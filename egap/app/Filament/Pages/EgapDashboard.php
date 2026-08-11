@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use App\Filament\Widgets\EgapDashboard\PatrimonioImoveisPorContaChart;
 use App\Filament\Widgets\EgapDashboard\PatrimonioMoveisPorAnoChart;
 use App\Filament\Widgets\EgapDashboard\PatrimonioMoveisPorSituacaoChart;
@@ -9,8 +11,6 @@ use App\Filament\Widgets\EgapDashboard\PatrimonioOverviewStats;
 use App\Filament\Widgets\EgapDashboard\PatrimonioTopMateriaisValorTable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
@@ -27,12 +27,12 @@ class EgapDashboard extends Dashboard
 
     protected static ?string $navigationLabel = 'Dashboard';
 
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
 
-    public function filtersForm(Form $form): Form
+    public function filtersForm(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Filtros')
                     ->description('Refina os indicadores por periodo de incorporação de bens moveis e imóveis.')
                     ->schema([
@@ -95,7 +95,7 @@ class EgapDashboard extends Dashboard
         return $colors;
     }
 
-    public function getColumns(): int | string | array
+    public function getColumns(): int|array
     {
         return [
             'md' => 4,

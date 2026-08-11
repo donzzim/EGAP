@@ -2,51 +2,56 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\ListCidUfs;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\CreateCidUf;
+use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages\EditCidUf;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\CidUfResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\CidUf;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Pages\SubNavigationPosition;
 
 class CidUfResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = CidUf::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-map';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-map';
     protected static ?string $navigationLabel = 'Cidade/UF';
     protected static ?string $modelLabel = 'Cidade/UF';
     protected static ?string $pluralModelLabel = 'Cidades/UF';
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
     protected static ?int $navigationSort = 9;
     protected static ?string $slug = 'bens-imoveis/cidades-uf';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\TextInput::make('id_cidade')
+                        TextInput::make('id_cidade')
                             ->label('Cidade')
                             ->numeric()
                             ->required(),
 
-                        Forms\Components\TextInput::make('cd_uf')
+                        TextInput::make('cd_uf')
                             ->label('cd uf')
                             ->maxLength(2)
                             ->required(),
 
-                        Forms\Components\TextInput::make('cd_cep_cidade')
+                        TextInput::make('cd_cep_cidade')
                             ->label('cd cep cidade')
                             ->maxLength(20)
                             ->required(),
@@ -70,9 +75,9 @@ protected static SubNavigationPosition $subNavigationPosition = SubNavigationPos
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCidUfs::route('/'),
-            'create' => Pages\CreateCidUf::route('/create'),
-            'edit' => Pages\EditCidUf::route('/{record}/edit'),
+            'index' => ListCidUfs::route('/'),
+            'create' => CreateCidUf::route('/create'),
+            'edit' => EditCidUf::route('/{record}/edit'),
         ];
     }
 }

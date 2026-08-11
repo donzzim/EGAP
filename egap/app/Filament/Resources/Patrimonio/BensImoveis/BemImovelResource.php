@@ -2,6 +2,17 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\ListBemImovels;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\CreateBemImovel;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\EditBemImovel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
 use App\Filament\Support\MoneyInput;
@@ -16,13 +27,9 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Infolists\Components\Grid as InfolistGrid;
 use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
-use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -34,11 +41,11 @@ class BemImovelResource extends Resource
 {
     protected static ?string $cluster = PatrimonioCluster::class;
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?\Filament\Pages\Enums\SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     protected static ?string $model = BemImovel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $recordTitleAttribute = 'descricao';
 
@@ -48,7 +55,7 @@ class BemImovelResource extends Resource
 
     protected static ?string $navigationLabel = 'Administração';
 
-    protected static ?string $navigationGroup = 'Bens Imóveis';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bens Imóveis';
 
     protected static ?int $navigationSort = 1;
 
@@ -58,10 +65,10 @@ class BemImovelResource extends Resource
     // FORM
     // -------------------------------------------------------------------------
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Tabs::make('TabsBemImovel')
+        return $schema->components([
+            Tabs::make('TabsBemImovel')
                 ->tabs([
                     self::tabImovel(),
                     self::tabLocalizacao(),
@@ -76,9 +83,9 @@ class BemImovelResource extends Resource
 
     // ---- Tabs ----------------------------------------------------------------
 
-    private static function tabImovel(): Forms\Components\Tabs\Tab
+    private static function tabImovel(): Tab
     {
-        return Forms\Components\Tabs\Tab::make('Imóvel')
+        return Tab::make('Imóvel')
             ->icon('heroicon-o-building-office-2')
             ->schema([
                 self::section('Identificação', 'heroicon-o-identification', [
@@ -124,9 +131,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function tabLocalizacao(): Forms\Components\Tabs\Tab
+    private static function tabLocalizacao(): Tab
     {
-        return Forms\Components\Tabs\Tab::make('Localização')
+        return Tab::make('Localização')
             ->icon('heroicon-o-map-pin')
             ->schema([
                 self::section('Endereço', 'heroicon-o-map', [
@@ -148,9 +155,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function tabDescricao(): Forms\Components\Tabs\Tab
+    private static function tabDescricao(): Tab
     {
-        return Forms\Components\Tabs\Tab::make('Descrição')
+        return Tab::make('Descrição')
             ->icon('heroicon-o-document-text')
             ->schema([
                 self::section('Descrição do imóvel', 'heroicon-o-home-modern', [
@@ -174,9 +181,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function tabContabil(): Forms\Components\Tabs\Tab
+    private static function tabContabil(): Tab
     {
-        return Forms\Components\Tabs\Tab::make('Contábil')
+        return Tab::make('Contábil')
             ->icon('heroicon-o-calculator')
             ->schema([
                 self::section('Classificação contábil', 'heroicon-o-clipboard-document-list', [
@@ -208,9 +215,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function tabReavaliacao(): Forms\Components\Tabs\Tab
+    private static function tabReavaliacao(): Tab
     {
-        return Forms\Components\Tabs\Tab::make('Reavaliação')
+        return Tab::make('Reavaliação')
             ->icon('heroicon-o-currency-dollar')
             ->schema([
                 self::section('Última reavaliação', 'heroicon-o-arrow-path', [
@@ -221,9 +228,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function tabSituacao(): Forms\Components\Tabs\Tab
+    private static function tabSituacao(): Tab
     {
-        return Forms\Components\Tabs\Tab::make('Situação')
+        return Tab::make('Situação')
             ->icon('heroicon-o-check-circle')
             ->schema([
                 self::section('Estado atual', 'heroicon-o-check-badge', [
@@ -279,9 +286,9 @@ class BemImovelResource extends Resource
                         ? "{$record->entradaSaidaRelacaoRef->tipo} - {$record->entradaSaidaRelacaoRef->descricao}"
                         : '-'),
             ])
-            ->actions([
+            ->recordActions([
                 ...TableDefaults::actions(),
-                Tables\Actions\ActionGroup::make([
+                ActionGroup::make([
                     self::calcularDepreciacaoTableAction(),
                     self::registroDepreciacaoTableAction(),
                     self::tributosTableAction(),
@@ -298,9 +305,9 @@ class BemImovelResource extends Resource
 
     // ---- Table Actions -------------------------------------------------------
 
-    private static function calcularDepreciacaoTableAction(): Tables\Actions\Action
+    private static function calcularDepreciacaoTableAction(): Action
     {
-        return Tables\Actions\Action::make('calcular_depreciacao_action')
+        return Action::make('calcular_depreciacao_action')
             ->label('Calcular Depreciação')
             ->icon('heroicon-o-calculator')
             ->requiresConfirmation()
@@ -310,9 +317,9 @@ class BemImovelResource extends Resource
             ->action(fn (BemImovel $record) => self::executarCalculoDepreciacao($record));
     }
 
-    private static function registroDepreciacaoTableAction(): Tables\Actions\Action
+    private static function registroDepreciacaoTableAction(): Action
     {
-        return Tables\Actions\Action::make('registro_depreciacao_action')
+        return Action::make('registro_depreciacao_action')
             ->label('Registros de Depreciação')
             ->icon('heroicon-o-pencil-square')
             ->modalHeading(fn (BemImovel $record): string => "Registros de depreciação do imóvel #{$record->Id}")
@@ -320,12 +327,12 @@ class BemImovelResource extends Resource
             ->modalCancelActionLabel('Fechar')
             ->modalWidth('7xl')
             ->mountUsing(fn (BemImovel $record) => $record->loadMissing('depreciacoesRelacaoRef'))
-            ->infolist(fn (BemImovel $record): array => [
-                InfolistSection::make('Resumo')
+            ->schema(fn (BemImovel $record): array => [
+                Section::make('Resumo')
                     ->icon('heroicon-o-calculator')
                     ->description('Registros carregados somente ao abrir este modal.')
                     ->schema([
-                        InfolistGrid::make(3)->schema([
+                        Grid::make(3)->schema([
                             TextEntry::make('depreciacoes_total')
                                 ->label('Total de registros')
                                 ->state(fn (BemImovel $record): int => $record->depreciacoesRelacaoRef->count())
@@ -341,7 +348,7 @@ class BemImovelResource extends Resource
                                 ->placeholder('-'),
                         ]),
                     ]),
-                InfolistSection::make('Depreciações')
+                Section::make('Depreciações')
                     ->icon('heroicon-o-arrow-trending-down')
                     ->schema([
                         TextEntry::make('depreciacoes_vazias')
@@ -354,7 +361,7 @@ class BemImovelResource extends Resource
                             ->hiddenLabel()
                             ->contained(false)
                             ->schema([
-                                InfolistGrid::make(12)->schema([
+                                Grid::make(12)->schema([
                                     TextEntry::make('item')
                                         ->label('Item')
                                         ->badge()->color('gray')
@@ -410,9 +417,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function tributosTableAction(): Tables\Actions\Action
+    private static function tributosTableAction(): Action
     {
-        return Tables\Actions\Action::make('tributos_action')
+        return Action::make('tributos_action')
             ->label('Tributos')
             ->icon('heroicon-o-clipboard')
             ->modalHeading(fn (BemImovel $record): string => "Tributos do imóvel #{$record->Id}")
@@ -420,12 +427,12 @@ class BemImovelResource extends Resource
             ->modalCancelActionLabel('Fechar')
             ->modalWidth('7xl')
             ->mountUsing(fn (BemImovel $record) => $record->loadMissing('tributosRelacaoRef'))
-            ->infolist(fn (BemImovel $record): array => [
-                InfolistSection::make('Resumo')
+            ->schema(fn (BemImovel $record): array => [
+                Section::make('Resumo')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->description('Tributos carregados somente ao abrir este modal.')
                     ->schema([
-                        InfolistGrid::make(3)->schema([
+                        Grid::make(3)->schema([
                             TextEntry::make('tributos_total')
                                 ->label('Total de tributos')
                                 ->state(fn (BemImovel $record): int => $record->tributosRelacaoRef->count())
@@ -440,7 +447,7 @@ class BemImovelResource extends Resource
                                 ->color('success'),
                         ]),
                     ]),
-                InfolistSection::make('Tributos')
+                Section::make('Tributos')
                     ->icon('heroicon-o-banknotes')
                     ->schema([
                         TextEntry::make('tributos_vazios')
@@ -452,7 +459,7 @@ class BemImovelResource extends Resource
                             ->hiddenLabel()
                             ->contained(false)
                             ->schema([
-                                InfolistGrid::make(12)->schema([
+                                Grid::make(12)->schema([
                                     TextEntry::make('tipoTributoRelacaoref.descricao')
                                         ->label('Tipo')
                                         ->badge()->color('info')->placeholder('-')->columnSpan(3),
@@ -485,9 +492,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function ocupacaoTableAction(): Tables\Actions\Action
+    private static function ocupacaoTableAction(): Action
     {
-        return Tables\Actions\Action::make('ocupacoes_action')
+        return Action::make('ocupacoes_action')
             ->label('Ocupações de Terceiros')
             ->icon('heroicon-o-flag')
             ->modalHeading(fn (BemImovel $record): string => "Ocupações de terceiros do imóvel #{$record->Id}")
@@ -499,8 +506,8 @@ class BemImovelResource extends Resource
                     ->orderByDesc('data_assinatura')
                     ->orderByDesc('id'),
             ]))
-            ->infolist(fn (BemImovel $record): array => [
-                InfolistSection::make('Resumo')
+            ->schema(fn (BemImovel $record): array => [
+                Section::make('Resumo')
                     ->icon('heroicon-o-users')
                     ->schema([
                         TextEntry::make('ocupacoes_total')
@@ -509,7 +516,7 @@ class BemImovelResource extends Resource
                             ->badge()
                             ->color('primary'),
                     ]),
-                InfolistSection::make('Ocupações de terceiros')
+                Section::make('Ocupações de terceiros')
                     ->icon('heroicon-o-flag')
                     ->schema([
                         TextEntry::make('ocupacoes_vazias')
@@ -522,7 +529,7 @@ class BemImovelResource extends Resource
                             ->hiddenLabel()
                             ->contained(false)
                             ->schema([
-                                InfolistGrid::make(12)->schema([
+                                Grid::make(12)->schema([
                                     TextEntry::make('situacao')
                                         ->label('Situação')
                                         ->badge()
@@ -586,18 +593,18 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function imprimirTermoTableAction(): Tables\Actions\Action
+    private static function imprimirTermoTableAction(): Action
     {
-        return Tables\Actions\Action::make('imprimir')
+        return Action::make('imprimir')
             ->label('Imprimir termo')
             ->icon('heroicon-o-printer')
             ->url(fn ($record) => "https://sistemas.tjes.jus.br/patrimonio/index.php?option=com_reports&name=termo-imovel&tmpl=component&bens={$record->Id}")
             ->openUrlInNewTab();
     }
 
-    private static function processosTableAction(): Tables\Actions\Action
+    private static function processosTableAction(): Action
     {
-        return Tables\Actions\Action::make('processos_action')
+        return Action::make('processos_action')
             ->label('Processos')
             ->icon('heroicon-o-folder')
             ->modalHeading(fn (BemImovel $record): string => "Processos do imóvel #{$record->Id}")
@@ -609,11 +616,11 @@ class BemImovelResource extends Resource
                 'processoAdmRelacaoRef.unidadeRequisitanteRelacaoRef',
                 'processoAdmRelacaoRef.gestorTitularRelacaoRef',
             ]))
-            ->infolist(fn (BemImovel $record): array => [
-                InfolistSection::make('Referências do imóvel')
+            ->schema(fn (BemImovel $record): array => [
+                Section::make('Referências do imóvel')
                     ->icon('heroicon-o-document-text')
                     ->schema([
-                        InfolistGrid::make(3)->schema([
+                        Grid::make(3)->schema([
                             TextEntry::make('num_processo_tj')
                                 ->label('Processo TJ')
                                 ->placeholder('-'),
@@ -627,7 +634,7 @@ class BemImovelResource extends Resource
                                 ->color('primary'),
                         ]),
                     ]),
-                InfolistSection::make('Processo administrativo')
+                Section::make('Processo administrativo')
                     ->icon('heroicon-o-folder-open')
                     ->schema([
                         TextEntry::make('processo_administrativo_vazio')
@@ -636,7 +643,7 @@ class BemImovelResource extends Resource
                             ->badge()
                             ->color('gray')
                             ->visible(fn (BemImovel $record): bool => $record->processoAdmRelacaoRef === null),
-                        InfolistGrid::make(12)
+                        Grid::make(12)
                             ->schema([
                                 TextEntry::make('processoAdmRelacaoRef.num_processo')
                                     ->label('Nº Processo TJES')
@@ -681,9 +688,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function reavaliacaoTableAction(): Tables\Actions\Action
+    private static function reavaliacaoTableAction(): Action
     {
-        return Tables\Actions\Action::make('reavaliacao_action')
+        return Action::make('reavaliacao_action')
             ->label('Reavaliação dos Imóveis')
             ->icon('heroicon-o-forward')
             ->modalHeading(fn (BemImovel $record): string => "Reavaliações do imóvel #{$record->Id}")
@@ -696,8 +703,8 @@ class BemImovelResource extends Resource
                     ->orderByDesc('data_reavaliacao')
                     ->orderByDesc('Id'),
             ]))
-            ->infolist(fn (BemImovel $record): array => [
-                InfolistSection::make('Resumo')
+            ->schema(fn (BemImovel $record): array => [
+                Section::make('Resumo')
                     ->icon('heroicon-o-calculator')
                     ->schema([
                         TextEntry::make('reavaliacoes_total')
@@ -706,7 +713,7 @@ class BemImovelResource extends Resource
                             ->badge()
                             ->color('primary'),
                     ]),
-                InfolistSection::make('Reavaliações')
+                Section::make('Reavaliações')
                     ->icon('heroicon-o-banknotes')
                     ->schema([
                         TextEntry::make('reavaliacoes_vazias')
@@ -719,7 +726,7 @@ class BemImovelResource extends Resource
                             ->hiddenLabel()
                             ->contained(false)
                             ->schema([
-                                InfolistGrid::make(12)->schema([
+                                Grid::make(12)->schema([
                                     TextEntry::make('data_reavaliacao')
                                         ->label('Data da reavaliação')
                                         ->formatStateUsing(fn ($state): string => self::formatDate($state))
@@ -772,9 +779,9 @@ class BemImovelResource extends Resource
             ]);
     }
 
-    private static function obrasTableAction(): Tables\Actions\Action
+    private static function obrasTableAction(): Action
     {
-        return Tables\Actions\Action::make('obras_action')
+        return Action::make('obras_action')
             ->label('Obras e Ampliações')
             ->icon('heroicon-o-home')
             ->modalHeading(fn (BemImovel $record): string => "Obras e ampliações do imóvel #{$record->Id}")
@@ -786,11 +793,11 @@ class BemImovelResource extends Resource
                     ->orderByDesc('data')
                     ->orderByDesc('id'),
             ]))
-            ->infolist(fn (BemImovel $record): array => [
-                InfolistSection::make('Resumo')
+            ->schema(fn (BemImovel $record): array => [
+                Section::make('Resumo')
                     ->icon('heroicon-o-wrench-screwdriver')
                     ->schema([
-                        InfolistGrid::make(2)->schema([
+                        Grid::make(2)->schema([
                             TextEntry::make('obras_total')
                                 ->label('Total de obras e ampliações')
                                 ->state(fn (BemImovel $record): int => $record->obrasRelacaoRef->count())
@@ -802,7 +809,7 @@ class BemImovelResource extends Resource
                                 ->color('success'),
                         ]),
                     ]),
-                InfolistSection::make('Obras e ampliações')
+                Section::make('Obras e ampliações')
                     ->icon('heroicon-o-home')
                     ->schema([
                         TextEntry::make('obras_vazias')
@@ -815,7 +822,7 @@ class BemImovelResource extends Resource
                             ->hiddenLabel()
                             ->contained(false)
                             ->schema([
-                                InfolistGrid::make(12)->schema([
+                                Grid::make(12)->schema([
                                     TextEntry::make('data')
                                         ->label('Data')
                                         ->formatStateUsing(fn ($state): string => self::formatDate($state))
@@ -843,9 +850,9 @@ class BemImovelResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBemImovels::route('/'),
-            'create' => Pages\CreateBemImovel::route('/create'),
-            'edit' => Pages\EditBemImovel::route('/{record}/edit'),
+            'index' => ListBemImovels::route('/'),
+            'create' => CreateBemImovel::route('/create'),
+            'edit' => EditBemImovel::route('/{record}/edit'),
         ];
     }
 
@@ -985,9 +992,9 @@ class BemImovelResource extends Resource
     // HELPERS DE FORMULÁRIO
     // -------------------------------------------------------------------------
 
-    private static function section(string $heading, string $icon, array $schema): Forms\Components\Section
+    private static function section(string $heading, string $icon, array $schema): Section
     {
-        return Forms\Components\Section::make($heading)
+        return Section::make($heading)
             ->icon($icon)
             ->schema($schema);
     }

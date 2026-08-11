@@ -2,11 +2,14 @@
 
 namespace App\Filament\Livewire\AtendimentoPedidos;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use App\Models\Views\MaterialDepositoView;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -15,8 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
+class MateriaisDisponiveisTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -100,30 +104,30 @@ class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
                     : '';
             })
             ->columns([
-                Tables\Columns\TextColumn::make('patrimonio_id')
+                TextColumn::make('patrimonio_id')
                     ->label('Patrimônio')
                     ->badge()
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('descricao_resumida')
+                TextColumn::make('descricao_resumida')
                     ->label('Material')
                     ->wrap()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('descricao_detalhada')
+                TextColumn::make('descricao_detalhada')
                     ->label('Descrição detalhada')
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('complementosetor')
+                TextColumn::make('complementosetor')
                     ->label('Complemento')
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('situacao')
+                TextColumn::make('situacao')
                     ->label('Situação')
                     ->badge(),
             ])
-            ->actions([
+            ->recordActions([
                 Action::make('alternar')
                     ->label(fn (MaterialDepositoView $record): string => in_array((int) $record->patrimonio_id, $this->selectedPatrimonios, true)
                         ? 'Remover'
@@ -146,7 +150,7 @@ class MateriaisDisponiveisTable extends Component implements HasForms, HasTable
                         $this->dispatch('patrimonio-alternado', patrimonioId: $id);
                     }),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->emptyStateHeading('Nenhum material compatível disponível')
             ->emptyStateDescription($this->selectedMaterialResumo
                 ? "Não há patrimônios no depósito com essa combatibilidade."

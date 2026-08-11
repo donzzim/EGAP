@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cadastro\ContaContabilResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\ContaContabilResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,7 @@ class ListContaContabils extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
+            CreateAction::make()
                 ->label('Novo')
         ];
     }

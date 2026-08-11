@@ -7,7 +7,7 @@ use App\Models\Almoxarifado\Pedidos;
 
 class BensSolicitados extends BaseChart
 {
-    protected static ?string $heading = 'Bens Solicitados por Ano';
+    protected ?string $heading = 'Bens Solicitados por Ano';
 
     protected function getData(): array
     {

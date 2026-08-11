@@ -2,6 +2,11 @@
 
 namespace App\Filament\Livewire\Externo;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Actions\Action;
 use App\Filament\Livewire\Externo\Almoxarifado\PedidosAlmoxarifadoTable;
 use App\Filament\Livewire\Externo\Patrimonio\PedidosPatrimonioTable;
 use App\Filament\Support\TableColumns;
@@ -11,9 +16,6 @@ use App\Models\Cadastro\Setores;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -39,8 +41,9 @@ use Livewire\Livewire;
  * os agrupamentos de situação (idSituacao) divergem de verdade entre os dois
  * setores responsáveis.
  */
-abstract class PedidosTable extends Component implements HasForms, HasTable
+abstract class PedidosTable extends Component implements HasForms, HasTable, HasActions
 {
+    use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithTable;
 
@@ -95,7 +98,7 @@ abstract class PedidosTable extends Component implements HasForms, HasTable
             ->label('Unidade Judiciária / Setor')
             ->columns(2)
             ->columnSpan(2)
-            ->form([
+            ->schema([
                 Select::make('unidade_judiciaria')
                     ->label('Unidade Judiciária')
                     ->options(fn (): array => Setores::query()
