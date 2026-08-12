@@ -32,7 +32,7 @@ class EgapPanelProvider extends PanelProvider
             ->path('/egap')
             ->login(LoginEgap::class)
             ->passwordReset()
-            ->topNavigation()
+            //->topNavigation()
             ->maxContentWidth(Width::Full)
             ->simplePageMaxContentWidth(Width::Small)
             //->sidebarCollapsibleOnDesktop() // funciona se tirar o topNavigation()

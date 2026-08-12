@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\PrintsControllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Agendamento\Solicitacao;
 use Illuminate\Support\Carbon;
 

@@ -445,7 +445,7 @@ class TransporteResource extends Resource
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->schema([
                         Textarea::make('observacao')
-                            ->label('')
+                            ->label('Observação')
                             ->placeholder('Digite aqui alguma observação ou informação adicional...')
                             ->rows(4)
                             ->columnSpanFull(),
