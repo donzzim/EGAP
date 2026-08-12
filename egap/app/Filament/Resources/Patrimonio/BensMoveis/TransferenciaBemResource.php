@@ -244,7 +244,7 @@ class TransferenciaBemResource extends Resource
                     ->color('primary')
                     ->weight('bold')
                     ->extraAttributes([
-                        'class' => 'cursor-pointer underline decoration-dotted underline-offset-4',
+                        'class' => 'cursor-pointer underline',
                     ])
                     ->tooltip('Visualizar Termo')
                     ->action(self::visualizarTermoModal()),

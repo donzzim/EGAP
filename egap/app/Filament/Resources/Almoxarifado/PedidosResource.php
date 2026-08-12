@@ -375,16 +375,14 @@ class PedidosResource extends Resource
                     ->alignCenter()
                     ->default(' - ')
                     ->sortable()
-                    ->searchable()
-                    ->wrap(),
+                    ->searchable(),
 
                 TextColumn::make('setor_get.Setor')
                     ->label('Setor')
                     ->alignCenter()
                     ->default(' - ')
                     ->sortable()
-                    ->searchable()
-                    ->wrap(),
+                    ->searchable(),
 
                 TextColumn::make('Observacao')
                     ->label('Observação')
@@ -515,6 +513,7 @@ class PedidosResource extends Resource
                 Action::make('anexar_requisicao')
                     ->icon('heroicon-m-paper-clip')
                     ->color('info')
+                    ->modalHeading('Anexar Requisição')
                     ->hiddenLabel()
                     ->tooltip('Anexar Requisição')
                     ->requiresConfirmation()
@@ -526,6 +525,7 @@ class PedidosResource extends Resource
                     ->icon('heroicon-m-truck')
                     ->color('warning')
                     ->hiddenLabel()
+                    ->modalHeading('Encaminhar para Logística')
                     ->tooltip('Encaminhar para Logística')
                     ->requiresConfirmation()
                     ->action(function (Pedidos $record): void {
@@ -536,6 +536,7 @@ class PedidosResource extends Resource
                     ->icon('heroicon-m-arrow-uturn-left')
                     ->color('success')
                     ->hiddenLabel()
+                    ->modalHeading('Retornar para "Em análise"')
                     ->tooltip('Retornar para Em análise')
                     ->requiresConfirmation()
                     ->action(function (Pedidos $record): void {

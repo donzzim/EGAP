@@ -45,12 +45,8 @@ class UnidadesModal extends TableModalComponent implements HasActions
                     ->badge()
                     ->formatStateUsing(fn (?string $state): string => Inventario::rotuloSituacao($state))
                     ->color(fn (?string $state): string => Inventario::corSituacao($state)),
-
-                TableColumns::dateTime('date_time', 'Atualizado em'),
             ])
             ->defaultSort('id')
-            ->defaultPaginationPageOption(15)
-            ->paginated([15])
             ->emptyStateIcon('heroicon-o-building-office')
             ->emptyStateHeading('Nenhuma unidade vinculada a este inventário')
             ->recordActions([])

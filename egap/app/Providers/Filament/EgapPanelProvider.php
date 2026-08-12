@@ -15,6 +15,7 @@ use Filament\PanelProvider;
 use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -72,6 +73,14 @@ class EgapPanelProvider extends PanelProvider
 
                 NavigationGroup::make()
                     ->label('Administração'),
+
+                NavigationGroup::make()
+                    ->label('Almoxarifado')
+                    ->icon(Heroicon::CircleStack),
+
+                NavigationGroup::make()
+                    ->label('Patrimônio')
+                    ->icon(Heroicon::BuildingOffice),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

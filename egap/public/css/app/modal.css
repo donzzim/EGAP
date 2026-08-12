@@ -6,22 +6,45 @@
 
 .egap-modal-content,
 .egap-modal-content .fi-ta,
-.egap-modal-content .fi-ta-ctn {
+.egap-modal-content .fi-ta-ctn,
+.egap-modal-content .fi-ta-main {
     height: 100%;
     min-height: 0;
 }
 
-.egap-modal-content .fi-ta-ctn {
+.egap-modal-content .fi-ta-ctn,
+.egap-modal-content .fi-ta-main {
     display: flex;
     flex-direction: column;
 }
 
-.egap-modal-content .fi-ta-content {
+.egap-modal-content .fi-ta-content-ctn
+{
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
 }
 
-.egap-modal-content .fi-ta-pagination {
+.egap-modal-content .fi-pagination {
     flex-shrink: 0;
+}
+
+/*
+ * Quando a tabela não tem registros, o Filament ainda renderiza o
+ * ".fi-ta-content-ctn" (só com o cabeçalho das colunas) como irmão do
+ * ".fi-ta-empty-state". Sem este ajuste, a regra acima faz essa caixa vazia
+ * esticar (flex: 1 1 auto) e ocupar todo o espaço do modal, empurrando a
+ * mensagem de "nenhum registro" para baixo. Aqui invertemos o grow: a caixa
+ * de conteúdo volta ao tamanho natural (só o cabeçalho) e é o próprio estado
+ * vazio que ocupa e centraliza o espaço restante.
+ */
+.egap-modal-content .fi-ta-main:has(.fi-ta-empty-state) .fi-ta-content-ctn {
+    flex: 0 1 auto;
+}
+
+.egap-modal-content .fi-ta-empty-state {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

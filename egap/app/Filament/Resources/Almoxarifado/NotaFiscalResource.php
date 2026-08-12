@@ -149,8 +149,7 @@ class NotaFiscalResource extends Resource
                                 ->dehydrated()
                                 ->default(0)
                                 ->prefix('R$')
-                                ->label('Subtotal / Total da Nota Fiscal')
-                                ->extraInputAttributes(['class' => 'text-xl font-bold']),
+                                ->label('Subtotal / Total da Nota Fiscal'),
 
                             Repeater::make('itens')
                                 ->relationship('itens')

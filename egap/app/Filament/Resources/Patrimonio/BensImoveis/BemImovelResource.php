@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Patrimonio\BensImoveis;
 use App\Filament\Support\TableModalAction;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Pages\Enums\SubNavigationPosition;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -22,6 +23,7 @@ use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensImoveis\BemImovel;
 use App\Models\Patrimonio\BensImoveis\Depreciacao;
+use App\Services\CepService;
 use Carbon\CarbonImmutable;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -33,6 +35,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
@@ -143,10 +146,13 @@ class BemImovelResource extends Resource
                 self::section('Endereço', 'heroicon-o-map', [
                     self::text('end_logradouro', 'Logradouro')->columnSpan(7),
                     self::text('end_numero', 'Número')->columnSpan(2),
-                    self::text('end_cep', 'CEP')->columnSpan(3),
-                    self::text('end_bairro', 'Bairro')->columnSpan(4),
+                    self::text('end_cep', 'CEP')
+                        ->mask('99999-999')
+                        ->suffixAction(self::buscarCepAction())
+                        ->columnSpan(3),
+                    self::text('end_estado', 'Estado')->maxLength(2)->columnSpan(4),
                     self::text('end_cidade', 'Cidade')->columnSpan(4),
-                    self::text('end_estado', 'Estado')->maxLength(2)->columnSpan(2),
+                    self::text('end_bairro', 'Bairro')->columnSpan(4),
                     self::text('end_compl_endereco', 'Complemento')->columnSpanFull(),
                 ])->columns(12),
 
@@ -639,6 +645,45 @@ class BemImovelResource extends Resource
     // -------------------------------------------------------------------------
     // HELPERS DE FORMULÁRIO
     // -------------------------------------------------------------------------
+
+    private static function buscarCepAction(): Action
+    {
+        return Action::make('buscar_cep')
+            ->icon('heroicon-o-magnifying-glass')
+            ->tooltip('Buscar CEP')
+            ->action(function (Set $set, string $state, CepService $cepService): void {
+                $endereco = $cepService->buscar($state);
+
+                if ($endereco === null) {
+                    Notification::make()
+                        ->title('CEP não encontrado')
+                        ->body('Verifique o CEP informado e tente novamente.')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
+                $set('end_logradouro', $endereco['logradouro']);
+                $set('end_bairro', $endereco['bairro']);
+                $set('end_cidade', $endereco['cidade']);
+                $set('end_estado', $endereco['uf']);
+                $set('end_compl_endereco', $endereco['complemento']);
+
+                if ($endereco['latitude'] !== '') {
+                    $set('end_latitude', $endereco['latitude']);
+                }
+
+                if ($endereco['longitude'] !== '') {
+                    $set('end_longitude', $endereco['longitude']);
+                }
+
+                Notification::make()
+                    ->title('Endereço preenchido a partir do CEP')
+                    ->success()
+                    ->send();
+            });
+    }
 
     private static function section(string $heading, string $icon, array $schema): Section
     {
