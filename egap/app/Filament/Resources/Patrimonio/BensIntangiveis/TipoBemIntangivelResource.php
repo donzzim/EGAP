@@ -67,8 +67,7 @@ class TipoBemIntangivelResource extends Resource
                     ->icon('heroicon-o-tag')
                     ->weight('medium')
                     ->wrap(),
-                TableColumns::updatedBy('atualizadoPorRef.name')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TableColumns::updatedBy('atualizadoPorRef.name'),
             ])
             ->defaultSort('descricao');
     }

@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Filament\Livewire\Patrimonio;
+namespace App\Filament\Livewire\Patrimonio\BensMoveis;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
 use App\Models\Patrimonio\BensMoveis\InventarioComissao;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class ComissoesModal extends TableModalComponent implements HasActions
 {
     use InteractsWithActions;
+
     public int $inventarioId;
 
     public function mount(int $inventarioId): void

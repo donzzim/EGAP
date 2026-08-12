@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Patrimonio\BensImoveis;
 
+use App\Filament\Support\TableModalAction;
+use App\Models\Patrimonio\BensMoveis\BemMovel;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Tabs;
@@ -34,7 +36,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
+use Livewire\Livewire;
 use Throwable;
 
 class BemImovelResource extends Resource
@@ -319,278 +323,47 @@ class BemImovelResource extends Resource
 
     private static function registroDepreciacaoTableAction(): Action
     {
-        return Action::make('registro_depreciacao_action')
+        return TableModalAction::make('registro_depreciacao_action')
             ->label('Registros de Depreciação')
             ->icon('heroicon-o-pencil-square')
             ->modalHeading(fn (BemImovel $record): string => "Registros de depreciação do imóvel #{$record->Id}")
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
-            ->modalWidth('7xl')
-            ->mountUsing(fn (BemImovel $record) => $record->loadMissing('depreciacoesRelacaoRef'))
-            ->schema(fn (BemImovel $record): array => [
-                Section::make('Resumo')
-                    ->icon('heroicon-o-calculator')
-                    ->description('Registros carregados somente ao abrir este modal.')
-                    ->schema([
-                        Grid::make(3)->schema([
-                            TextEntry::make('depreciacoes_total')
-                                ->label('Total de registros')
-                                ->state(fn (BemImovel $record): int => $record->depreciacoesRelacaoRef->count())
-                                ->badge()
-                                ->color('primary'),
-                            TextEntry::make('depreciacoes_ultima_data')
-                                ->label('Última Data')
-                                ->state(fn (BemImovel $record): string => self::formatDate($record->depreciacoesRelacaoRef->last()?->data_calculo))
-                                ->placeholder('-'),
-                            TextEntry::make('depreciacoes_primeira_data')
-                                ->label('Primeira Data')
-                                ->state(fn (BemImovel $record): string => self::formatDate($record->depreciacoesRelacaoRef->first()?->data_calculo))
-                                ->placeholder('-'),
-                        ]),
-                    ]),
-                Section::make('Depreciações')
-                    ->icon('heroicon-o-arrow-trending-down')
-                    ->schema([
-                        TextEntry::make('depreciacoes_vazias')
-                            ->hiddenLabel()
-                            ->state('Nenhum registro de depreciação relacionado a este bem imóvel.')
-                            ->badge()
-                            ->color('gray')
-                            ->visible(fn (BemImovel $record): bool => $record->depreciacoesRelacaoRef->isEmpty()),
-                        RepeatableEntry::make('depreciacoesRelacaoRef')
-                            ->hiddenLabel()
-                            ->contained(false)
-                            ->schema([
-                                Grid::make(12)->schema([
-                                    TextEntry::make('item')
-                                        ->label('Item')
-                                        ->badge()->color('gray')
-                                        ->placeholder('-')
-                                        ->columnSpan(1),
-                                    TextEntry::make('data_calculo')
-                                        ->label('Data cálculo')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('valor')
-                                        ->label('Valor base')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('vida_util')
-                                        ->label('Vida útil')
-                                        ->suffix(' meses')
-                                        ->badge()
-                                        ->color('info')
-                                        ->placeholder('-')
-                                        ->columnSpan(1),
-                                    TextEntry::make('valor_residual')
-                                        ->label('Residual')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('depreciacao_mensal')
-                                        ->label('Mensal')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('depreciacao_acumulada')
-                                        ->label('Acumulada')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('warning')
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('valor_liquido_contabil')
-                                        ->label('Valor líquido contábil')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('success')
-                                        ->placeholder('-')
-                                        ->columnSpan(3),
-                                    TextEntry::make('obraRelacaoref.descricao')
-                                        ->label('Obra/ampliação')
-                                        ->placeholder('-')
-                                        ->columnSpan(9),
-                                ]),
-                            ])
-                            ->visible(fn (BemImovel $record): bool => $record->depreciacoesRelacaoRef->isNotEmpty()),
-                    ]),
-            ]);
+            ->modalContent(fn (BemImovel $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.depreciacao-imovel-modal',
+                    ['imovelId' => (int) $record->getKey()],
+                    "depreciacao-imovel-{$record->getKey()}",
+                )
+            ));
     }
 
     private static function tributosTableAction(): Action
     {
-        return Action::make('tributos_action')
+        return TableModalAction::make('tributos_action')
             ->label('Tributos')
             ->icon('heroicon-o-clipboard')
             ->modalHeading(fn (BemImovel $record): string => "Tributos do imóvel #{$record->Id}")
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
-            ->modalWidth('7xl')
-            ->mountUsing(fn (BemImovel $record) => $record->loadMissing('tributosRelacaoRef'))
-            ->schema(fn (BemImovel $record): array => [
-                Section::make('Resumo')
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->description('Tributos carregados somente ao abrir este modal.')
-                    ->schema([
-                        Grid::make(3)->schema([
-                            TextEntry::make('tributos_total')
-                                ->label('Total de tributos')
-                                ->state(fn (BemImovel $record): int => $record->tributosRelacaoRef->count())
-                                ->badge()->color('primary'),
-                            TextEntry::make('tributos_valor_total')
-                                ->label('Valor previsto')
-                                ->state(fn (BemImovel $record): string => self::formatMoney($record->tributosRelacaoRef->sum('valor')))
-                                ->color('warning'),
-                            TextEntry::make('tributos_valor_pago_total')
-                                ->label('Valor pago')
-                                ->state(fn (BemImovel $record): string => self::formatMoney($record->tributosRelacaoRef->sum('valor_pago')))
-                                ->color('success'),
-                        ]),
-                    ]),
-                Section::make('Tributos')
-                    ->icon('heroicon-o-banknotes')
-                    ->schema([
-                        TextEntry::make('tributos_vazios')
-                            ->hiddenLabel()
-                            ->state('Nenhum tributo relacionado a este bem imóvel.')
-                            ->badge()->color('gray')
-                            ->visible(fn (BemImovel $record): bool => $record->tributosRelacaoRef->isEmpty()),
-                        RepeatableEntry::make('tributosRelacaoRef')
-                            ->hiddenLabel()
-                            ->contained(false)
-                            ->schema([
-                                Grid::make(12)->schema([
-                                    TextEntry::make('tipoTributoRelacaoref.descricao')
-                                        ->label('Tipo')
-                                        ->badge()->color('info')->placeholder('-')->columnSpan(3),
-                                    TextEntry::make('vencimento')
-                                        ->label('Vencimento')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->placeholder('-')->columnSpan(2),
-                                    TextEntry::make('valor')
-                                        ->label('Valor')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('warning')->placeholder('-')->columnSpan(2),
-                                    TextEntry::make('pago_em')
-                                        ->label('Pago em')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->placeholder('-')->columnSpan(2),
-                                    TextEntry::make('valor_pago')
-                                        ->label('Valor pago')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('success')->placeholder('-')->columnSpan(3),
-                                    TextEntry::make('processo_pagto')
-                                        ->label('Processo')
-                                        ->placeholder('-')->columnSpan(4),
-                                    TextEntry::make('observacao')
-                                        ->label('Observação')
-                                        ->placeholder('-')->columnSpan(8),
-                                ]),
-                            ])
-                            ->visible(fn (BemImovel $record): bool => $record->tributosRelacaoRef->isNotEmpty()),
-                    ]),
-            ]);
+            ->modalContent(fn (BemImovel $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.tributos-modal',
+                    ['imovelId' => (int) $record->getKey()],
+                    "tributos-{$record->getKey()}",
+                )
+            ));
     }
 
     private static function ocupacaoTableAction(): Action
     {
-        return Action::make('ocupacoes_action')
+        return TableModalAction::make('ocupacoes_action')
             ->label('Ocupações de Terceiros')
             ->icon('heroicon-o-flag')
             ->modalHeading(fn (BemImovel $record): string => "Ocupações de terceiros do imóvel #{$record->Id}")
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
-            ->modalWidth('7xl')
-            ->mountUsing(fn (BemImovel $record) => $record->loadMissing([
-                'cedidosRelacaoRef' => fn ($query) => $query
-                    ->orderByDesc('data_assinatura')
-                    ->orderByDesc('id'),
-            ]))
-            ->schema(fn (BemImovel $record): array => [
-                Section::make('Resumo')
-                    ->icon('heroicon-o-users')
-                    ->schema([
-                        TextEntry::make('ocupacoes_total')
-                            ->label('Total de ocupações')
-                            ->state(fn (BemImovel $record): int => $record->cedidosRelacaoRef->count())
-                            ->badge()
-                            ->color('primary'),
-                    ]),
-                Section::make('Ocupações de terceiros')
-                    ->icon('heroicon-o-flag')
-                    ->schema([
-                        TextEntry::make('ocupacoes_vazias')
-                            ->hiddenLabel()
-                            ->state('Nenhuma ocupação de terceiro relacionada a este bem imóvel.')
-                            ->badge()
-                            ->color('gray')
-                            ->visible(fn (BemImovel $record): bool => $record->cedidosRelacaoRef->isEmpty()),
-                        RepeatableEntry::make('cedidosRelacaoRef')
-                            ->hiddenLabel()
-                            ->contained(false)
-                            ->schema([
-                                Grid::make(12)->schema([
-                                    TextEntry::make('situacao')
-                                        ->label('Situação')
-                                        ->badge()
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('num_processo')
-                                        ->label('Nº do processo')
-                                        ->placeholder('-')
-                                        ->columnSpan(3),
-                                    TextEntry::make('resumo')
-                                        ->label('Partes/Terceiros')
-                                        ->placeholder('-')
-                                        ->columnSpan(7),
-                                    TextEntry::make('proprietario_responsavel')
-                                        ->label('Proprietário/Responsável')
-                                        ->placeholder('-')
-                                        ->columnSpan(6),
-                                    TextEntry::make('condicao_uso')
-                                        ->label('Condição de uso')
-                                        ->placeholder('-')
-                                        ->columnSpan(6),
-                                    TextEntry::make('objeto')
-                                        ->label('Objeto')
-                                        ->placeholder('-')
-                                        ->columnSpan(12),
-                                    TextEntry::make('data_assinatura')
-                                        ->label('Assinatura')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->columnSpan(2),
-                                    TextEntry::make('data_publicacao')
-                                        ->label('Publicação')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->columnSpan(2),
-                                    TextEntry::make('vencimento')
-                                        ->label('Vencimento')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->columnSpan(2),
-                                    TextEntry::make('vigencia')
-                                        ->label('Vigência')
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('retribuicao')
-                                        ->label('Retribuição')
-                                        ->badge()
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('despesas')
-                                        ->label('Despesas')
-                                        ->listWithLineBreaks()
-                                        ->bulleted()
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('observacao')
-                                        ->label('Observação')
-                                        ->placeholder('-')
-                                        ->columnSpan(12),
-                                ]),
-                            ])
-                            ->visible(fn (BemImovel $record): bool => $record->cedidosRelacaoRef->isNotEmpty()),
-                    ]),
-            ]);
+            ->modalContent(fn (BemImovel $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.ocupacoes-modal',
+                    ['imovelId' => (int) $record->getKey()],
+                    "ocupacoes-{$record->getKey()}",
+                )
+            ));
     }
 
     private static function imprimirTermoTableAction(): Action
@@ -690,157 +463,32 @@ class BemImovelResource extends Resource
 
     private static function reavaliacaoTableAction(): Action
     {
-        return Action::make('reavaliacao_action')
+        return TableModalAction::make('reavaliacao_action')
             ->label('Reavaliação dos Imóveis')
             ->icon('heroicon-o-forward')
             ->modalHeading(fn (BemImovel $record): string => "Reavaliações do imóvel #{$record->Id}")
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
-            ->modalWidth('7xl')
-            ->mountUsing(fn (BemImovel $record) => $record->load([
-                'reavaliacoesRelacaoRef' => fn ($query) => $query
-                    ->with('estadoConservacaoRelacaoref')
-                    ->orderByDesc('data_reavaliacao')
-                    ->orderByDesc('Id'),
-            ]))
-            ->schema(fn (BemImovel $record): array => [
-                Section::make('Resumo')
-                    ->icon('heroicon-o-calculator')
-                    ->schema([
-                        TextEntry::make('reavaliacoes_total')
-                            ->label('Total de reavaliações')
-                            ->state(fn (BemImovel $record): int => $record->reavaliacoesRelacaoRef->count())
-                            ->badge()
-                            ->color('primary'),
-                    ]),
-                Section::make('Reavaliações')
-                    ->icon('heroicon-o-banknotes')
-                    ->schema([
-                        TextEntry::make('reavaliacoes_vazias')
-                            ->hiddenLabel()
-                            ->state('Nenhuma reavaliação relacionada a este bem imóvel.')
-                            ->badge()
-                            ->color('gray')
-                            ->visible(fn (BemImovel $record): bool => $record->reavaliacoesRelacaoRef->isEmpty()),
-                        RepeatableEntry::make('reavaliacoesRelacaoRef')
-                            ->hiddenLabel()
-                            ->contained(false)
-                            ->schema([
-                                Grid::make(12)->schema([
-                                    TextEntry::make('data_reavaliacao')
-                                        ->label('Data da reavaliação')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->columnSpan(2),
-                                    TextEntry::make('estadoConservacaoRelacaoref.descEstadoConservacao')
-                                        ->label('Estado de conservação')
-                                        ->badge()
-                                        ->placeholder('-')
-                                        ->columnSpan(3),
-                                    TextEntry::make('valor_reavaliacao')
-                                        ->label('Valor da reavaliação')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('success')
-                                        ->columnSpan(3),
-                                    TextEntry::make('ajuste_contabil')
-                                        ->label('Ajuste contábil')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->columnSpan(2),
-                                    TextEntry::make('vida_util_reavaliacao')
-                                        ->label('Vida útil')
-                                        ->suffix(' meses')
-                                        ->placeholder('-')
-                                        ->columnSpan(2),
-                                    TextEntry::make('valor_mercado')
-                                        ->label('Valor de mercado')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->columnSpan(3),
-                                    TextEntry::make('valor_aquisicao')
-                                        ->label('Valor de aquisição')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->columnSpan(3),
-                                    TextEntry::make('vida_util_remanescente_meses')
-                                        ->label('Vida útil remanescente')
-                                        ->suffix(' meses')
-                                        ->placeholder('-')
-                                        ->columnSpan(3),
-                                    TextEntry::make('idade_aparente_anos')
-                                        ->label('Idade aparente')
-                                        ->suffix(' anos')
-                                        ->placeholder('-')
-                                        ->columnSpan(3),
-                                    TextEntry::make('observacao')
-                                        ->label('Observação')
-                                        ->placeholder('-')
-                                        ->columnSpan(12),
-                                ]),
-                            ])
-                            ->visible(fn (BemImovel $record): bool => $record->reavaliacoesRelacaoRef->isNotEmpty()),
-                    ]),
-            ]);
+            ->modalContent(fn (BemImovel $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.reavaliacoes-modal',
+                    ['imovelId' => (int) $record->getKey()],
+                    "reavaliacoes-{$record->getKey()}",
+                )
+            ));
     }
 
     private static function obrasTableAction(): Action
     {
-        return Action::make('obras_action')
+        return TableModalAction::make('obras_action')
             ->label('Obras e Ampliações')
             ->icon('heroicon-o-home')
             ->modalHeading(fn (BemImovel $record): string => "Obras e ampliações do imóvel #{$record->Id}")
-            ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Fechar')
-            ->modalWidth('7xl')
-            ->mountUsing(fn (BemImovel $record) => $record->load([
-                'obrasRelacaoRef' => fn ($query) => $query
-                    ->orderByDesc('data')
-                    ->orderByDesc('id'),
-            ]))
-            ->schema(fn (BemImovel $record): array => [
-                Section::make('Resumo')
-                    ->icon('heroicon-o-wrench-screwdriver')
-                    ->schema([
-                        Grid::make(2)->schema([
-                            TextEntry::make('obras_total')
-                                ->label('Total de obras e ampliações')
-                                ->state(fn (BemImovel $record): int => $record->obrasRelacaoRef->count())
-                                ->badge()
-                                ->color('primary'),
-                            TextEntry::make('obras_valor_total')
-                                ->label('Valor total')
-                                ->state(fn (BemImovel $record): string => self::formatMoney($record->obrasRelacaoRef->sum('valor')))
-                                ->color('success'),
-                        ]),
-                    ]),
-                Section::make('Obras e ampliações')
-                    ->icon('heroicon-o-home')
-                    ->schema([
-                        TextEntry::make('obras_vazias')
-                            ->hiddenLabel()
-                            ->state('Nenhuma obra ou ampliação relacionada a este bem imóvel.')
-                            ->badge()
-                            ->color('gray')
-                            ->visible(fn (BemImovel $record): bool => $record->obrasRelacaoRef->isEmpty()),
-                        RepeatableEntry::make('obrasRelacaoRef')
-                            ->hiddenLabel()
-                            ->contained(false)
-                            ->schema([
-                                Grid::make(12)->schema([
-                                    TextEntry::make('data')
-                                        ->label('Data')
-                                        ->formatStateUsing(fn ($state): string => self::formatDate($state))
-                                        ->columnSpan(2),
-                                    TextEntry::make('descricao')
-                                        ->label('Descrição')
-                                        ->placeholder('-')
-                                        ->columnSpan(7),
-                                    TextEntry::make('valor')
-                                        ->label('Valor')
-                                        ->formatStateUsing(fn ($state): string => self::formatMoney($state))
-                                        ->color('success')
-                                        ->columnSpan(3),
-                                ]),
-                            ])
-                            ->visible(fn (BemImovel $record): bool => $record->obrasRelacaoRef->isNotEmpty()),
-                    ]),
-            ]);
+            ->modalContent(fn (BemImovel $record): HtmlString => new HtmlString(
+                Livewire::mount(
+                    'patrimonio.obras-modal',
+                    ['imovelId' => (int) $record->getKey()],
+                    "obras-{$record->getKey()}",
+                )
+            ));
     }
 
     // -------------------------------------------------------------------------

@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Filament\Livewire\Patrimonio;
+namespace App\Filament\Livewire\Patrimonio\BensMoveis;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource;
 use App\Filament\Support\TableModalComponent;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Table;
 
 class DepreciacaoModal extends TableModalComponent implements HasActions
 {
     use InteractsWithActions;
+
     public int $bemMovelId;
 
     public function mount(int $bemMovelId): void
