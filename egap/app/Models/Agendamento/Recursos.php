@@ -24,7 +24,25 @@ class Recursos extends Model
         'observacao',
     ];
 
-    // Não tem nenhuma relação no banco
+    public function idUserRef(): BelongsTo
+    {
+        return $this->belongsTo(UserEgap::class, 'id_user');
+    }
+
+    public function condutorRef(): BelongsTo
+    {
+        return $this->belongsTo(Equipe::class, 'condutor', 'id_pessoa');
+    }
+
+    public function veiculoRef(): BelongsTo
+    {
+        return $this->belongsTo(Frota::class, 'veiculo');
+    }
+
+    public function idSolicitacaoRef(): BelongsTo
+    {
+        return $this->belongsTo(Solicitacao::class, 'id_solicitacao');
+    }
 
     protected static function booted(): void
     {

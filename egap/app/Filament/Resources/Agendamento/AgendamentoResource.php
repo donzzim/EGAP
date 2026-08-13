@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\Agendamento;
 
+use App\Models\Agendamento\Equipe;
+use App\Models\Agendamento\Frota;
+use App\Models\Agendamento\Recursos;
+use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Patrimonio\BensImoveis\Situacao;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -24,8 +30,11 @@ use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class AgendamentoResource extends Resource
@@ -274,6 +283,13 @@ class AgendamentoResource extends Resource
                 ...TableDefaults::actions(),
                 self::agendarTableAction()
             ])
+            ->filters([
+                SelectFilter::make('situacao_filter')
+                    ->label('Situação')
+                    ->columnSpan(2)
+                    ->relationship('idSituacaoRef', 'Descricao')
+                    ->default(6)
+            ], Tables\Enums\FiltersLayout::AboveContent)
             ->defaultSort('date_time', 'desc');
     }
 
@@ -286,19 +302,42 @@ class AgendamentoResource extends Resource
             ->modalHeading(fn ($record) => 'Agendar veículo #' . $record->id)
             ->modalSubmitActionLabel('Agendar')
             ->schema([
-                TextInput::make('agendar_codigo')
-                    ->label('Código'),
-                TextInput::make('agendar_descricao')
-                    ->label('Descrição'),
-                Select::make('agendar_situacao')
-                    ->label('Situação')
-                    ->options([
-                        "Qualificação Técnica" => "Qualificação Técnica",
-                        "Qualificação Econômico-Financeira" => "Qualificação Econômico-Financeira"
-                    ])
+                Select::make('condutor_veiculo')
+                    ->required()
+                    ->label('Condutor')
+                    ->options(Equipe::all()->pluck('idPessoaRef.name', 'id')),
+                Select::make('veiculo')
+                    ->label('Veículo')
+                    ->required()
+                    ->options(Frota::all()->pluck('descricao', 'id')),
+                Textarea::make('observacao')
+                    ->required()
+                    ->label('Observação')
+                    ->rows(4)
             ])
-            ->action(function (array $data): void {
-                //
+            ->action(function (array $data, $record): void {
+                if ($data) {
+                    Recursos::create([
+                        'condutor' => $data['condutor_veiculo'],
+                        'veiculo' => $data['veiculo'],
+                        'id_solicitacao' => $record->id,
+                        'observacao' => $data['observacao'],
+                    ]);
+
+                    $record->update(['id_situacao' => 8]);
+
+                    Notification::make()
+                        ->color('success')
+                        ->icon(Heroicon::CalendarDays)
+                        ->title('Agendamento concluído!')
+                        ->send();
+                } else {
+                    Notification::make()
+                        ->color('danger')
+                        ->icon(Heroicon::ExclamationCircle)
+                        ->title('Erro ao concluir agendamento')
+                        ->send();
+                }
             });
     }
 
