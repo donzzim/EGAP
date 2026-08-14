@@ -21,4 +21,16 @@ class ListDepreciacaos extends ListRecords
                 ->createAnother(false),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return static::getResource()::getWidgets();
+    }
+
+    public function getWidgetData(): array
+    {
+        return [
+            'imovelId' => $this->tableFilters['Id_imovel']['value'] ?? null,
+        ];
+    }
 }

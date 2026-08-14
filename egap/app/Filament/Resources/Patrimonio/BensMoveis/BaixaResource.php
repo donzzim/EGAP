@@ -143,10 +143,10 @@ class BaixaResource extends Resource
                     ->searchable(false)
                     ->color('primary')
                     ->weight('bold')
-                    ->tooltip('Clique para visualizar os materiais desta baixa')
                     ->extraAttributes([
-                        'class' => 'cursor-pointer underline decoration-dotted underline-offset-4',
+                        'class' => 'cursor-pointer underline',
                     ])
+                    ->tooltip('Clique para visualizar os materiais desta baixa')
                     ->action(self::materiaisTableAction()),
             ])
             ->recordActions([

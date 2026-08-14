@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
 
 use Filament\Actions\CreateAction;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Widgets\BensMoveisCountStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,13 @@ class ListBemMovels extends ListRecords
         return [
             CreateAction::make()
                 ->label('Novo'),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            BensMoveisCountStats::class,
         ];
     }
 

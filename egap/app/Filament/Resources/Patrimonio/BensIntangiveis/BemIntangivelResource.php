@@ -16,6 +16,7 @@ use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Page
 use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages\EditBemIntangivel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensIntangiveis\BemIntangivelResource\Widgets\BensIntangiveisCountStats;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -268,6 +269,13 @@ class BemIntangivelResource extends Resource
             'index' => ListBemIntangivels::route('/'),
             'create' => CreateBemIntangivel::route('/create'),
             'edit' => EditBemIntangivel::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            BensIntangiveisCountStats::class,
         ];
     }
 }

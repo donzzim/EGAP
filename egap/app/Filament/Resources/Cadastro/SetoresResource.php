@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use App\Filament\Resources\Cadastro\SetoresResource\Widgets\SetoresCountStats;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
@@ -260,6 +261,13 @@ class SetoresResource extends Resource
             'index' => ListSetores::route('/'),
             'create' => CreateSetores::route('/create'),
             'edit' => EditSetores::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            SetoresCountStats::class,
         ];
     }
 }

@@ -14,6 +14,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\ListDepreciacaos;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\CreateDepreciacao;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages\EditDepreciacao;
+use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Widgets\DepreciacaoValorChart;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\DepreciacaoResource\Pages;
 use App\Filament\Support\MoneyInput;
@@ -133,6 +134,13 @@ class DepreciacaoResource extends Resource
             'index' => ListDepreciacaos::route('/'),
             'create' => CreateDepreciacao::route('/create'),
             'edit' => EditDepreciacao::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            DepreciacaoValorChart::class,
         ];
     }
 }

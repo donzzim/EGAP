@@ -18,4 +18,16 @@ class ListDepreciacaos extends ListRecords
                 ->label('Novo'),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return static::getResource()::getWidgets();
+    }
+
+    public function getWidgetData(): array
+    {
+        return [
+            'patrimonioId' => $this->tableFilters['patrimonio']['patrimonio'] ?? null,
+        ];
+    }
 }

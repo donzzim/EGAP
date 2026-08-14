@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cadastro\SetoresResource\Pages;
 
+use App\Filament\Resources\Cadastro\SetoresResource\Widgets\SetoresCountStats;
 use Filament\Actions\CreateAction;
 use App\Filament\Resources\Cadastro\SetoresResource;
 use Filament\Actions;
@@ -16,6 +17,13 @@ class ListSetores extends ListRecords
         return [
             CreateAction::make()
                 ->label('Novo')
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            SetoresCountStats::class,
         ];
     }
 }

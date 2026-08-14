@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Filament\Livewire\AtendimentoPedidos\MateriaisDisponiveisTable;
 use App\Filament\Livewire\AtendimentoPedidos\PedidosEmAbertoTable;
+use App\Filament\Livewire\Externo\Agendamento\SolicitacaoVeiculoForm;
 use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
 use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Livewire\Externo\Almoxarifado\PedidoItensModal;
@@ -40,6 +41,7 @@ class LivewireComponentsService
 {
     public static function getLivewireComponents(): void
     {
+        //PATRIMONIO
         Livewire::component('patrimonio.materiais-baixa-modal', MateriaisBaixaModal::class);
         Livewire::component('patrimonio.materiais-termo-modal', MateriaisTermoModal::class);
         Livewire::component('patrimonio.inventario-comissoes-modal', ComissoesModal::class);
@@ -53,12 +55,21 @@ class LivewireComponentsService
         Livewire::component('patrimonio.ocupacoes-modal', OcupacoesModal::class);
         Livewire::component('patrimonio.reavaliacoes-modal', ReavaliacoesModal::class);
         Livewire::component('patrimonio.obras-modal', ObrasModal::class);
+
+        // PORTAL TRANSPARÊNCIA
         Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
         Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
+
+        //EXTERNO AGENDAMENTO
+        Livewire::component('externo-agendamento.solicitacao-veiculo-form', SolicitacaoVeiculoForm::class);
+
+        //EXTERNO ALMOXARIFADO
         Livewire::component('externo-almoxarifado.materiais-disponiveis-table', MateriaisConsumoTable::class);
         Livewire::component('externo-almoxarifado.carrinho-pedido-form', CarrinhoMateriaisConsumoForm::class);
         Livewire::component('externo-almoxarifado.pedidos-almoxarifado-table', PedidosAlmoxarifadoTable::class);
         Livewire::component('externo-almoxarifado.pedido-itens-modal', PedidoItensModal::class);
+
+        //EXTERNO PATRIMONIO
         Livewire::component('externo-patrimonio.bens-no-setor-table', BensNoSetorTable::class);
         Livewire::component('externo-patrimonio.movimentacao-de-materiais-table', MovimentacaoDeMateriaisTable::class);
         Livewire::component('externo-patrimonio.historico-de-inventario-online-table', HistoricoDeInventarioOnlineTable::class);

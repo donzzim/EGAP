@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Patrimonio\BensMoveis;
 
+use App\Filament\Resources\Patrimonio\BensMoveis\DepreciacaoResource\Widgets\DepreciacaoValorChart;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
@@ -201,6 +202,13 @@ class DepreciacaoResource extends Resource
             'index' => ListDepreciacaos::route('/'),
             'create' => CreateDepreciacao::route('/create'),
             'edit' => EditDepreciacao::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            DepreciacaoValorChart::class,
         ];
     }
 }

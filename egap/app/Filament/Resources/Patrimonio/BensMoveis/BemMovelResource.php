@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Patrimonio\BensMoveis;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Actions\ActionGroup;
@@ -15,6 +17,7 @@ use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\CreateBe
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages\EditBemMovel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensMoveis\BemMovelResource\Widgets\BensMoveisCountStats;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -38,6 +41,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\Width;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -74,373 +78,482 @@ class BemMovelResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Identificação do Bem')
-                ->description('Números de controle patrimonial que identificam o bem.')
-                ->icon('heroicon-o-identification')
-                ->schema([
-                    TextInput::make('NumPatrimonio')
-                        ->label('Nº Patrimônio')
-                        ->placeholder('Informe o número do patrimônio')
-                        ->numeric()
-                        ->unique(ignoreRecord: true)
-                        ->required(),
-
-                    TextInput::make('NumerodePatAnterior')
-                        ->label('Nº Patrimônio Anterior')
-                        ->placeholder('Informe o número anterior, se houver'),
-
-                    TextInput::make('NumerodeSerie')
-                        ->label('Número de Série')
-                        ->placeholder('Informe o número de série'),
-
-                    TextInput::make('TomboSmarapd')
-                        ->label('Tombo Smarapd')
-                        ->placeholder('Informe o tombo Smarapd'),
-
-                    TextInput::make('NumTomboSmarapd')
-                        ->label('Nº do Tombo Smarapd')
-                        ->numeric()
-                        ->placeholder('Informe o número do tombo'),
-
-                    Select::make('Unidade')
-                        ->label('Unidade de Medida')
-                        ->relationship('unidadeMedidaRef', 'Unidade')
-                        ->getOptionLabelFromRecordUsing(fn (UnidadesDeMedida $record): string => filled($record->Sigla)
-                            ? "{$record->Sigla} - {$record->Unidade}"
-                            : $record->Unidade)
-                        ->searchable(['Sigla', 'Unidade'])
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione a unidade de medida'),
+            Tabs::make('TabsBemMovel')
+                ->tabs([
+                    self::tabIdentificacao(),
+                    self::tabSituacao(),
+                    self::tabLocalizacao(),
+                    self::tabAquisicao(),
+                    self::tabValores(),
+                    self::tabObservacoes(),
                 ])
-                ->columns(3),
-
-            Section::make('Descrição e Classificação')
-                ->description('Descrição detalhada e características do bem.')
-                ->icon('heroicon-o-tag')
-                ->schema([
-                    Select::make('DescricaoResumidadoBem')
-                        ->label('Descrição Resumida')
-                        ->relationship('descricaoResumidaBemRef', 'Descricao')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione a descrição resumida'),
-
-                    Select::make('id_descricaodetalhada')
-                        ->label('Descrição Detalhada')
-                        ->relationship('descricaoDetalhadaRef', 'descricao_detalhada')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione a descrição detalhada'),
-
-                    Select::make('Marca')
-                        ->label('Marca')
-                        ->relationship('marcaRef', 'descricao')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->live()
-                        ->afterStateUpdated(fn (Set $set) => $set('Modelo', null))
-                        ->placeholder('Selecione a marca'),
-
-                    Select::make('Modelo')
-                        ->label('Modelo')
-                        ->placeholder(fn (Get $get) => blank($get('Marca'))
-                            ? 'Selecione primeiro a marca'
-                            : 'Selecione o modelo'
-                        )
-                        ->options(fn (Get $get): array => Modelos::query()
-                            ->when(
-                                $get('Marca'),
-                                fn ($query, $marca) => $query->where('marca', $marca)
-                            )
-                            ->orderBy('descricao')
-                            ->pluck('descricao', 'id')
-                            ->toArray()
-                        )
-                        ->disabled(fn (Get $get) => blank($get('Marca')))
-                        ->searchable()
-                        ->native(false),
-
-                    TextInput::make('TipodoBem')
-                        ->label('Tipo do Bem')
-                        ->placeholder('Informe o tipo do bem'),
-
-                    TextInput::make('EstadodeConservacao')
-                        ->label('Estado de Conservação')
-                        ->placeholder('Informe o estado de conservação'),
-
-                    TextInput::make('Voltagem')
-                        ->placeholder('Informe a voltagem'),
-
-                    TextInput::make('Categoria')
-                        ->placeholder('Informe a categoria'),
-
-                    TextInput::make('Combustivel')
-                        ->placeholder('Informe o combustível'),
-
-                    TextInput::make('ClassificacaoInservivel')
-                        ->label('Classificação de Inservível')
-                        ->placeholder('Informe a classificação, se inservível'),
-
-                    Textarea::make('Descricao')
-                        ->label('Descrição Detalhada do Bem')
-                        ->placeholder('Descreva o bem detalhadamente')
-                        ->rows(3)
-                        ->columnSpanFull(),
-                ])
-                ->columns(3),
-
-            Section::make('Situação e Identificação Veicular')
-                ->description('Situação atual do bem e dados de identificação, quando se tratar de veículo.')
-                ->icon('heroicon-o-shield-check')
-                ->schema([
-                    Select::make('SituacaoBem')
-                        ->label('Situação do Bem')
-                        ->relationship('situacaoBemRef', 'descricao')
-                        ->getOptionLabelFromRecordUsing(fn (SituacaoBemMovel $record): string => $record->descricao_completa)
-                        ->searchable(['descricao', 'situacao'])
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione a situação do bem'),
-
-                    TextInput::make('Placa')
-                        ->maxLength(8)
-                        ->placeholder('Informe a placa'),
-
-                    TextInput::make('Chassi')
-                        ->placeholder('Informe o chassi'),
-
-                    TextInput::make('Renavam')
-                        ->placeholder('Informe o Renavam'),
-
-                    TextInput::make('AnoFabricacao')
-                        ->label('Ano de Fabricação')
-                        ->numeric()
-                        ->maxLength(4)
-                        ->placeholder('AAAA'),
-
-                    TextInput::make('AnoModelo')
-                        ->label('Ano do Modelo')
-                        ->numeric()
-                        ->maxLength(4)
-                        ->placeholder('AAAA'),
-                ])
-                ->columns(3),
-
-            Section::make('Localização do Bem')
-                ->description('Unidade judiciária, setor e localização física atual do bem.')
-                ->icon('heroicon-o-building-office-2')
-                ->schema([
-                    Select::make('UnidadeJudiciaria')
-                        ->label('Unidade Judiciária')
-                        ->placeholder('Selecione a unidade judiciária')
-                        ->searchable()
-                        ->preload()
-                        ->live()
-                        ->native(false)
-                        ->options(fn () => Setores::query()
-                            ->whereColumn('id', 'CodigodaUO')
-                            ->orderBy('UnidadeOrganizacional')
-                            ->pluck('UnidadeOrganizacional', 'CodigoPai')
-                            ->toArray()
-                        )
-                        ->afterStateUpdated(fn (Set $set) => $set('Setor', null)),
-
-                    Select::make('Setor')
-                        ->placeholder(fn (Get $get) => blank($get('UnidadeJudiciaria'))
-                            ? 'Selecione primeiro a unidade judiciária'
-                            : 'Selecione o setor'
-                        )
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->options(fn (Get $get) => Setores::query()
-                            ->when(
-                                $get('UnidadeJudiciaria'),
-                                fn ($query, $codigoPai) => $query->where('CodigoPai', $codigoPai)
-                            )
-                            ->orderBy('Setor')
-                            ->pluck('Setor', 'id')
-                            ->toArray()
-                        )
-                        ->disabled(fn (Get $get) => blank($get('UnidadeJudiciaria'))),
-
-                    Select::make('ComplementoSetor')
-                        ->label('Complemento')
-                        ->relationship('complementoSetorRef', 'descricao')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione o complemento'),
-
-                    Select::make('AndarSetor')
-                        ->label('Andar')
-                        ->placeholder('Informe o andar')
-                        ->options(self::andaresOptions())
-                        ->native(false),
-                ])
-                ->columns(2),
-
-            Section::make('Aquisição e Fornecimento')
-                ->description('Dados do processo de aquisição, fornecedor e controle contábil.')
-                ->icon('heroicon-o-shopping-cart')
-                ->schema([
-                    Select::make('Produto')
-                        ->label('Elemento de Despesa')
-                        ->relationship('produtoRef', 'CodigodaClasse')
-                        ->getOptionLabelFromRecordUsing(fn (ElementoDespesa $record): string => filled($record->DescricaodaClasse)
-                            ? "{$record->CodigodaClasse} - {$record->DescricaodaClasse}"
-                            : (string) $record->CodigodaClasse)
-                        ->searchable(['CodigodaClasse', 'DescricaodaClasse'])
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione o elemento de despesa'),
-
-                    Select::make('ContaContabil')
-                        ->label('Conta Contábil')
-                        ->relationship('contaContabilRef', 'titulo')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione a conta contábil'),
-
-                    Select::make('Fornecedor')
-                        ->relationship('fornecedorRef', 'NomeFornecedor')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione o fornecedor'),
-
-                    Select::make('NotaFiscal')
-                        ->label('Nota Fiscal')
-                        ->relationship('notaFiscalRef', 'num_documento')
-                        ->searchable()
-                        ->preload()
-                        ->native(false)
-                        ->placeholder('Selecione a nota fiscal'),
-
-                    TextInput::make('FormaAquisicao')
-                        ->label('Forma de Aquisição')
-                        ->placeholder('Informe a forma de aquisição'),
-
-                    TextInput::make('SiglaUnidadeGestora')
-                        ->label('Sigla da Unidade Gestora')
-                        ->placeholder('Informe a sigla da unidade gestora'),
-
-                    TextInput::make('unidade_gestora')
-                        ->label('Unidade Gestora')
-                        ->placeholder('Informe a unidade gestora'),
-
-                    TextInput::make('Lote')
-                        ->numeric()
-                        ->placeholder('Informe o lote'),
-
-                    TextInput::make('NumeracaoInicial')
-                        ->label('Numeração Inicial')
-                        ->placeholder('Informe a numeração inicial'),
-
-                    TextInput::make('NumeracaoFinal')
-                        ->label('Numeração Final')
-                        ->placeholder('Informe a numeração final'),
-
-                    TextInput::make('MesdeReferencia')
-                        ->label('Mês de Referência')
-                        ->placeholder('Informe o mês de referência'),
-
-                    TextInput::make('Garantia')
-                        ->placeholder('Informe a garantia'),
-
-                    TextInput::make('numero_processo')
-                        ->label('Número do Processo')
-                        ->placeholder('Informe o número do processo'),
-
-                    TextInput::make('nota_empenho')
-                        ->label('Nota de Empenho')
-                        ->placeholder('Informe a nota de empenho'),
-
-                    TextInput::make('nota_liquidacao')
-                        ->label('Nota de Liquidação')
-                        ->placeholder('Informe a nota de liquidação'),
-
-                    DatePicker::make('data_liquidacao')
-                        ->label('Data da Liquidação')
-                        ->displayFormat('d/m/Y')
-                        ->native(false)
-                        ->closeOnDateSelection(),
-
-                    DatePicker::make('DatadeVencimento')
-                        ->label('Data de Vencimento')
-                        ->displayFormat('d/m/Y')
-                        ->native(false)
-                        ->closeOnDateSelection(),
-                ])
-                ->columns(3),
-
-            Section::make('Valores e Depreciação')
-                ->description('Valores de aquisição e reavaliação utilizados no cálculo de depreciação. Os valores contábeis atuais são atualizados automaticamente pela ação "Gerar Novo Cálculo".')
-                ->icon('heroicon-o-banknotes')
-                ->schema([
-                    MoneyInput::make('ValorAquisicao')
-                        ->label('Valor de Aquisição')
-                        ->required(),
-
-                    MoneyInput::make('ValordeMercado')
-                        ->label('Valor de Mercado'),
-
-                    DatePicker::make('DatadeIncorporacao')
-                        ->label('Data de Incorporação')
-                        ->displayFormat('d/m/Y')
-                        ->native(false)
-                        ->closeOnDateSelection(),
-
-                    DatePicker::make('DataDisponibilizacao')
-                        ->label('Data da Disponibilização')
-                        ->displayFormat('d/m/Y')
-                        ->native(false)
-                        ->closeOnDateSelection(),
-
-                    DatePicker::make('DatadaReavaliacao')
-                        ->label('Data da Reavaliação')
-                        ->displayFormat('d/m/Y')
-                        ->native(false)
-                        ->closeOnDateSelection(),
-
-                    MoneyInput::make('ValordaReavaliacao')
-                        ->label('Valor da Reavaliação'),
-
-                    TextInput::make('VidaUtilReavaliacao')
-                        ->label('Vida Útil da Reavaliação')
-                        ->numeric()
-                        ->suffix('meses')
-                        ->placeholder('0'),
-                ])
-                ->columns(3),
-
-            Section::make('Observações')
-                ->description('Adicione informações complementares sobre o bem, se necessário.')
-                ->icon('heroicon-o-chat-bubble-left-right')
-                ->schema([
-                    RichEditor::make('Observacao')
-                        ->label('')
-                        ->placeholder('Digite aqui alguma observação ou informação adicional...')
-                        ->toolbarButtons([
-                            'bold',
-                            'italic',
-                            'underline',
-                            'bulletList',
-                            'orderedList',
-                            'link',
-                            'undo',
-                            'redo',
-                        ])
-                        ->columnSpanFull(),
-                ])
-                ->collapsible()
-                ->collapsed(false),
+                ->columnSpanFull(),
         ]);
+    }
+
+    // ---- Tabs ----------------------------------------------------------------
+
+    private static function tabIdentificacao(): Tab
+    {
+        return Tab::make('Identificação')
+            ->icon('heroicon-o-identification')
+            ->schema([
+                Section::make('Identificação do Bem')
+                    ->description('Números de controle patrimonial que identificam o bem.')
+                    ->icon('heroicon-o-identification')
+                    ->schema([
+                        TextInput::make('NumPatrimonio')
+                            ->label('Nº Patrimônio')
+                            ->placeholder('Informe o número do patrimônio')
+                            ->numeric()
+                            ->unique(ignoreRecord: true)
+                            ->required()
+                            ->columnSpan(3),
+
+                        TextInput::make('NumerodePatAnterior')
+                            ->label('Nº Patrimônio Anterior')
+                            ->placeholder('Informe o número anterior, se houver')
+                            ->columnSpan(3),
+
+                        TextInput::make('NumerodeSerie')
+                            ->label('Número de Série')
+                            ->placeholder('Informe o número de série')
+                            ->columnSpan(3),
+
+                        TextInput::make('TomboSmarapd')
+                            ->label('Tombo Smarapd')
+                            ->placeholder('Informe o tombo Smarapd')
+                            ->columnSpan(3),
+
+                        TextInput::make('NumTomboSmarapd')
+                            ->label('Nº do Tombo Smarapd')
+                            ->numeric()
+                            ->placeholder('Informe o número do tombo')
+                            ->columnSpan(4),
+
+                        Select::make('Unidade')
+                            ->label('Unidade de Medida')
+                            ->relationship('unidadeMedidaRef', 'Unidade')
+                            ->getOptionLabelFromRecordUsing(fn (UnidadesDeMedida $record): string => filled($record->Sigla)
+                                ? "{$record->Sigla} - {$record->Unidade}"
+                                : $record->Unidade)
+                            ->searchable(['Sigla', 'Unidade'])
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione a unidade de medida')
+                            ->columnSpan(8),
+                    ])
+                    ->columns(12),
+
+                Section::make('Descrição e Classificação')
+                    ->description('Descrição detalhada e características do bem.')
+                    ->icon('heroicon-o-tag')
+                    ->schema([
+                        Select::make('DescricaoResumidadoBem')
+                            ->label('Descrição Resumida')
+                            ->relationship('descricaoResumidaBemRef', 'Descricao')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione a descrição resumida')
+                            ->columnSpan(6),
+
+                        Select::make('id_descricaodetalhada')
+                            ->label('Descrição Detalhada')
+                            ->relationship('descricaoDetalhadaRef', 'descricao_detalhada')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione a descrição detalhada')
+                            ->columnSpan(6),
+
+                        Select::make('Marca')
+                            ->label('Marca')
+                            ->relationship('marcaRef', 'descricao')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('Modelo', null))
+                            ->placeholder('Selecione a marca')
+                            ->columnSpan(4),
+
+                        Select::make('Modelo')
+                            ->label('Modelo')
+                            ->placeholder(fn (Get $get) => blank($get('Marca'))
+                                ? 'Selecione primeiro a marca'
+                                : 'Selecione o modelo'
+                            )
+                            ->options(fn (Get $get): array => Modelos::query()
+                                ->when(
+                                    $get('Marca'),
+                                    fn ($query, $marca) => $query->where('marca', $marca)
+                                )
+                                ->orderBy('descricao')
+                                ->pluck('descricao', 'id')
+                                ->toArray()
+                            )
+                            ->disabled(fn (Get $get) => blank($get('Marca')))
+                            ->searchable()
+                            ->native(false)
+                            ->columnSpan(4),
+
+                        TextInput::make('TipodoBem')
+                            ->label('Tipo do Bem')
+                            ->placeholder('Informe o tipo do bem')
+                            ->columnSpan(4),
+
+                        TextInput::make('EstadodeConservacao')
+                            ->label('Estado de Conservação')
+                            ->placeholder('Informe o estado de conservação')
+                            ->columnSpan(3),
+
+                        TextInput::make('Voltagem')
+                            ->placeholder('Informe a voltagem')
+                            ->columnSpan(3),
+
+                        TextInput::make('Categoria')
+                            ->placeholder('Informe a categoria')
+                            ->columnSpan(3),
+
+                        TextInput::make('Combustivel')
+                            ->placeholder('Informe o combustível')
+                            ->columnSpan(3),
+
+                        TextInput::make('ClassificacaoInservivel')
+                            ->label('Classificação de Inservível')
+                            ->placeholder('Informe a classificação, se inservível')
+                            ->columnSpanFull(),
+
+                        Textarea::make('Descricao')
+                            ->label('Descrição Detalhada do Bem')
+                            ->placeholder('Descreva o bem detalhadamente')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(12),
+            ]);
+    }
+
+    private static function tabSituacao(): Tab
+    {
+        return Tab::make('Situação')
+            ->icon('heroicon-o-shield-check')
+            ->schema([
+                Section::make('Situação e Identificação Veicular')
+                    ->description('Situação atual do bem e dados de identificação, quando se tratar de veículo.')
+                    ->icon('heroicon-o-shield-check')
+                    ->schema([
+                        Select::make('SituacaoBem')
+                            ->label('Situação do Bem')
+                            ->relationship('situacaoBemRef', 'descricao')
+                            ->getOptionLabelFromRecordUsing(fn (SituacaoBemMovel $record): string => $record->descricao_completa)
+                            ->searchable(['descricao', 'situacao'])
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione a situação do bem')
+                            ->columnSpan(6),
+
+                        TextInput::make('Placa')
+                            ->maxLength(8)
+                            ->placeholder('Informe a placa')
+                            ->columnSpan(2),
+
+                        TextInput::make('Chassi')
+                            ->placeholder('Informe o chassi')
+                            ->columnSpan(4),
+
+                        TextInput::make('Renavam')
+                            ->placeholder('Informe o Renavam')
+                            ->columnSpan(4),
+
+                        TextInput::make('AnoFabricacao')
+                            ->label('Ano de Fabricação')
+                            ->numeric()
+                            ->maxLength(4)
+                            ->placeholder('AAAA')
+                            ->columnSpan(4),
+
+                        TextInput::make('AnoModelo')
+                            ->label('Ano do Modelo')
+                            ->numeric()
+                            ->maxLength(4)
+                            ->placeholder('AAAA')
+                            ->columnSpan(4),
+                    ])
+                    ->columns(12),
+            ]);
+    }
+
+    private static function tabLocalizacao(): Tab
+    {
+        return Tab::make('Localização')
+            ->icon('heroicon-o-building-office-2')
+            ->schema([
+                Section::make('Localização do Bem')
+                    ->description('Unidade judiciária, setor e localização física atual do bem.')
+                    ->icon('heroicon-o-building-office-2')
+                    ->schema([
+                        Select::make('UnidadeJudiciaria')
+                            ->label('Unidade Judiciária')
+                            ->placeholder('Selecione a unidade judiciária')
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->native(false)
+                            ->options(fn () => Setores::query()
+                                ->whereColumn('id', 'CodigodaUO')
+                                ->orderBy('UnidadeOrganizacional')
+                                ->pluck('UnidadeOrganizacional', 'CodigoPai')
+                                ->toArray()
+                            )
+                            ->afterStateUpdated(fn (Set $set) => $set('Setor', null))
+                            ->columnSpan(6),
+
+                        Select::make('Setor')
+                            ->placeholder(fn (Get $get) => blank($get('UnidadeJudiciaria'))
+                                ? 'Selecione primeiro a unidade judiciária'
+                                : 'Selecione o setor'
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->options(fn (Get $get) => Setores::query()
+                                ->when(
+                                    $get('UnidadeJudiciaria'),
+                                    fn ($query, $codigoPai) => $query->where('CodigoPai', $codigoPai)
+                                )
+                                ->orderBy('Setor')
+                                ->pluck('Setor', 'id')
+                                ->toArray()
+                            )
+                            ->disabled(fn (Get $get) => blank($get('UnidadeJudiciaria')))
+                            ->columnSpan(6),
+
+                        Select::make('ComplementoSetor')
+                            ->label('Complemento')
+                            ->relationship('complementoSetorRef', 'descricao')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione o complemento')
+                            ->columnSpan(8),
+
+                        Select::make('AndarSetor')
+                            ->label('Andar')
+                            ->placeholder('Informe o andar')
+                            ->options(self::andaresOptions())
+                            ->native(false)
+                            ->columnSpan(4),
+                    ])
+                    ->columns(12),
+            ]);
+    }
+
+    private static function tabAquisicao(): Tab
+    {
+        return Tab::make('Aquisição')
+            ->icon('heroicon-o-shopping-cart')
+            ->schema([
+                Section::make('Processo de Aquisição')
+                    ->description('Elemento de despesa, fornecedor e documentos fiscais vinculados.')
+                    ->icon('heroicon-o-shopping-cart')
+                    ->schema([
+                        Select::make('Produto')
+                            ->label('Elemento de Despesa')
+                            ->relationship('produtoRef', 'CodigodaClasse')
+                            ->getOptionLabelFromRecordUsing(fn (ElementoDespesa $record): string => filled($record->DescricaodaClasse)
+                                ? "{$record->CodigodaClasse} - {$record->DescricaodaClasse}"
+                                : (string) $record->CodigodaClasse)
+                            ->searchable(['CodigodaClasse', 'DescricaodaClasse'])
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione o elemento de despesa')
+                            ->columnSpan(6),
+
+                        Select::make('ContaContabil')
+                            ->label('Conta Contábil')
+                            ->relationship('contaContabilRef', 'titulo')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione a conta contábil')
+                            ->columnSpan(6),
+
+                        Select::make('Fornecedor')
+                            ->relationship('fornecedorRef', 'NomeFornecedor')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione o fornecedor')
+                            ->columnSpan(6),
+
+                        Select::make('NotaFiscal')
+                            ->label('Nota Fiscal')
+                            ->relationship('notaFiscalRef', 'num_documento')
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Selecione a nota fiscal')
+                            ->columnSpan(6),
+
+                        TextInput::make('FormaAquisicao')
+                            ->label('Forma de Aquisição')
+                            ->placeholder('Informe a forma de aquisição')
+                            ->columnSpan(4),
+
+                        TextInput::make('numero_processo')
+                            ->label('Número do Processo')
+                            ->placeholder('Informe o número do processo')
+                            ->columnSpan(4),
+
+                        TextInput::make('nota_empenho')
+                            ->label('Nota de Empenho')
+                            ->placeholder('Informe a nota de empenho')
+                            ->columnSpan(4),
+
+                        TextInput::make('nota_liquidacao')
+                            ->label('Nota de Liquidação')
+                            ->placeholder('Informe a nota de liquidação')
+                            ->columnSpan(6),
+
+                        DatePicker::make('data_liquidacao')
+                            ->label('Data da Liquidação')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->closeOnDateSelection()
+                            ->columnSpan(6),
+                    ])
+                    ->columns(12),
+
+                Section::make('Dados Complementares')
+                    ->description('Unidade gestora, numeração de lote e demais dados de controle.')
+                    ->icon('heroicon-o-archive-box')
+                    ->schema([
+                        TextInput::make('SiglaUnidadeGestora')
+                            ->label('Sigla da Unidade Gestora')
+                            ->placeholder('Informe a sigla da unidade gestora')
+                            ->columnSpan(6),
+
+                        TextInput::make('unidade_gestora')
+                            ->label('Unidade Gestora')
+                            ->placeholder('Informe a unidade gestora')
+                            ->columnSpan(6),
+
+                        TextInput::make('Lote')
+                            ->numeric()
+                            ->placeholder('Informe o lote')
+                            ->columnSpan(4),
+
+                        TextInput::make('NumeracaoInicial')
+                            ->label('Numeração Inicial')
+                            ->placeholder('Informe a numeração inicial')
+                            ->columnSpan(4),
+
+                        TextInput::make('NumeracaoFinal')
+                            ->label('Numeração Final')
+                            ->placeholder('Informe a numeração final')
+                            ->columnSpan(4),
+
+                        TextInput::make('MesdeReferencia')
+                            ->label('Mês de Referência')
+                            ->placeholder('Informe o mês de referência')
+                            ->columnSpan(4),
+
+                        TextInput::make('Garantia')
+                            ->placeholder('Informe a garantia')
+                            ->columnSpan(4),
+
+                        DatePicker::make('DatadeVencimento')
+                            ->label('Data de Vencimento')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->closeOnDateSelection()
+                            ->columnSpan(4),
+                    ])
+                    ->columns(12),
+            ]);
+    }
+
+    private static function tabValores(): Tab
+    {
+        return Tab::make('Valores')
+            ->icon('heroicon-o-banknotes')
+            ->schema([
+                Section::make('Valores e Depreciação')
+                    ->description('Valores de aquisição e reavaliação utilizados no cálculo de depreciação. Os valores contábeis atuais são atualizados automaticamente pela ação "Gerar Novo Cálculo".')
+                    ->icon('heroicon-o-banknotes')
+                    ->schema([
+                        MoneyInput::make('ValorAquisicao')
+                            ->label('Valor de Aquisição')
+                            ->required()
+                            ->columnSpan(6),
+
+                        MoneyInput::make('ValordeMercado')
+                            ->label('Valor de Mercado')
+                            ->columnSpan(6),
+
+                        DatePicker::make('DatadeIncorporacao')
+                            ->label('Data de Incorporação')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->closeOnDateSelection()
+                            ->columnSpan(4),
+
+                        DatePicker::make('DataDisponibilizacao')
+                            ->label('Data da Disponibilização')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->closeOnDateSelection()
+                            ->columnSpan(4),
+
+                        DatePicker::make('DatadaReavaliacao')
+                            ->label('Data da Reavaliação')
+                            ->displayFormat('d/m/Y')
+                            ->native(false)
+                            ->closeOnDateSelection()
+                            ->columnSpan(4),
+
+                        MoneyInput::make('ValordaReavaliacao')
+                            ->label('Valor da Reavaliação')
+                            ->columnSpan(6),
+
+                        TextInput::make('VidaUtilReavaliacao')
+                            ->label('Vida Útil da Reavaliação')
+                            ->numeric()
+                            ->suffix('meses')
+                            ->placeholder('0')
+                            ->columnSpan(6),
+                    ])
+                    ->columns(12),
+            ]);
+    }
+
+    private static function tabObservacoes(): Tab
+    {
+        return Tab::make('Observações')
+            ->icon('heroicon-o-chat-bubble-left-right')
+            ->schema([
+                Section::make('Observações')
+                    ->description('Adicione informações complementares sobre o bem, se necessário.')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->schema([
+                        RichEditor::make('Observacao')
+                            ->label('')
+                            ->placeholder('Digite aqui alguma observação ou informação adicional...')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                                'link',
+                                'undo',
+                                'redo',
+                            ])
+                            ->columnSpanFull(),
+                    ]),
+            ]);
     }
 
     private static function andaresOptions(): array
@@ -528,6 +641,7 @@ class BemMovelResource extends Resource
         return Action::make('transferir_bens')
             ->label('Transferir Bens')
             ->icon('heroicon-o-arrow-right-circle')
+            ->modalWidth(Width::SevenExtraLarge)
             ->modalHeading(fn (BemMovel $record): string => "Transferir Bem #{$record->NumPatrimonio}")
             ->modalSubmitActionLabel('Transferir')
             ->fillForm(fn (BemMovel $record): array => [
@@ -631,7 +745,7 @@ class BemMovelResource extends Resource
                     ->description('Adicione informações complementares sobre a transferência, se necessário.')
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->schema([
-                        RichEditor::make('Observacao')
+                        RichEditor::make('Observação')
                             ->label('')
                             ->placeholder('Digite aqui alguma observação ou informação adicional...')
                             ->toolbarButtons([
@@ -871,6 +985,13 @@ class BemMovelResource extends Resource
             'index' => ListBemMovels::route('/'),
             'create' => CreateBemMovel::route('/create'),
             'edit' => EditBemMovel::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            BensMoveisCountStats::class,
         ];
     }
 }

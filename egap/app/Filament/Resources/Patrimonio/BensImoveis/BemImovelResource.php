@@ -18,6 +18,7 @@ use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\Create
 use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages\EditBemImovel;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Pages;
+use App\Filament\Resources\Patrimonio\BensImoveis\BemImovelResource\Widgets\BensImoveisCountStats;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
@@ -507,6 +508,13 @@ class BemImovelResource extends Resource
             'index' => ListBemImovels::route('/'),
             'create' => CreateBemImovel::route('/create'),
             'edit' => EditBemImovel::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            BensImoveisCountStats::class,
         ];
     }
 

@@ -248,7 +248,7 @@ class TermoResource extends Resource
                     ->weight('bold')
                     ->tooltip('Clique para visualizar os materiais deste termo')
                     ->extraAttributes([
-                        'class' => 'cursor-pointer underline decoration-dotted underline-offset-4',
+                        'class' => 'cursor-pointer underline',
                     ])
                     ->action(self::materiaisTableAction()),
             ])

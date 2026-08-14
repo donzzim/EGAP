@@ -9,6 +9,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Action;
+use Filament\Support\Icons\Heroicon;
 use RuntimeException;
 use Throwable;
 use Filament\Schemas\Components\Grid;
@@ -254,12 +255,7 @@ class TransferenciaBemResource extends Resource
             ->defaultSort('date_time', 'desc')
             ->recordActions([
                 ...TableDefaults::actions(),
-                ActionGroup::make([
-                    self::encaminharLogisiticaTableAction(),
-                    self::atualizarDadosTableAction(),
-                ])
-                    ->hiddenLabel()
-                    ->icon('heroicon-m-ellipsis-vertical'),
+                self::encaminharLogisiticaTableAction(),
             ]);
     }
 
@@ -282,9 +278,10 @@ class TransferenciaBemResource extends Resource
     public static function encaminharLogisiticaTableAction(): Action
     {
         return Action::make('encaminhar_logistica')
-            ->label('Encaminhar para logística')
-            ->icon('heroicon-s-bolt')
-            ->color('gray')
+            ->tooltip('Encaminhar para logística')
+            ->hiddenLabel()
+            ->icon(Heroicon::ArrowRightStartOnRectangle)
+            ->color('warning')
             ->requiresConfirmation()
             ->modalHeading('Encaminhar para logística')
             ->modalDescription('Deseja gerar a solicitação de transporte para a Seção de Patrimônio recolher/enviar este bem?')
