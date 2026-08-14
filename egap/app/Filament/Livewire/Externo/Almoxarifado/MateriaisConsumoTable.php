@@ -120,8 +120,8 @@ class MateriaisConsumoTable extends MateriaisDisponiveis implements HasActions
 
     /**
      * `imagem` guarda o formato legado do Joomla: um JSON com o caminho do
-     * arquivo prefixado por `/images/` (ex.: `/images/descricaodetalhada/x.jpg`),
-     * que corresponde ao mesmo arquivo dentro do disco `public`.
+     * arquivo (ex.: `images/descricaodetalhada/x.jpg`), relativo à raiz do
+     * disco `public` (pasta `images/` migrada do legado).
      */
     protected function imagemPath(?string $imagem): ?string
     {
@@ -135,7 +135,7 @@ class MateriaisConsumoTable extends MateriaisDisponiveis implements HasActions
             return null;
         }
 
-        $path = preg_replace('#^/?images/#', '', (string) $decoded[0]->file);
+        $path = ltrim((string) $decoded[0]->file, '/');
 
         return Storage::disk('public')->exists($path) ? $path : null;
     }

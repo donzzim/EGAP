@@ -24,7 +24,7 @@ class EditProfile extends BaseEditProfile
                             ->label('Foto')
                             ->avatar()
                             ->disk('public')
-                            ->directory('avatars')
+                            ->directory('images/avatars')
                             ->visibility('public')
                             ->columnSpanFull(),
                         $this->getNameFormComponent(),

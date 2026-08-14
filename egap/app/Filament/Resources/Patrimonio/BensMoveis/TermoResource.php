@@ -19,6 +19,7 @@ use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\CreateTermo
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages\EditTermo;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\TermoResource\Pages;
+use App\Filament\Support\LegacyFileUrl;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalAction;
@@ -214,9 +215,7 @@ class TermoResource extends Resource
                     ->color('primary')
                     ->limit(50)
                     ->weight('medium')
-                    ->url(fn (?string $state): ?string => filled($state)
-                        ? rtrim((string) config('app.egap'), '/').'/'.ltrim($state, '/')
-                        : null)
+                    ->url(fn (?string $state): ?string => LegacyFileUrl::resolve($state, config('app.egap')))
                     ->openUrlInNewTab(),
 
                 TableColumns::updatedBy('responsavelRef.name', dateColumn: 'atualizado_em'),

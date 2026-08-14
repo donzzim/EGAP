@@ -71,7 +71,9 @@ class CedidoResource extends Resource
 
                                         FileUpload::make('termo_digital')
                                             ->label('Termo Digital')
-                                            ->helperText('Anexe o termo ou documento relacionado à ocupação.'),
+                                            ->helperText('Anexe o termo ou documento relacionado à ocupação.')
+                                            ->disk('public')
+                                            ->directory('files/imoveis/cedidos'),
                                     ])
                                     ->columns(2),
 

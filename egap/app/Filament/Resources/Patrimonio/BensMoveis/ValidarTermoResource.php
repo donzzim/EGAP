@@ -20,6 +20,7 @@ use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\Crea
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages\EditValidarTermo;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensMoveis\ValidarTermoResource\Pages;
+use App\Filament\Support\LegacyFileUrl;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
@@ -158,9 +159,10 @@ class ValidarTermoResource extends Resource
                     ->color('primary')
                     ->limit(50)
                     ->weight('medium')
-                    ->url(function ($record) {
-                        return config('app.egap').$record->arquivo_digital;
-                    })
+                    ->url(fn (ArquivoDigital $record): ?string => LegacyFileUrl::resolve(
+                        $record->arquivo_digital,
+                        config('app.egap')
+                    ))
                     ->openUrlInNewTab(),
 
                 TableColumns::updatedBy('atualizadoPor.name', dateColumn: 'atualizado_em'),

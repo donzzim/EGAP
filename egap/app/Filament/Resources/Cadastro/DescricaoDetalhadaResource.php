@@ -82,11 +82,13 @@ class DescricaoDetalhadaResource extends Resource
 
                     FileUpload::make('imagem')
                         ->image()
-                        ->directory('descricoes/imagens')
+                        ->disk('public')
+                        ->directory('images/descricoes')
                         ->imagePreviewHeight('150'),
 
                     FileUpload::make('pdf')
-                        ->directory('descricoes/pdfs')
+                        ->disk('public')
+                        ->directory('files/descricoes')
                         ->acceptedFileTypes(['application/pdf']),
 
                 ])

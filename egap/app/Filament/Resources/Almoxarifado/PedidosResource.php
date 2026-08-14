@@ -27,6 +27,7 @@ use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\EditPedidos;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\PrintPedido;
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
+use App\Filament\Support\LegacyFileUrl;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Almoxarifado\SituacaoPedido;
 use App\Models\Cadastro\Setores;
@@ -345,13 +346,7 @@ class PedidosResource extends Resource
                     ->label('Requisição')
                     ->alignCenter()
                     ->formatStateUsing(fn ($state) => $state ? 'Abrir PDF' : '-')
-                    ->url(function ($record) {
-                        if (!$record->arquivo) {
-                            return null;
-                        }
-
-                        return 'https://sistemas.tjes.jus.br/patrimonio' . $record->arquivo;
-                    })
+                    ->url(fn ($record): ?string => LegacyFileUrl::resolve($record->arquivo, config('app.egap')))
                     ->openUrlInNewTab()
                     ->color('primary')
                     ->weight('bold'),

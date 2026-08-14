@@ -2,6 +2,8 @@
 
 namespace App\Filament\Livewire\Externo\Agendamento;
 
+use App\Filament\Resources\Agendamento\AgendamentoResource;
+use App\Filament\Support\SetorSelecionado;
 use App\Models\Agendamento\Regiao;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Cadastro\Setores;
@@ -9,12 +11,14 @@ use App\Models\UserEgap;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Concerns\RestrictsFileUploadsToSchemaComponents;
 use Filament\Schemas\Contracts\HasSchemas;
@@ -60,9 +64,64 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
             ->statePath('dataIda');
     }
 
+    /**
+     * Unidade Judiciária e Setor solicitante, informados manualmente no próprio
+     * formulário. Substitui, por ora, o `$_SESSION["codigosetor"]` do legado:
+     * enquanto não há um vínculo confiável entre o usuário autenticado e seu
+     * setor (ver {@see SetorSelecionado}), pedimos que a
+     * pessoa informe aqui — mesmo padrão de cascata de
+     * {@see AgendamentoResource}.
+     */
+    protected function camposSolicitante(): array
+    {
+        return [
+            Section::make('Setor solicitante')
+                ->description('Selecione a unidade judiciária e o setor de onde parte a solicitação.')
+                ->icon('heroicon-o-building-office-2')
+                ->schema([
+                    Select::make('unidade_solicitante')
+                        ->label('Unidade Judiciária')
+                        ->required()
+                        ->searchable()
+                        ->preload()
+                        ->live()
+                        ->native(false)
+                        ->placeholder('Selecione a unidade judiciária')
+                        ->options(fn () => Setores::query()
+                            ->whereColumn('id', 'CodigodaUO')
+                            ->orderBy('UnidadeOrganizacional')
+                            ->pluck('UnidadeOrganizacional', 'CodigoPai')
+                            ->toArray())
+                        ->afterStateUpdated(fn (Set $set) => $set('setor_solicitante', null))
+                        ->columnSpan(1),
+
+                    Select::make('setor_solicitante')
+                        ->label('Setor solicitante')
+                        ->required()
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+                        ->placeholder('Selecione o setor')
+                        ->options(fn (Get $get) => Setores::query()
+                            ->when(
+                                $get('unidade_solicitante'),
+                                fn ($query, $codigoPai) => $query->where('CodigoPai', $codigoPai)
+                            )
+                            ->orderBy('Setor')
+                            ->pluck('Setor', 'id')
+                            ->toArray())
+                        ->disabled(fn (Get $get) => blank($get('unidade_solicitante')))
+                        ->columnSpan(1),
+                ])
+                ->columns(2),
+        ];
+    }
+
     protected function camposIdaEVolta(): array
     {
         return [
+            ...$this->camposSolicitante(),
+
             Section::make('Saída')
                 ->description('Data, local de saída e passageiros que utilizarão o veículo.')
                 ->icon('heroicon-o-map-pin')
@@ -105,7 +164,7 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
                     FileUpload::make('doc_declaracao')
                         ->label('Documentos e declaração')
                         ->disk('public')
-                        ->directory('agendamento/veiculos')
+                        ->directory('files/agendamento/veiculos')
                         ->acceptedFileTypes(['application/pdf'])
                         ->maxSize(10240)
                         ->columnSpanFull(),
@@ -188,7 +247,7 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
                     FileUpload::make('doc_just')
                         ->label('Anexo da justificativa')
                         ->disk('public')
-                        ->directory('agendamento/veiculos')
+                        ->directory('files/agendamento/veiculos')
                         ->acceptedFileTypes(['application/pdf'])
                         ->maxSize(10240)
                         ->columnSpanFull(),
@@ -207,6 +266,8 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
     protected function camposIda(): array
     {
         return [
+            ...$this->camposSolicitante(),
+
             Section::make('Deslocamento')
                 ->description('Data, origem, destino e passageiros do trajeto somente de ida.')
                 ->icon('heroicon-o-map-pin')
@@ -255,7 +316,7 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
                     FileUpload::make('doc_declaracao')
                         ->label('Documentos e declaração')
                         ->disk('public')
-                        ->directory('agendamento/veiculos')
+                        ->directory('files/agendamento/veiculos')
                         ->acceptedFileTypes(['application/pdf'])
                         ->maxSize(10240)
                         ->columnSpanFull(),
@@ -279,7 +340,7 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
                     FileUpload::make('doc_just')
                         ->label('Anexo da justificativa')
                         ->disk('public')
-                        ->directory('agendamento/veiculos')
+                        ->directory('files/agendamento/veiculos')
                         ->acceptedFileTypes(['application/pdf'])
                         ->maxSize(10240)
                         ->columnSpanFull(),
@@ -305,7 +366,7 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
     {
         $data = $this->formIdaVolta->getState();
 
-        $solicitante = $this->resolverSolicitante();
+        $solicitante = $this->resolverSolicitante($data);
 
         if (! $solicitante) {
             $this->notificarSolicitanteNaoIdentificado();
@@ -391,7 +452,7 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
     {
         $data = $this->formIda->getState();
 
-        $solicitante = $this->resolverSolicitante();
+        $solicitante = $this->resolverSolicitante($data);
 
         if (! $solicitante) {
             $this->notificarSolicitanteNaoIdentificado();
@@ -437,31 +498,31 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
 
     /**
      * Equivalente a `$_SESSION["codigousuario"]`/`$_SESSION["codigosetor"]` do
-     * legado: identifica o usuário autenticado e o setor da sua lotação mais
-     * recente, e a partir dele resolve a unidade e a região da solicitação
-     * (mesmo JOIN de mat_setores/age_regiao feito no PHP legado).
+     * legado. O usuário (`codigousuario`) é o autenticado no painel; o setor
+     * (`codigosetor`) vem agora do próprio formulário (campos "Unidade
+     * Judiciária"/"Setor solicitante" em {@see camposSolicitante()}), enquanto
+     * não existe um vínculo confiável entre usuário e setor. A partir da
+     * unidade escolhida, resolve a região da solicitação (mesmo JOIN de
+     * mat_setores/age_regiao feito no PHP legado).
      *
-     * @return array{usuario: UserEgap, setor: int, unidade: ?int, regiao: ?int}|null
+     * @param  array<string, mixed>  $data
+     * @return array{usuario: UserEgap, setor: int, unidade: int, regiao: ?int}|null
      */
-    protected function resolverSolicitante(): ?array
+    protected function resolverSolicitante(array $data): ?array
     {
         $usuario = UserEgap::currentAuthenticated();
-        $setorId = $usuario?->lotacoes()->first()?->setor;
 
-        if (! $usuario || blank($setorId)) {
+        if (! $usuario) {
             return null;
         }
 
-        $unidade = Setores::query()->find($setorId)?->CodigodaUO;
-        $regiaoId = filled($unidade)
-            ? Regiao::query()->where('unidade', $unidade)->value('id')
-            : null;
+        $unidade = $data['unidade_solicitante'];
 
         return [
             'usuario' => $usuario,
-            'setor' => (int) $setorId,
-            'unidade' => $unidade,
-            'regiao' => $regiaoId,
+            'setor' => (int) $data['setor_solicitante'],
+            'unidade' => (int) $unidade,
+            'regiao' => Regiao::query()->where('unidade', $unidade)->value('id'),
         ];
     }
 
@@ -511,8 +572,8 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
     protected function notificarSolicitanteNaoIdentificado(): void
     {
         Notification::make()
-            ->title('Não foi possível identificar seu setor de lotação.')
-            ->body('Entre em contato com o suporte para regularizar seu cadastro antes de enviar a solicitação.')
+            ->title('Não foi possível identificar seu usuário.')
+            ->body('Faça login novamente e tente enviar a solicitação outra vez.')
             ->danger()
             ->send();
     }

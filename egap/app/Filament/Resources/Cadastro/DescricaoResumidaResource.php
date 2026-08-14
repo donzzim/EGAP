@@ -89,7 +89,8 @@ class DescricaoResumidaResource extends Resource
                 ->schema([
                     FileUpload::make('imagem')
                         ->image()
-                        ->directory('descricoes/imagens')
+                        ->disk('public')
+                        ->directory('images/descricao')
                         ->imagePreviewHeight('150'),
                 ])
                 ->columns(1),

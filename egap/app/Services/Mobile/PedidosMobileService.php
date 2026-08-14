@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class PedidosMobileService
@@ -477,6 +478,11 @@ class PedidosMobileService
         return '{Adi&ccedil;&atilde;o; Justificativa:'.$justificativa.'}';
     }
 
+    /**
+     * `imagem` guarda o formato legado do Joomla: um JSON com o caminho do
+     * arquivo (ex.: `images/descricaodetalhada/x.jpg`), relativo à raiz do
+     * disco `public`. Resolve para a URL servida por esta aplicação.
+     */
     private function imagemDetalhada(mixed $imagem): ?string
     {
         if (! is_string($imagem) || trim($imagem) === '') {
@@ -489,7 +495,9 @@ class PedidosMobileService
             return null;
         }
 
-        return (string) $decoded[0]->file;
+        $path = ltrim((string) $decoded[0]->file, '/');
+
+        return Storage::disk('public')->exists($path) ? Storage::disk('public')->url($path) : null;
     }
 
     /**

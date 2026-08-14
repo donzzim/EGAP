@@ -12,6 +12,7 @@ use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\
 use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages\EditTermoResponsabilidade;
 use App\Filament\Clusters\PatrimonioCluster;
 use App\Filament\Resources\Patrimonio\BensImoveis\TermoResponsabilidadeResource\Pages;
+use App\Filament\Support\LegacyFileUrl;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Patrimonio\BensImoveis\TermoResponsabilidade;
@@ -54,6 +55,8 @@ class TermoResponsabilidadeResource extends Resource
 
                         FileUpload::make('arquivo')
                             ->label('Arquivo')
+                            ->disk('public')
+                            ->directory('files/imoveis/termo-responsabilidade')
                             ->columnSpanFull(),
                     ])->columns(2),
             ]);
@@ -77,7 +80,7 @@ class TermoResponsabilidadeResource extends Resource
                 TableColumns::text('num_termo', 'Termo Nº', isFirstColumn: true),
                 TableColumns::text('ano_termo', 'Ano'),
                 TableColumns::text('arquivo', 'Arquivo')
-                    ->url(fn ($record) => $record->arquivo ? "https://sistemas.tjes.jus.br/patrimonio{$record->arquivo}" : null)
+                    ->url(fn ($record): ?string => LegacyFileUrl::resolve($record->arquivo, config('app.egap')))
                     ->openUrlInNewTab()
                     ->formatStateUsing(fn ($state) => $state ? 'Abrir' : '-')
                     ->color('primary')
