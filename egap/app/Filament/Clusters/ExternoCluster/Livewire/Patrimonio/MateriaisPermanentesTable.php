@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Patrimonio;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
-use Filament\Schemas\Components\Utilities\Get;
-use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
-use App\Filament\Livewire\Externo\MateriaisDisponiveis;
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\MateriaisConsumoTable;
+use App\Filament\Clusters\ExternoCluster\Livewire\MateriaisDisponiveis;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Patrimonio\BensMoveis\BemMovel;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;

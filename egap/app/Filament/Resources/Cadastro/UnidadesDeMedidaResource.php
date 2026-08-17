@@ -34,22 +34,17 @@ class UnidadesDeMedidaResource extends Resource
     {
         return $schema
             ->components([
-                Section::make()
-                    ->schema([
-                        Grid::make(1)
-                            ->schema([
-                                TextInput::make('Sigla')
-                                    ->label('Sigla')
-                                    ->required()
-                                    ->maxLength(2),
+                TextInput::make('Sigla')
+                    ->label('Sigla')
+                    ->required()
+                    ->columnSpanFull()
+                    ->maxLength(2),
 
-                                TextInput::make('Unidade')
-                                    ->label('Descrição da Unidade')
-                                    ->required()
-                                    ->maxLength(100),
-                            ]),
-                    ])
-                    ->columns(),
+                TextInput::make('Unidade')
+                    ->label('Descrição da Unidade')
+                    ->required()
+                    ->columnSpanFull()
+                    ->maxLength(100),
             ]);
     }
     public static function table(Table $table): Table
@@ -70,8 +65,6 @@ class UnidadesDeMedidaResource extends Resource
     {
         return [
             'index' => ListUnidadesDeMedida::route('/'),
-            'create' => CreateUnidadesDeMedida::route('/create'),
-            'edit' => EditUnidadesDeMedida::route('/{record}/edit'),
         ];
     }
 }

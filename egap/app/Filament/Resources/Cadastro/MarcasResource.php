@@ -53,6 +53,7 @@ class MarcasResource extends Resource
         return TableDefaults::apply($table)
             ->columns([
                 TableColumns::text('descricao', 'Descrição', isFirstColumn: true),
+                TableColumns::text('tipobem', 'Tipo do Bem'),
                 TableColumns::updatedBy('atualizado_por.name')
             ]);
     }
@@ -68,8 +69,6 @@ class MarcasResource extends Resource
     {
         return [
             'index' => ListMarcas::route('/'),
-            'create' => CreateMarcas::route('/create'),
-            'edit' => EditMarcas::route('/{record}/edit'),
         ];
     }
 }

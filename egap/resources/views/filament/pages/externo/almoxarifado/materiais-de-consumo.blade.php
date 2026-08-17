@@ -2,7 +2,7 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
         <div class="lg:col-span-4">
             @livewire(
-                \App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm::class,
+                \App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\CarrinhoMateriaisConsumoForm::class,
                 [],
                 key('carrinho-pedido-form-' . $this->tipoMaterial())
             )
@@ -10,7 +10,7 @@
 
         <div class="lg:col-span-8">
             @livewire(
-                \App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable::class,
+                \App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\MateriaisConsumoTable::class,
                 ['tipoMaterial' => $this->tipoMaterial()],
                 key('materiais-disponiveis-table-' . $this->tipoMaterial())
             )

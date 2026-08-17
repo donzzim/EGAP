@@ -36,23 +36,19 @@ class ModelosResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Dados do Modelo')
-                    ->schema([
-                        Select::make('marca')
-                            ->label('Marca')
-                            ->relationship('marca_ref', 'descricao')
-                            ->searchable()
-                            ->preload()
-                            ->required(),
+                Select::make('marca')
+                    ->label('Marca')
+                    ->relationship('marca_ref', 'descricao')
+                    ->searchable()
+                    ->preload()
+                    ->columnSpanFull()
+                    ->required(),
 
-                        TextInput::make('descricao')
-                            ->label('Descrição do Modelo')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-
-                    ])
-                    ->columns(1),
+                TextInput::make('descricao')
+                    ->label('Descrição do Modelo')
+                    ->required()
+                    ->columnSpanFull()
+                    ->maxLength(255),
             ]);
     }
     public static function table(Table $table): Table
@@ -71,8 +67,6 @@ class ModelosResource extends Resource
     {
         return [
             'index' => ListModelos::route('/'),
-            'create' => CreateModelos::route('/create'),
-            'edit' => EditModelos::route('/{record}/edit'),
         ];
     }
 }

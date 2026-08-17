@@ -1,3 +1,3 @@
 <x-filament-panels::page>
-    @livewire(\App\Filament\Livewire\Externo\Agendamento\SolicitacaoVeiculoForm::class)
+    @livewire(\App\Filament\Clusters\ExternoCluster\Livewire\Agendamento\SolicitacaoVeiculoForm::class)
 </x-filament-panels::page>

@@ -73,7 +73,8 @@ class SetoresResource extends Resource
                                 ->maxLength(255)
                                 ->columnSpan(6),
                         ]),
-                    ]),
+                    ])
+                    ->columnSpanFull(),
 
                 Section::make('Códigos e Controle')
                     ->description('Campos numéricos de integração, ordenação e classificação.')
@@ -108,7 +109,8 @@ class SetoresResource extends Resource
                                 ->columnSpan(8),
                         ]),
                     ])
-                    ->collapsible(),
+                    ->collapsible()
+                    ->columnSpanFull(),
 
                 Section::make('Localização e Complementos')
                     ->schema([
@@ -145,7 +147,8 @@ class SetoresResource extends Resource
                             Hidden::make('vara'),
                         ]),
                     ])
-                    ->collapsible(),
+                    ->collapsible()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -259,8 +262,6 @@ class SetoresResource extends Resource
     {
         return [
             'index' => ListSetores::route('/'),
-            'create' => CreateSetores::route('/create'),
-            'edit' => EditSetores::route('/{record}/edit'),
         ];
     }
 

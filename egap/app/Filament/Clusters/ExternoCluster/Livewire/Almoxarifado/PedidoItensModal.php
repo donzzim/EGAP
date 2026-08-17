@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Almoxarifado;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado;
 
-use App\Filament\Livewire\Externo\PedidoItensModal as PedidoItensModalBase;
+use App\Filament\Clusters\ExternoCluster\Livewire\PedidoItensModal as PedidoItensModalBase;
 
 /**
  * Itens de um pedido de materiais de consumo, exibidos no modal aberto a

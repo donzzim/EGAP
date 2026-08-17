@@ -34,7 +34,8 @@ class ElementoDespesaResource extends Resource
                     ->label('Código da Classe')
                     ->numeric()
                     ->required()
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->columnSpanFull(),
 
                 TextInput::make('DescricaodaClasse')
                     ->label('Descrição da Classe')
@@ -84,8 +85,6 @@ class ElementoDespesaResource extends Resource
     {
         return [
             'index' => ListElementoDespesas::route('/'),
-            'create' => CreateElementoDespesa::route('/create'),
-            'edit' => EditElementoDespesa::route('/{record}/edit'),
         ];
     }
 }

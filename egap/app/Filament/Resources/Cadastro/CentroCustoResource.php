@@ -34,22 +34,16 @@ class CentroCustoResource extends Resource
     {
         return $schema
             ->components([
-                Section::make([
-                    Grid::make(2)
-                        ->schema([
-                            TextInput::make('codigo')
-                                ->label('Código')
-                                ->required()
-                                ->maxLength(50)
-                                ->unique(ignoreRecord: true),
+                TextInput::make('codigo')
+                    ->label('Código')
+                    ->required()
+                    ->maxLength(50)
+                    ->unique(ignoreRecord: true),
 
-                            TextInput::make('descricao')
-                                ->label('Descrição')
-                                ->required()
-                                ->maxLength(255),
-
-                        ])
-                ])
+                TextInput::make('descricao')
+                    ->label('Descrição')
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
     public static function table(Table $table): Table
@@ -78,8 +72,6 @@ class CentroCustoResource extends Resource
     {
         return [
             'index' => ListCentroCustos::route('/'),
-            'create' => CreateCentroCusto::route('/create'),
-            'edit' => EditCentroCusto::route('/{record}/edit'),
         ];
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Cadastro;
 
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
@@ -14,7 +17,6 @@ use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages\EditDescric
 use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
-use App\Filament\Resources\Cadastro\DescricaoDetalhadaResource\RelationManagers;
 use App\Models\Cadastro\DescricaoDetalhada;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -38,7 +40,6 @@ class DescricaoDetalhadaResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-
             Section::make('Informações Gerais')
                 ->schema([
                     Select::make('descricao_resumida')
@@ -56,7 +57,7 @@ class DescricaoDetalhadaResource extends Resource
                     Textarea::make('descricao_detalhada')
                         ->label('Descrição Detalhada')
                         ->required()
-                        ->rows(5)
+                        ->rows(3)
                         ->columnSpanFull(),
 
                     TextInput::make('valor_mercado')
@@ -65,6 +66,7 @@ class DescricaoDetalhadaResource extends Resource
                         ->prefix('R$')
                         ->step('0.01')
                         ->columnSpan(2),
+
                     Select::make('visibilidade')
                         ->options([
                             '0' => 'Ninguém',
@@ -75,11 +77,11 @@ class DescricaoDetalhadaResource extends Resource
                         ->native(false)
                         ->columnSpan(1),
                 ])
-                ->columns(3),
+                ->columns(3)
+                ->columnSpanFull(),
 
             Section::make('Arquivos')
                 ->schema([
-
                     FileUpload::make('imagem')
                         ->image()
                         ->disk('public')
@@ -87,12 +89,13 @@ class DescricaoDetalhadaResource extends Resource
                         ->imagePreviewHeight('150'),
 
                     FileUpload::make('pdf')
+                        ->label('PDF')
                         ->disk('public')
                         ->directory('files/descricoes')
                         ->acceptedFileTypes(['application/pdf']),
-
                 ])
-                ->columns(2),
+                ->columns(2)
+                ->columnSpanFull(),
 
         ]);
     }
@@ -126,6 +129,18 @@ class DescricaoDetalhadaResource extends Resource
                     }),
                 TableColumns::updatedBy('atualizado_por_usuario.name'),
             ])
+            ->recordActions([
+                EditAction::make()
+                    ->modalHeading(fn ($record) => "Editar Descrição Detalhada #{$record->id}")
+                    ->tooltip('Editar')
+                    ->hiddenLabel(),
+                ViewAction::make()
+                    ->tooltip('Visualizar')
+                    ->hiddenLabel(),
+                DeleteAction::make()
+                    ->tooltip('Excluir')
+                    ->hiddenLabel(),
+            ])
             ->defaultSort('id');
     }
 
@@ -133,8 +148,6 @@ class DescricaoDetalhadaResource extends Resource
     {
         return [
             'index' => ListDescricaoDetalhadas::route('/'),
-            'create' => CreateDescricaoDetalhada::route('/create'),
-            'edit' => EditDescricaoDetalhada::route('/{record}/edit'),
         ];
     }
 }

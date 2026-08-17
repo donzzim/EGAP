@@ -1,3 +1,3 @@
 <x-filament-panels::page>
-    @livewire(\App\Filament\Livewire\Externo\Patrimonio\PedidosPatrimonioTable::class)
+    @livewire(\App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\PedidosPatrimonioTable::class)
 </x-filament-panels::page>

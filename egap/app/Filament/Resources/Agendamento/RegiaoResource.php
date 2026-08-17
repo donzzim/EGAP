@@ -33,55 +33,49 @@ class RegiaoResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Dados da região')
-                ->description('Informe a descrição da região, sua sigla e a unidade vinculada.')
-                ->icon('heroicon-o-map')
+            Grid::make(12)
+                ->columnSpanFull()
                 ->schema([
-                    Grid::make(12)
-                        ->schema([
-                            Select::make('regiao')
-                                ->label('Região')
-                                ->options([
-                                    '1' => 'Região 1',
-                                    '2' => 'Região 2',
-                                    '3' => 'Região 3',
-                                    '4' => 'Região 4',
-                                    '5' => 'Região 5',
-                                    '6' => 'Região 6',
-                                    '7' => 'Região 7',
-                                    '8' => 'Região 8',
-                                    '9' => 'Região 9',
-                                    '10' => 'Região 10',
-                                ])
-                                ->required()
-                                ->placeholder('Selecione a região atendida')
-                                ->columnSpan(12),
+                    Select::make('regiao')
+                        ->label('Região')
+                        ->options([
+                            '1' => 'Região 1',
+                            '2' => 'Região 2',
+                            '3' => 'Região 3',
+                            '4' => 'Região 4',
+                            '5' => 'Região 5',
+                            '6' => 'Região 6',
+                            '7' => 'Região 7',
+                            '8' => 'Região 8',
+                            '9' => 'Região 9',
+                            '10' => 'Região 10',
+                        ])
+                        ->required()
+                        ->placeholder('Selecione a região atendida')
+                        ->columnSpan(12),
 
-                            TextInput::make('sigla')
-                                ->label('Sigla')
-                                ->required()
-                                ->maxLength(255)
-                                ->placeholder('Ex: GV, SUL, NORTE')
-                                ->columnSpan(4),
+                    TextInput::make('sigla')
+                        ->label('Sigla')
+                        ->required()
+                        ->maxLength(255)
+                        ->placeholder('Ex: GV, SUL, NORTE')
+                        ->columnSpan(4),
 
-                            Select::make('unidade')
-                                ->label('Unidade Judiciária')
-                                ->required()
-                                ->searchable()
-                                ->preload()
-                                ->live()
-                                ->options(fn () => Setores::query()
-                                    ->whereColumn('id', 'CodigodaUO')
-                                    ->orderBy('UnidadeOrganizacional')
-                                    ->pluck('UnidadeOrganizacional', 'CodigoPai')
-                                    ->toArray()
-                                )
-                                ->placeholder('Selecione a unidade')
-                                ->columnSpan(8),
-                        ]),
-                ])
-                ->columns(1)
-                ->collapsible(),
+                    Select::make('unidade')
+                        ->label('Unidade Judiciária')
+                        ->required()
+                        ->searchable()
+                        ->preload()
+                        ->live()
+                        ->options(fn () => Setores::query()
+                            ->whereColumn('id', 'CodigodaUO')
+                            ->orderBy('UnidadeOrganizacional')
+                            ->pluck('UnidadeOrganizacional', 'CodigoPai')
+                            ->toArray()
+                        )
+                        ->placeholder('Selecione a unidade')
+                        ->columnSpan(8),
+                ]),
         ]);
     }
 
@@ -91,8 +85,7 @@ class RegiaoResource extends Resource
             ->columns([
                 TableColumns::text('regiao', 'Região', true)
                     ->weight('medium')
-                    ->wrap()
-                    ->description(fn ($record) => $record->sigla ? 'Sigla: ' . $record->sigla : null),
+                    ->wrap(),
 
                 TableColumns::text('unidadeRef.UnidadeOrganizacional', 'Unidade')
                     ->badge()
@@ -111,8 +104,6 @@ class RegiaoResource extends Resource
     {
         return [
             'index' => ListRegiaos::route('/'),
-            'create' => CreateRegiao::route('/create'),
-            'edit' => EditRegiao::route('/{record}/edit'),
         ];
     }
 }

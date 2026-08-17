@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Filament\Livewire\Externo;
+namespace App\Filament\Clusters\ExternoCluster\Livewire;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Actions\Action;
-use App\Filament\Livewire\Externo\Almoxarifado\PedidosAlmoxarifadoTable;
-use App\Filament\Livewire\Externo\Patrimonio\PedidosPatrimonioTable;
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\PedidosAlmoxarifadoTable;
+use App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\PedidosPatrimonioTable;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableModalAction;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\Setores;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;

@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Almoxarifado;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
-use App\Filament\Livewire\Externo\MateriaisDisponiveis;
+use App\Filament\Clusters\ExternoCluster\Livewire\MateriaisDisponiveis;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Cadastro\DescricaoDetalhada;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;

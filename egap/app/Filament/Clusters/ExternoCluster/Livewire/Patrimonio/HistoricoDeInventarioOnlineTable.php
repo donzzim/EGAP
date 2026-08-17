@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Patrimonio;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
 use App\Filament\Support\SetorSelecionado;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Models\Patrimonio\BensMoveis\ArquivoDigital;
 use App\Models\Patrimonio\BensMoveis\Inventario;
 use App\Models\Patrimonio\BensMoveis\ItemInventario;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -112,10 +112,12 @@ class HistoricoDeInventarioOnlineTable extends Component implements HasForms, Ha
                     }),
 
                 TableColumns::text('termo', 'Termo')
+                    ->tooltip('Clique para visualizar o termo')
+                    ->weight('bold')
                     ->formatStateUsing(fn ($state, ItemInventario $record): string => $record->termoRef?->termo_completo ?? '-')
                     ->description(fn (ItemInventario $record): ?string => $this->assinaturaTermo($record))
-                    ->badge()
-                    ->color(fn ($state, ItemInventario $record): string => ArquivoDigital::situacaoColor($record->termoRef?->arquivoDigital?->situacao))
+                    //->color(fn ($state, ItemInventario $record): string => ArquivoDigital::situacaoColor($record->termoRef?->arquivoDigital?->situacao))
+                    ->color('primary')
                     ->url(fn (ItemInventario $record): ?string => filled($record->termoRef?->arquivoDigital?->arquivo_digital)
                         ? config('app.egap').$record->termoRef->arquivoDigital->arquivo_digital
                         : null)

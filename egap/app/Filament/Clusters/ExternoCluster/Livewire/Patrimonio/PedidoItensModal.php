@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Patrimonio;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio;
 
-use App\Filament\Livewire\Externo\PedidoItensModal as PedidoItensModalBase;
+use App\Filament\Clusters\ExternoCluster\Livewire\PedidoItensModal as PedidoItensModalBase;
 use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Services\Mobile\PedidosMobileService;

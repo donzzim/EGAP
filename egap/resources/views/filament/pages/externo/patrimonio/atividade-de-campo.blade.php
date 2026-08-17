@@ -1,8 +1,10 @@
 <x-filament-panels::page>
-    <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+    <div
+        class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div class="w-full max-w-xs">
-                <label for="inventarioId" class="fi-fo-field-wrp-label text-sm font-medium text-gray-950 dark:text-white">
+                <label for="inventarioId"
+                       class="fi-fo-field-wrp-label text-sm font-medium text-gray-950 dark:text-white">
                     Inventário
                 </label>
                 <x-filament::input.wrapper class="mt-1">
@@ -49,11 +51,11 @@
 
     <div class="mt-4">
         @if ($secao === 'resumo')
-            @livewire(\App\Filament\Livewire\Externo\Patrimonio\AtividadeDeCampoResumoTable::class, ['inventarioId' => $inventarioId])
+            @livewire(\App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\AtividadeDeCampoResumoTable::class, ['inventarioId' => $inventarioId])
         @elseif ($secao === 'nao-localizados')
-            @livewire(\App\Filament\Livewire\Externo\Patrimonio\AtividadeDeCampoNaoLocalizadosTable::class)
+            @livewire(\App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\AtividadeDeCampoNaoLocalizadosTable::class)
         @elseif ($secao === 'em-transferencia')
-            @livewire(\App\Filament\Livewire\Externo\Patrimonio\AtividadeDeCampoEmTransferenciaTable::class)
+            @livewire(\App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\AtividadeDeCampoEmTransferenciaTable::class)
         @endif
     </div>
 </x-filament-panels::page>

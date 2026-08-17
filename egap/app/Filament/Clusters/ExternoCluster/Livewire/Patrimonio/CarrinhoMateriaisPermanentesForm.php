@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Patrimonio;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Grid;
-use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
-use App\Filament\Livewire\Externo\Carrinho;
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\CarrinhoMateriaisConsumoForm;
+use App\Filament\Clusters\ExternoCluster\Livewire\Carrinho;
 use App\Services\Mobile\PedidosMobileService;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\On;

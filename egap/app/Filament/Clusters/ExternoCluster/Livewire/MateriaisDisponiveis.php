@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Livewire\Externo;
+namespace App\Filament\Clusters\ExternoCluster\Livewire;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
-use App\Filament\Livewire\Externo\Patrimonio\MateriaisPermanentesTable;
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\MateriaisConsumoTable;
+use App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\MateriaisPermanentesTable;
 use App\Models\UserEgap;
 use App\Services\Almoxarifado\VisibilidadeMaterial;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;

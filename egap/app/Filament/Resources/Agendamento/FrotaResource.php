@@ -36,54 +36,49 @@ class FrotaResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Dados do veículo')
-                ->description('Preencha as informações principais do veículo.')
-                ->icon('heroicon-o-truck')
+            Grid::make(12)
                 ->schema([
-                    Grid::make(12)
-                        ->schema([
-                            TextInput::make('descricao')
-                                ->label('Descrição')
-                                ->placeholder('Ex: Fiat Strada branca')
-                                ->required()
-                                ->maxLength(50)
-                                ->columnSpan(12),
+                    TextInput::make('descricao')
+                        ->label('Descrição')
+                        ->placeholder('Ex: Fiat Strada branca')
+                        ->required()
+                        ->maxLength(50)
+                        ->columnSpan(12),
 
-                            Select::make('marca')
-                                ->label('Marca')
-                                ->relationship('marcaRef', 'descricao')
-                                ->searchable()
-                                ->required()
-                                ->preload()
-                                ->placeholder('Selecione a marca')
-                                ->columnSpan(4),
+                    Select::make('marca')
+                        ->label('Marca')
+                        ->relationship('marcaRef', 'descricao')
+                        ->searchable()
+                        ->required()
+                        ->preload()
+                        ->placeholder('Selecione a marca')
+                        ->columnSpan(4),
 
-                            Select::make('modelo')
-                                ->label('Modelo')
-                                ->required()
-                                ->relationship('modeloRef', 'descricao')
-                                ->searchable()
-                                ->preload()
-                                ->placeholder('Selecione o modelo')
-                                ->columnSpan(4),
+                    Select::make('modelo')
+                        ->label('Modelo')
+                        ->required()
+                        ->relationship('modeloRef', 'descricao')
+                        ->searchable()
+                        ->preload()
+                        ->placeholder('Selecione o modelo')
+                        ->columnSpan(4),
 
-                            TextInput::make('placa')
-                                ->label('Placa')
-                                ->required()
-                                ->placeholder('ABC-1D23')
-                                ->maxLength(255)
-                                ->columnSpan(4),
+                    TextInput::make('placa')
+                        ->label('Placa')
+                        ->required()
+                        ->placeholder('ABC-1D23')
+                        ->maxLength(255)
+                        ->columnSpan(4),
 
-                            Select::make('proprietario')
-                                ->label('Proprietário')
-                                ->required()
-                                ->options([
-                                    '1' => 'Tribunal de Justiça',
-                                    '2' => 'Empresa Globo',
-                                ])
-                                ->required()
-                                ->columnSpan(12),
-                        ]),
+                    Select::make('proprietario')
+                        ->label('Proprietário')
+                        ->required()
+                        ->options([
+                            '1' => 'Tribunal de Justiça',
+                            '2' => 'Empresa Globo',
+                        ])
+                        ->required()
+                        ->columnSpan(12),
 
                     Fieldset::make('Status do veículo')
                         ->schema([
@@ -99,10 +94,9 @@ class FrotaResource extends Resource
                                 ->default(true)
                                 ->inline(false),
                         ])
-                        ->columns(2),
+                        ->columnSpanFull(),
                 ])
-                ->columns(1)
-                ->collapsible(),
+                ->columnSpanFull(),
         ]);
     }
 
@@ -143,8 +137,6 @@ class FrotaResource extends Resource
     {
         return [
             'index' => ListFrotas::route('/'),
-            'create' => CreateFrota::route('/create'),
-            'edit' => EditFrota::route('/{record}/edit'),
         ];
     }
 }

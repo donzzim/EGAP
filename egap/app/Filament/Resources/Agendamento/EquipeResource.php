@@ -25,7 +25,6 @@ use Filament\Tables\Table;
 class EquipeResource extends Resource
 {
     protected static ?string $model = Equipe::class;
-
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     protected static string | \UnitEnum | null $navigationGroup = 'Agendamento';
     protected static ?string $modelLabel = 'Equipe de Transporte';
@@ -36,41 +35,37 @@ class EquipeResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Dados do membro')
-                ->description('Informe os dados principais do integrante da equipe.')
-                ->icon('heroicon-o-users')
+            Grid::make(12)
+                ->columnSpanFull()
                 ->schema([
-                    Grid::make(12)
-                        ->schema([
-                            Select::make('id_pessoa')
-                                ->label('Pessoa')
-                                ->relationship('idPessoaRef', 'name')
-                                ->searchable()
-                                ->preload()
-                                ->required()
-                                ->placeholder('Selecione uma pessoa')
-                                ->native(false)
-                                ->columnSpan(6),
+                    Select::make('id_pessoa')
+                        ->label('Pessoa')
+                        ->relationship('idPessoaRef', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->placeholder('Selecione uma pessoa')
+                        ->native(false)
+                        ->columnSpan(6),
 
-                            Select::make('funcao')
-                                ->label('Função')
-                                ->options([
-                                    'Condutor' => 'Condutor',
-                                    'Carregador' => 'Carregador',
-                                    'Controlador' => 'Controlador',
-                                ])
-                                ->required()
-                                ->columnSpan(6),
+                    Select::make('funcao')
+                        ->label('Função')
+                        ->options([
+                            'Condutor' => 'Condutor',
+                            'Carregador' => 'Carregador',
+                            'Controlador' => 'Controlador',
+                        ])
+                        ->required()
+                        ->columnSpan(6),
 
-                            TextInput::make('contato')
-                                ->label('Contato')
-                                ->required()
-                                ->numeric()
-                                ->mask('(**)*****-****')
-                                ->maxLength(255)
-                                ->placeholder('Telefone, ramal ou outro contato')
-                                ->columnSpan(12),
-                        ]),
+                    TextInput::make('contato')
+                        ->label('Contato')
+                        ->required()
+                        ->numeric()
+                        ->mask('(**)*****-****')
+                        ->maxLength(255)
+                        ->placeholder('Telefone, ramal ou outro contato')
+                        ->columnSpan(12),
 
                     Fieldset::make('Status')
                         ->schema([
@@ -84,10 +79,8 @@ class EquipeResource extends Resource
                                 ->default(true)
                                 ->inline(false),
                         ])
-                        ->columns(2),
-                ])
-                ->columns(1)
-                ->collapsible(),
+                        ->columnSpanFull(),
+                ]),
         ]);
     }
 
@@ -126,8 +119,6 @@ class EquipeResource extends Resource
     {
         return [
             'index' => ListEquipes::route('/'),
-            'create' => CreateEquipe::route('/create'),
-            'edit' => EditEquipe::route('/{record}/edit'),
         ];
     }
 }

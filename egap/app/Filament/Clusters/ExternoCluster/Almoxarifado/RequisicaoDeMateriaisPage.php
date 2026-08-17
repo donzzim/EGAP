@@ -2,9 +2,9 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Almoxarifado;
 
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\CarrinhoMateriaisConsumoForm;
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\MateriaisConsumoTable;
 use App\Filament\Clusters\ExternoCluster\RequisicaoPage;
-use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
-use App\Filament\Livewire\Externo\Almoxarifado\MateriaisConsumoTable;
 
 /**
  * Página "casca" do fluxo de requisição de materiais de consumo do Ambiente

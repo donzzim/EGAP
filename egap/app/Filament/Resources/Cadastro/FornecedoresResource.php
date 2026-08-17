@@ -36,43 +36,38 @@ class FornecedoresResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Identificação do fornecedor')
-                    ->description('Cadastre os dados principais usados em pedidos, notas fiscais e consultas administrativas.')
-                    ->icon('heroicon-o-building-storefront')
+                Grid::make(12)
                     ->schema([
-                        Grid::make(12)
-                            ->schema([
-                                TextInput::make('NomeFornecedor')
-                                    ->label('Nome do Fornecedor')
-                                    ->placeholder('Ex.: Empresa Modelo Ltda')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->columnSpan(8),
+                        TextInput::make('NomeFornecedor')
+                            ->label('Nome do Fornecedor')
+                            ->placeholder('Ex.: Empresa Modelo Ltda')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(8),
 
-                                Select::make('Pessoa')
-                                    ->label('Tipo de Pessoa')
-                                    ->placeholder('Selecione o tipo')
-                                    ->native(false)
-                                    ->searchable(false)
-                                    ->options([
-                                        'Jurídica' => 'Jurídica',
-                                        'Física' => 'Física',
-                                    ])
-                                    ->required()
-                                    ->columnSpan(4),
+                        Select::make('Pessoa')
+                            ->label('Tipo de Pessoa')
+                            ->placeholder('Selecione o tipo')
+                            ->native(false)
+                            ->searchable(false)
+                            ->options([
+                                'Jurídica' => 'Jurídica',
+                                'Física' => 'Física',
+                            ])
+                            ->required()
+                            ->columnSpan(4),
 
-                                TextInput::make('CNPJ')
-                                    ->label('CNPJ')
-                                    ->placeholder('00.000.000/0000-00')
-                                    ->mask('99.999.999/9999-99')
-                                    ->stripCharacters(['.', '/', '-'])
-                                    ->rule('digits:14')
-                                    ->unique(ignoreRecord: true)
-                                    ->required()
-                                    ->columnSpanFull(),
-                            ]),
+                        TextInput::make('CNPJ')
+                            ->label('CNPJ')
+                            ->placeholder('00.000.000/0000-00')
+                            ->mask('99.999.999/9999-99')
+                            ->stripCharacters(['.', '/', '-'])
+                            ->rule('digits:14')
+                            ->unique(ignoreRecord: true)
+                            ->required()
+                            ->columnSpanFull(),
                     ])
-                    ->columns(1),
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -100,7 +95,7 @@ class FornecedoresResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('Pessoa')
-                    ->columnSpan(3)
+                    ->columnSpan(2)
                     ->label('Tipo de Pessoa')
                     ->options([
                         'Jurídica' => 'Jurídica',
@@ -125,8 +120,6 @@ class FornecedoresResource extends Resource
     {
         return [
             'index' => ListFornecedores::route('/'),
-            'create' => CreateFornecedores::route('/create'),
-            'edit' => EditFornecedores::route('/{record}/edit'),
         ];
     }
 }

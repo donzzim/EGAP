@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Agendamento;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Agendamento;
 
 use App\Filament\Resources\Agendamento\AgendamentoResource;
 use App\Filament\Support\SetorSelecionado;
@@ -604,6 +604,6 @@ class SolicitacaoVeiculoForm extends Component implements HasSchemas
 
     public function render(): View
     {
-        return view('livewire.externo.form');
+        return view('livewire.externo.agendamento-form');
     }
 }

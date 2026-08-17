@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Filament\Livewire\Externo\Almoxarifado;
+namespace App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use App\Filament\Livewire\Externo\PedidosTable;
+use App\Filament\Clusters\ExternoCluster\Livewire\PedidosTable;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;

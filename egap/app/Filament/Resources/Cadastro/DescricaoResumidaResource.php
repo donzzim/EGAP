@@ -84,7 +84,8 @@ class DescricaoResumidaResource extends Resource
                         ->native(false)
                         ->columnSpanFull(),
                 ])
-                ->columns(2),
+                ->columns(2)
+                ->columnSpanFull(),
             Section::make('Arquivos')
                 ->schema([
                     FileUpload::make('imagem')
@@ -93,7 +94,8 @@ class DescricaoResumidaResource extends Resource
                         ->directory('images/descricao')
                         ->imagePreviewHeight('150'),
                 ])
-                ->columns(1),
+                ->columns(1)
+                ->columnSpanFull(),
         ]);
     }
     public static function table(Table $table): Table
@@ -129,8 +131,6 @@ class DescricaoResumidaResource extends Resource
     {
         return [
             'index' => ListDescricaoResumidas::route('/'),
-            'create' => CreateDescricaoResumida::route('/create'),
-            'edit' => EditDescricaoResumida::route('/{record}/edit'),
         ];
     }
 

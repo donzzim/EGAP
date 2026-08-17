@@ -27,8 +27,6 @@ class HomePageExterno extends Page
 
     protected static ?int $navigationSort = -1;
 
-    protected static string|null|\BackedEnum $navigationIcon = Heroicon::HomeModern;
-
     protected static ?string $slug = 'home';
 
     protected static ?string $navigationLabel = 'Home';

@@ -35,32 +35,28 @@ class ContaContabilResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Dados da Conta')
+                Grid::make(2)
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('codigo')
-                                    ->label('Código')
-                                    ->required()
-                                    ->mask('*.*.*.*.*.**.**')
-                                    ->maxLength(15)
-                                    ->columnSpan(1),
+                        TextInput::make('codigo')
+                            ->label('Código')
+                            ->required()
+                            ->mask('*.*.*.*.*.**.**')
+                            ->maxLength(15)
+                            ->columnSpan(1),
 
-                                TextInput::make('titulo')
-                                    ->label('Título')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->columnSpan(1),
+                        TextInput::make('titulo')
+                            ->label('Título')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(1),
 
-                                Textarea::make('funcao')
-                                    ->label('Função')
-                                    ->required()
-                                    ->rows(4)
-                                    ->columnSpanFull(),
-                            ]),
+                        Textarea::make('funcao')
+                            ->label('Função')
+                            ->required()
+                            ->rows(4)
+                            ->columnSpanFull(),
                     ])
-                    ->columns(1)
-                    ->compact(),
+                ->columnSpan(2),
             ]);
     }
     public static function table(Table $table): Table
@@ -86,8 +82,6 @@ class ContaContabilResource extends Resource
     {
         return [
             'index' => ListContaContabils::route('/'),
-            'create' => CreateContaContabil::route('/create'),
-            'edit' => EditContaContabil::route('/{record}/edit'),
         ];
     }
 }

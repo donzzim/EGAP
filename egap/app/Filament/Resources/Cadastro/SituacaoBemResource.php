@@ -3,21 +3,13 @@
 namespace App\Filament\Resources\Cadastro;
 
 use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\ListSituacaoBems;
-use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\CreateSituacaoBem;
-use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages\EditSituacaoBem;
-use App\Filament\Resources\Cadastro\SituacaoBemResource\Pages;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableColumns;
 use App\Models\Cadastro\SituacaoBem;
-use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class SituacaoBemResource extends Resource
 {
@@ -34,20 +26,15 @@ class SituacaoBemResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Dados da Situação')
-                    ->schema([
-                        TextInput::make('descricao')
-                            ->label('Descrição')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
+                TextInput::make('descricao')
+                    ->label('Descrição')
+                    ->required()
+                    ->maxLength(255)
+                    ->columnSpanFull(),
 
-                        Textarea::make('situacao')
-                            ->label('Status')
-                            ->rows(4)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(1),
+                TextInput::make('situacao')
+                    ->label('Status')
+                    ->columnSpanFull(),
             ]);
     }
     public static function table(Table $table): Table
@@ -69,8 +56,6 @@ class SituacaoBemResource extends Resource
     {
         return [
             'index' => ListSituacaoBems::route('/'),
-            'create' => CreateSituacaoBem::route('/create'),
-            'edit' => EditSituacaoBem::route('/{record}/edit'),
         ];
     }
 

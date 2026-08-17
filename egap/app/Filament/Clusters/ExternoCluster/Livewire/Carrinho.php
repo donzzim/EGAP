@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Filament\Livewire\Externo;
+namespace App\Filament\Clusters\ExternoCluster\Livewire;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Utilities\Get;
-use App\Filament\Livewire\Externo\Almoxarifado\CarrinhoMateriaisConsumoForm;
-use App\Filament\Livewire\Externo\Patrimonio\CarrinhoMateriaisPermanentesForm;
+use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\CarrinhoMateriaisConsumoForm;
+use App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\CarrinhoMateriaisPermanentesForm;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Cadastro\ComplementoSetor;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Livewire\Component;
 use Throwable;
 

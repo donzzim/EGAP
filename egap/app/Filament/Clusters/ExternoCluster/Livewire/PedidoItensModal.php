@@ -1,11 +1,7 @@
 <?php
 
-namespace App\Filament\Livewire\Externo;
+namespace App\Filament\Clusters\ExternoCluster\Livewire;
 
-use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
 use App\Filament\Support\TableColumns;
 use App\Filament\Support\TableDefaults;
 use App\Filament\Support\TableModalComponent;
@@ -13,6 +9,10 @@ use App\Models\Almoxarifado\FasePedido;
 use App\Models\Almoxarifado\ItemPedido;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\UserEgap;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -24,8 +24,8 @@ use Illuminate\Support\Collection;
 /**
  * Base do modal "Ver itens" de um pedido do Ambiente Externo, aberto a partir
  * de {@see PedidosTable} (legado: modal_pedidos.api.php), compartilhada entre
- * {@see Almoxarifado\PedidoItensModal} e
- * {@see Patrimonio\PedidoItensModal}.
+ * {@see \App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\PedidoItensModal} e
+ * {@see \App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\PedidoItensModal}.
  *
  * Guarda o que é idêntico nos dois: colunas base, o cancelamento de item
  * (individual ou em lote, com a mesma regra de cancelar o pedido inteiro

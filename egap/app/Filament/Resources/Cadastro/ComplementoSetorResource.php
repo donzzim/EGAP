@@ -62,8 +62,6 @@ class ComplementoSetorResource extends Resource
     {
         return [
             'index' => ListComplementoSetors::route('/'),
-            'create' => CreateComplementoSetor::route('/create'),
-            'edit' => EditComplementoSetor::route('/{record}/edit'),
         ];
     }
 }
