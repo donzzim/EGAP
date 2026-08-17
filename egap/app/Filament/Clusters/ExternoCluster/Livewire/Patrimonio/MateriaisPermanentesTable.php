@@ -136,6 +136,6 @@ class MateriaisPermanentesTable extends MateriaisDisponiveis implements HasActio
 
     public function render(): View
     {
-        return view('livewire.externo.table');
+        return view('livewire.support.table');
     }
 }

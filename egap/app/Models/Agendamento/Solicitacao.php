@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Solicitacao extends Model
 {
-    //protected $connection = 'egap';
+    // protected $connection = 'egap';
     protected $table = 'age_solicitacao';
 
     protected $primaryKey = 'id';
@@ -46,22 +46,22 @@ class Solicitacao extends Model
         'justificativa' => 'array',
     ];
 
-    public function idUserRef() : BelongsTo
+    public function idUserRef(): BelongsTo
     {
         return $this->belongsTo(UserEgap::class, 'id_user', 'id');
     }
 
-    public function idSolicitanteRef() : BelongsTo
+    public function idSolicitanteRef(): BelongsTo
     {
         return $this->belongsTo(UserEgap::class, 'id_solicitante', 'id');
     }
 
-    public function idSituacaoRef() : BelongsTo
+    public function idSituacaoRef(): BelongsTo
     {
         return $this->belongsTo(SituacaoPedido::class, 'id_situacao', 'id');
     }
 
-    public function unidadeSolicitanteRef() : BelongsTo
+    public function unidadeSolicitanteRef(): BelongsTo
     {
         return $this->belongsTo(Setores::class, 'unidade_solicitante', 'id');
     }
@@ -71,12 +71,17 @@ class Solicitacao extends Model
         return $this->hasMany(Materiais::class, 'id_solicitacao', 'id');
     }
 
-    public function setorSolicitanteRef() : BelongsTo
+    public function recursosRef(): HasMany
+    {
+        return $this->hasMany(Recursos::class, 'id_solicitacao', 'id');
+    }
+
+    public function setorSolicitanteRef(): BelongsTo
     {
         return $this->belongsTo(Setores::class, 'setor_solicitante', 'id');
     }
 
-    public function regiaoRef() : BelongsTo
+    public function regiaoRef(): BelongsTo
     {
         return $this->belongsTo(Regiao::class, 'regiao', 'id');
     }

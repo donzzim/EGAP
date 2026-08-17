@@ -182,6 +182,6 @@ class AtividadeDeCampoResumoTable extends Component implements HasForms, HasTabl
 
     public function render(): View
     {
-        return view('livewire.externo.table');
+        return view('livewire.support.table');
     }
 }

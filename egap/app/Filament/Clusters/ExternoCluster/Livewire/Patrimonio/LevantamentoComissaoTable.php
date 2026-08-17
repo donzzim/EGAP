@@ -304,6 +304,6 @@ class LevantamentoComissaoTable extends Component implements HasForms, HasTable,
 
     public function render(): View
     {
-        return view('livewire.externo.table');
+        return view('livewire.support.table');
     }
 }

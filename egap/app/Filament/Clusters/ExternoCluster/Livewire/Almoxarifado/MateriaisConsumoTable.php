@@ -161,6 +161,6 @@ class MateriaisConsumoTable extends MateriaisDisponiveis implements HasActions
 
     public function render(): View
     {
-        return view('livewire.externo.table');
+        return view('livewire.support.table');
     }
 }

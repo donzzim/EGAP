@@ -2,12 +2,12 @@
 
 namespace App\Filament\Clusters\ExternoCluster\Widgets;
 
-use App\Filament\Clusters\ExternoCluster\Agendamento\SolicitacaoVeiculos;
-use App\Filament\Clusters\ExternoCluster\Almoxarifado\AcompanhamentoDePedidosAlmoxarifado;
+use App\Filament\Clusters\ExternoCluster\Groups\Agendamento\SolicitacaoVeiculos;
+use App\Filament\Clusters\ExternoCluster\Groups\Almoxarifado\AcompanhamentoDePedidosAlmoxarifado;
+use App\Filament\Clusters\ExternoCluster\Groups\Patrimonio\AcompanhamentoDePedidosPatrimonio;
 use App\Filament\Clusters\ExternoCluster\Livewire\Agendamento\SolicitacaoVeiculoForm;
 use App\Filament\Clusters\ExternoCluster\Livewire\Almoxarifado\PedidosAlmoxarifadoTable;
 use App\Filament\Clusters\ExternoCluster\Livewire\Patrimonio\PedidosPatrimonioTable;
-use App\Filament\Clusters\ExternoCluster\Patrimonio\AcompanhamentoDePedidosPatrimonio;
 use App\Models\Agendamento\Solicitacao;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\UserEgap;

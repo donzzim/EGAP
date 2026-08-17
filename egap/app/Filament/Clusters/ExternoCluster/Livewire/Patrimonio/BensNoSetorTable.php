@@ -394,6 +394,6 @@ class BensNoSetorTable extends Component implements HasForms, HasTable, HasActio
 
     public function render(): View
     {
-        return view('livewire.externo.table');
+        return view('livewire.support.table');
     }
 }
