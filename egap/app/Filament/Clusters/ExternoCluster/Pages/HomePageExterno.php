@@ -4,6 +4,7 @@ namespace App\Filament\Clusters\ExternoCluster\Pages;
 
 use App\Filament\Clusters\ExternoCluster;
 use App\Filament\Clusters\ExternoCluster\Groups\Agendamento\SolicitacaoVeiculos;
+use App\Filament\Clusters\ExternoCluster\Groups\Agendamento\MeusAgendamentos;
 use App\Filament\Clusters\ExternoCluster\Groups\Almoxarifado\AcompanhamentoDePedidosAlmoxarifado;
 use App\Filament\Clusters\ExternoCluster\Groups\Almoxarifado\MateriaisDeConsumo;
 use App\Filament\Clusters\ExternoCluster\Groups\Almoxarifado\MateriaisDeConsumoDuraveis;
@@ -72,19 +73,19 @@ class HomePageExterno extends Page
                 [
                     'label' => 'Materiais de Consumo',
                     'description' => 'Requisitar materiais de consumo do almoxarifado.',
-                    'icon' => 'heroicon-o-inbox',
+                    'icon' => MateriaisDeConsumo::getNavigationIcon(),
                     'url' => MateriaisDeConsumo::getUrl(),
                 ],
                 [
                     'label' => 'Materiais de Cons. Duráveis',
                     'description' => 'Requisitar materiais de consumo duráveis do almoxarifado.',
-                    'icon' => 'heroicon-o-inbox-stack',
+                    'icon' => MateriaisDeConsumoDuraveis::getNavigationIcon(),
                     'url' => MateriaisDeConsumoDuraveis::getUrl(),
                 ],
                 [
                     'label' => 'Acompanhamento de Pedidos',
                     'description' => 'Consultar o andamento dos pedidos de materiais de consumo.',
-                    'icon' => 'heroicon-o-arrow-down-tray',
+                    'icon' => AcompanhamentoDePedidosAlmoxarifado::getNavigationIcon(),
                     'url' => AcompanhamentoDePedidosAlmoxarifado::getUrl(),
                 ],
             ],
@@ -92,43 +93,43 @@ class HomePageExterno extends Page
                 [
                     'label' => 'Bens no Setor (Inventário)',
                     'description' => 'Consultar e conferir os bens patrimoniais do setor.',
-                    'icon' => 'heroicon-o-building-office-2',
+                    'icon' => BensNoSetor::getNavigationIcon(),
                     'url' => BensNoSetor::getUrl(),
                 ],
                 [
                     'label' => 'Movimentação de Materiais',
                     'description' => 'Solicitar a movimentação de bens entre setores.',
-                    'icon' => 'heroicon-o-arrows-right-left',
+                    'icon' => MovimentacaoDeMateriais::getNavigationIcon(),
                     'url' => MovimentacaoDeMateriais::getUrl(),
                 ],
                 [
                     'label' => 'Requisição de Materiais Permanentes',
                     'description' => 'Requisitar materiais permanentes à Seção de Patrimônio.',
-                    'icon' => 'heroicon-o-cube',
+                    'icon' => RequisicaoDeMateriais::getNavigationIcon(),
                     'url' => RequisicaoDeMateriais::getUrl(),
                 ],
                 [
                     'label' => 'Acompanhamento de Pedidos',
                     'description' => 'Consultar o andamento dos pedidos de materiais permanentes.',
-                    'icon' => 'heroicon-o-arrow-down-tray',
+                    'icon' => AcompanhamentoDePedidosPatrimonio::getNavigationIcon(),
                     'url' => AcompanhamentoDePedidosPatrimonio::getUrl(),
                 ],
                 [
                     'label' => 'Histórico de Inventário Online',
                     'description' => 'Consultar os inventários já realizados no setor.',
-                    'icon' => 'heroicon-o-clock',
+                    'icon' => HistoricoDeInventarioOnline::getNavigationIcon(),
                     'url' => HistoricoDeInventarioOnline::getUrl(),
                 ],
                 [
                     'label' => 'Levantamento de Comissão',
                     'description' => 'Registrar o levantamento físico da Comissão de Inventário.',
-                    'icon' => 'heroicon-o-users',
+                    'icon' => LevantamentoComissao::getNavigationIcon(),
                     'url' => LevantamentoComissao::getUrl(),
                 ],
                 [
                     'label' => 'Atividade de Campo',
                     'description' => 'Acompanhar o progresso da conferência de inventário por setor.',
-                    'icon' => 'heroicon-o-briefcase',
+                    'icon' => AtividadeDeCampo::getNavigationIcon(),
                     'url' => AtividadeDeCampo::getUrl(),
                 ],
             ],
@@ -136,15 +137,21 @@ class HomePageExterno extends Page
                 [
                     'label' => 'Solicitação de Veículo',
                     'description' => 'Solicitar veículo para deslocamento oficial.',
-                    'icon' => 'heroicon-o-truck',
+                    'icon' => SolicitacaoVeiculos::getNavigationIcon(),
                     'url' => SolicitacaoVeiculos::getUrl(),
+                ],
+                [
+                    'label' => 'Solicitação de Veículo',
+                    'description' => 'Solicitar veículo para deslocamento oficial.',
+                    'icon' => MeusAgendamentos::getNavigationIcon(),
+                    'url' => MeusAgendamentos::getUrl(),
                 ],
             ],
             'Portal Transparência' => [
                 [
                     'label' => 'Portal Transparência',
                     'description' => 'Visualizar gráficos correspondentes aos dados de Patrimônio e Almoxarifado.',
-                    'icon' => 'heroicon-o-presentation-chart-line',
+                    'icon' => PortalTransparencia::getNavigationIcon() ?? 'heroicon-o-presentation-chart-bar',
                     'url' => PortalTransparencia::getUrl(),
                 ],
             ],

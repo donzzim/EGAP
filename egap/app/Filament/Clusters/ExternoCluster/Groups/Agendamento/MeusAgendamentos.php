@@ -20,7 +20,7 @@ class MeusAgendamentos extends Page
 
     protected static ?string $cluster = ExternoCluster::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::Clock;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-date-range';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Agendamento de Veículos';
 

@@ -12,7 +12,7 @@ class SolicitacaoVeiculos extends Page
 
     protected static ?string $cluster = ExternoCluster::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = Heroicon::ArchiveBox;
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-truck';
 
     protected static string | \UnitEnum | null $navigationGroup = 'Agendamento de Veículos';
 
