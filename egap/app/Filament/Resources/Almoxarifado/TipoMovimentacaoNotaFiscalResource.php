@@ -2,25 +2,16 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use App\Filament\Support\TableDefaults;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages\ListTipoMovimentacaoNotaFiscals;
-use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages\CreateTipoMovimentacaoNotaFiscal;
-use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages\EditTipoMovimentacaoNotaFiscal;
 use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\TipoMovimentacaoNotaFiscalResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Tables;
 
 class TipoMovimentacaoNotaFiscalResource extends Resource
 {
@@ -49,35 +40,12 @@ class TipoMovimentacaoNotaFiscalResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                TextColumn::make('descricao')
-                    ->label('Descrição')
+                TableColumns::text('descricao', 'Descrição', true)
                     ->searchable(),
 
                 TableColumns::updatedBy('atualizadoPor.name'),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 
@@ -90,8 +58,6 @@ class TipoMovimentacaoNotaFiscalResource extends Resource
     {
         return [
             'index' => ListTipoMovimentacaoNotaFiscals::route('/'),
-            'create' => CreateTipoMovimentacaoNotaFiscal::route('/create'),
-            'edit' => EditTipoMovimentacaoNotaFiscal::route('/{record}/edit'),
         ];
     }
 }

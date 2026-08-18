@@ -6,7 +6,8 @@ use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -28,8 +29,11 @@ use App\Filament\Resources\Almoxarifado\PedidosResource\Pages\PrintPedido;
 use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\PedidosResource\Pages;
 use App\Filament\Support\LegacyFileUrl;
+use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\Pedidos;
 use App\Models\Almoxarifado\SituacaoPedido;
+use App\Models\Cadastro\DescricaoResumida;
 use App\Models\Cadastro\Setores;
 use App\Models\UserEgap;
 use Filament\Forms;
@@ -59,29 +63,42 @@ class PedidosResource extends Resource
                     Tab::make('Dados Gerais')
                         ->icon('heroicon-m-information-circle')
                         ->schema([
-                            Grid::make(3)
+                            Section::make('Identificação do Pedido')
+                                ->description('Protocolo, data e situação atual da requisição.')
+                                ->icon('heroicon-o-clipboard-document-list')
                                 ->schema([
                                     TextInput::make('num_protocolo')
                                         ->label('Núm. Protocolo')
                                         ->numeric()
                                         ->mask('****.**.***.***')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->placeholder('0000.00.000.000')
+                                        ->prefixIcon('heroicon-o-hashtag'),
 
                                     DatePicker::make('date_time')
                                         ->label('Data pedido')
                                         ->default(fn () => now())
                                         ->displayFormat('d/m/Y')
-                                        ->native(false),
+                                        ->native(false)
+                                        ->prefixIcon('heroicon-o-calendar'),
 
                                     Select::make('idSituacao')
                                         ->label('Situação')
                                         ->relationship('situacao', 'Descricao')
                                         ->searchable()
                                         ->preload()
-                                        ->native(false),
+                                        ->native(false)
+                                        ->placeholder('Selecione a situação')
+                                        ->prefixIcon('heroicon-o-flag'),
+                                ])
+                                ->columns([
+                                    'default' => 1,
+                                    'md' => 3,
                                 ]),
 
-                            Grid::make(2)
+                            Section::make('Solicitação')
+                                ->description('Quem solicitou o pedido e quem é o responsável pelo atendimento.')
+                                ->icon('heroicon-o-user-group')
                                 ->schema([
                                     Select::make('Solicitante')
                                         ->label('Solicitante')
@@ -90,15 +107,26 @@ class PedidosResource extends Resource
                                         ->default(fn () => filament()->auth()->id())
                                         ->searchable()
                                         ->preload()
-                                        ->native(false),
+                                        ->native(false)
+                                        ->placeholder('Selecione o solicitante')
+                                        ->prefixIcon('heroicon-o-user'),
                                     Select::make('ResponsavelAtendimento')
                                         ->label('Responsável pelo Atendimento')
                                         ->relationship('responsavel_atendimento', 'name')
                                         ->searchable()
                                         ->preload()
-                                        ->native(false),
+                                        ->native(false)
+                                        ->placeholder('Selecione o responsável')
+                                        ->prefixIcon('heroicon-o-user-circle'),
+                                ])
+                                ->columns([
+                                    'default' => 1,
+                                    'md' => 2,
                                 ]),
-                            Grid::make(2)
+
+                            Section::make('Localização')
+                                ->description('Unidade judiciária e setor de origem da requisição.')
+                                ->icon('heroicon-o-building-office-2')
                                 ->schema([
                                     Select::make('UnidadeJudiciaria')
                                         ->label('Unidade Judiciária')
@@ -106,6 +134,9 @@ class PedidosResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->live()
+                                        ->native(false)
+                                        ->placeholder('Selecione a unidade judiciária')
+                                        ->prefixIcon('heroicon-o-building-office-2')
                                         ->options(fn () => Setores::query()
                                             ->select('CodigoPai', 'UnidadeOrganizacional', 'ordem')
                                             ->distinct('CodigoPai')
@@ -119,6 +150,9 @@ class PedidosResource extends Resource
                                         ->required()
                                         ->searchable()
                                         ->preload()
+                                        ->native(false)
+                                        ->placeholder('Selecione o setor')
+                                        ->prefixIcon('heroicon-o-map-pin')
                                         ->options(fn (Get $get) => Setores::query()
                                             ->when(
                                                 $get('UnidadeJudiciaria'),
@@ -128,138 +162,206 @@ class PedidosResource extends Resource
                                             ->pluck('Setor', 'id')
                                             ->toArray()
                                         )
-                                        ->disabled(fn (Get $get) => blank($get('UnidadeJudiciaria'))),
-                                ]),
-                            Grid::make(2)
-                                ->schema([
+                                        ->disabled(fn (Get $get) => blank($get('UnidadeJudiciaria')))
+                                        ->helperText('Selecione a unidade judiciária para habilitar este campo.'),
                                     Select::make('setor_responsavel')
                                         ->label('Setor Responsável')
                                         ->relationship('setorResponsavel', 'Setor')
                                         ->searchable()
                                         ->preload()
-                                        ->native(false),
+                                        ->native(false)
+                                        ->placeholder('Selecione o setor responsável'),
                                     Select::make('ComplementoSetor')
                                         ->label('Complemento Setor')
                                         ->relationship('complementoSetor', 'descricao')
                                         ->searchable()
                                         ->preload()
-                                        ->native(false),
+                                        ->native(false)
+                                        ->placeholder('Selecione o complemento'),
+                                ])
+                                ->columns([
+                                    'default' => 1,
+                                    'md' => 2,
                                 ]),
-                            FileUpload::make('arquivo')
-                                ->label('Arquivo')
-                                ->directory('pedidos')
-                                ->disk('public')
-                                ->visibility('public')
-                                ->columnSpanFull(),
-                            Textarea::make('Observacao')
-                                ->label('Observação')
-                                ->columnSpanFull()
-                                ->rows(3),
 
-                            Textarea::make('justificativa')
-                                ->label('Justificativa')
-                                ->columnSpanFull()
-                                ->rows(3),
+                            Section::make('Anexos e Observações')
+                                ->description('Documento de apoio, observações e justificativa do pedido.')
+                                ->icon('heroicon-o-paper-clip')
+                                ->schema([
+                                    FileUpload::make('arquivo')
+                                        ->label('Arquivo')
+                                        ->directory('files/pedidos')
+                                        ->disk('public')
+                                        ->visibility('public')
+                                        ->openable()
+                                        ->downloadable()
+                                        ->columnSpanFull(),
+                                    Textarea::make('Observacao')
+                                        ->label('Observação')
+                                        ->placeholder('Observações gerais sobre o pedido')
+                                        ->columnSpanFull()
+                                        ->rows(3),
+
+                                    Textarea::make('justificativa')
+                                        ->label('Justificativa')
+                                        ->placeholder('Justificativa da requisição')
+                                        ->columnSpanFull()
+                                        ->rows(3),
+                                ])
+                                ->columns(1),
                         ]),
                     Tab::make('Itens do Pedido')
                         ->icon('heroicon-m-shopping-cart')
                         ->schema([
-                            TextInput::make('valor_total_pedido')
-                                ->label('Valor Total do Pedido')
-                                ->readOnly()
-                                ->dehydrated(false)
-                                ->default(0)
-                                ->prefix('R$')
-                                ->extraInputAttributes(['class' => 'text-xl font-bold']),
-                            Repeater::make('itens')
-                                ->relationship('itens')
-                                ->label('Itens do Pedido')
-                                ->addActionLabel('Adicionar novo item')
-                                ->columns(12)
-                                ->live()
+                            Section::make('Resumo Financeiro')
+                                ->description('Valor total calculado automaticamente a partir dos itens informados.')
+                                ->icon('heroicon-o-calculator')
                                 ->schema([
-                                    Select::make('material')
-                                        ->label('Material')
-                                        ->relationship('materialRel', 'Descricao')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->native(false)
-                                        ->columnSpan(6),
-                                    TextInput::make('QuantidadeMaterial')
-                                        ->label('Quantidade Solicitada')
-                                        ->required()
-                                        ->numeric()
-                                        ->live(onBlur: true)
-                                        ->columnSpan(2),
-                                    TextInput::make('QuantidadeMaterialAtendida')
-                                        ->label('Qtd. Atendida')
-                                        ->numeric()
-                                        ->live(onBlur: true)
-                                        ->columnSpan(2),
-                                    TextInput::make('valor_material')
-                                        ->label('Valor Material')
-                                        ->numeric()
-                                        ->inputMode('decimal')
-                                        ->prefix('R$')
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(function (Get $get, Set $set) {
-                                            self::atualizarTotalPedido($get, $set);
-                                        })
-                                        ->columnSpan(2),
-                                    Textarea::make('ObservacaoItem')
-                                        ->label('Observação do Item')
-                                        ->rows(2)
-                                        ->columnSpan(6),
-                                    Select::make('DescricaoDetalhada')
-                                        ->label('Descrição Detalhada')
-                                        ->relationship('descricaoDetalhadaRel', 'descricao_detalhada')
-                                        ->searchable()
-                                        ->preload()
-                                        ->native(false)
-                                        ->columnSpan(4),
-                                    TextInput::make('situacao')
-                                        ->label('Situação')
-                                        ->numeric()
-                                        ->columnSpan(2),
-                                    TextInput::make('quantidade_validada')
-                                        ->label('Quantidade Validada')
-                                        ->maxLength(255)
-                                        ->columnSpan(3),
-                                    DatePicker::make('data_validacao')
-                                        ->label('Data Validação')
-                                        ->displayFormat('d/m/Y')
-                                        ->native(false)
-                                        ->columnSpan(3),
-                                    Select::make('validado_por')
-                                        ->label('Validado Por')
-                                        ->relationship('validadoPor', 'name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->native(false)
-                                        ->columnSpan(3),
-                                    Select::make('cancelado_por')
-                                        ->label('Cancelado Por')
-                                        ->relationship('canceladoPor', 'name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->native(false)
-                                        ->columnSpan(3),
-                                    DatePicker::make('data_cancelado')
-                                        ->label('Data Cancelamento')
-                                        ->displayFormat('d/m/Y')
-                                        ->native(false)
-                                        ->columnSpan(3),
+                                    TextInput::make('valor_total_pedido')
+                                        ->label('Valor Total do Pedido')
+                                        ->readOnly()
+                                        ->dehydrated(false)
+                                        ->default(0)
+                                        ->prefix('R$'),
+                                ])
+                                ->columns(1),
 
-                                    Textarea::make('justificativa')
-                                        ->label('Justificativa do Item')
-                                        ->rows(2)
+                            Section::make('Itens do Pedido')
+                                ->description('Adicione os materiais solicitados, quantidades e valores.')
+                                ->icon('heroicon-o-shopping-cart')
+                                ->schema([
+                                    Repeater::make('itens')
+                                        ->relationship('itens')
+                                        ->hiddenLabel()
+                                        ->addActionLabel('Adicionar novo item')
+                                        ->itemLabel(fn (array $state): ?string => $state['material'] ?? null
+                                            ? (DescricaoResumida::find($state['material'])?->Descricao ?? 'Item')
+                                            : 'Novo item')
+                                        ->collapsible()
+                                        ->columns(12)
+                                        ->live()
+                                        ->schema([
+                                            Fieldset::make('Material')
+                                                ->columns(12)
+                                                ->schema([
+                                                    Select::make('material')
+                                                        ->label('Material')
+                                                        ->relationship('materialRel', 'Descricao')
+                                                        ->searchable()
+                                                        ->preload()
+                                                        ->required()
+                                                        ->native(false)
+                                                        ->placeholder('Selecione o material')
+                                                        ->columnSpan(8),
+                                                    Select::make('DescricaoDetalhada')
+                                                        ->label('Descrição Detalhada')
+                                                        ->relationship('descricaoDetalhadaRel', 'descricao_detalhada')
+                                                        ->searchable()
+                                                        ->preload()
+                                                        ->native(false)
+                                                        ->placeholder('Selecione a descrição detalhada')
+                                                        ->columnSpan(4),
+                                                    Textarea::make('ObservacaoItem')
+                                                        ->label('Observação do Item')
+                                                        ->placeholder('Observações sobre este item')
+                                                        ->rows(2)
+                                                        ->columnSpanFull(),
+                                                ])
+                                                ->columnSpanFull(),
+
+                                            Fieldset::make('Quantidades e Valor')
+                                                ->columns([
+                                                    'default' => 1,
+                                                    'sm' => 3,
+                                                ])
+                                                ->schema([
+                                                    TextInput::make('QuantidadeMaterial')
+                                                        ->label('Quantidade Solicitada')
+                                                        ->required()
+                                                        ->numeric()
+                                                        ->placeholder('0')
+                                                        ->prefixIcon('heroicon-o-shopping-cart')
+                                                        ->live(onBlur: true),
+                                                    TextInput::make('QuantidadeMaterialAtendida')
+                                                        ->label('Qtd. Atendida')
+                                                        ->numeric()
+                                                        ->placeholder('0')
+                                                        ->prefixIcon('heroicon-o-inbox-stack')
+                                                        ->live(onBlur: true),
+                                                    TextInput::make('valor_material')
+                                                        ->label('Valor Material')
+                                                        ->numeric()
+                                                        ->inputMode('decimal')
+                                                        ->prefix('R$')
+                                                        ->placeholder('0,00')
+                                                        ->live(onBlur: true)
+                                                        ->afterStateUpdated(function (Get $get, Set $set) {
+                                                            self::atualizarTotalPedido($get, $set);
+                                                        }),
+                                                ])
+                                                ->columnSpanFull(),
+
+                                            Fieldset::make('Validação')
+                                                ->columns([
+                                                    'default' => 1,
+                                                    'sm' => 2,
+                                                    'lg' => 4,
+                                                ])
+                                                ->schema([
+                                                    TextInput::make('situacao')
+                                                        ->label('Situação')
+                                                        ->numeric(),
+                                                    TextInput::make('quantidade_validada')
+                                                        ->label('Quantidade Validada')
+                                                        ->maxLength(255),
+                                                    DatePicker::make('data_validacao')
+                                                        ->label('Data Validação')
+                                                        ->displayFormat('d/m/Y')
+                                                        ->native(false)
+                                                        ->prefixIcon('heroicon-o-calendar'),
+                                                    Select::make('validado_por')
+                                                        ->label('Validado Por')
+                                                        ->relationship('validadoPor', 'name')
+                                                        ->searchable()
+                                                        ->preload()
+                                                        ->native(false)
+                                                        ->placeholder('Selecione o usuário'),
+                                                ])
+                                                ->columnSpanFull(),
+
+                                            Fieldset::make('Cancelamento')
+                                                ->columns([
+                                                    'default' => 1,
+                                                    'sm' => 2,
+                                                ])
+                                                ->schema([
+                                                    Select::make('cancelado_por')
+                                                        ->label('Cancelado Por')
+                                                        ->relationship('canceladoPor', 'name')
+                                                        ->searchable()
+                                                        ->preload()
+                                                        ->native(false)
+                                                        ->placeholder('Selecione o usuário'),
+                                                    DatePicker::make('data_cancelado')
+                                                        ->label('Data Cancelamento')
+                                                        ->displayFormat('d/m/Y')
+                                                        ->native(false)
+                                                        ->prefixIcon('heroicon-o-calendar'),
+                                                ])
+                                                ->columnSpanFull(),
+
+                                            Textarea::make('justificativa')
+                                                ->label('Justificativa do Item')
+                                                ->placeholder('Justificativa de validação ou cancelamento')
+                                                ->rows(2)
+                                                ->columnSpanFull(),
+                                        ])
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::atualizarTotalPedido($get, $set))
+                                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => self::mutateItemData($data))
+                                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => self::mutateItemData($data))
                                         ->columnSpanFull(),
                                 ])
-                                ->afterStateUpdated(fn (Get $get, Set $set) => self::atualizarTotalPedido($get, $set))
-                                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => self::mutateItemData($data))
-                                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => self::mutateItemData($data))
-                                ->columnSpanFull(),
+                                ->columns(1),
                         ]),
                 ]),
         ]);
@@ -325,22 +427,12 @@ class PedidosResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                TextColumn::make('id')
-                    ->label('Pedido Nº')
-                    ->alignCenter()
-                    ->sortable('desc')
-                    ->searchable(),
+                TableColumns::text('id', 'Pedido Nº')
+                    ->sortable('desc'),
 
-                TextColumn::make('date_time')
-                    ->label('Data pedido')
-                    ->date('d/m/Y')
-                    ->alignCenter()
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::date('date_time', 'Data pedido'),
 
                 TextColumn::make('arquivo')
                     ->label('Requisição')
@@ -351,47 +443,19 @@ class PedidosResource extends Resource
                     ->color('primary')
                     ->weight('bold'),
 
-                TextColumn::make('situacao.Descricao')
-                    ->label('Situação')
-                    ->alignCenter()
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('situacao.Descricao', 'Situação'),
 
-                TextColumn::make('solicitante_get.name')
-                    ->label('Solicitante')
-                    ->alignCenter()
-                    ->default(' - ')
-                    ->sortable()
-                    ->searchable()
+                TableColumns::text('solicitante_get.name', 'Solicitante')
                     ->wrap(),
 
-                TextColumn::make('unidade_judiciaria.UnidadeOrganizacional')
-                    ->label('Unidade Judiciária')
-                    ->alignCenter()
-                    ->default(' - ')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('unidade_judiciaria.UnidadeOrganizacional', 'Unidade Judiciária'),
 
-                TextColumn::make('setor_get.Setor')
-                    ->label('Setor')
-                    ->alignCenter()
-                    ->default(' - ')
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('setor_get.Setor', 'Setor'),
 
-                TextColumn::make('Observacao')
-                    ->label('Observação')
-                    ->limit(50)
-                    ->alignCenter()
-                    ->default(" - ")
-                    ->sortable(),
+                TableColumns::text('Observacao', 'Observação')
+                    ->limit(50),
 
-                TextColumn::make('responsavel_atendimento.name')
-                    ->label('Impresso/Atendido por')
-                    ->alignCenter()
-                    ->default(" - ")
-                    ->sortable(),
-
+                TableColumns::text('responsavel_atendimento.name', 'Impresso/Atendido por'),
             ])
             ->filters([
                 SelectFilter::make('idSituacao')
@@ -509,11 +573,24 @@ class PedidosResource extends Resource
                     ->icon('heroicon-m-paper-clip')
                     ->color('info')
                     ->modalHeading('Anexar Requisição')
+                    ->modalIcon('heroicon-m-clipboard')
+                    ->modalSubmitActionLabel('Anexar')
                     ->hiddenLabel()
+                    ->schema([
+                        FileUpload::make('arquivo')
+                            ->disk('public')
+                            ->required()
+                            ->label('Arquivo PDF')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(10240)
+                            ->directory('files/pedidos')
+                    ])
                     ->tooltip('Anexar Requisição')
-                    ->requiresConfirmation()
-                    ->action(function (Pedidos $record): void {
-                        $record->update(['idSituacao' => 2]);
+                    ->action(function (Pedidos $record, array $data): void {
+                        $record->update([
+                            'idSituacao' => 2,
+                            'arquivo' => $data['arquivo'],
+                        ]);
                     }),
 
                 Action::make('encaminhar_logistica')
@@ -538,9 +615,9 @@ class PedidosResource extends Resource
                         $record->update(['idSituacao' => 6]);
                     }),
             ])
+            ->toolbarActions([])
             ->selectCurrentPageOnly()
             ->paginated([25, 50, 100, 'all'])
-            ->striped()
             ->deferLoading();
     }
 

@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Almoxarifado;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
@@ -16,6 +18,7 @@ use App\Filament\Clusters\AlmoxarifadoCluster;
 use App\Filament\Resources\Almoxarifado\MovimentacaoEstoqueResource\Pages;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\TableColumns;
+use App\Filament\Support\TableDefaults;
 use App\Models\Almoxarifado\MovimentacaoEstoque;
 use App\Models\Almoxarifado\NotaFiscal;
 use App\Models\Almoxarifado\TipoMovimentacaoNotaFiscal;
@@ -29,7 +32,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class MovimentacaoEstoqueResource extends Resource
@@ -54,8 +56,23 @@ class MovimentacaoEstoqueResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
+        return $schema->components([
+            Tabs::make('TabsMovimentacaoEstoque')
+                ->columnSpanFull()
+                ->tabs([
+                    self::tabDadosMovimentacao(),
+                    self::tabMaterialValores(),
+                    self::tabSaldoEstoque(),
+                    self::tabResponsabilidadeDestino(),
+                ]),
+        ]);
+    }
+
+    private static function tabDadosMovimentacao(): Tab
+    {
+        return Tab::make('Dados da Movimentação')
+            ->icon('heroicon-o-arrows-right-left')
+            ->schema([
                 Section::make('Dados da movimentação')
                     ->description('Identifique a data, o tipo de movimentação e o documento fiscal relacionado.')
                     ->icon('heroicon-o-arrows-right-left')
@@ -66,7 +83,8 @@ class MovimentacaoEstoqueResource extends Resource
                             ->seconds(false)
                             ->native(false)
                             ->displayFormat('d/m/Y H:i')
-                            ->default(now()),
+                            ->default(now())
+                            ->prefixIcon('heroicon-o-calendar'),
 
                         Select::make('tipo_movimentacao')
                             ->label('Tipo de Movimentação')
@@ -75,6 +93,7 @@ class MovimentacaoEstoqueResource extends Resource
                             ->preload()
                             ->native(false)
                             ->placeholder('Selecione o tipo')
+                            ->prefixIcon('heroicon-o-arrows-right-left')
                             ->options(fn () => TipoMovimentacaoNotaFiscal::query()
                                 ->orderBy('descricao')
                                 ->pluck('descricao', 'id')
@@ -88,6 +107,7 @@ class MovimentacaoEstoqueResource extends Resource
                             ->preload()
                             ->native(false)
                             ->placeholder('Selecione a nota fiscal')
+                            ->prefixIcon('heroicon-o-document-text')
                             ->options(fn () => NotaFiscal::query()
                                 ->orderByDesc('id')
                                 ->pluck('num_documento', 'id')
@@ -98,7 +118,14 @@ class MovimentacaoEstoqueResource extends Resource
                         'default' => 1,
                         'md' => 3,
                     ]),
+            ]);
+    }
 
+    private static function tabMaterialValores(): Tab
+    {
+        return Tab::make('Material e Valores')
+            ->icon('heroicon-o-cube')
+            ->schema([
                 Section::make('Material e valores da movimentação')
                     ->description('Informe o item movimentado, a quantidade e os valores da operação.')
                     ->icon('heroicon-o-cube')
@@ -119,6 +146,7 @@ class MovimentacaoEstoqueResource extends Resource
                             ->columnSpan(1)
                             ->inputMode('decimal')
                             ->placeholder('0,00')
+                            ->prefixIcon('heroicon-o-cube-transparent')
                             ->required(),
 
                         MoneyInput::make('preco_unitario')
@@ -138,7 +166,14 @@ class MovimentacaoEstoqueResource extends Resource
                         'default' => 1,
                         'md' => 3,
                     ]),
+            ]);
+    }
 
+    private static function tabSaldoEstoque(): Tab
+    {
+        return Tab::make('Saldo em Estoque')
+            ->icon('heroicon-o-chart-bar-square')
+            ->schema([
                 Section::make('Saldo em estoque')
                     ->description('Registre a posição do estoque após a movimentação para manter o histórico de custo médio.')
                     ->icon('heroicon-o-chart-bar-square')
@@ -148,7 +183,8 @@ class MovimentacaoEstoqueResource extends Resource
                             ->required()
                             ->numeric()
                             ->inputMode('decimal')
-                            ->placeholder('0,00'),
+                            ->placeholder('0,00')
+                            ->prefixIcon('heroicon-o-archive-box'),
 
                         MoneyInput::make('preco_medio_estoque')
                             ->label('Preço Médio Estoque')
@@ -164,7 +200,14 @@ class MovimentacaoEstoqueResource extends Resource
                         'default' => 1,
                         'md' => 3,
                     ]),
+            ]);
+    }
 
+    private static function tabResponsabilidadeDestino(): Tab
+    {
+        return Tab::make('Responsabilidade e Destino')
+            ->icon('heroicon-o-building-office-2')
+            ->schema([
                 Section::make('Responsabilidade e destino')
                     ->description('Defina o setor vinculado à movimentação e o usuário responsável pela atualização.')
                     ->icon('heroicon-o-building-office-2')
@@ -176,6 +219,7 @@ class MovimentacaoEstoqueResource extends Resource
                             ->preload()
                             ->native(false)
                             ->placeholder('Selecione o setor')
+                            ->prefixIcon('heroicon-o-map-pin')
                             ->options(fn () => Setores::query()
                                 ->orderBy('Setor')
                                 ->pluck('Setor', 'id')
@@ -190,6 +234,7 @@ class MovimentacaoEstoqueResource extends Resource
                             ->preload()
                             ->native(false)
                             ->placeholder('Selecione o usuário')
+                            ->prefixIcon('heroicon-o-user')
                             ->options(fn () => UserEgap::query()
                                 ->orderBy('name')
                                 ->pluck('name', 'id')
@@ -210,109 +255,42 @@ class MovimentacaoEstoqueResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->query(
                 static::getEloquentQuery()->latest('id')
             )
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('tipoMovimentacaoRel.descricao')
-                    ->label('Tipo Mov.')
-                    ->alignCenter()
-                    ->searchable(),
-                TextColumn::make('date_time')
-                    ->label('Data')
-                    ->alignCenter()
-                    ->dateTime('d/m/Y')
-                    ->sortable(),
+                TableColumns::text('id', 'ID'),
 
-                TextColumn::make('notaFiscal.num_documento')
-                    ->label('Nota Fiscal')
-                    ->alignCenter()
-                    ->sortable()
-                    ->searchable(),
+                TableColumns::text('tipoMovimentacaoRel.descricao', 'Tipo Mov.'),
 
-                TextColumn::make('materialRel.descricao_detalhada')
-                    ->label('Material')
-                    ->alignCenter()
-                    ->searchable()
+                TableColumns::dateTime('date_time', 'Data', 'd/m/Y'),
+
+                TableColumns::text('notaFiscal.num_documento', 'Nota Fiscal'),
+
+                TableColumns::text('materialRel.descricao_detalhada', 'Material')
                     ->wrap(),
 
-                TextColumn::make('quantidade')
-                    ->label('Qtd.')
-                    ->alignCenter()
-                    ->sortable(),
+                TableColumns::text('quantidade', 'Qtd.'),
 
-                TextColumn::make('preco_unitario')
-                    ->label('Preço Unit.')
-                    ->alignCenter()
-                    ->money('BRL', true)
-                    ->sortable(),
+                TableColumns::money('preco_unitario', 'Preço Unit.', divideBy: true),
 
-                TextColumn::make('valor_total')
-                    ->label('Valor Total')
-                    ->alignCenter()
-                    ->money('BRL', true)
-                    ->sortable(),
+                TableColumns::money('valor_total', 'Valor Total', divideBy: true),
 
-                TextColumn::make('quantidade_estoque')
-                    ->label('Qtd. Estoque')
-                    ->alignCenter()
-                    ->sortable(),
+                TableColumns::text('quantidade_estoque', 'Qtd. Estoque'),
 
-                TextColumn::make('preco_medio_estoque')
-                    ->label('Preço Médio')
-                    ->alignCenter()
-                    ->money('BRL', true)
-                    ->sortable(),
+                TableColumns::money('preco_medio_estoque', 'Preço Médio', divideBy: true),
 
-                TextColumn::make('valor_total_estoque')
-                    ->label('Total Estoque')
-                    ->alignCenter()
-                    ->money('BRL', true)
-                    ->sortable(),
+                TableColumns::money('valor_total_estoque', 'Total Estoque', divideBy: true),
 
-                TextColumn::make('setor.UnidadeOrganizacional')
-                    ->label('Unidade Judiciária')
-                    ->alignCenter()
-                    ->searchable(),
+                TableColumns::text('setor.UnidadeOrganizacional', 'Unidade Judiciária'),
 
-                TextColumn::make('setor.Setor')
-                    ->label('Setor')
-                    ->alignCenter()
-                    ->searchable(),
+                TableColumns::text('setor.Setor', 'Setor'),
 
-                TextColumn::make('pedido.id')
-                    ->label('Pedido')
-                    ->alignCenter()
-                    ->sortable(),
+                TableColumns::text('pedido.id', 'Pedido'),
 
                 TableColumns::updatedBy('atualizadoPor.name'),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
-            ])
-            ->toolbarActions([
-                DeleteBulkAction::make(),
-            ])
-            ->defaultSort('id', 'desc');
+            ]);
     }
 
     public static function getPages(): array

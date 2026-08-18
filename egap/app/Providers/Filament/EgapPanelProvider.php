@@ -75,13 +75,16 @@ class EgapPanelProvider extends PanelProvider
                     ->label('Administração'),
 
                 // Externo
-                NavigationGroup::make('Almoxarifado')
+                NavigationGroup::make()
+                    ->label('Almoxarifado')
                     ->icon(Heroicon::CircleStack),
 
-                NavigationGroup::make('Patrimônio')
+                NavigationGroup::make()
+                    ->label('Patrimônio')
                     ->icon(Heroicon::BuildingOffice),
 
-                NavigationGroup::make('Agendamento de Veículos')
+                NavigationGroup::make()
+                    ->label('Agendamento de Veículos')
                     ->icon(Heroicon::CalendarDays),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

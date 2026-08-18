@@ -61,6 +61,16 @@ class MateriaisConsumoTable extends MateriaisDisponiveis implements HasActions
             ->recordActions([
                 Action::make('adicionar')
                     ->label('Adicionar')
+                    ->disabled(
+                        fn (DescricaoDetalhada $record): bool =>
+                        ! $this->emEstoque($record)
+                    )
+                    ->tooltip(
+                        fn (DescricaoDetalhada $record): ?string =>
+                        $this->emEstoque($record)
+                            ? null
+                            : 'Material indisponível no momento'
+                    )
                     ->button()
                     ->icon('heroicon-m-plus')
                     ->action(fn (DescricaoDetalhada $record) => $this->adicionarAoCarrinho($record)),
@@ -72,6 +82,16 @@ class MateriaisConsumoTable extends MateriaisDisponiveis implements HasActions
 
     protected function adicionarAoCarrinho(DescricaoDetalhada $record): void
     {
+        if (! $this->emEstoque($record)) {
+            Notification::make()
+                ->title('Material indisponível')
+                ->body('Este material não possui estoque disponível.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
         $quantidade = $this->validarQuantidade($record->id);
 
         if ($quantidade === null) {

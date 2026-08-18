@@ -10,11 +10,6 @@ class ExecucaoOrcamentariaAlmoxarifado extends BaseChart
 {
     protected ?string $heading = 'Execução Orçamentária do Almoxarifado';
 
-    protected function getType(): string
-    {
-        return 'line';
-    }
-
     protected function getData(): array
     {
         $registros = MovimentacaoEstoque::query()
@@ -40,17 +35,66 @@ class ExecucaoOrcamentariaAlmoxarifado extends BaseChart
             ->toArray();
 
         $colors = $this->getColors(count($valores));
+        $border_colors = $this->getBorderColors(count($valores));
+
+        if ($this->chartType === 'bubble') {
+            return [
+                'datasets' => [
+                    [
+                        'label' => 'Valor movimentado',
+                        'data' => $registros->map(function ($item) {
+                            $valor = max((float) $item->valor, 1);
+
+                            return [
+                                'x' => (int) $item->ano,
+                                'y' => $valor,
+                                'r' => max(5, min(25, (int) round($valor / 100000))),
+                            ];
+                        })->toArray(),
+                        'backgroundColor' => $this->getColors($registros->count()),
+                    ],
+                ],
+                'labels' => $labels,
+            ];
+        }
+
+        if (in_array($this->chartType, ['pie', 'doughnut', 'polarArea'], true)) {
+            return [
+                'datasets' => [
+                    [
+                        'label' => 'Valor movimentado',
+                        'data' => $valores,
+                        'backgroundColor' => $colors,
+                    ],
+                ],
+                'labels' => $labels,
+            ];
+        }
+
+        if ($this->chartType === 'line') {
+            return [
+                'datasets' => [
+                    [
+                        'label' => 'Valor movimentado',
+                        'data' => $valores,
+                        'backgroundColor' => 'rgba(59, 130, 246, 0.12)',
+                        'borderColor' => 'rgba(59, 130, 246, 1)',
+                        'pointBackgroundColor' => $colors,
+                        'tension' => 0.3,
+                        'fill' => true,
+                    ],
+                ],
+                'labels' => $labels,
+            ];
+        }
 
         return [
             'datasets' => [
                 [
                     'label' => 'Valor movimentado',
                     'data' => $valores,
-                    'backgroundColor' => 'rgba(59, 130, 246, 0.12)',
-                    'borderColor' => 'rgba(59, 130, 246, 1)',
-                    'pointBackgroundColor' => $colors,
-                    'tension' => 0.3,
-                    'fill' => true,
+                    'backgroundColor' => $colors,
+                    'borderColor' => $border_colors,
                 ],
             ],
             'labels' => $labels,

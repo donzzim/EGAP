@@ -16,6 +16,7 @@ use App\Filament\Clusters\ExternoCluster\Groups\Patrimonio\MovimentacaoDeMateria
 use App\Filament\Clusters\ExternoCluster\Groups\Patrimonio\RequisicaoDeMateriais;
 use App\Models\Admin\Lotacao;
 use App\Models\UserEgap;
+use Filament\Notifications\Notification;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
@@ -137,6 +138,14 @@ class HomePageExterno extends Page
                     'description' => 'Solicitar veículo para deslocamento oficial.',
                     'icon' => 'heroicon-o-truck',
                     'url' => SolicitacaoVeiculos::getUrl(),
+                ],
+            ],
+            'Portal Transparência' => [
+                [
+                    'label' => 'Portal Transparência',
+                    'description' => 'Visualizar gráficos correspondentes aos dados de Patrimônio e Almoxarifado.',
+                    'icon' => 'heroicon-o-chart-bar',
+                    'url' => PortalTransparencia::getUrl(),
                 ],
             ],
         ];

@@ -9,11 +9,6 @@ class InventarioOnlineSituacaoInventario extends BaseChart
 {
     protected ?string $heading = 'Acompanhamento do Invetário Online Anual - Situação do Inventário';
 
-    protected function getType(): string
-    {
-        return 'doughnut';
-    }
-
     protected function getData(): array
     {
         $dados = BemMovel::query()
@@ -80,6 +75,58 @@ class InventarioOnlineSituacaoInventario extends BaseChart
         ];
 
         $colors = $this->getColors(count($quantidades));
+        $border_colors = $this->getBorderColors(count($quantidades));
+
+        if ($this->chartType === 'bubble') {
+            return [
+                'datasets' => [
+                    [
+                        'label' => 'Quantidade',
+                        'data' => collect($quantidades)->map(function ($valor, $index) {
+                            $qtde = max((int) $valor, 1);
+
+                            return [
+                                'x' => $index + 1,
+                                'y' => $qtde,
+                                'r' => max(5, min(25, (int) round(sqrt($qtde) * 1.5))),
+                            ];
+                        })->toArray(),
+                        'backgroundColor' => $colors,
+                    ],
+                ],
+                'labels' => $labels,
+            ];
+        }
+
+        if (in_array($this->chartType, ['pie', 'doughnut', 'polarArea'], true)) {
+            return [
+                'datasets' => [
+                    [
+                        'label' => 'Quantidade',
+                        'data' => $quantidades,
+                        'backgroundColor' => $colors,
+                    ],
+                ],
+                'labels' => $labels,
+            ];
+        }
+
+        if ($this->chartType === 'line') {
+            return [
+                'datasets' => [
+                    [
+                        'label' => 'Quantidade',
+                        'data' => $quantidades,
+                        'backgroundColor' => 'rgba(59, 130, 246, 0.12)',
+                        'borderColor' => 'rgba(59, 130, 246, 1)',
+                        'pointBackgroundColor' => $colors,
+                        'tension' => 0.3,
+                        'fill' => true,
+                    ],
+                ],
+                'labels' => $labels,
+            ];
+        }
 
         return [
             'datasets' => [
@@ -87,6 +134,7 @@ class InventarioOnlineSituacaoInventario extends BaseChart
                     'label' => 'Quantidade',
                     'data' => $quantidades,
                     'backgroundColor' => $colors,
+                    'borderColor' => $border_colors,
                 ],
             ],
             'labels' => $labels,

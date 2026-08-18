@@ -2,24 +2,15 @@
 
 namespace App\Filament\Resources\Almoxarifado;
 
+use App\Filament\Support\TableDefaults;
 use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\ListSituacaoNotaFiscals;
-use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\CreateSituacaoNotaFiscal;
-use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages\EditSituacaoNotaFiscal;
 use App\Filament\Clusters\AlmoxarifadoCluster;
-use App\Filament\Resources\Almoxarifado\SituacaoNotaFiscalResource\Pages;
 use App\Filament\Support\TableColumns;
 use App\Models\Almoxarifado\SituacaoNotaFiscal;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class SituacaoNotaFiscalResource extends Resource
@@ -50,33 +41,11 @@ class SituacaoNotaFiscalResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->emptyStateHeading('Nenhum registro encontrado')
-            ->defaultPaginationPageOption(25)
+        return TableDefaults::apply($table)
             ->columns([
-                TextColumn::make('descricao')
-                    ->label('Descrição')
+                TableColumns::text('descricao', 'Descrição', true)
                     ->searchable(),
-
                 TableColumns::updatedBy('atualizadoPor.name'),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                EditAction::make()
-                    ->tooltip('Editar')
-                    ->hiddenLabel(),
-                ViewAction::make()
-                    ->tooltip('Visualizar')
-                    ->hiddenLabel(),
-                DeleteAction::make()
-                    ->tooltip('Excluir')
-                    ->modalHeading('Excluir registro')
-                    ->hiddenLabel(),
-            ])
-            ->toolbarActions([
-                DeleteBulkAction::make(),
             ]);
     }
 
@@ -89,8 +58,6 @@ class SituacaoNotaFiscalResource extends Resource
     {
         return [
             'index' => ListSituacaoNotaFiscals::route('/'),
-            'create' => CreateSituacaoNotaFiscal::route('/create'),
-            'edit' => EditSituacaoNotaFiscal::route('/{record}/edit'),
         ];
     }
 }

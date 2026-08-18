@@ -155,14 +155,17 @@ class BemImovelResource extends Resource
                     self::text('end_cidade', 'Cidade')->columnSpan(4),
                     self::text('end_bairro', 'Bairro')->columnSpan(4),
                     self::text('end_compl_endereco', 'Complemento')->columnSpanFull(),
-                ])->columns(12),
+                ])
+                    ->columns(12)
+                    ->description('Busque o CEP para preenchimento automático dos campos'),
 
                 self::section('Referências geográficas', 'heroicon-o-globe-alt', [
                     self::text('end_latitude', 'Latitude'),
                     self::text('end_longitude', 'Longitude'),
                     self::select('id_cidade', 'Cidade cadastrada', 'cidadeRelacaoRef', 'descricao'),
                     self::select('id_ciduf', 'Cidade/UF', 'cidufRelacaoRef', 'cd_uf'),
-                ])->columns(4),
+                ])
+                    ->columns(4),
             ]);
     }
 

@@ -1,33 +1,5 @@
 <x-filament-panels::page>
     <div class="space-y-6">
-        <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 class="text-xl font-bold tracking-tight text-gray-950 dark:text-white">
-                        Olá, {{ $this->primeiroNomeUsuario() }}!
-                    </h2>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Bem-vindo(a) ao Ambiente Externo do EGAP. Por aqui você solicita e acompanha os
-                        serviços de Almoxarifado, Patrimônio e Agendamento de Veículos.
-                    </p>
-                </div>
-
-                @if ($lotacao = $this->lotacaoAtual())
-                    <div class="flex items-center gap-3 rounded-lg bg-gray-50 px-4 py-2 dark:bg-white/5">
-                        <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5 shrink-0 text-gray-400" />
-                        <div class="text-sm">
-                            <p class="font-medium text-gray-950 dark:text-white">
-                                {{ $lotacao->setorRef?->Setor ?? 'Setor não identificado' }}
-                            </p>
-                            <p class="text-gray-500 dark:text-gray-400">
-                                {{ $lotacao->unidadeJudiciaria?->UnidadeOrganizacional }}
-                            </p>
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
-
         @livewire(\App\Filament\Clusters\ExternoCluster\Widgets\MeusPedidosStats::class)
 
         @foreach ($this->gruposDeAcesso() as $grupo => $links)

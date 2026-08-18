@@ -3,6 +3,7 @@
 namespace App\Filament\Support;
 
 use App\Models\UserEgap;
+use App\Services\Mobile\ConferenciaBensService;
 
 /**
  * Resolve e armazena, em sessão, o setor que o usuário do Ambiente Externo está
@@ -30,5 +31,25 @@ class SetorSelecionado
             ?->lotacoes()
             ->first()
             ?->setor;
+    }
+
+    /**
+     * Complementa {@see resolverAtual()} com a Unidade Judiciária correspondente,
+     * necessária para reaproveitar serviços que operam por Unidade + Setor (ex.:
+     * {@see ConferenciaBensService}, criado originalmente
+     * para o app mobile).
+     */
+    public static function resolverUnidadeAtual(): ?int
+    {
+        $unidadeSessao = session(self::SESSION_KEY.'.unidade');
+
+        if (filled($unidadeSessao)) {
+            return (int) $unidadeSessao;
+        }
+
+        return UserEgap::currentAuthenticated()
+            ?->lotacoes()
+            ->first()
+            ?->unidade_judiciaria;
     }
 }

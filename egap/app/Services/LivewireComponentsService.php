@@ -33,6 +33,8 @@ use App\Filament\Livewire\Patrimonio\BensMoveis\MateriaisBaixaModal;
 use App\Filament\Livewire\Patrimonio\BensMoveis\MateriaisTermoModal;
 use App\Filament\Livewire\Patrimonio\BensMoveis\UnidadesModal;
 use App\Filament\Livewire\Patrimonio\BensMoveis\ValidarTermoModal;
+use App\Filament\Livewire\PortalTransparencia\AlmoxarifadoCharts;
+use App\Filament\Livewire\PortalTransparencia\PatrimonioCharts;
 use Livewire\Livewire;
 
 class LivewireComponentsService
@@ -53,6 +55,10 @@ class LivewireComponentsService
         Livewire::component('patrimonio.ocupacoes-modal', OcupacoesModal::class);
         Livewire::component('patrimonio.reavaliacoes-modal', ReavaliacoesModal::class);
         Livewire::component('patrimonio.obras-modal', ObrasModal::class);
+
+        // PORTAL TRANSPARÊNCIA
+        Livewire::component('portal-transparencia.patrimonio-charts', PatrimonioCharts::class);
+        Livewire::component('portal-transparencia.almoxarifado-charts', AlmoxarifadoCharts::class);
 
         //EXTERNO AGENDAMENTO
         Livewire::component('externo-agendamento.solicitacao-veiculo-form', SolicitacaoVeiculoForm::class);

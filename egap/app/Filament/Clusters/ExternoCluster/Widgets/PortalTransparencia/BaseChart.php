@@ -6,11 +6,24 @@ use Filament\Widgets\ChartWidget;
 
 abstract class BaseChart extends ChartWidget
 {
-    protected int|string|array $columnSpan = 1;
+    public ?string $chartType = 'bar';
+
+    protected int|string|array $columnSpan = 'full';
 
     protected function getType(): string
     {
-        return 'bar';
+        $allowedTypes = [
+            'bar',
+            'line',
+            'bubble',
+            'doughnut',
+            'pie',
+            'polarArea',
+        ];
+
+        return in_array($this->chartType, $allowedTypes, true)
+            ? $this->chartType
+            : 'bar';
     }
 
     protected function getColors(int $count): array
