@@ -144,7 +144,7 @@ class HomePageExterno extends Page
                 [
                     'label' => 'Portal Transparência',
                     'description' => 'Visualizar gráficos correspondentes aos dados de Patrimônio e Almoxarifado.',
-                    'icon' => 'heroicon-o-chart-bar',
+                    'icon' => 'heroicon-o-presentation-chart-line',
                     'url' => PortalTransparencia::getUrl(),
                 ],
             ],

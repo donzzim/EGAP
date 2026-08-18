@@ -7,8 +7,6 @@ use Filament\Pages\Page;
 
 class PortalTransparencia extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-line';
-
     protected static ?string $navigationLabel = 'Portal Transparência';
 
     protected static ?int $navigationSort = 100;
